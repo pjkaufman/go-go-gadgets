@@ -43,7 +43,7 @@ var BuildHtmlSongsTestCases = map[string]BuildHtmlSongsTestCase{
 		ExpectedSongs: []string{"above-it-all-there-stands-jesus", "be-thou-exalted", "behold-the-heavens", "he-is"},
 		ExpectedHtml:  fmt.Sprintf("%s\n%s\n%s\n%s\n", AboveItAllFileHtml, BeThouExaltedFileHtml, BeholdTheHeavensFileHtml, HeIsFileHtml),
 	},
-	"multiple headers with teh same heading get broken into unique header ids": {
+	"multiple headers with the same heading get broken into unique header ids": {
 		InputMdInfo: []converter.MdFileInfo{
 			{
 				FilePath:     "Be Thou Exalted.md",

@@ -6,7 +6,7 @@ func ExtraStringReplace(text string, extraFindAndReplaces map[string]string, num
 	var newText = text
 
 	var stringsToReplace []string = make([]string, 2*len(extraFindAndReplaces))
-	var i = 0;
+	var i = 0
 	for search, replace := range extraFindAndReplaces {
 		if hits, ok := numHits[search]; ok {
 			numHits[search] = hits + strings.Count(newText, search)

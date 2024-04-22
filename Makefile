@@ -4,7 +4,7 @@
 PLAYWRIGHT_VERSION=$(shell go list -m github.com/playwright-community/playwright-go | awk '{print $$2}')
 
 test:
-	go test ~/dotfiles/go-tools/... -tags "unit"
+	go test ./... -tags "unit"
 
 # this is just meant to give an idea whether or not something has tests in it.
 # It is not meant to be used for 100% test coverage. Some folders will be better tested than others.
