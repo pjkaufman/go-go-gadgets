@@ -197,7 +197,15 @@ func init() {
 	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "run-although-but", "n", false, "whether to run the logic for getting although but suggestions")
 	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) suggestions")
 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
-	fixableCmd.MarkFlagRequired("epub-file")
+	err := fixableCmd.MarkFlagRequired("epub-file")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as required on fixable command: %v`, err))
+	}
+
+	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as a looking for specific file types on fixable command: %v`, err))
+	}
 }
 
 func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut bool) error {

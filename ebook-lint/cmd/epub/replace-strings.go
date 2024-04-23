@@ -109,10 +109,26 @@ func init() {
 	EpubCmd.AddCommand(replaceStringsCmd)
 
 	replaceStringsCmd.Flags().StringVarP(&extraReplacesFilePath, "extra-replace-file", "e", "", "the path to the file with extra strings to replace")
-	replaceStringsCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to replace strings in in")
-	replaceStringsCmd.MarkFlagRequired("extra-replace-file")
-	replaceStringsCmd.MarkFlagRequired("epub-file")
+	err := replaceStringsCmd.MarkFlagRequired("extra-replace-file")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "extra-replace-file" as required on replace strings command: %v`, err))
+	}
 
+	err = replaceStringsCmd.MarkFlagFilename("extra-replace-file", "md")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "extra-replace-file" as a looking for specific file types on replace strings command: %v`, err))
+	}
+
+	replaceStringsCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to replace strings in in")
+	err = replaceStringsCmd.MarkFlagRequired("epub-file")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as required on replace strings command: %v`, err))
+	}
+
+	err = replaceStringsCmd.MarkFlagFilename("epub-file", "epub")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as a looking for specific file types on replace strings command: %v`, err))
+	}
 }
 
 func ValidateReplaceStringsFlags(epubPath, extraReplaceStringsPath string) error {

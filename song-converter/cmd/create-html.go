@@ -117,10 +117,28 @@ func init() {
 	rootCmd.AddCommand(CreateHtmlCmd)
 
 	CreateHtmlCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
+	err := CreateHtmlCmd.MarkFlagRequired("working-dir")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "working-dir" as required on create html command: %v`, err))
+	}
+
+	err = CreateHtmlCmd.MarkFlagDirname("working-dir")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "working-dir" as a directory on create html command: %v`, err))
+	}
+
 	CreateHtmlCmd.Flags().StringVarP(&coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use")
+	err = CreateHtmlCmd.MarkFlagRequired("cover-file")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "cover-file" as required on create html command: %v`, err))
+	}
+
+	err = CreateHtmlCmd.MarkFlagFilename("cover-file", "md")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "cover-file" as a looking for specific file types on create html command: %v`, err))
+	}
+
 	CreateHtmlCmd.Flags().StringVarP(&bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to")
-	CreateHtmlCmd.MarkFlagRequired("cover-file")
-	CreateHtmlCmd.MarkFlagRequired("working-dir")
 }
 
 func ValidateCreateHtmlFlags(stagingDir, coverInputFilePath string) error {

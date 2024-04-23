@@ -1,6 +1,8 @@
 package epub
 
 import (
+	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -38,7 +40,15 @@ func init() {
 	EpubCmd.AddCommand(createTranslatorsNotesCmd)
 
 	createTranslatorsNotesCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to replace strings in in")
-	createTranslatorsNotesCmd.MarkFlagRequired("epub-file")
+	err := createTranslatorsNotesCmd.MarkFlagRequired("epub-file")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as required on create notes command: %v`, err))
+	}
+
+	err = createTranslatorsNotesCmd.MarkFlagFilename("epub-file", "epub")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as a looking for specific file types on create notes command: %v`, err))
+	}
 }
 
 func ValidateCreateTranslatorsNotesFlags(epubPath string) error {
