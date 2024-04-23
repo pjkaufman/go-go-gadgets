@@ -1,5 +1,5 @@
 
-.PHONY: test install cover install-deps
+.PHONY: test install cover install-deps lint
 
 PLAYWRIGHT_VERSION=$(shell go list -m github.com/playwright-community/playwright-go | awk '{print $$2}')
 
@@ -10,6 +10,9 @@ test:
 # It is not meant to be used for 100% test coverage. Some folders will be better tested than others.
 cover:
 	go test -cover ./... -tags "unit"
+
+lint:
+	golangci-lint run ./...
 
 install:
 	@echo "Building go tools"

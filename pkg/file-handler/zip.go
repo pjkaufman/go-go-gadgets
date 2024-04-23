@@ -66,7 +66,10 @@ func Unzip(src, dest string) error {
 
 	// have to use these or similar permissions to avoid permission denied errors in some cases
 	var folderPerms fs.FileMode = 0755
-	os.MkdirAll(dest, folderPerms)
+	err = os.MkdirAll(dest, folderPerms)
+	if err != nil {
+		return err
+	}
 
 	// Closure to address file descriptors issue with all the deferred .Close() methods
 	extractAndWriteFile := func(f *zip.File) error {

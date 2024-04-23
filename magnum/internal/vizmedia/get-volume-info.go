@@ -82,7 +82,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 
 		volumes = append(volumes, &VolumeInfo{
 			Name:        name,
-			ReleaseDate: getVolumeReleaseDate(c.Clone(), volumeReleasePage, seriesName, volumeNum),
+			ReleaseDate: getVolumeReleaseDate(c.Clone(), volumeReleasePage),
 		})
 	})
 
@@ -97,7 +97,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 	return volumes
 }
 
-func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage, seriesName string, volume int) time.Time {
+func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage string) time.Time {
 	var releaseDate time.Time
 	c.OnHTML("#product_row > div.row.pad-b-xl > div.g-6--lg.type-sm.type-rg--md.line-caption > div:nth-child(1) > div.o_release-date.mar-b-md", func(e *colly.HTMLElement) {
 		var text = e.DOM.Text()
