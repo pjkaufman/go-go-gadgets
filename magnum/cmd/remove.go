@@ -41,8 +41,10 @@ func init() {
 	rootCmd.AddCommand(RemoveCmd)
 
 	RemoveCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
-
-	RemoveCmd.MarkFlagRequired("name")
+	err := RemoveCmd.MarkFlagRequired("name")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "name" as required on remove command: %v`, err))
+	}
 }
 
 func ValidateRemoveSeriesFlags(seriesName string) error {

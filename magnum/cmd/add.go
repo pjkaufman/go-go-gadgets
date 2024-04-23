@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -96,13 +97,16 @@ func init() {
 	rootCmd.AddCommand(AddCmd)
 
 	AddCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
+	err := AddCmd.MarkFlagRequired("name")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "name" as required on add command: %v`, err))
+	}
+
 	AddCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "the publisher of the series")
 	AddCmd.Flags().StringVarP(&seriesType, "type", "t", "", "the series type")
 	AddCmd.Flags().StringVarP(&slugOverride, "slug", "s", "", "the slug for the series to use instead of the one based on the series name")
 	AddCmd.Flags().StringVarP(&seriesStatus, "status", "r", string(config.Ongoing), "the status of the series (defaults to Ongoing)")
 	AddCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
-
-	AddCmd.MarkFlagRequired("name")
 }
 
 func ValidateAddSeriesFlags(seriesName string) error {

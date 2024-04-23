@@ -60,11 +60,27 @@ func init() {
 	submoduleCmd.AddCommand(updateCmd)
 
 	updateCmd.Flags().StringVarP(&submoduleName, "submodule", "s", "", "the name of the submodule to operate on")
+	err := updateCmd.MarkFlagRequired("submodule")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "submodule" as required on update command: %v`, err))
+	}
+
 	updateCmd.Flags().StringVarP(&repoFolderPath, "repo-parent-path", "d", "", "the path to the parent folder of the repos to operate on")
+	err = updateCmd.MarkFlagRequired("repo-parent-path")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "repo-parent-path" as required on update command: %v`, err))
+	}
+
+	err = updateCmd.MarkFlagDirname("repo-parent-path")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "repo-parent-path" as directory on update command: %v`, err))
+	}
+
 	updateCmd.Flags().StringVarP(&branchName, "branch-name", "b", "", "the submodule branch name to checkout and use")
-	updateCmd.MarkFlagRequired("submodule")
-	updateCmd.MarkFlagRequired("repo-parent-path")
-	updateCmd.MarkFlagRequired("branch-name")
+	err = updateCmd.MarkFlagRequired("branch-name")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "branch-name" as required on update command: %v`, err))
+	}
 }
 
 func ValidateSubmoduleUpdate(branchName, repoFolderPath, submoduleName string) error {

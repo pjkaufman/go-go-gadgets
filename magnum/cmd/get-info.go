@@ -214,8 +214,7 @@ func vizMediaGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo
 		if info.ReleaseDate.Before(today) {
 			break
 		} else {
-			var releaseDate = defaultReleaseDate
-			releaseDate = info.ReleaseDate.Format("January 2, 2006")
+			var releaseDate = info.ReleaseDate.Format("January 2, 2006")
 
 			releaseDateInfo = append(releaseDateInfo, releaseDate)
 			unreleasedVolumes = append(unreleasedVolumes, info.Name)

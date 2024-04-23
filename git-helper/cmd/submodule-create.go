@@ -85,15 +85,39 @@ func init() {
 	submoduleCmd.AddCommand(createCmd)
 
 	createCmd.Flags().StringVarP(&submoduleName, "submodule", "s", "", "the name of the submodule to operate on")
+	err := createCmd.MarkFlagRequired("submodule")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "submodule" as required on create command: %v`, err))
+	}
+
 	createCmd.Flags().StringVarP(&repoFolderPath, "repo-parent-path", "d", "", "the path to the parent folder of the repos to operate on")
+	err = createCmd.MarkFlagRequired("repo-parent-path")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "submodule" as required on create command: %v`, err))
+	}
+
+	err = createCmd.MarkFlagDirname("repo-parent-path")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "repo-parent-path" as directory on create command: %v`, err))
+	}
+
 	createCmd.Flags().StringVarP(&ticketAbbreviation, "ticket-abbreviation", "a", "", "the ticket abbreviation to use to determine whether we should update a repo and to help determine the name for submodule branch")
+	err = createCmd.MarkFlagRequired("ticket-abbreviation")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "ticket-abbreviation" as required on create command: %v`, err))
+	}
+
 	createCmd.Flags().StringVarP(&branchName, "branch-name", "b", "", "the submodule branch name to checkout and use")
+	err = createCmd.MarkFlagRequired("branch-name")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "branch-name" as required on create command: %v`, err))
+	}
+
 	createCmd.Flags().StringVarP(&branchPrefix, "branch-prefix", "p", "", "the branch prefix to use for the created branch names")
-	createCmd.MarkFlagRequired("submodule")
-	createCmd.MarkFlagRequired("repo-parent-path")
-	createCmd.MarkFlagRequired("ticket-abbreviation")
-	createCmd.MarkFlagRequired("branch-name")
-	createCmd.MarkFlagRequired("branch-prefix")
+	err = createCmd.MarkFlagRequired("branch-prefix")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "branch-prefix" as required on create command: %v`, err))
+	}
 }
 
 func getListOfFoldersWithSubmodule(path, submoduleName string) []string {
