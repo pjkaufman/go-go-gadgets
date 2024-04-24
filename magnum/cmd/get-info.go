@@ -51,7 +51,7 @@ func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
 		return jNovelClubGetSeriesVolumeInfo(seriesInfo)
 	case config.SevenSeasEntertainment:
 		return sevenSeasEntertainmentGetSeriesVolumeInfo(seriesInfo)
-	case config.OnePeaceBooks:
+	case config.OnePeaceBooks, config.HanashiMedia:
 		return wikipediaGetSeriesVolumeInfo(seriesInfo)
 	case config.VizMedia:
 		return vizMediaGetSeriesVolumeInfo(seriesInfo)

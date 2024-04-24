@@ -13,7 +13,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var outputFile string
+var (
+	outputFile string
+)
 
 // createCsvCmd represents the createCsv command
 var createCsvCmd = &cobra.Command{
@@ -88,6 +90,10 @@ func init() {
 	}
 
 	createCsvCmd.Flags().StringVarP(&outputFile, "output-file", "o", "", "the file to write the csv to")
+	err = createCsvCmd.MarkFlagFilename("output-file", "csv")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "output-file" as looking for specific file types on create csv command: %v`, err))
+	}
 }
 
 func ValidateCreateCsvFlags(stagingDir string) error {

@@ -47,7 +47,7 @@ func init() {
 
 	err = createTranslatorsNotesCmd.MarkFlagFilename("epub-file", "epub")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as a looking for specific file types on create notes command: %v`, err))
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as looking for specific file types on create notes command: %v`, err))
 	}
 }
 

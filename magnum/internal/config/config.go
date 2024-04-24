@@ -8,15 +8,15 @@ type ReleaseInfo struct {
 }
 
 type SeriesInfo struct {
-	Name                           string        `json:"name"`
-	TotalVolumes                   int           `json:"total_volumes"`
-	LatestVolume                   string        `json:"latest_volume"`
-	UnreleasedVolumes              []ReleaseInfo `json:"unreleased_volumes"`
-	SlugOverride                   *string       `json:"slug_override"`
-	Type                           SeriesType    `json:"type"`
-	Publisher                      PublisherType `json:"publisher"`
-	Status                         SeriesStatus  `json:"status"`
-	WikipediaTablesToParseOverride *int          `json:"tables_to_parse_override"`
+	Name                           string        `json:"name,omitempty"`
+	TotalVolumes                   int           `json:"total_volumes,omitempty"`
+	LatestVolume                   string        `json:"latest_volume,omitempty"`
+	UnreleasedVolumes              []ReleaseInfo `json:"unreleased_volumes,omitempty"`
+	SlugOverride                   *string       `json:"slug_override,omitempty"`
+	Type                           SeriesType    `json:"type,omitempty"`
+	Publisher                      PublisherType `json:"publisher,omitempty"`
+	Status                         SeriesStatus  `json:"status,omitempty"`
+	WikipediaTablesToParseOverride *int          `json:"tables_to_parse_override,omitempty"`
 }
 
 type Config struct {

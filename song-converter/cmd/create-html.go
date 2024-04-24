@@ -139,6 +139,10 @@ func init() {
 	}
 
 	CreateHtmlCmd.Flags().StringVarP(&bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to")
+	err = CreateHtmlCmd.MarkFlagFilename("output", "html")
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "output" as a looking for specific file types on create html command: %v`, err))
+	}
 }
 
 func ValidateCreateHtmlFlags(stagingDir, coverInputFilePath string) error {

@@ -204,7 +204,7 @@ func init() {
 
 	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as a looking for specific file types on fixable command: %v`, err))
+		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v`, err))
 	}
 }
 
