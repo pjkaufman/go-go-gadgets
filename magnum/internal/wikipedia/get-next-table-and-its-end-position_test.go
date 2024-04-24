@@ -645,7 +645,6 @@ var GetNextTableAndItsEndPositionTestCases = map[string]GetNextTableAndItsEndPos
 		ExpectedTableHtml: theWrongWayToUseHealingMagicLightNovelTable,
 		ExpectedStopIndex: 11764,
 	},
-	// TODO: fix this issue
 	"a section with a table with nested tables in it should be properly recognized and pulled out": {
 		InputHtml:         theRisingOfTheShieldHereLightNovelSection,
 		ExpectedTableHtml: theRisingOfTheShieldHereLightNovelTable,

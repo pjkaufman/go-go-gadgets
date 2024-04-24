@@ -111,7 +111,7 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 			filehandler.WriteFileContents(filePath, newText)
 		}
 
-		//TODO: get all files in the repo and prompt the user whether they want to delete them
+		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
 
 		if runCompressImages {
 			commandhandler.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)

@@ -42,8 +42,3 @@ func removeEndingSpacing(text string) string {
 
 	return text
 }
-
-// TODO: implement this logic
-// func removeBlankLinesInsideParagraphTags(text string) string {
-// 	return text
-// }
