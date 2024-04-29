@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image/png"
 
-	"github.com/dsoprea/go-exif/v2"
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 )
 
@@ -32,7 +31,8 @@ func PngRemoveExifData(data []byte) ([]byte, error) {
 
 	_, exifData, err := segmentInfo.Exif()
 	if err != nil {
-		if errors.Is(err, exif.ErrNoExif) {
+		// for some reasons errors.Is(err, pngstructure.ErrNoExif) did not work here so we will compare the error text instead
+		if err.Error() == pngstructure.ErrNoExif.Error() {
 			return data, nil
 		}
 

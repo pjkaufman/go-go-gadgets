@@ -31,7 +31,8 @@ func JpegRemoveExifData(data []byte) ([]byte, error) {
 
 	_, exifData, err := segmentInfo.Exif()
 	if err != nil {
-		if errors.Is(err, exif.ErrNoExif) {
+		// for some reasons errors.Is(err, exif.ErrNoExif) did not work here so we will compare the error text instead
+		if err.Error() == exif.ErrNoExif.Error() {
 			return data, nil
 		}
 

@@ -1,6 +1,6 @@
 //go:build unit
 
-package jpeg_test
+package png_test
 
 import (
 	"embed"
@@ -10,35 +10,35 @@ import (
 	"testing"
 
 	"github.com/dsoprea/go-exif/v2"
-	jpegstructure "github.com/dsoprea/go-jpeg-image-structure"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/jpeg"
+	pngstructure "github.com/dsoprea/go-png-image-structure"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image/png"
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed test-data/*.jpg
-var jpegs embed.FS
+//go:embed test-data/*.png
+var pngs embed.FS
 
-func TestJpegExifDataRemoval(t *testing.T) {
-	fs.WalkDir(jpegs, ".", func(path string, d fs.DirEntry, err error) error {
+func TestPngExifDataRemoval(t *testing.T) {
+	fs.WalkDir(pngs, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			log.Fatalf("failed to walk path: %s\n", err)
 		}
 
 		if !d.IsDir() {
-			jpegFile, err := jpegs.ReadFile(path)
+			pngFile, err := pngs.ReadFile(path)
 			if err != nil {
 				log.Fatalf("failed to read file \"%s\": %s\n", path, err)
 			}
 
 			t.Run(fmt.Sprintf(`"%s": exif data gets removed`, path), func(t *testing.T) {
-				existingTags := getExifData(jpegFile)
-				newData, err := jpeg.JpegRemoveExifData(jpegFile)
+				existingTags := getExifData(pngFile)
+				newData, err := png.PngRemoveExifData(pngFile)
 				assert.Nil(t, err)
 
 				if len(existingTags) != 0 {
-					assert.NotEqual(t, jpegFile, newData)
+					assert.NotEqual(t, pngFile, newData)
 				} else {
-					assert.Equal(t, jpegFile, newData)
+					assert.Equal(t, pngFile, newData)
 				}
 
 				// validate that exif data was removed
@@ -53,17 +53,16 @@ func TestJpegExifDataRemoval(t *testing.T) {
 }
 
 func getExifData(data []byte) []byte {
-	jmp := jpegstructure.NewJpegMediaParser()
+	pmp := pngstructure.NewPngMediaParser()
 
-	intfc, parseErr := jmp.ParseBytes(data)
+	intfc, parseErr := pmp.ParseBytes(data)
 	if parseErr != nil && intfc == nil {
-		log.Fatalf("failed to parse out jpeg bytes: %s\n", parseErr)
+		log.Fatalf("failed to parse out png bytes: %s\n", parseErr)
 	}
 
 	_, et, err := intfc.Exif()
 	if err != nil {
-		// for some reasons errors.Is did not work here so we will compare the error text instead
-		if err.Error() == exif.ErrNoExif.Error() {
+		if err.Error() == pngstructure.ErrNoExif.Error() || err.Error() == exif.ErrNoExif.Error() {
 			return nil
 		}
 

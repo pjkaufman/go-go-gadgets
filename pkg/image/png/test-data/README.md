@@ -1,0 +1,1 @@
+Images are from https://github.com/scottleedavis/go-exif-remove/tree/7e059d59340538e639ab516ea037dec825d5b662/exif-remove-tool/img/png
