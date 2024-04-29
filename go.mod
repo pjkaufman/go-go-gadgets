@@ -15,6 +15,7 @@ require (
 	github.com/playwright-community/playwright-go v0.4201.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/image v0.15.0
 )
 
 require (
