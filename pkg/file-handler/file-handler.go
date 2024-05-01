@@ -133,6 +133,19 @@ func ReadInFileContents(path string) string {
 	return string(fileBytes)
 }
 
+func ReadInBinaryFileContents(path string) []byte {
+	if strings.TrimSpace(path) == "" {
+		return nil
+	}
+
+	fileBytes, err := os.ReadFile(path)
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`could not read in file contents for "%s": %s`, path, err))
+	}
+
+	return fileBytes
+}
+
 func WriteFileContents(path, content string) {
 	if strings.TrimSpace(path) == "" {
 		return
@@ -152,6 +165,30 @@ func WriteFileContents(path, content string) {
 	}
 
 	err = os.WriteFile(path, []byte(content), fileMode)
+	if err != nil {
+		logger.WriteError(fmt.Sprintf(`could not write to file "%s": %s`, path, err))
+	}
+}
+
+func WriteBinaryFileContents(path string, content []byte) {
+	if strings.TrimSpace(path) == "" {
+		return
+	}
+
+	var fileMode fs.FileMode
+
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			fileMode = fs.ModePerm
+		} else {
+			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for "%s": %s`, path, err))
+		}
+	} else {
+		fileMode = fileInfo.Mode()
+	}
+
+	err = os.WriteFile(path, content, fileMode)
 	if err != nil {
 		logger.WriteError(fmt.Sprintf(`could not write to file "%s": %s`, path, err))
 	}
