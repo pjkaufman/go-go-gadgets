@@ -25,7 +25,7 @@ func JpegRemoveExifData(data []byte) ([]byte, error) {
 	}
 
 	segmentInfo, err := jmp.ParseBytes(data)
-	if err != nil {
+	if err != nil && segmentInfo == nil {
 		return nil, fmt.Errorf("failed to parse out jpeg bytes: %w", err)
 	}
 

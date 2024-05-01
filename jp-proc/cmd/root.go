@@ -108,8 +108,8 @@ func init() {
 	rootCmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "whether or not to overwrite the original file when done")
 
 	rootCmd.Flags().IntVarP(&quality, "quality", "q", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)")
-	rootCmd.Flags().IntVarP(&height, "height", "h", 0, "the height of the image to use when the image is resized (leave blank to keep original)")
-	rootCmd.Flags().IntVarP(&width, "width", "w", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
+	rootCmd.Flags().IntVarP(&height, "height", "H", 0, "the height of the image to use when the image is resized (leave blank to keep original)")
+	rootCmd.Flags().IntVarP(&width, "width", "W", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
 }
 
 func ValidateJpProcFlags(file string) error {
