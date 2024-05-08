@@ -7,7 +7,6 @@ import (
 	"image/jpeg"
 	"math"
 
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"golang.org/x/image/draw"
 )
 
@@ -22,7 +21,6 @@ func JpegResize(data []byte, width int, quality *int) ([]byte, error) {
 	height := int(math.Round(float64(width) * ratio))
 
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
-	logger.WriteInfo(fmt.Sprintf("Height ratio is %d", height))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 
 	var jpegOptions *jpeg.Options

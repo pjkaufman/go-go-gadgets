@@ -53,7 +53,7 @@ func TestJpegResize(t *testing.T) {
 			assert.Equal(t, test.OriginalHeight, height, "original height was not the expected value")
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")
 
-			newData, err := jpeg.JpegResize(test.InputFileData, test.NewHeight, test.DesiredQuality)
+			newData, err := jpeg.JpegResize(test.InputFileData, test.NewWidth, test.DesiredQuality)
 			assert.Nil(t, err)
 
 			height, width = getHeightAndWidth(newData)
