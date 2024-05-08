@@ -21,6 +21,7 @@ install:
 	@go build -o "${HOME}/.local/bin/song-converter" ./song-converter/main.go
 	@go build -o "${HOME}/.local/bin/cat-ascii" ./cat-ascii/main.go
 	@go build -o "${HOME}/.local/bin/magnum" ./magnum/main.go
+	@go build -o "${HOME}/.local/bin/jp-proc" ./jp-proc/main.go
 	
 	@mkdir -p ${BASH_COMPLETION_USER_DIR}
 
@@ -30,6 +31,7 @@ install:
 	@song-converter completion bash > "${BASH_COMPLETION_USER_DIR}/song-converter-completion"
 	@cat-ascii completion bash > "${BASH_COMPLETION_USER_DIR}/cat-ascii-completion"
 	@magnum completion bash > "${BASH_COMPLETION_USER_DIR}/magnum-completion"
+	@jp-proc completion bash > "${BASH_COMPLETION_USER_DIR}/jp-proc-completion"
 
 install-deps:
 	@go run github.com/playwright-community/playwright-go/cmd/playwright@${PLAYWRIGHT_VERSION} install --with-deps
