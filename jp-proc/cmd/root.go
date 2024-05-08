@@ -18,7 +18,7 @@ const defaultQuality = 75
 
 var (
 	quiet, removeExif, overwrite bool
-	quality, height, width       int
+	quality, width               int
 	file                         string
 )
 
@@ -53,15 +53,15 @@ var rootCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		var resizeImage = height != 0 || width != 0
+		var resizeImage = width != 0
 		if !quiet && resizeImage {
-			logger.WriteInfo(fmt.Sprintf("resizing image to %dx%d for %s", width, height, file))
+			logger.WriteInfo(fmt.Sprintf("resizing image to width %d for %s", width, file))
 		}
 
 		if isPng {
-			newData, err = png.PngResize(newData, width, height)
+			newData, err = png.PngResize(newData, width)
 		} else {
-			newData, err = jpeg.JpegResize(newData, width, height, &quality)
+			newData, err = jpeg.JpegResize(newData, width, &quality)
 		}
 		if err != nil {
 			logger.WriteError(err.Error())
@@ -108,8 +108,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "whether or not to overwrite the original file when done")
 
 	rootCmd.Flags().IntVarP(&quality, "quality", "q", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)")
-	rootCmd.Flags().IntVarP(&height, "height", "H", 0, "the height of the image to use when the image is resized (leave blank to keep original)")
-	rootCmd.Flags().IntVarP(&width, "width", "W", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
+	rootCmd.Flags().IntVarP(&width, "width", "w", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
 }
 
 func ValidateJpProcFlags(file string) error {
@@ -117,7 +116,7 @@ func ValidateJpProcFlags(file string) error {
 		return errors.New(`file cannot be empty`)
 	}
 
-	if !strings.HasSuffix(file, ".jpg") && !strings.HasSuffix(file, ".jpeg") && !strings.HasSuffix(file, ",png") {
+	if !strings.HasSuffix(file, ".jpg") && !strings.HasSuffix(file, ".jpeg") && !strings.HasSuffix(file, ".png") {
 		return errors.New(`file must be a jpeg or png file`)
 	}
 

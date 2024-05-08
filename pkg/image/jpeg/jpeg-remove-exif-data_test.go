@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed test-data/*.jpg
+//go:embed testdata/*.jpg
 var jpegs embed.FS
 
 func TestJpegExifDataRemoval(t *testing.T) {

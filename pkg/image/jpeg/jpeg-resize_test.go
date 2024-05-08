@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed test-data/22-canon_tags.jpg
+//go:embed testdata/22-canon_tags.jpg
 var canonTagsJpeg []byte
 
 type JpegResizeTestCase struct {
@@ -33,14 +33,14 @@ var JpegResizeTestCases = map[string]JpegResizeTestCase{
 		InputFileData:  canonTagsJpeg,
 		OriginalHeight: 1200,
 		OriginalWidth:  1600,
-		NewHeight:      800,
+		NewHeight:      600,
 		NewWidth:       800,
 	},
 	"Resizing an image to be smaller should work with quality specified": {
 		InputFileData:  canonTagsJpeg,
 		OriginalHeight: 1200,
 		OriginalWidth:  1600,
-		NewHeight:      800,
+		NewHeight:      600,
 		NewWidth:       800,
 		DesiredQuality: &quality40,
 	},
@@ -53,7 +53,7 @@ func TestJpegResize(t *testing.T) {
 			assert.Equal(t, test.OriginalHeight, height, "original height was not the expected value")
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")
 
-			newData, err := jpeg.JpegResize(test.InputFileData, test.NewHeight, test.NewWidth, test.DesiredQuality)
+			newData, err := jpeg.JpegResize(test.InputFileData, test.NewHeight, test.DesiredQuality)
 			assert.Nil(t, err)
 
 			height, width = getHeightAndWidth(newData)
@@ -61,29 +61,6 @@ func TestJpegResize(t *testing.T) {
 			assert.Equal(t, test.NewWidth, width, "width was not the expected value")
 		})
 	}
-	// fs.WalkDir(jpegs, ".", func(path string, d fs.DirEntry, err error) error {
-	// 	if err != nil {
-	// 		log.Fatalf("failed to walk path: %s\n", err)
-	// 	}
-
-	// 	if !d.IsDir() {
-	// 		jpegFile, err := jpegs.ReadFile(path)
-	// 		if err != nil {
-	// 			log.Fatalf("failed to read file \"%s\": %s\n", path, err)
-	// 		}
-
-	// t.Run(fmt.Sprintf(`"%s": resize`, path), func(t *testing.T) {
-	// 	newData, err := jpeg.JpegResize(jpegFile, 800, 800)
-	// 	assert.Nil(t, err)
-
-	// 	height, width := getHeightAndWidth(newData)
-	// 	assert.Equal(t, 800, height, "height was not the expected value")
-	// 	assert.Equal(t, 800, width, "width was not the expected value")
-	// })
-	// 	}
-
-	// 	return nil
-	// })
 }
 
 func getHeightAndWidth(data []byte) (int, int) {

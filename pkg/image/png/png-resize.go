@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"math"
 
 	"golang.org/x/image/draw"
 )
 
 // originally based on https://roeber.dev/posts/resize-an-image-in-go/
-func PngResize(data []byte, width, height int) ([]byte, error) {
+func PngResize(data []byte, width int) ([]byte, error) {
 	src, err := png.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf(`failed to decode png: %w`, err)
 	}
 
-	// ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
-	// height := int(math.Round(float64(width) * ratio))
+	ratio := (float64)(src.Bounds().Max.Y) / (float64)(src.Bounds().Max.X)
+	height := int(math.Round(float64(width) * ratio))
 
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 
