@@ -1,4 +1,4 @@
-package png
+package image
 
 import (
 	"bytes"

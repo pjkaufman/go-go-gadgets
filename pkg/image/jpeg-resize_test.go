@@ -1,6 +1,6 @@
 //go:build unit
 
-package jpeg_test
+package image_test
 
 import (
 	"bytes"
@@ -10,11 +10,11 @@ import (
 	"log"
 	"testing"
 
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/jpeg"
+	image_pkg "github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed testdata/22-canon_tags.jpg
+//go:embed testdata/jpeg/22-canon_tags.jpg
 var canonTagsJpeg []byte
 
 type JpegResizeTestCase struct {
@@ -53,7 +53,7 @@ func TestJpegResize(t *testing.T) {
 			assert.Equal(t, test.OriginalHeight, height, "original height was not the expected value")
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")
 
-			newData, err := jpeg.JpegResize(test.InputFileData, test.NewWidth, test.DesiredQuality)
+			newData, err := image_pkg.JpegResize(test.InputFileData, test.NewWidth, test.DesiredQuality)
 			assert.Nil(t, err)
 
 			height, width = getHeightAndWidth(newData)

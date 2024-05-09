@@ -1,4 +1,4 @@
-package png
+package image
 
 // from https://github.com/scottleedavis/go-exif-remove/blob/7e059d59340538e639ab516ea037dec825d5b662/png_crc_fix.go
 

@@ -1,6 +1,6 @@
 //go:build unit
 
-package png_test
+package image_test
 
 import (
 	"embed"
@@ -11,11 +11,11 @@ import (
 
 	"github.com/dsoprea/go-exif/v2"
 	pngstructure "github.com/dsoprea/go-png-image-structure"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/png"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed testdata/*.png
+//go:embed testdata/png/*.png
 var pngs embed.FS
 
 func TestPngExifDataRemoval(t *testing.T) {
@@ -31,8 +31,8 @@ func TestPngExifDataRemoval(t *testing.T) {
 			}
 
 			t.Run(fmt.Sprintf(`"%s": exif data gets removed`, path), func(t *testing.T) {
-				existingTags := getExifData(pngFile)
-				newData, err := png.PngRemoveExifData(pngFile)
+				existingTags := getPngExifData(pngFile)
+				newData, err := image.PngRemoveExifData(pngFile)
 				assert.Nil(t, err)
 
 				if len(existingTags) != 0 {
@@ -42,7 +42,7 @@ func TestPngExifDataRemoval(t *testing.T) {
 				}
 
 				// validate that exif data was removed
-				newExifData := getExifData(newData)
+				newExifData := getPngExifData(newData)
 
 				assert.Nil(t, newExifData)
 			})
@@ -52,7 +52,7 @@ func TestPngExifDataRemoval(t *testing.T) {
 	})
 }
 
-func getExifData(data []byte) []byte {
+func getPngExifData(data []byte) []byte {
 	pmp := pngstructure.NewPngMediaParser()
 
 	intfc, parseErr := pmp.ParseBytes(data)

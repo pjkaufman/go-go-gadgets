@@ -1,6 +1,6 @@
 //go:build unit
 
-package jpeg_test
+package image_test
 
 import (
 	"embed"
@@ -11,11 +11,11 @@ import (
 
 	"github.com/dsoprea/go-exif/v2"
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/jpeg"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
 )
 
-//go:embed testdata/*.jpg
+//go:embed testdata/jpeg/*.jpg
 var jpegs embed.FS
 
 func TestJpegExifDataRemoval(t *testing.T) {
@@ -31,8 +31,8 @@ func TestJpegExifDataRemoval(t *testing.T) {
 			}
 
 			t.Run(fmt.Sprintf(`"%s": exif data gets removed`, path), func(t *testing.T) {
-				existingTags := getExifData(jpegFile)
-				newData, err := jpeg.JpegRemoveExifData(jpegFile)
+				existingTags := getJpegExifData(jpegFile)
+				newData, err := image.JpegRemoveExifData(jpegFile)
 				assert.Nil(t, err)
 
 				if len(existingTags) != 0 {
@@ -42,7 +42,7 @@ func TestJpegExifDataRemoval(t *testing.T) {
 				}
 
 				// validate that exif data was removed
-				newExifData := getExifData(newData)
+				newExifData := getJpegExifData(newData)
 
 				assert.Nil(t, newExifData)
 			})
@@ -52,7 +52,7 @@ func TestJpegExifDataRemoval(t *testing.T) {
 	})
 }
 
-func getExifData(data []byte) []byte {
+func getJpegExifData(data []byte) []byte {
 	jmp := jpegstructure.NewJpegMediaParser()
 
 	intfc, parseErr := jmp.ParseBytes(data)

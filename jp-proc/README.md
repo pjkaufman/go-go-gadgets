@@ -19,4 +19,3 @@ Given how this works, I find it easier to just go ahead and do a simple program 
 
 - Resize png test
 - See about combining jpeg and png packages into just the image package
-- See about doing scaling for resolution selection like what imgp does (need to look at that code more closely to do this)

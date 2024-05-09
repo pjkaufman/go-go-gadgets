@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/jpeg"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image/png"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -45,9 +44,9 @@ var rootCmd = &cobra.Command{
 
 		var newData = data
 		if isPng {
-			newData, err = png.PngRemoveExifData(data)
+			newData, err = image.PngRemoveExifData(data)
 		} else {
-			newData, err = jpeg.JpegRemoveExifData(data)
+			newData, err = image.JpegRemoveExifData(data)
 		}
 		if err != nil {
 			logger.WriteError(err.Error())
@@ -59,9 +58,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		if isPng {
-			newData, err = png.PngResize(newData, width)
+			newData, err = image.PngResize(newData, width)
 		} else {
-			newData, err = jpeg.JpegResize(newData, width, &quality)
+			newData, err = image.JpegResize(newData, width, &quality)
 		}
 		if err != nil {
 			logger.WriteError(err.Error())
