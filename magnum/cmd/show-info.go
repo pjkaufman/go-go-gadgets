@@ -36,12 +36,16 @@ var ShowInfoCmd = &cobra.Command{
 			}
 
 			for i, unreleasedVolume := range series.UnreleasedVolumes {
+				if unreleasedVolume.ReleaseDate == defaultReleaseDate {
+					continue
+				}
+
 				if strings.HasPrefix(unreleasedVolume.Name, "Vol") {
 					series.UnreleasedVolumes[i].Name = series.Name + ": " + unreleasedVolume.Name
 				}
-			}
 
-			unreleasedVolumes = append(unreleasedVolumes, series.UnreleasedVolumes...)
+				unreleasedVolumes = append(unreleasedVolumes, series.UnreleasedVolumes[i])
+			}
 		}
 
 		if len(unreleasedVolumes) == 0 {
