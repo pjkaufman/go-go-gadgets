@@ -31,6 +31,13 @@ var GetPotentialSquareBracketConversationInstancesTestCases = map[string]GetPote
 			"<p>[I'll take you to him.] </p>": "<p>\"I'll take you to him.\" </p>",
 		},
 	},
+	"make sure that a file with a paragraph with all of its non-space contents contained in square brackets with another set of square bracketed text in it gives a suggestion": {
+		InputText: `<p>[I'll take you [to] him.] </p>
+<p>Here is some more content</p>`,
+		ExpectedSuggestions: map[string]string{
+			"<p>[I'll take you [to] him.] </p>": "<p>\"I'll take you [to] him.\" </p>",
+		},
+	},
 }
 
 func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {

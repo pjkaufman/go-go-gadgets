@@ -140,7 +140,18 @@ var fixableCmd = &cobra.Command{
 				fileText := filehandler.ReadInFileContents(filePath)
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
-				if runAll || runBrokenLines {
+
+				if runAll || runConversation && !saveAndQuit {
+					var conversationSuggestions = linter.GetPotentialSquareBracketConversationInstances(newText)
+					newText, _, saveAndQuit = promptAboutSuggestions("Potential Conversation Instances", conversationSuggestions, newText, false)
+				}
+
+				if runAll || runNecessaryWords && !saveAndQuit {
+					var necessaryWordSuggestions = linter.GetPotentialSquareBracketNecessaryWords(newText)
+					newText, _, saveAndQuit = promptAboutSuggestions("Potential Necessary Word Omission Instances", necessaryWordSuggestions, newText, false)
+				}
+
+				if runAll || runBrokenLines && !saveAndQuit {
 					var brokenLineFixSuggestions = linter.GetPotentiallyBrokenLines(newText)
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Broken Lines", brokenLineFixSuggestions, newText, false)
 				}
@@ -174,16 +185,6 @@ var fixableCmd = &cobra.Command{
 				if (runAll || runThoughts) && !saveAndQuit {
 					var thoughtSuggestions = linter.GetPotentialThoughtInstances(newText)
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Thought Instances", thoughtSuggestions, newText, false)
-				}
-
-				if runAll || runConversation && !saveAndQuit {
-					var conversationSuggestions = linter.GetPotentialSquareBracketConversationInstances(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Conversation Instances", conversationSuggestions, newText, false)
-				}
-
-				if runAll || runNecessaryWords && !saveAndQuit {
-					var necessaryWordSuggestions = linter.GetPotentialSquareBracketNecessaryWords(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Necessary Word Omission Instances", necessaryWordSuggestions, newText, false)
 				}
 
 				if fileText == newText {

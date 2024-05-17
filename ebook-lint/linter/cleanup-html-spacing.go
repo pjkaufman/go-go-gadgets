@@ -5,10 +5,11 @@ import (
 	"unicode"
 )
 
-var blankLineRegex = regexp.MustCompile(`\n{2,}`)
-
-var paragraphElRemoveEndingInternalSpacingRegex = regexp.MustCompile(`\s*\n\s*<\/p>`)
-var paragraphElRemoveStartingInternalSpacingRegex = regexp.MustCompile(`(<p[^\n>]*>)\s*\n\s*`)
+var (
+	blankLineRegex                                = regexp.MustCompile(`([ \t]*\n){2,}`)
+	paragraphElRemoveEndingInternalSpacingRegex   = regexp.MustCompile(`\s*\n\s*<\/p>`)
+	paragraphElRemoveStartingInternalSpacingRegex = regexp.MustCompile(`(<p[^\n>]*>)\s*\n\s*`)
+)
 
 func CleanupHtmlSpacing(text string) string {
 	// general whitespace

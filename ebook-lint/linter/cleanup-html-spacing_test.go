@@ -80,6 +80,17 @@ var CleanupHtmlSpacingTestCases = map[string]CleanupHtmlSpacingTestCase{
 	<p>More text here</p>
 `,
 	},
+	"make sure that blank lines with whitespace get removed": {
+		InputText: `<p class="test">Text <i>here</i>      
+	
+    
+		
+	</p>
+	<p>More text here</p>`,
+		ExpectedText: `<p class="test">Text <i>here</i></p>
+	<p>More text here</p>
+`,
+	},
 }
 
 func TestCleanupHtmlSpacing(t *testing.T) {
