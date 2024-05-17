@@ -13,9 +13,9 @@ Given how this works, I find it easier to just go ahead and do a simple program 
 
 | Operation | Original Size | New Size (imgp) | New Size (imgp with optimize flag) | New Size (jp-proc) |
 | --------- | ------------- | --------------- | ---------------------------------- | ------------------ |
-| Resize jpeg to 800x600 and remove exif data | 3.4M | 57KB | 56 KB | 68KB |
+| Resize jpeg to 800x600 and remove exif data | 3.4M | 57KB | 56KB | 68KB |
+| Resize jpeg to 800x600 and remove exif data and set quality to 40 | 3.4M | 32KB | 28KB | 37KB |
 
 ## Todos
 
 - Resize png test
-- See about combining jpeg and png packages into just the image package
