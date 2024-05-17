@@ -67,10 +67,7 @@ func TestSetLanguage(t *testing.T) {
 	for name, args := range SetLanguageTestCases {
 		t.Run(name, func(t *testing.T) {
 			actual := linter.EnsureLanguageIsSet(args.InputText, args.InputLang)
-
-			if actual != args.ExpectedText {
-				assert.Equal(t, args.ExpectedText, actual)
-			}
+			assert.Equal(t, args.ExpectedText, actual)
 		})
 	}
 }
