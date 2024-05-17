@@ -31,10 +31,11 @@ func EnsureEncodingIsPresent(text string) string {
 		return text
 	}
 
-	var xmlEl = text[xmlOpeningElTag:xmlEndOfTagIndex]
+	var attributeEnd = xmlOpeningElTag + xmlEndOfTagIndex
+	var xmlEl = text[xmlOpeningElTag:attributeEnd]
 	var encodingAttrIndex = strings.Index(xmlEl, encodingAttr)
 	if encodingAttrIndex == -1 {
-		return text[0:xmlEndOfTagIndex] + " " + encodingAttr + "\"utf-8\"" + text[xmlEndOfTagIndex:]
+		return text[0:attributeEnd] + " " + encodingAttr + "\"utf-8\"" + text[attributeEnd:]
 	}
 
 	startOfAttr := encodingAttrIndex + len(encodingAttr)
