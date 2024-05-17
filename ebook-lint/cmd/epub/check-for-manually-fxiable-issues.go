@@ -14,13 +14,15 @@ import (
 )
 
 var (
-	runAll          bool
-	runBrokenLines  bool
-	runSectionBreak bool
-	runPageBreak    bool
-	runOxfordCommas bool
-	runAlthoughBut  bool
-	runThoughts     bool
+	runAll            bool
+	runBrokenLines    bool
+	runSectionBreak   bool
+	runPageBreak      bool
+	runOxfordCommas   bool
+	runAlthoughBut    bool
+	runThoughts       bool
+	runConversation   bool
+	runNecessaryWords bool
 )
 
 const (
@@ -68,9 +70,11 @@ var fixableCmd = &cobra.Command{
 	- Oxford commas being missing before or's or and's
 	- Possible instances of sentences that have although ..., but in them
 	- Possible instances of thoughts that are in parentheses
+	- Possible instances of conversation encapsulated in square brackets
+	- Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut)
+		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -172,6 +176,16 @@ var fixableCmd = &cobra.Command{
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Thought Instances", thoughtSuggestions, newText, false)
 				}
 
+				if runAll || runConversation && !saveAndQuit {
+					var conversationSuggestions = linter.GetPotentialSquareBracketConversationInstances(newText)
+					newText, _, saveAndQuit = promptAboutSuggestions("Potential Conversation Instances", conversationSuggestions, newText, false)
+				}
+
+				if runAll || runNecessaryWords && !saveAndQuit {
+					var necessaryWordSuggestions = linter.GetPotentialSquareBracketNecessaryWords(newText)
+					newText, _, saveAndQuit = promptAboutSuggestions("Potential Necessary Word Omission Instances", necessaryWordSuggestions, newText, false)
+				}
+
 				if fileText == newText {
 					continue
 				}
@@ -195,7 +209,9 @@ func init() {
 	fixableCmd.Flags().BoolVarP(&runPageBreak, "run-page-breaks", "p", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
 	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "run-oxford-commas", "o", false, "whether to run the logic for getting oxford comma suggestions")
 	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "run-although-but", "n", false, "whether to run the logic for getting although but suggestions")
-	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) suggestions")
+	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
+	fixableCmd.Flags().BoolVarP(&runConversation, "run-conversation", "c", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
+	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "run-necessary-words", "w", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
 	err := fixableCmd.MarkFlagRequired("epub-file")
 	if err != nil {
@@ -208,13 +224,13 @@ func init() {
 	}
 }
 
-func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut bool) error {
+func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords bool) error {
 	err := validateCommonEpubFlags(epubPath)
 	if err != nil {
 		return err
 	}
 
-	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut {
+	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut && !runConversation && !runThoughts && !runNecessaryWords {
 		return errors.New(OneRunBoolArgMustBeEnabled)
 	}
 

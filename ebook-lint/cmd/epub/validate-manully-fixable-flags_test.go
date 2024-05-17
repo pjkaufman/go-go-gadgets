@@ -10,14 +10,17 @@ import (
 )
 
 type ValidateManuallyFixableFlagsTestCase struct {
-	InputEpubFile        string
-	InputRunAll          bool
-	InputRunBrokenLines  bool
-	InputRunSectionBreak bool
-	InputRunPageBreak    bool
-	InputRunOxfordCommas bool
-	InputRunAlthoughBut  bool
-	ExpectedError        string
+	InputEpubFile          string
+	InputRunAll            bool
+	InputRunBrokenLines    bool
+	InputRunSectionBreak   bool
+	InputRunPageBreak      bool
+	InputRunOxfordCommas   bool
+	InputRunAlthoughBut    bool
+	InputRunThoughts       bool
+	InputRunConversation   bool
+	InputRunNecessaryWords bool
+	ExpectedError          string
 }
 
 var ValidateManuallyFixableFlagsTestCases = map[string]ValidateManuallyFixableFlagsTestCase{
@@ -45,7 +48,7 @@ var ValidateManuallyFixableFlagsTestCases = map[string]ValidateManuallyFixableFl
 func TestValidateManuallyFixableFlags(t *testing.T) {
 	for name, args := range ValidateManuallyFixableFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := epub.ValidateManuallyFixableFlags(args.InputEpubFile, args.InputRunAll, args.InputRunBrokenLines, args.InputRunSectionBreak, args.InputRunPageBreak, args.InputRunOxfordCommas, args.InputRunAlthoughBut)
+			err := epub.ValidateManuallyFixableFlags(args.InputEpubFile, args.InputRunAll, args.InputRunBrokenLines, args.InputRunSectionBreak, args.InputRunPageBreak, args.InputRunOxfordCommas, args.InputRunAlthoughBut, args.InputRunThoughts, args.InputRunConversation, args.InputRunNecessaryWords)
 
 			if err != nil {
 				assert.Equal(t, args.ExpectedError, err.Error())
