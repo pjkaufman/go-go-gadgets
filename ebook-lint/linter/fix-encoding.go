@@ -1,31 +1,72 @@
 package linter
 
 import (
-	"regexp"
 	"strings"
 )
 
-var xmlElRegex = regexp.MustCompile(`<\?xml([^\n>?])*\?>`)
-var hasUpdatedFirstXmlEl = false
+// var xmlElRegex = regexp.MustCompile(`<\?xml([^\n>?])*\?>`)
+// var hasUpdatedFirstXmlEl = false
 
-const defaultXmlEl = `<?xml version="1.0" encoding="utf-8"?>` + "\n"
+const (
+	defaultXmlEl = `<?xml version="1.0" encoding="utf-8"?>` + "\n"
+	openingXmlEl = `<?xml`
+	closingXmlEl = `?>`
+	encodingAttr = `encoding=`
+)
 
 func EnsureEncodingIsPresent(text string) string {
-	hasUpdatedFirstXmlEl = false
+	// hasUpdatedFirstXmlEl = false
 
-	if xmlElRegex.MatchString(text) {
-		return xmlElRegex.ReplaceAllStringFunc(text, addEncodingIfMissing)
+	// if xmlElRegex.MatchString(text) {
+	// 	return xmlElRegex.ReplaceAllStringFunc(text, addEncodingIfMissing)
+	// }
+
+	var xmlOpeningElTag = strings.Index(text, openingXmlEl)
+	if xmlOpeningElTag == -1 {
+		return defaultXmlEl + text
 	}
 
-	return defaultXmlEl + text
-}
-
-func addEncodingIfMissing(part string) string {
-	if hasUpdatedFirstXmlEl || strings.Contains(part, "encoding=") {
-		hasUpdatedFirstXmlEl = true
-		return part
+	var xmlEndOfTagIndex = strings.Index(text[xmlOpeningElTag:], closingXmlEl)
+	if xmlEndOfTagIndex == -1 {
+		return text
 	}
 
-	hasUpdatedFirstXmlEl = true
-	return strings.Replace(part, "?>", ` encoding="utf-8"?>`, 1)
+	var xmlEl = text[xmlOpeningElTag:xmlEndOfTagIndex]
+	var encodingAttrIndex = strings.Index(xmlEl, encodingAttr)
+	if encodingAttrIndex == -1 {
+		return text[0:xmlEndOfTagIndex] + " " + encodingAttr + "\"utf-8\"" + text[xmlEndOfTagIndex:]
+	}
+
+	startOfAttr := encodingAttrIndex + len(encodingAttr)
+	endOfAttr := startOfAttr + 1
+	endingIndicator := xmlEl[startOfAttr:endOfAttr]
+	var encodingVal, char string
+	for endOfAttr < len(xmlEl) {
+		char = xmlEl[endOfAttr : endOfAttr+1]
+		if char == endingIndicator {
+			break
+		}
+
+		encodingVal += char
+		endOfAttr++
+	}
+
+	if strings.TrimSpace(encodingVal) == "" {
+		return text[0:startOfAttr+1] + "utf-8" + text[endOfAttr:]
+	} else {
+		return text
+	}
+	// return defaultXmlEl + text
+
+	// return text
 }
+
+// func addEncodingIfMissing(part string) string {
+// 	if hasUpdatedFirstXmlEl || strings.Contains(part, "encoding=") {
+// 		hasUpdatedFirstXmlEl = true
+// 		return part
+// 	}
+
+// 	hasUpdatedFirstXmlEl = true
+// 	return strings.Replace(part, "?>", ` encoding="utf-8"?>`, 1)
+// }
