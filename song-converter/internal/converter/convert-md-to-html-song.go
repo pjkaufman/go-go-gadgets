@@ -2,7 +2,6 @@ package converter
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/adrg/frontmatter"
@@ -26,7 +25,7 @@ const (
 	closeMetadata      = "</div><br>"
 )
 
-var otherTitleRegex = regexp.MustCompile(`^(<h1.*)\((.*)\)<(.*)`)
+var commonOrPotentialIssueFixer = strings.NewReplacer("\u00a0\u00a0\n", "<br>\n", "\\&", "&", "\n\n", "\n")
 
 func ConvertMdToHtmlSong(filePath, fileContents string) (string, error) {
 	var metadata SongMetadata
@@ -37,15 +36,10 @@ func ConvertMdToHtmlSong(filePath, fileContents string) (string, error) {
 
 	var metadataHtml = buildMetadataDiv(&metadata)
 	html := mdToHTML([]byte(mdContent))
-	html = otherTitleRegex.ReplaceAllString(html, `${1}<span class="other-title">(${2})</span><${3}`)
-
-	// just in case we encounter this scenario where non-breaking space is encoded as its unicode value
-	html = strings.ReplaceAll(html, "\u00a0\u00a0\n", "<br>\n")
-	html = strings.ReplaceAll(html, "\\&", "&")
+	html = replaceOtherTitle(html)
 	html = strings.Replace(html, "</h1>\n", "</h1>\n"+metadataHtml, 1)
-	html = strings.ReplaceAll(html, "\n\n", "\n")
 
-	return fmt.Sprintf("<div class=\"keep-together\">\n%s</div>\n<br>", html), nil
+	return fmt.Sprintf("<div class=\"keep-together\">\n%s</div>\n<br>", commonOrPotentialIssueFixer.Replace(html)), nil
 }
 
 func mdToHTML(md []byte) string {
@@ -158,4 +152,24 @@ func parseFrontmatter(filePath, fileContents string, metadata *SongMetadata) (st
 	}
 
 	return string(restOfContent), nil
+}
+
+func replaceOtherTitle(html string) string {
+	openH1 := strings.Index(html, "<h1")
+	if openH1 == -1 {
+		return html
+	}
+
+	var textAfterH1 = html[openH1:]
+	openPara := strings.Index(textAfterH1, "(")
+	if openPara == -1 {
+		return html
+	}
+
+	closePara := strings.Index(textAfterH1, ")</h1")
+	if closePara == -1 {
+		return html
+	}
+
+	return html[:openPara] + "<span class=\"other-title\">" + html[openPara:closePara+1] + "</span>" + html[closePara+1:]
 }
