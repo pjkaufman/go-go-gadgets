@@ -2,6 +2,7 @@ package filehandler
 
 import (
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
@@ -10,12 +11,14 @@ import (
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
 	tempZip = "compress.zip"
 	// have to use these or similar permissions to avoid permission denied errors in some cases
 	folderPerms fs.FileMode = 0755
+	numWorkers  int         = 5
 )
 
 // UnzipRunOperationAndRezip starts by deleting the destination directory if it exists,
@@ -70,59 +73,79 @@ func Unzip(src, dest string) error {
 		return err
 	}
 
-	// Closure to address file descriptors issue with all the deferred .Close() methods
-	extractAndWriteFile := func(f *zip.File) error {
-		rc, err := f.Open()
+	var files = make(chan *zip.File, len(r.File))
+	g, ctx := errgroup.WithContext(context.Background())
+	for i := 0; i < numWorkers; i++ {
+		g.Go(func() error {
+			for {
+				select {
+				case file, ok := <-files:
+					if ok {
+						wErr := extractAndWriteFile(dest, file)
+
+						if wErr != nil {
+							return wErr
+						}
+					} else {
+						return nil
+					}
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+			}
+		})
+	}
+
+	for _, f := range r.File {
+		files <- f
+	}
+
+	close(files)
+
+	return g.Wait()
+}
+
+func extractAndWriteFile(dest string, f *zip.File) error {
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := rc.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	path := filepath.Join(dest, f.Name)
+
+	// Check for ZipSlip (Directory traversal)
+	if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
+		return fmt.Errorf("illegal file path: %s", path)
+	}
+
+	if f.FileInfo().IsDir() {
+		err = os.MkdirAll(path, folderPerms)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		err = os.MkdirAll(filepath.Dir(path), folderPerms)
+		if err != nil {
+			return err
+		}
+
+		f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
 			return err
 		}
 		defer func() {
-			if err := rc.Close(); err != nil {
+			if err := f.Close(); err != nil {
 				panic(err)
 			}
 		}()
 
-		path := filepath.Join(dest, f.Name)
-
-		// Check for ZipSlip (Directory traversal)
-		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
-		}
-
-		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(path, folderPerms)
-
-			if err != nil {
-				return err
-			}
-		} else {
-			err = os.MkdirAll(filepath.Dir(path), folderPerms)
-			if err != nil {
-				return err
-			}
-
-			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			defer func() {
-				if err := f.Close(); err != nil {
-					panic(err)
-				}
-			}()
-
-			_, err = io.Copy(f, rc)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	for _, f := range r.File {
-		err := extractAndWriteFile(f)
-
+		_, err = io.Copy(f, rc)
 		if err != nil {
 			return err
 		}
