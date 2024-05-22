@@ -54,7 +54,11 @@ func PngRemoveExifData(data []byte) ([]byte, error) {
 			crc := chunk.CalculateCRC()
 
 			buf := new(bytes.Buffer)
-			binary.Write(buf, binary.BigEndian, crc)
+			err = binary.Write(buf, binary.BigEndian, crc)
+			if err != nil {
+				return nil, fmt.Errorf("failed to update png chunks: %w", err)
+			}
+
 			crcBytes := buf.Bytes()
 
 			copy(newData[offset:], crcBytes)

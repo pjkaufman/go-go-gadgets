@@ -7,8 +7,9 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/file-size"
-	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/images"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -77,14 +78,14 @@ func compressCbz(lintDir, cbz string) {
 	var dest = filehandler.JoinPath(lintDir, "cbz")
 
 	filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-		var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, commandhandler.CompressableImageExts...)
+		var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
 
 		for i, imageFile := range imageFiles {
 			if verbose {
 				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing "%s"`, i, len(imageFiles), imageFile))
 			}
 
-			commandhandler.CompressImage(imageFile)
+			images.CompressImage(imageFile)
 		}
 	})
 }

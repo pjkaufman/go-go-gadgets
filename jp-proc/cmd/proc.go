@@ -41,7 +41,7 @@ var procCmd = &cobra.Command{
 			logger.WriteInfo(fmt.Sprintf("removing exif data for %s", file))
 		}
 
-		var newData = data
+		var newData []byte
 		if isPng {
 			newData, err = image.PngRemoveExifData(data)
 		} else {

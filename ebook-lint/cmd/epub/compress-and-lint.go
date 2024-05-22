@@ -7,8 +7,8 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/file-size"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/images"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/linter"
-	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -114,7 +114,7 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
 
 		if runCompressImages {
-			commandhandler.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
+			images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
 		}
 	})
 }

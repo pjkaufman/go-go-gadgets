@@ -51,17 +51,23 @@ func (p pngChunk) CRCOffset() int64 {
 func readPNGChunks(reader io.ReadSeeker) []pngChunk {
 	chunks := []pngChunk{}
 
-	reader.Seek(chunkStartOffset, io.SeekStart)
+	_, err := reader.Seek(chunkStartOffset, io.SeekStart)
+	if err != nil {
+		return chunks
+	}
 
 	readChunk := func() (*pngChunk, error) {
 		var chunk pngChunk
 		chunk.Offset, _ = reader.Seek(0, io.SeekCurrent)
 
-		binary.Read(reader, binary.BigEndian, &chunk.Length)
+		err = binary.Read(reader, binary.BigEndian, &chunk.Length)
+		if err != nil {
+			goto read_error
+		}
 
 		chunk.Data = make([]byte, chunk.Length)
 
-		err := binary.Read(reader, binary.BigEndian, &chunk.Type)
+		err = binary.Read(reader, binary.BigEndian, &chunk.Type)
 		if err != nil {
 			goto read_error
 		}
