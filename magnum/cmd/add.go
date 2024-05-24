@@ -80,10 +80,10 @@ var AddCmd = &cobra.Command{
 		}
 
 		if wikipediaTablesToParseOverride > 0 {
-			if publisher == config.OnePeaceBooks {
+			if publisher == config.OnePeaceBooks || publisher == config.HanashiMedia {
 				newSeries.WikipediaTablesToParseOverride = &wikipediaTablesToParseOverride
 			} else {
-				logger.WriteWarn("wikipedia tables to parse override is only valid on the publisher OpenPeaceBooks")
+				logger.WriteWarn(fmt.Sprintf("wikipedia tables to parse override is only valid on the publisher %s or %s", config.OnePeaceBooks, config.HanashiMedia))
 			}
 		}
 
