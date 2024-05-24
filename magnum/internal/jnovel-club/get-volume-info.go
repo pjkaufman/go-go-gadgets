@@ -1,10 +1,12 @@
 package jnovelclub
 
 import (
+	"encoding/json"
 	"fmt"
-	"slices"
+	"strconv"
 	"time"
 
+	"github.com/gocolly/colly/v2"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
 	"github.com/pjkaufman/go-go-gadgets/pkg/crawler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -16,12 +18,6 @@ type VolumeInfo struct {
 }
 
 func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []VolumeInfo {
-	var volumes = []VolumeInfo{}
-
-	// playwright is used here instead of colly since the release date info is loaded by JS
-	// and so we need to wait for the page to load to scrape the page
-	pw, browser, page := crawler.CreateNewPlaywrightCrawler()
-
 	var seriesSlug string
 	if slugOverride != nil {
 		seriesSlug = *slugOverride
@@ -29,59 +25,40 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
+	c := crawler.CreateNewCollyCrawler(verbose)
+
+	var jsonVolumeInfo JSONVolumeInfo
+	c.OnHTML("#__NEXT_DATA__", func(e *colly.HTMLElement) {
+		err := json.Unmarshal([]byte(e.Text), &jsonVolumeInfo)
+		if err != nil {
+			logger.WriteError(fmt.Sprintf("failed to deserialize json to volume info: %s", err))
+		}
+	})
+
 	var seriesURL = baseURL + seriesPath + seriesSlug
-	_, err := page.Goto(seriesURL)
+	err := c.Visit(seriesURL)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to visit \"%s\": %v", seriesURL, err))
+		logger.WriteError(fmt.Sprintf("failed call to JNovel Club for \"%s\": %s", seriesURL, err))
 	}
 
-	err = page.WaitForLoadState()
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to wait for the load state: %v", err))
-	}
+	var numVolumes = len(jsonVolumeInfo.Props.PageProps.Aggregate.Volumes)
+	var volumes = make([]VolumeInfo, numVolumes)
+	for i, volume := range jsonVolumeInfo.Props.PageProps.Aggregate.Volumes {
+		// no release data is present, but this should not happen
+		if volume.Volume.Publishing.Seconds == "" {
+			logger.WriteError(fmt.Sprintf("failed to get volume info properly for series %q as there is no publishing data", seriesName))
+		}
 
-	volumeTitles, err := page.Locator("div.header > h2 > a").All()
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("could not get entries: %v", err))
-	}
-
-	for _, entry := range volumeTitles {
-		title, err := entry.TextContent()
+		secondsFromEpoch, err := strconv.Atoi(volume.Volume.Publishing.Seconds)
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("could not get text content for volume title: %v", err))
+			logger.WriteError(fmt.Sprintf("failed to parse out seconds for volume %q: %s", volume.Volume.Title, err))
 		}
 
-		volumes = append(volumes, VolumeInfo{
-			Name: title,
-		})
+		volumes[numVolumes-i-1] = VolumeInfo{
+			Name:        volume.Volume.Title,
+			ReleaseDate: time.Unix(int64(secondsFromEpoch), int64(volume.Volume.Publishing.Nanos)),
+		}
 	}
-
-	entries, err := page.Locator("div.f1g4j9eh > div.f1k2es0r > div.f1ijq7jq > div.f1s7hfqq.label.f1n072s.color-digital > div.f1oyfch5.text").All()
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("could not get entries: %v", err))
-	}
-
-	for i, entry := range entries {
-		releaseDate, err := entry.TextContent()
-		if err != nil {
-			logger.WriteError(fmt.Sprintf("could not get text content for release date: %v", err))
-		}
-
-		date, err := time.Parse(releaseDateFormat, releaseDate)
-		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to parse \"%s\" to a date time value: %v", releaseDate, err))
-		}
-
-		if i >= len(volumes) {
-			break
-		}
-
-		volumes[i].ReleaseDate = date
-	}
-
-	crawler.ClosePlaywrightCrawler(pw, browser)
-
-	slices.Reverse(volumes)
 
 	return volumes
 }

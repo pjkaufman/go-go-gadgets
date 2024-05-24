@@ -1,7 +1,4 @@
-
-.PHONY: test install cover install-deps lint
-
-PLAYWRIGHT_VERSION=$(shell go list -m github.com/playwright-community/playwright-go | awk '{print $$2}')
+.PHONY: test install cover lint
 
 test:
 	go test ./... -tags "unit"
@@ -32,6 +29,3 @@ install:
 	@cat-ascii completion bash > "${BASH_COMPLETION_USER_DIR}/cat-ascii-completion"
 	@magnum completion bash > "${BASH_COMPLETION_USER_DIR}/magnum-completion"
 	@jp-proc completion bash > "${BASH_COMPLETION_USER_DIR}/jp-proc-completion"
-
-install-deps:
-	@go run github.com/playwright-community/playwright-go/cmd/playwright@${PLAYWRIGHT_VERSION} install --with-deps
