@@ -30,7 +30,7 @@ func MustChangeDirectoryTo(path string) {
 	err := os.Chdir(path)
 
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to change directory to "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`failed to change directory to %q: %s`, path, err))
 	}
 }
 

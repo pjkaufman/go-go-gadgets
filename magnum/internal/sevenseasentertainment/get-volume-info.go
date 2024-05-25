@@ -42,7 +42,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 	var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
 	err = c.Visit(url)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to google cache for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed call to google cache for %q: %s", url, err))
 	}
 
 	var volumeInfo = []VolumeInfo{}

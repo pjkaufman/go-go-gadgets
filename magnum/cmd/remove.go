@@ -33,7 +33,7 @@ var RemoveCmd = &cobra.Command{
 
 		config.WriteConfig(seriesInfo)
 
-		logger.WriteInfo(fmt.Sprintf("The \"%s\" was removed from the series list.", seriesName))
+		logger.WriteInfo(fmt.Sprintf("The %q was removed from the series list.", seriesName))
 	},
 }
 

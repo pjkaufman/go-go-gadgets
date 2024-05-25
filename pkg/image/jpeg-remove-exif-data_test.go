@@ -27,10 +27,10 @@ func TestJpegExifDataRemoval(t *testing.T) {
 		if !d.IsDir() {
 			jpegFile, err := jpegs.ReadFile(path)
 			if err != nil {
-				log.Fatalf("failed to read file \"%s\": %s\n", path, err)
+				log.Fatalf("failed to read file %q: %s\n", path, err)
 			}
 
-			t.Run(fmt.Sprintf(`"%s": exif data gets removed`, path), func(t *testing.T) {
+			t.Run(fmt.Sprintf(`%q: exif data gets removed`, path), func(t *testing.T) {
 				existingTags := getJpegExifData(jpegFile)
 				newData, err := image.JpegRemoveExifData(jpegFile)
 				assert.Nil(t, err)

@@ -122,7 +122,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	var url = baseURL + wikiPath + seriesSlug
 	err = c.Visit(url)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to wikipedia for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed call to wikipedia for %q: %s", url, err))
 	}
 
 	var lnSectionHtml string
@@ -142,7 +142,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	} else if len(subSectionTiles)+1 == numTables {
 		subSectionTiles = append([]string{title}, subSectionTiles...)
 	} else if len(subSectionTiles) != numTables {
-		logger.WriteError(fmt.Sprintf("number of tables does not match number of table title prefixes for \"%s\": %d vs. %d", title, len(subSectionTiles), numTables))
+		logger.WriteError(fmt.Sprintf("number of tables does not match number of table title prefixes for %q: %d vs. %d", title, len(subSectionTiles), numTables))
 	}
 
 	var volumeInfo = []VolumeInfo{}

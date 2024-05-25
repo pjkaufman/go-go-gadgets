@@ -17,12 +17,12 @@ func GetColumnCountFromTr(rowHtml string) (int, int, error) {
 	colspanInfo := colspanRegex.FindAllStringSubmatch(rowHtml, -1)
 	for _, colspan := range colspanInfo {
 		if len(colspan) < 2 {
-			return 0, 0, fmt.Errorf(`failed to get the colspan info from row "%s" as colspan regex match was "%v"`, rowHtml, colspan)
+			return 0, 0, fmt.Errorf(`failed to get the colspan info from row %q as colspan regex match was "%v"`, rowHtml, colspan)
 		}
 
 		cols, err := strconv.Atoi(colspan[1])
 		if err != nil {
-			return 0, 0, fmt.Errorf(`failed to get the colspan column number from row "%s: as colspan match was "%s"`, rowHtml, colspan[1])
+			return 0, 0, fmt.Errorf(`failed to get the colspan column number from row "%s: as colspan match was %q`, rowHtml, colspan[1])
 		}
 
 		actualColumnNum += cols - 1

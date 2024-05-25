@@ -41,7 +41,7 @@ func BuildHtmlSongs(mdInfo []MdFileInfo) (string, []string, error) {
 			headerIdMap[headerId] = 1
 			headerIds[i] = headerId
 		} else {
-			return "", nil, fmt.Errorf(`no heading found for file "%s"`, mdData.FilePath)
+			return "", nil, fmt.Errorf(`no heading found for file %q`, mdData.FilePath)
 		}
 
 		html.WriteString(fileContentInHtml + "\n")

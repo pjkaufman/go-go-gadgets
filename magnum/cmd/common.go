@@ -19,10 +19,10 @@ const (
 
 func getUnreleasedVolumeDisplayText(unreleasedVol, releaseDate string) string {
 	if releaseDate == defaultReleaseDate {
-		return fmt.Sprintf("\"%s\" release has not been announced yet", unreleasedVol)
+		return fmt.Sprintf("%q release has not been announced yet", unreleasedVol)
 	}
 
-	return fmt.Sprintf("\"%s\" releases on %s", unreleasedVol, releaseDate)
+	return fmt.Sprintf("%q releases on %s", unreleasedVol, releaseDate)
 }
 
 func unreleasedDateIsBeforeDate(releaseDate string, date time.Time) bool {
@@ -32,7 +32,7 @@ func unreleasedDateIsBeforeDate(releaseDate string, date time.Time) bool {
 
 	release, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to convert date "%s" to date time: %s`, releaseDate, err))
+		logger.WriteError(fmt.Sprintf(`failed to convert date %q to date time: %s`, releaseDate, err))
 	}
 
 	return release.Before(date)

@@ -82,7 +82,7 @@ func compressCbz(lintDir, cbz string) {
 
 		for i, imageFile := range imageFiles {
 			if verbose {
-				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing "%s"`, i, len(imageFiles), imageFile))
+				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
 			}
 
 			images.CompressImage(imageFile)

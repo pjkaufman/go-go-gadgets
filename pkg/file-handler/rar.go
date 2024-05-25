@@ -18,24 +18,24 @@ func ConvertRarToCbz(src string) {
 		err = os.RemoveAll(tempFolder)
 
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to delete the destination directory \"%s\": %s", tempFolder, err))
+			logger.WriteError(fmt.Sprintf("failed to delete the destination directory %q: %s", tempFolder, err))
 		}
 	}
 
 	rar := archiver.NewRar()
 	err = rar.Unarchive(src, "cbz")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to unarchive "%s": %s`, src, err))
+		logger.WriteError(fmt.Sprintf(`failed to unarchive %q: %s`, src, err))
 	}
 
 	var dest = strings.Replace(src, ".cbr", ".cbz", 1)
 	err = Rezip(tempFolder, dest)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to zip "%s" to "%s": %s`, tempFolder, dest, err))
+		logger.WriteError(fmt.Sprintf(`failed to zip %q to %q: %s`, tempFolder, dest, err))
 	}
 
 	err = os.RemoveAll(tempFolder)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to delete the destination directory \"%s\": %s", tempFolder, err))
+		logger.WriteError(fmt.Sprintf("failed to delete the destination directory %q: %s", tempFolder, err))
 	}
 }

@@ -12,7 +12,7 @@ border:0;
 text-align:center;
 }`
 	HrContentAfterTemplate = `hr.character:after {
-content: "%s";
+content: %q;
 display:inline-block;
 position:relative;
 font-size:1em;

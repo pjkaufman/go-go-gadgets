@@ -46,12 +46,12 @@ var SetStatus = &cobra.Command{
 		if strings.TrimSpace(name) == "" {
 			name = selectBookName(seriesInfo.Series, false)
 
-			logger.WriteInfo(fmt.Sprintf("\"%s\" selected", name))
+			logger.WriteInfo(fmt.Sprintf("%q selected", name))
 		}
 
 		var status = config.SeriesStatus(bookStatus)
 		if !config.IsSeriesStatus(bookStatus) {
-			logger.WriteWarn(fmt.Sprintf(`Status "%s" is not a valid book status, so it is being ignored`, bookStatus))
+			logger.WriteWarn(fmt.Sprintf(`Status %q is not a valid book status, so it is being ignored`, bookStatus))
 
 			bookStatus = ""
 		}
@@ -60,7 +60,7 @@ var SetStatus = &cobra.Command{
 		if strings.TrimSpace(bookStatus) == "" {
 			status = selectBookStatus()
 
-			logger.WriteInfo(fmt.Sprintf("\"%s\" selected", status))
+			logger.WriteInfo(fmt.Sprintf("%q selected", status))
 		}
 
 		var foundSeriesToUpdate = false
@@ -73,12 +73,12 @@ var SetStatus = &cobra.Command{
 		}
 
 		if !foundSeriesToUpdate {
-			logger.WriteError(fmt.Sprintf("\n"+`Failed to find "%s" to set the status to %s.`, seriesName, status))
+			logger.WriteError(fmt.Sprintf("\n"+`Failed to find %q to set the status to %s.`, seriesName, status))
 		}
 
 		config.WriteConfig(seriesInfo)
 
-		logger.WriteInfo(fmt.Sprintf("\n"+`Successfully set "%s" to have a status of %s.`, name, status))
+		logger.WriteInfo(fmt.Sprintf("\n"+`Successfully set %q to have a status of %s.`, name, status))
 	},
 }
 

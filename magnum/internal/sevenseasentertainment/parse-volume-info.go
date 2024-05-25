@@ -15,7 +15,7 @@ func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error
 	// get name from the anchor in the h3
 	var firstHeading = volumeNameRegex.FindStringSubmatch(contentHtml)
 	if len(firstHeading) < 2 {
-		return nil, fmt.Errorf(`failed to get the name of volume %d for series "%s"`, volume, series)
+		return nil, fmt.Errorf(`failed to get the name of volume %d for series %q`, volume, series)
 	}
 
 	var heading = firstHeading[1]
@@ -42,7 +42,7 @@ func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error
 	if releaseDateString != "" {
 		tempDate, err := time.Parse(releaseDateFormat, releaseDateString)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse \"%s\" to a date time value: %v", releaseDateString, err)
+			return nil, fmt.Errorf("failed to parse %q to a date time value: %v", releaseDateString, err)
 		}
 
 		releaseDate = &tempDate

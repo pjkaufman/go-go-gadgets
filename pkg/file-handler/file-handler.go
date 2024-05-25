@@ -25,7 +25,7 @@ func FileExists(path string) bool {
 			return false
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that "%s" exists: %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not verify that %q exists: %s`, path, err))
 	}
 
 	return true
@@ -39,10 +39,10 @@ func FileMustExist(path, name string) {
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf("%s: \"%s\" must exist", name, path))
+			logger.WriteError(fmt.Sprintf("%s: %q must exist", name, path))
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that "%s" exists: %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not verify that %q exists: %s`, path, err))
 	}
 }
 
@@ -57,7 +57,7 @@ func FolderExists(path string) bool {
 			return false
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that "%s" exists and is a directory: %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not verify that %q exists and is a directory: %s`, path, err))
 	}
 
 	if !folderInfo.IsDir() {
@@ -75,14 +75,14 @@ func FolderMustExist(path, name string) {
 	folderInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf("%s: \"%s\" must exist", name, path))
+			logger.WriteError(fmt.Sprintf("%s: %q must exist", name, path))
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that "%s" exists and is a directory: %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not verify that %q exists and is a directory: %s`, path, err))
 	}
 
 	if !folderInfo.IsDir() {
-		logger.WriteError(fmt.Sprintf("%s: \"%s\" must be a folder", name, path))
+		logger.WriteError(fmt.Sprintf("%s: %q must be a folder", name, path))
 	}
 }
 
@@ -93,7 +93,7 @@ func GetFoldersInCurrentFolder(path string) []string {
 
 	dirs, err := os.ReadDir(path)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not get files/folders in "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not get files/folders in %q: %s`, path, err))
 	}
 
 	var actualDirs []string
@@ -127,7 +127,7 @@ func ReadInFileContents(path string) string {
 
 	fileBytes, err := os.ReadFile(path)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not read in file contents for "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not read in file contents for %q: %s`, path, err))
 	}
 
 	return string(fileBytes)
@@ -140,7 +140,7 @@ func ReadInBinaryFileContents(path string) []byte {
 
 	fileBytes, err := os.ReadFile(path)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not read in file contents for "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not read in file contents for %q: %s`, path, err))
 	}
 
 	return fileBytes
@@ -158,7 +158,7 @@ func WriteFileContents(path, content string) {
 		if errors.Is(err, fs.ErrNotExist) {
 			fileMode = fs.ModePerm
 		} else {
-			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for "%s": %s`, path, err))
+			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for %q: %s`, path, err))
 		}
 	} else {
 		fileMode = fileInfo.Mode()
@@ -166,7 +166,7 @@ func WriteFileContents(path, content string) {
 
 	err = os.WriteFile(path, []byte(content), fileMode)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not write to file "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not write to file %q: %s`, path, err))
 	}
 }
 
@@ -182,7 +182,7 @@ func WriteBinaryFileContents(path string, content []byte) {
 		if errors.Is(err, fs.ErrNotExist) {
 			fileMode = fs.ModePerm
 		} else {
-			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for "%s": %s`, path, err))
+			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for %q: %s`, path, err))
 		}
 	} else {
 		fileMode = fileInfo.Mode()
@@ -190,14 +190,14 @@ func WriteBinaryFileContents(path string, content []byte) {
 
 	err = os.WriteFile(path, content, fileMode)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not write to file "%s": %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not write to file %q: %s`, path, err))
 	}
 }
 
 func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) []string {
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to read in folder "%s": %s`, dir, err))
+		logger.WriteError(fmt.Sprintf(`failed to read in folder %q: %s`, dir, err))
 	}
 
 	var fileList []string
@@ -230,7 +230,7 @@ func MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir string, exts ...s
 		return nil
 	})
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to walk dir \"%s\": %s", dir, err))
+		logger.WriteError(fmt.Sprintf("failed to walk dir %q: %s", dir, err))
 	}
 
 	return a
@@ -250,7 +250,7 @@ func MustRename(src, dest string) {
 	err := os.Rename(src, dest)
 
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to rename \"%s\" to \"%s\": %s", src, dest, err))
+		logger.WriteError(fmt.Sprintf("failed to rename %q to %q: %s", src, dest, err))
 	}
 }
 
@@ -262,10 +262,10 @@ func MustGetFileSize(path string) float64 {
 	f, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf(`"%s" does not exist so the the file size cannot be retrieved`, path))
+			logger.WriteError(fmt.Sprintf(`%q does not exist so the the file size cannot be retrieved`, path))
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that "%s" exists to check its size: %s`, path, err))
+		logger.WriteError(fmt.Sprintf(`could not verify that %q exists to check its size: %s`, path, err))
 	}
 
 	return float64(f.Size()) / bytesInAKiloByte
@@ -278,6 +278,6 @@ func MustCreateFolderIfNotExists(path string) {
 
 	err := os.MkdirAll(path, folderPerms)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to create folder(s) for path \"%s\": %s", path, err))
+		logger.WriteError(fmt.Sprintf("failed to create folder(s) for path %q: %s", path, err))
 	}
 }

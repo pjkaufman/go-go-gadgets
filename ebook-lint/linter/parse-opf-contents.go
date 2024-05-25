@@ -139,7 +139,7 @@ func versionTextToInt(versionText string) (int, error) {
 
 	version, err := strconv.Atoi(versionText)
 	if err != nil {
-		return 0, fmt.Errorf(`failed to convert version text "%s" to an integer: %w`, versionText, err)
+		return 0, fmt.Errorf(`failed to convert version text %q to an integer: %w`, versionText, err)
 	}
 
 	return version, nil

@@ -43,7 +43,10 @@ func GetInputString(prompt string) string {
 func GetInputInt(prompt string) int {
 	fmt.Println(prompt)
 	var response int
-	fmt.Scanf("%d", &response)
+	_, err := fmt.Scanf("%d", &response)
+	if err != nil {
+		WriteError(fmt.Sprintf("failed to read in the integer from the user: %s", err))
+	}
 
 	return response
 }

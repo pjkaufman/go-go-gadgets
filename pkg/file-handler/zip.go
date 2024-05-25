@@ -31,25 +31,25 @@ func UnzipRunOperationAndRezip(src, dest string, operation func()) {
 		err = os.RemoveAll(dest)
 
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to delete the destination directory \"%s\": %s", dest, err))
+			logger.WriteError(fmt.Sprintf("failed to delete the destination directory %q: %s", dest, err))
 		}
 	}
 
 	err = Unzip(src, dest)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to unzip \"%s\": %s", src, err))
+		logger.WriteError(fmt.Sprintf("failed to unzip %q: %s", src, err))
 	}
 
 	operation()
 
 	err = Rezip(dest, tempZip)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to rezip content for source \"%s\": %s", src, err))
+		logger.WriteError(fmt.Sprintf("failed to rezip content for source %q: %s", src, err))
 	}
 
 	err = os.RemoveAll(dest)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to cleanup the destination directory \"%s\": %s", dest, err))
+		logger.WriteError(fmt.Sprintf("failed to cleanup the destination directory %q: %s", dest, err))
 	}
 
 	MustRename(src, src+".original")

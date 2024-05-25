@@ -36,23 +36,23 @@ func getSectionInfo(userAgent, pageTitle string) *WikipediaSectionInfo {
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to build http request for section info for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed to build http request for section info for %q: %s", url, err))
 	}
 	request.Header.Set("User-Agent", userAgent)
 	resp, err := client.Do(request)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to get section info for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed to get section info for %q: %s", url, err))
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to get section info body for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed to get section info body for %q: %s", url, err))
 	}
 
 	var sectionInfo = &WikipediaSectionInfo{}
 	err = json.Unmarshal(body, sectionInfo)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to unmarshal section info for \"%s\": %s", url, err))
+		logger.WriteError(fmt.Sprintf("failed to unmarshal section info for %q: %s", url, err))
 	}
 
 	return sectionInfo

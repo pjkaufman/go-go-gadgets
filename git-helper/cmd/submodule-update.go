@@ -33,25 +33,25 @@ var updateCmd = &cobra.Command{
 			commandhandler.MustChangeDirectoryTo(submoduleDir)
 
 			masterBranch = getGitMasterBranch()
-			currentBranch = commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to get current branch for "%s"`, folder), getCurrentBranchArgs...)
+			currentBranch = commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to get current branch for %q`, folder), getCurrentBranchArgs...)
 			if strings.Contains(currentBranch, branchName) {
-				logger.WriteInfo(fmt.Sprintf(`Skipping "%s" since it already has "%s" as its branch`, submoduleDir, branchName))
+				logger.WriteInfo(fmt.Sprintf(`Skipping %q since it already has %q as its branch`, submoduleDir, branchName))
 				continue
 			}
 
-			logger.WriteInfo(fmt.Sprintf(`Updating "%s"'s branch to "%s"`, submoduleDir, branchName))
+			logger.WriteInfo(fmt.Sprintf(`Updating %q's branch to %q`, submoduleDir, branchName))
 
 			checkoutLatestFromMaster(submoduleDir, masterBranch)
 
 			if branchName == masterBranch {
-				commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for "%s"`, folder), "checkout", branchName)
+				commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for %q`, folder), "checkout", branchName)
 			}
 
 			commandhandler.MustChangeDirectoryTo(upADirectory)
 
-			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to stage changes to "%s" for "%s"`, submoduleName, folder), "add", submoduleName)
-			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to commit changes for "%s"`, folder), "commit", "-m", fmt.Sprintf(`"Updated %s"`, submoduleName))
-			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to push changes for "%s"`, folder), "push")
+			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to stage changes to %q for %q`, submoduleName, folder), "add", submoduleName)
+			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to commit changes for %q`, folder), "commit", "-m", fmt.Sprintf(`"Updated %s"`, submoduleName))
+			commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to push changes for %q`, folder), "push")
 		}
 	},
 }

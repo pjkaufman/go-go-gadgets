@@ -38,7 +38,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 	var seriesURL = baseURL + seriesPath + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to JNovel Club for \"%s\": %s", seriesURL, err))
+		logger.WriteError(fmt.Sprintf("failed call to JNovel Club for %q: %s", seriesURL, err))
 	}
 
 	var numVolumes = len(jsonVolumeInfo.Props.PageProps.Aggregate.Volumes)

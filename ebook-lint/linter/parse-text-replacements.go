@@ -26,7 +26,7 @@ func ParseTextReplacements(text string) map[string]string {
 		if numParts == 1 {
 			continue
 		} else if numParts != 4 {
-			logger.WriteError(fmt.Sprintf("Could not parse \"%s\" because it does not have the proper amount of \"|\"s in it", line))
+			logger.WriteError(fmt.Sprintf("Could not parse %q because it does not have the proper amount of \"|\"s in it", line))
 			continue
 		}
 

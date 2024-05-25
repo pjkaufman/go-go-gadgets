@@ -42,7 +42,7 @@ func init() {
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	logger.WriteInfo(fmt.Sprintf("Checking for volume info for \"%s\"", seriesInfo.Name))
+	logger.WriteInfo(fmt.Sprintf("Checking for volume info for %q", seriesInfo.Name))
 
 	switch seriesInfo.Publisher {
 	case config.YenPress:

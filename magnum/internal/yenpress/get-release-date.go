@@ -33,7 +33,7 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 
 	if releaseDate == "" {
 		if verbose {
-			logger.WriteInfo(fmt.Sprintf("no release date found on the page: \"%s\"", volumeURL))
+			logger.WriteInfo(fmt.Sprintf("no release date found on the page: %q", volumeURL))
 		}
 
 		return nil
@@ -41,7 +41,7 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 
 	date, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to parse \"%s\" to a date time value: %v", releaseDate, err))
+		logger.WriteError(fmt.Sprintf("failed to parse %q to a date time value: %v", releaseDate, err))
 	}
 
 	return &date

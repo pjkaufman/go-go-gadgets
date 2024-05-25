@@ -48,7 +48,7 @@ func GetConfig() *Config {
 
 	err := json.Unmarshal([]byte(jsonConfig), config)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to json unmarshal config from \"%s\": %s", configFile, err))
+		logger.WriteError(fmt.Sprintf("failed to json unmarshal config from %q: %s", configFile, err))
 	}
 
 	return config

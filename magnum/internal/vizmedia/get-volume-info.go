@@ -44,7 +44,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []*Vol
 	}
 
 	if strings.TrimSpace(fullVolumeLink) == "" {
-		logger.WriteError(fmt.Sprintf(`failed to get the list of volumes link for "%s"`, seriesName))
+		logger.WriteError(fmt.Sprintf(`failed to get the list of volumes link for %q`, seriesName))
 	}
 
 	return getListOfVolumesWithInfo(c.Clone(), fullVolumeLink, seriesName)
@@ -60,7 +60,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 	c.OnHTML("body > div.bg-off-white.overflow-hide > section > section.row.mar-t-lg.mar-t-xl--lg.mar-last-row > div > article", func(e *colly.HTMLElement) {
 		var html, err = e.DOM.Html()
 		if err != nil {
-			logger.WriteError(fmt.Sprintf(`failed to get the html for the volume info for "%s"`, fullVolumeLink))
+			logger.WriteError(fmt.Sprintf(`failed to get the html for the volume info for %q`, fullVolumeLink))
 		}
 
 		name, volumeReleasePage, isReleased, err := ParseVolumeHtml(html, seriesName, volumeNum)
@@ -105,7 +105,7 @@ func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage string) time.Tim
 		text = strings.TrimSpace(strings.Replace(text, "Release", "", 1))
 		tempDate, err := time.Parse(releaseDateFormat, text)
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to parse \"%s\" to a date time value: %v", text, err))
+			logger.WriteError(fmt.Sprintf("failed to parse %q to a date time value: %v", text, err))
 		}
 
 		releaseDate = tempDate

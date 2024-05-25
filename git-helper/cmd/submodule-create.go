@@ -60,13 +60,13 @@ var createCmd = &cobra.Command{
 			commandhandler.MustChangeDirectoryTo(folder)
 
 			masterBranch = getGitMasterBranch()
-			currentBranch = commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to get current branch for "%s"`, folder), getCurrentBranchArgs...)
+			currentBranch = commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to get current branch for %q`, folder), getCurrentBranchArgs...)
 			if strings.Contains(currentBranch, ticketAbbreviation) {
 				continue
 			}
 
 			currentBranch = strings.TrimSpace(currentBranch)
-			logger.WriteInfo(fmt.Sprintf(`"%s" does not contain "%s"`, currentBranch, ticketAbbreviation))
+			logger.WriteInfo(fmt.Sprintf(`%q does not contain %q`, currentBranch, ticketAbbreviation))
 
 			prLinks = append(prLinks, createSubmoduleUpdateBranch(folder, submoduleName, branchPrefix, masterBranch))
 		}
@@ -144,27 +144,27 @@ func createSubmoduleUpdateBranch(folder, submodule, branchPrefix, masterBranch s
 	logger.WriteInfo("Creating the DE branch for " + folder)
 	checkoutLatestFromMaster(folder, masterBranch)
 
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for "%s"`, folder), "checkout", "-B", branchPrefix+"/"+ticketAbbreviation+"-update-"+submodule)
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for %q`, folder), "checkout", "-B", branchPrefix+"/"+ticketAbbreviation+"-update-"+submodule)
 
 	var submoduleDir = filepath.Join(append(pathToSubmodule, submodule)...)
 	commandhandler.MustChangeDirectoryTo(filepath.Join(append(pathToSubmodule, submodule)...))
 
 	checkoutLatestFromMaster(submoduleDir, masterBranch)
 
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to checkout "%s" for "%s"`, branchName, folder), "checkout", branchName)
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to checkout %q for %q`, branchName, folder), "checkout", branchName)
 
 	commandhandler.MustChangeDirectoryTo(upADirectory)
 
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to stage changes to "%s" for "%s"`, submodule, folder), "add", submodule)
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to commit changes for "%s"`, folder), "commit", "-m", fmt.Sprintf(`"Updated %s"`, submodule))
-	pushOutput := commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to push changes for "%s"`, folder), "push")
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to stage changes to %q for %q`, submodule, folder), "add", submodule)
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to commit changes for %q`, folder), "commit", "-m", fmt.Sprintf(`"Updated %s"`, submodule))
+	pushOutput := commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to push changes for %q`, folder), "push")
 
 	return GetPullRequestLink(pushOutput)
 }
 
 func checkoutLatestFromMaster(folder, masterBranch string) {
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to checkout master for "%s"`, folder), "checkout", masterBranch)
-	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for "%s"`, folder), "pull")
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to checkout master for %q`, folder), "checkout", masterBranch)
+	commandhandler.MustRunCommand(gitProgramName, fmt.Sprintf(`failed to pull latest changes for %q`, folder), "pull")
 }
 
 func ValidateSubmoduleCreate(ticketAbbreviation, branchName, repoFolderPath, submoduleName, branchPrefix string) error {

@@ -27,18 +27,18 @@ func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) []VolumeInfo 
 
 		releaseDateString, hasValidAmountOfColumns, err = getEnglishReleaseDateFromRow(rowHtml[:endOfRow])
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to parse rows for \"%s\": %s", namePrefix, err))
+			logger.WriteError(fmt.Sprintf("failed to parse rows for %q: %s", namePrefix, err))
 		}
 
 		if !hasValidAmountOfColumns {
-			logger.WriteWarn(fmt.Sprintf("skipped rows for \"%s\" since it did not have the expected amount of rows", namePrefix))
+			logger.WriteWarn(fmt.Sprintf("skipped rows for %q since it did not have the expected amount of rows", namePrefix))
 			return volumeInfo
 		}
 		var date *time.Time
 		if releaseDateString != "" {
 			tempDate, err := time.Parse(releaseDateFormat, releaseDateString)
 			if err != nil {
-				logger.WriteError(fmt.Sprintf("failed to parse \"%s\" to a date time value: %v", releaseDateString, err))
+				logger.WriteError(fmt.Sprintf("failed to parse %q to a date time value: %v", releaseDateString, err))
 			}
 
 			date = &tempDate

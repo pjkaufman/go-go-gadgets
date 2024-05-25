@@ -4,9 +4,6 @@ import (
 	"strings"
 )
 
-// var xmlElRegex = regexp.MustCompile(`<\?xml([^\n>?])*\?>`)
-// var hasUpdatedFirstXmlEl = false
-
 const (
 	defaultXmlEl = `<?xml version="1.0" encoding="utf-8"?>` + "\n"
 	openingXmlEl = `<?xml`
@@ -15,12 +12,6 @@ const (
 )
 
 func EnsureEncodingIsPresent(text string) string {
-	// hasUpdatedFirstXmlEl = false
-
-	// if xmlElRegex.MatchString(text) {
-	// 	return xmlElRegex.ReplaceAllStringFunc(text, addEncodingIfMissing)
-	// }
-
 	var xmlOpeningElTag = strings.Index(text, openingXmlEl)
 	if xmlOpeningElTag == -1 {
 		return defaultXmlEl + text
@@ -57,17 +48,4 @@ func EnsureEncodingIsPresent(text string) string {
 	} else {
 		return text
 	}
-	// return defaultXmlEl + text
-
-	// return text
 }
-
-// func addEncodingIfMissing(part string) string {
-// 	if hasUpdatedFirstXmlEl || strings.Contains(part, "encoding=") {
-// 		hasUpdatedFirstXmlEl = true
-// 		return part
-// 	}
-
-// 	hasUpdatedFirstXmlEl = true
-// 	return strings.Replace(part, "?>", ` encoding="utf-8"?>`, 1)
-// }
