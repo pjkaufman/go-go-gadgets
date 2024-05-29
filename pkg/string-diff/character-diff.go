@@ -78,7 +78,7 @@ func repairLatin1(s string) (string, error) {
 	buf := make([]byte, 0, len(s))
 	for i, r := range s {
 		if r > 255 {
-			return "", fmt.Errorf("character %s at index %d is not part of latin1", string(r), i)
+			return "", fmt.Errorf("character %q at index %d is not part of latin1", string(r), i)
 		}
 		buf = append(buf, byte(r))
 	}

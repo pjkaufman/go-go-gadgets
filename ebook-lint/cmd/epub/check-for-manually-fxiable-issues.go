@@ -259,7 +259,8 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	logger.WriteInfo(cliLineSeparator + "\n")
 
 	for original, suggestion := range suggestions {
-		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update %q? (Y/N): ", stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))))
+		// Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
+		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N): ", stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))))
 		if strings.EqualFold(resp, "Y") {
 			newText = strings.Replace(newText, original, suggestion, replaceCount)
 			valueReplaced = true
