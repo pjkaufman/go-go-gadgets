@@ -141,17 +141,17 @@ var fixableCmd = &cobra.Command{
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
 
-				if runAll || runConversation && !saveAndQuit {
+				if (runAll || runConversation) && !saveAndQuit {
 					var conversationSuggestions = linter.GetPotentialSquareBracketConversationInstances(newText)
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Conversation Instances", conversationSuggestions, newText, false)
 				}
 
-				if runAll || runNecessaryWords && !saveAndQuit {
+				if (runAll || runNecessaryWords) && !saveAndQuit {
 					var necessaryWordSuggestions = linter.GetPotentialSquareBracketNecessaryWords(newText)
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Necessary Word Omission Instances", necessaryWordSuggestions, newText, false)
 				}
 
-				if runAll || runBrokenLines && !saveAndQuit {
+				if (runAll || runBrokenLines) && !saveAndQuit {
 					var brokenLineFixSuggestions = linter.GetPotentiallyBrokenLines(newText)
 					newText, _, saveAndQuit = promptAboutSuggestions("Potential Broken Lines", brokenLineFixSuggestions, newText, false)
 				}
@@ -261,10 +261,11 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	for original, suggestion := range suggestions {
 		// Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
 		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N): ", stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))))
-		if strings.EqualFold(resp, "Y") {
+		switch strings.ToLower(resp) {
+		case "y":
 			newText = strings.Replace(newText, original, suggestion, replaceCount)
 			valueReplaced = true
-		} else if strings.EqualFold(resp, "Q") {
+		case "q":
 			return newText, valueReplaced, true
 		}
 
