@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var contextBreak = "------"
+const contextBreak = "------"
 
 type AddCssSectionBreakIfMissingTestCase struct {
 	InputText         string

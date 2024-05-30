@@ -13,16 +13,76 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type potentiallyFixableIssue struct {
+	name               string
+	getSuggestions     func(string) map[string]string
+	isEnabled          *bool
+	updateAllInstances bool
+	addCssIfMissing    bool
+}
+
 var (
-	runAll            bool
-	runBrokenLines    bool
-	runSectionBreak   bool
-	runPageBreak      bool
-	runOxfordCommas   bool
-	runAlthoughBut    bool
-	runThoughts       bool
-	runConversation   bool
-	runNecessaryWords bool
+	// this is declared globally here just for use in manuallyFixableIssue to make sure that the struct definition
+	// is satisfied even though this value is the second param for potential section breaks
+	contextBreak             string
+	runAll                   bool
+	runBrokenLines           bool
+	runSectionBreak          bool
+	runPageBreak             bool
+	runOxfordCommas          bool
+	runAlthoughBut           bool
+	runThoughts              bool
+	runConversation          bool
+	runNecessaryWords        bool
+	potentiallyFixableIssues = []potentiallyFixableIssue{
+		{
+			name:           "Potential Conversation Instances",
+			getSuggestions: linter.GetPotentialSquareBracketConversationInstances,
+			isEnabled:      &runConversation,
+		},
+		{
+			name:           "Potential Necessary Word Omission Instances",
+			getSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
+			isEnabled:      &runNecessaryWords,
+		},
+		{
+			name:           "Potential Broken Lines",
+			getSuggestions: linter.GetPotentiallyBrokenLines,
+			isEnabled:      &runBrokenLines,
+		},
+		{
+			name: "Potential Section Breaks",
+			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
+			getSuggestions: func(text string) map[string]string {
+				return linter.GetPotentialSectionBreaks(text, contextBreak)
+			},
+			isEnabled:          &runSectionBreak,
+			updateAllInstances: true,
+			addCssIfMissing:    true,
+		},
+		{
+			name:               "Potential Page Breaks",
+			getSuggestions:     linter.GetPotentialPageBreaks,
+			isEnabled:          &runPageBreak,
+			updateAllInstances: true,
+			addCssIfMissing:    true,
+		},
+		{
+			name:           "Potential Missing Oxford Commas",
+			getSuggestions: linter.GetPotentialMissingOxfordCommas,
+			isEnabled:      &runOxfordCommas,
+		},
+		{
+			name:           "Potential Although But Instances",
+			getSuggestions: linter.GetPotentialAlthoughButInstances,
+			isEnabled:      &runAlthoughBut,
+		},
+		{
+			name:           "Potential Thought Instances",
+			getSuggestions: linter.GetPotentialThoughtInstances,
+			isEnabled:      &runThoughts,
+		},
+	}
 )
 
 const (
@@ -92,7 +152,6 @@ var fixableCmd = &cobra.Command{
 
 			var addCssSectionIfMissing bool = false
 			var addCssPageIfMissing bool = false
-			var contextBreak string
 			if runAll || runSectionBreak {
 				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
@@ -141,50 +200,25 @@ var fixableCmd = &cobra.Command{
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
 
-				if (runAll || runConversation) && !saveAndQuit {
-					var conversationSuggestions = linter.GetPotentialSquareBracketConversationInstances(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Conversation Instances", conversationSuggestions, newText, false)
-				}
+				for _, potentiallyFixableIssue := range potentiallyFixableIssues {
+					if saveAndQuit {
+						break
+					}
 
-				if (runAll || runNecessaryWords) && !saveAndQuit {
-					var necessaryWordSuggestions = linter.GetPotentialSquareBracketNecessaryWords(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Necessary Word Omission Instances", necessaryWordSuggestions, newText, false)
-				}
+					if potentiallyFixableIssue.isEnabled == nil {
+						logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
+					}
 
-				if (runAll || runBrokenLines) && !saveAndQuit {
-					var brokenLineFixSuggestions = linter.GetPotentiallyBrokenLines(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Broken Lines", brokenLineFixSuggestions, newText, false)
-				}
+					if runAll || *potentiallyFixableIssue.isEnabled {
+						suggestions := potentiallyFixableIssue.getSuggestions(newText)
 
-				if (runAll || runSectionBreak) && !saveAndQuit {
-					var contextBreakSuggestions = linter.GetPotentialSectionBreaks(newText, contextBreak)
+						var updateMade bool
+						newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
 
-					var contextBreakUpdated bool
-					newText, contextBreakUpdated, saveAndQuit = promptAboutSuggestions("Potential Section Breaks", contextBreakSuggestions, newText, true)
-					addCssSectionIfMissing = addCssSectionIfMissing || contextBreakUpdated
-				}
-
-				if (runAll || runPageBreak) && !saveAndQuit {
-					var pageBreakSuggestions = linter.GetPotentialPageBreaks(newText)
-
-					var pageBreakUpdated bool
-					newText, pageBreakUpdated, saveAndQuit = promptAboutSuggestions("Potential Page Breaks", pageBreakSuggestions, newText, true)
-					addCssPageIfMissing = addCssPageIfMissing || pageBreakUpdated
-				}
-
-				if (runAll || runOxfordCommas) && !saveAndQuit {
-					var oxfordCommaSuggestions = linter.GetPotentialMissingOxfordCommas(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Missing Oxford Commas", oxfordCommaSuggestions, newText, false)
-				}
-
-				if (runAll || runAlthoughBut) && !saveAndQuit {
-					var althoughButSuggestions = linter.GetPotentialAlthoughButInstances(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Although But Instances", althoughButSuggestions, newText, false)
-				}
-
-				if (runAll || runThoughts) && !saveAndQuit {
-					var thoughtSuggestions = linter.GetPotentialThoughtInstances(newText)
-					newText, _, saveAndQuit = promptAboutSuggestions("Potential Thought Instances", thoughtSuggestions, newText, false)
+						if potentiallyFixableIssue.addCssIfMissing && updateMade {
+							addCssSectionIfMissing = addCssSectionIfMissing || updateMade
+						}
+					}
 				}
 
 				if fileText == newText {
