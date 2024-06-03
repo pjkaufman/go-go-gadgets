@@ -38,6 +38,12 @@ var GetPotentialSquareBracketConversationInstancesTestCases = map[string]GetPote
 			"<p>[I'll take you [to] him.] </p>": "<p>\"I'll take you [to] him.\" </p>",
 		},
 	},
+	"make sure that a file with a paragraph with an empty anchor tag at the start and all of its non-whitespace content in the square bracket gives a suggestion": {
+		InputText: `<p><a id="something" href=""></a>[I'll take you [to] him.] </p>`,
+		ExpectedSuggestions: map[string]string{
+			"<p><a id=\"something\" href=\"\"></a>[I'll take you [to] him.] </p>": "<p><a id=\"something\" href=\"\"></a>\"I'll take you [to] him.\" </p>",
+		},
+	},
 }
 
 func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {
