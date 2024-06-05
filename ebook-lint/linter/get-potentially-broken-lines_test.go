@@ -149,11 +149,6 @@ var GetPotentiallyBrokenLinesTestCases = map[string]GetPotentiallyBrokenLinesTes
 	},
 }
 
-// TODO: why did the following not get matched:
-/*
-	<p>At Tatsuya's words, Lina's eyes flicked from side to side,</p>
-	<p>"The same as that stone tablet…"</p>
-*/
 func TestGetPotentiallyBrokenLines(t *testing.T) {
 	for name, args := range GetPotentiallyBrokenLinesTestCases {
 		t.Run(name, func(t *testing.T) {
