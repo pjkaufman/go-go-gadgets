@@ -147,6 +147,28 @@ var GetPotentiallyBrokenLinesTestCases = map[string]GetPotentiallyBrokenLinesTes
 		<p class="calibre1">Blood vessels, nerves, and other tissues found in the body that met in a straight line — everything was also decomposed. </p>`,
 		},
 	},
+	"make sure that we properly handle Mt. at the end of a sentence": {
+		InputText: `<p>Text here.</p>
+		<p class="calibre1">How many mountains are the size of Mt.</p>
+		<p class="calibre1">Rogers? </p>`,
+		ExpectedSuggestions: map[string]string{
+			`
+		<p class="calibre1">How many mountains are the size of Mt.</p>
+		<p class="calibre1">Rogers? </p>`: `
+		<p class="calibre1">How many mountains are the size of Mt. Rogers? </p>`,
+		},
+	},
+	"make sure that we properly handle a line starting with a lowercase letter": {
+		InputText: `<p>First line.</p>
+		<p>Text here...</p>
+		<p class="calibre1">here is a continuation of the previous line.</p>`,
+		ExpectedSuggestions: map[string]string{
+			`
+		<p>Text here...</p>
+		<p class="calibre1">here is a continuation of the previous line.</p>`: `
+		<p>Text here... here is a continuation of the previous line.</p>`,
+		},
+	},
 }
 
 func TestGetPotentiallyBrokenLines(t *testing.T) {
