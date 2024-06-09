@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/file-size"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/images"
+	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/file-size"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/images"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"

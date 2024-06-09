@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/file-size"
+	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/file-size"
 	"github.com/stretchr/testify/assert"
 )
 
