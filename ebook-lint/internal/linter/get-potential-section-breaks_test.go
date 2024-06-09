@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/linter"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	"github.com/stretchr/testify/assert"
 )
 

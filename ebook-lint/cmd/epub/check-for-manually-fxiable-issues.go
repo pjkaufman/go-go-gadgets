@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/linter"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/linter"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )

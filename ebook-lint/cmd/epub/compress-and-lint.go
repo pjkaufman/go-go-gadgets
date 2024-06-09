@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/file-size"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/images"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/linter"
+	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/file-size"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/images"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
