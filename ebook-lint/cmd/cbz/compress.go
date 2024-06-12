@@ -7,9 +7,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/file-size"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/images"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -74,20 +72,20 @@ func init() {
 }
 
 func compressCbz(lintDir, cbz string) {
-	var src = filehandler.JoinPath(lintDir, cbz)
-	var dest = filehandler.JoinPath(lintDir, "cbz")
+	// var src = filehandler.JoinPath(lintDir, cbz)
+	// var dest = filehandler.JoinPath(lintDir, "cbz")
 
-	filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-		var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
+	// filehandler.UnzipRunOperationAndRezip(src, dest, func() {
+	// 	var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
 
-		for i, imageFile := range imageFiles {
-			if verbose {
-				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
-			}
+	// 	for i, imageFile := range imageFiles {
+	// 		if verbose {
+	// 			logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
+	// 		}
 
-			images.CompressImage(imageFile)
-		}
-	})
+	// 		images.CompressImage(imageFile)
+	// 	}
+	// })
 }
 
 func ValidateCompressFlags(dir string) error {
