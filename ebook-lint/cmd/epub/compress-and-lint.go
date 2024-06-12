@@ -2,6 +2,7 @@ package epub
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -130,15 +131,43 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 				continue
 			}
 
-			filehandler.WriteZipCompressedString(w, filePath, newText)
+			err = filehandler.WriteZipCompressedString(w, filePath, newText)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
 			handledFiles = append(handledFiles, filePath)
 		}
 
 		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
 
 		if runCompressImages {
-			// TODO: convert this over to a similar approach to what is done with the (x)html files and return a slice of bytes
-			images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
+			for imagePath := range epubInfo.ImagesFiles {
+				var filePath = filehandler.JoinPath(opfFolder, imagePath)
+
+				imageFile := zipFiles[filePath]
+
+				data, err := filehandler.ReadInZipFileBytes(imageFile)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
+
+				newData, err := images.CompressImage(filePath, data)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
+
+				if bytes.Equal(data, newData) {
+					continue
+				}
+
+				err = filehandler.WriteZipCompressedBytes(w, filePath, newData)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
+
+				handledFiles = append(handledFiles, filePath)
+			}
 		}
 
 		return handledFiles

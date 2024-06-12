@@ -11,10 +11,12 @@ import (
 )
 
 func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, EpubInfo, string) []string) error {
-	zipFiles, err := filehandler.GetFilesFromZip(src)
+	r, zipFiles, err := filehandler.GetFilesFromZip(src)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("failed to get zip contents for %q: %s", src, err))
 	}
+
+	defer r.Close()
 
 	var (
 		opfFilename string
@@ -65,6 +67,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 		}
 
 		filesHandled := operation(zipFiles, w, epubInfo, opfFolder)
+		filesHandled = append(filesHandled, "mimetype")
 
 		var handled bool
 		for filename, zipFile := range zipFiles {
@@ -92,6 +95,12 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 	err = runOperation()
 	if err != nil {
 		return err
+	}
+
+	// we are closing this here to make sure that the operations run correctly, but it needed a defer for possible errors, so we ignore the error in the defer
+	err = r.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close zip reader: %w", err)
 	}
 
 	filehandler.MustRename(src, src+".original")

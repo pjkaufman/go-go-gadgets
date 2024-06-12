@@ -252,16 +252,11 @@ func CopyMimetypeToZip(w *zip.Writer, src, path string) error {
 	return nil
 }
 
-func GetFilesFromZip(src string) (map[string]*zip.File, error) {
+func GetFilesFromZip(src string) (*zip.ReadCloser, map[string]*zip.File, error) {
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	defer func() {
-		if err := r.Close(); err != nil {
-			panic(err)
-		}
-	}()
 
 	var zipFiles = make(map[string]*zip.File, 0)
 	for _, f := range r.File {
@@ -272,16 +267,12 @@ func GetFilesFromZip(src string) (map[string]*zip.File, error) {
 		zipFiles[f.Name] = f
 	}
 
-	return nil, nil
+	return r, zipFiles, nil
 }
 
 func WriteZipCompressedString(w *zip.Writer, filename, contents string) error {
 	var reader = bytes.NewReader([]byte(contents))
-
-	f, err := w.CreateHeader(&zip.FileHeader{
-		Name:   filename,
-		Method: zip.Store,
-	})
+	f, err := w.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -307,6 +298,24 @@ func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	}
 
 	_, err = io.Copy(f, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func WriteZipCompressedBytes(w *zip.Writer, filename string, data []byte) error {
+	var reader = bytes.NewReader(data)
+	f, err := w.CreateHeader(&zip.FileHeader{
+		Name:   filename,
+		Method: zip.Store,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, reader)
 	if err != nil {
 		return err
 	}
@@ -344,11 +353,27 @@ func ReadInZipFileContents(zipFile *zip.File) (string, error) {
 	}
 	defer file.Close()
 
-	var fileBytes []byte
-	_, err = file.Read(fileBytes)
+	var fileBytes = &bytes.Buffer{}
+	_, err = io.Copy(fileBytes, file)
 	if err != nil {
 		return "", fmt.Errorf(`could not read in zip file contents for %q: %w`, zipFile.Name, err)
 	}
 
-	return string(fileBytes), nil
+	return fileBytes.String(), nil
+}
+
+func ReadInZipFileBytes(zipFile *zip.File) ([]byte, error) {
+	file, err := zipFile.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var fileBytes = &bytes.Buffer{}
+	_, err = io.Copy(fileBytes, file)
+	if err != nil {
+		return nil, fmt.Errorf(`could not read in zip file bytes for %q: %w`, zipFile.Name, err)
+	}
+
+	return fileBytes.Bytes(), nil
 }
