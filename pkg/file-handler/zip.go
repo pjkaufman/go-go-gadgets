@@ -2,6 +2,7 @@ package filehandler
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -170,7 +171,7 @@ func Rezip(src, dest string) error {
 	defer w.Close()
 
 	var mimetypePath = src + string(os.PathSeparator) + "mimetype"
-	err = copyMimetypeToZip(w, src, mimetypePath)
+	err = CopyMimetypeToZip(w, src, mimetypePath)
 	if err != nil {
 		return err
 	}
@@ -226,7 +227,7 @@ func writeToZip(w *zip.Writer, src, path string) error {
 	return nil
 }
 
-func copyMimetypeToZip(w *zip.Writer, src, path string) error {
+func CopyMimetypeToZip(w *zip.Writer, src, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -249,4 +250,105 @@ func copyMimetypeToZip(w *zip.Writer, src, path string) error {
 	}
 
 	return nil
+}
+
+func GetFilesFromZip(src string) (map[string]*zip.File, error) {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := r.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	var zipFiles = make(map[string]*zip.File, 0)
+	for _, f := range r.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+
+		zipFiles[f.Name] = f
+	}
+
+	return nil, nil
+}
+
+func WriteZipCompressedString(w *zip.Writer, filename, contents string) error {
+	var reader = bytes.NewReader([]byte(contents))
+
+	f, err := w.CreateHeader(&zip.FileHeader{
+		Name:   filename,
+		Method: zip.Store,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, reader)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
+	file, err := zipFile.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	f, err := w.Create(zipFile.Name)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func WriteZipUncompressedFile(w *zip.Writer, zipFile *zip.File) error {
+	file, err := zipFile.Open()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	f, err := w.CreateHeader(&zip.FileHeader{
+		Name:   zipFile.Name,
+		Method: zip.Store,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReadInZipFileContents(zipFile *zip.File) (string, error) {
+	file, err := zipFile.Open()
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var fileBytes []byte
+	_, err = file.Read(fileBytes)
+	if err != nil {
+		return "", fmt.Errorf(`could not read in zip file contents for %q: %w`, zipFile.Name, err)
+	}
+
+	return string(fileBytes), nil
 }

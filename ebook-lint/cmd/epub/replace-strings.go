@@ -2,11 +2,9 @@ package epub
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -55,84 +53,58 @@ var replaceStringsCmd = &cobra.Command{
 
 		logger.WriteInfo("Starting epub string replacement...\n")
 
-		var numHits = make(map[string]int)
-		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
+		// var numHits = make(map[string]int)
+		// var extraTextReplacements = linter.ParseTextReplacements(filehandler.ReadInFileContents(extraReplacesFilePath))
 
-		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
+		// var epubFolder = filehandler.GetFileFolder(epubFile)
+		// var dest = filehandler.JoinPath(epubFolder, "epub")
+		// filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
+		// 	opfFolder, epubInfo := getEpubInfo(dest, epubFile)
+		// 	validateFilesExist(opfFolder, epubInfo.HtmlFiles)
 
-		var epubFolder = filehandler.GetFileFolder(epubFile)
-		var dest = filehandler.JoinPath(epubFolder, "epub")
-		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() error {
-			opfFolder, epubInfo, err := getEpubInfo(dest, epubFile)
-			if err != nil {
-				return err
-			}
+		// 	for file := range epubInfo.HtmlFiles {
+		// 		var filePath = getFilePath(opfFolder, file)
+		// 		fileText := filehandler.ReadInFileContents(filePath)
 
-			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-			if err != nil {
-				return err
-			}
+		// 		var newText = linter.CommonStringReplace(fileText)
+		// 		newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
 
-			for file := range epubInfo.HtmlFiles {
-				var filePath = getFilePath(opfFolder, file)
-				fileText, err := filehandler.ReadInFileContents(filePath)
-				if err != nil {
-					return err
-				}
+		// 		if fileText == newText {
+		// 			continue
+		// 		}
 
-				var newText = linter.CommonStringReplace(fileText)
-				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
+		// 		filehandler.WriteFileContents(filePath, newText)
+		// 	}
 
-				if fileText == newText {
-					continue
-				}
+		// 	var successfulReplaces []string
+		// 	var failedReplaces []string
+		// 	for searchText, hits := range numHits {
+		// 		if hits == 0 {
+		// 			failedReplaces = append(failedReplaces, searchText)
+		// 		} else {
+		// 			var timeText = "time"
+		// 			if hits > 1 {
+		// 				timeText += "s"
+		// 			}
 
-				err = filehandler.WriteFileContents(filePath, newText)
-				if err != nil {
-					return err
-				}
-			}
+		// 			successfulReplaces = append(successfulReplaces, fmt.Sprintf("`%s` was replaced %d %s", searchText, hits, timeText))
+		// 		}
+		// 	}
 
-			var successfulReplaces []string
-			var failedReplaces []string
-			for searchText, hits := range numHits {
-				if hits == 0 {
-					failedReplaces = append(failedReplaces, searchText)
-				} else {
-					var timeText = "time"
-					if hits > 1 {
-						timeText += "s"
-					}
+		// 	logger.WriteInfo("Successful Replaces:")
+		// 	for _, successfulReplace := range successfulReplaces {
+		// 		logger.WriteInfo(successfulReplace)
+		// 	}
 
-					successfulReplaces = append(successfulReplaces, fmt.Sprintf("`%s` was replaced %d %s", searchText, hits, timeText))
-				}
-			}
+		// 	if len(failedReplaces) == 0 {
+		// 		return
+		// 	}
 
-			logger.WriteInfo("Successful Replaces:")
-			for _, successfulReplace := range successfulReplaces {
-				logger.WriteInfo(successfulReplace)
-			}
-
-			if len(failedReplaces) == 0 {
-				return nil
-			}
-
-			logger.WriteWarn("\nFailed Replaces:")
-			for i, failedReplace := range failedReplaces {
-				logger.WriteWarnf("%d. %s\n", i+1, failedReplace)
-			}
-
-			return nil
-		})
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
+		// 	logger.WriteWarn("\nFailed Replaces:")
+		// 	for i, failedReplace := range failedReplaces {
+		// 		logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
+		// 	}
+		// })
 
 		logger.WriteInfo("\nFinished epub string replacement...")
 	},
