@@ -61,6 +61,13 @@ var SetLanguageTestCases = map[string]SetLanguageTestCase{
 		InputLang:    "en",
 		ExpectedText: `<html xml:lang="es" lang="en"></html>`,
 	},
+	"make sure we preserve other values in the html element": {
+		InputText: `<?xml version='1.0' encoding='utf-8'?>
+		<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"></body></html>`,
+		InputLang: "en",
+		ExpectedText: `<?xml version='1.0' encoding='utf-8'?>
+		<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"></body></html>`,
+	},
 }
 
 func TestSetLanguage(t *testing.T) {
