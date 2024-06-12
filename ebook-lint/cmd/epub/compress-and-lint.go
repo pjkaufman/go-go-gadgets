@@ -102,8 +102,6 @@ func init() {
 
 func LintEpub(lintDir, epub string, runCompressImages bool) error {
 	var src = filehandler.JoinPath(lintDir, epub)
-	// var dest = filehandler.JoinPath(lintDir, "epub")
-
 	err := epubhandler.UpdateEpub(src, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
 		validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 		validateFilesExist(opfFolder, epubInfo.ImagesFiles, zipFiles)
@@ -175,36 +173,6 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 	if err != nil {
 		logger.WriteError(fmt.Sprintf("failed to update epub %q: %s", src, err))
 	}
-
-	// filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-	// 	opfFolder, epubInfo := getEpubInfo(dest, epub)
-
-	// validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-	// validateFilesExist(opfFolder, epubInfo.ImagesFiles)
-	// validateFilesExist(opfFolder, epubInfo.OtherFiles)
-
-	// // fix up all xhtml files first
-	// for file := range epubInfo.HtmlFiles {
-	// 	var filePath = getFilePath(opfFolder, file)
-	// 	fileText := filehandler.ReadInFileContents(filePath)
-	// 	var newText = linter.EnsureEncodingIsPresent(fileText)
-	// 	newText = linter.CommonStringReplace(newText)
-
-	// 	newText = linter.EnsureLanguageIsSet(newText, lang)
-
-	// 	if fileText == newText {
-	// 		continue
-	// 	}
-
-	// 	filehandler.WriteFileContents(filePath, newText)
-	// }
-
-	// //TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
-
-	// if runCompressImages {
-	// 	images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
-	// }
-	// })
 }
 
 func ValidateCompressAndLintFlags(lintDir, lang string) error {
