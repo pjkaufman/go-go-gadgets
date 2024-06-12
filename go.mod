@@ -12,6 +12,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/gomarkdown/markdown v0.0.0-20240328165702-4d01890c35c0
 	github.com/manifoldco/promptui v0.9.0
+	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20220204101620-317176b6684d
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/image v0.15.0

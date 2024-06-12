@@ -1,12 +1,11 @@
 package epub
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
-	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
@@ -18,30 +17,40 @@ const (
 
 var epubFile string
 
-func getEpubInfo(dir, epubName string) (string, linter.EpubInfo) {
-	opfFiles := filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir, ".opf")
-	if len(opfFiles) < 1 {
-		logger.WriteError(fmt.Sprintf("did not find opf file for %q", epubName))
-	}
+// func getEpubInfo(dir, epubName string) (string, linter.EpubInfo) {
+// 	opfFiles := filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir, ".opf")
+// 	if len(opfFiles) < 1 {
+// 		logger.WriteError(fmt.Sprintf("did not find opf file for %q", epubName))
+// 	}
 
-	var opfFile = opfFiles[0]
-	opfText := filehandler.ReadInFileContents(opfFile)
+// 	var opfFile = opfFiles[0]
+// 	opfText := filehandler.ReadInFileContents(opfFile)
 
-	epubInfo, err := linter.ParseOpfFile(opfText)
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("Failed to parse %q for %q: %s", opfFile, epubName, err))
-	}
+// 	epubInfo, err := linter.ParseOpfFile(opfText)
+// 	if err != nil {
+// 		logger.WriteError(fmt.Sprintf("Failed to parse %q for %q: %s", opfFile, epubName, err))
+// 	}
 
-	var opfFolder = filehandler.GetFileFolder(opfFile)
+// 	var opfFolder = filehandler.GetFileFolder(opfFile)
 
-	return opfFolder, epubInfo
-}
+// 	return opfFolder, epubInfo
+// }
 
-func validateFilesExist(opfFolder string, files map[string]struct{}) {
+// func validateFilesExist(opfFolder string, files map[string]struct{}) {
+// 	for file := range files {
+// 		var filePath = getFilePath(opfFolder, file)
+
+// 		if !filehandler.FileExists(filePath) {
+// 			logger.WriteError(fmt.Sprintf(`file from manifest not found: %q must exist`, filePath))
+// 		}
+// 	}
+// }
+
+func validateFilesExist(opfFolder string, files map[string]struct{}, zipFiles map[string]*zip.File) {
 	for file := range files {
 		var filePath = getFilePath(opfFolder, file)
 
-		if !filehandler.FileExists(filePath) {
+		if _, ok := zipFiles[filePath]; !ok {
 			logger.WriteError(fmt.Sprintf(`file from manifest not found: %q must exist`, filePath))
 		}
 	}

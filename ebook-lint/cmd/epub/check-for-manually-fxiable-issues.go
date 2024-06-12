@@ -143,93 +143,93 @@ var fixableCmd = &cobra.Command{
 
 		logger.WriteInfo("Started showing manually fixable issues...\n")
 
-		var epubFolder = filehandler.GetFileFolder(epubFile)
-		var dest = filehandler.JoinPath(epubFolder, "epub")
-		filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
-			opfFolder, epubInfo := getEpubInfo(dest, epubFile)
-			validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-			validateFilesExist(opfFolder, epubInfo.CssFiles)
+		// var epubFolder = filehandler.GetFileFolder(epubFile)
+		// var dest = filehandler.JoinPath(epubFolder, "epub")
+		// filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
+		// 	opfFolder, epubInfo := getEpubInfo(dest, epubFile)
+		// 	validateFilesExist(opfFolder, epubInfo.HtmlFiles)
+		// 	validateFilesExist(opfFolder, epubInfo.CssFiles)
 
-			var addCssSectionIfMissing bool = false
-			var addCssPageIfMissing bool = false
-			if runAll || runSectionBreak {
-				contextBreak = logger.GetInputString("What is the section break for the epub?:")
+		// 	var addCssSectionIfMissing bool = false
+		// 	var addCssPageIfMissing bool = false
+		// 	if runAll || runSectionBreak {
+		// 		contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
-				if strings.TrimSpace(contextBreak) == "" {
-					logger.WriteError("Please provide a non-whitespace section break")
-				}
+		// 		if strings.TrimSpace(contextBreak) == "" {
+		// 			logger.WriteError("Please provide a non-whitespace section break")
+		// 		}
 
-				/**
-				TODO: handle the scenario where the section break is an image
+		// 		/**
+		// 		TODO: handle the scenario where the section break is an image
 
-				Image Context Breaks
-				To use an image:
+		// 		Image Context Breaks
+		// 		To use an image:
 
-				In the CSS:
-				hr.image {
-				display:block;
-				background: transparent url("images/sectionBreakImage.png") no-repeat center;
-				height:2em;
-				border:0;
-				}
+		// 		In the CSS:
+		// 		hr.image {
+		// 		display:block;
+		// 		background: transparent url("images/sectionBreakImage.png") no-repeat center;
+		// 		height:2em;
+		// 		border:0;
+		// 		}
 
-				In the HTML:
-				<hr class="image" />
-				**/
-			}
+		// 		In the HTML:
+		// 		<hr class="image" />
+		// 		**/
+		// 	}
 
-			var cssFiles = make([]string, len(epubInfo.CssFiles))
-			var i = 0
-			for cssFile := range epubInfo.CssFiles {
-				cssFiles[i] = cssFile
-				i++
-			}
+		// 	var cssFiles = make([]string, len(epubInfo.CssFiles))
+		// 	var i = 0
+		// 	for cssFile := range epubInfo.CssFiles {
+		// 		cssFiles[i] = cssFile
+		// 		i++
+		// 	}
 
-			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-				logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
-			}
+		// 	if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+		// 		logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
+		// 	}
 
-			var saveAndQuit = false
-			for file := range epubInfo.HtmlFiles {
-				if saveAndQuit {
-					break
-				}
+		// 	var saveAndQuit = false
+		// 	for file := range epubInfo.HtmlFiles {
+		// 		if saveAndQuit {
+		// 			break
+		// 		}
 
-				var filePath = getFilePath(opfFolder, file)
-				fileText := filehandler.ReadInFileContents(filePath)
+		// 		var filePath = getFilePath(opfFolder, file)
+		// 		fileText := filehandler.ReadInFileContents(filePath)
 
-				var newText = linter.CleanupHtmlSpacing(fileText)
+		// 		var newText = linter.CleanupHtmlSpacing(fileText)
 
-				for _, potentiallyFixableIssue := range potentiallyFixableIssues {
-					if saveAndQuit {
-						break
-					}
+		// 		for _, potentiallyFixableIssue := range potentiallyFixableIssues {
+		// 			if saveAndQuit {
+		// 				break
+		// 			}
 
-					if potentiallyFixableIssue.isEnabled == nil {
-						logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
-					}
+		// 			if potentiallyFixableIssue.isEnabled == nil {
+		// 				logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
+		// 			}
 
-					if runAll || *potentiallyFixableIssue.isEnabled {
-						suggestions := potentiallyFixableIssue.getSuggestions(newText)
+		// 			if runAll || *potentiallyFixableIssue.isEnabled {
+		// 				suggestions := potentiallyFixableIssue.getSuggestions(newText)
 
-						var updateMade bool
-						newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
+		// 				var updateMade bool
+		// 				newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
 
-						if potentiallyFixableIssue.addCssIfMissing && updateMade {
-							addCssSectionIfMissing = addCssSectionIfMissing || updateMade
-						}
-					}
-				}
+		// 				if potentiallyFixableIssue.addCssIfMissing && updateMade {
+		// 					addCssSectionIfMissing = addCssSectionIfMissing || updateMade
+		// 				}
+		// 			}
+		// 		}
 
-				if fileText == newText {
-					continue
-				}
+		// 		if fileText == newText {
+		// 			continue
+		// 		}
 
-				filehandler.WriteFileContents(filePath, newText)
-			}
+		// 		filehandler.WriteFileContents(filePath, newText)
+		// 	}
 
-			handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
-		})
+		// 	handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
+		// })
 
 		logger.WriteInfo("\nFinished showing manually fixable issues...")
 	},
