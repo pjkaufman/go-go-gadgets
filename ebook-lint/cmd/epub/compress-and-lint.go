@@ -84,6 +84,7 @@ func init() {
 	compressAndLintCmd.Flags().BoolVarP(&runCompressImages, "compress-images", "i", false, "whether or not to also compress images which requires imgp to be installed")
 }
 
+// TODO: make this function return an error
 func LintEpub(lintDir, epub string, runCompressImages bool) {
 	var src = filehandler.JoinPath(lintDir, epub)
 	var dest = filehandler.JoinPath(lintDir, "epub")

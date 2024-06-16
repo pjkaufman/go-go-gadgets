@@ -172,7 +172,6 @@ func Rezip(src, dest string) error {
 		return err
 	}
 
-	// TODO: zip meta info first... pjk
 	walker := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -240,8 +239,6 @@ func copyMimetypeToZip(w *zip.Writer, src, path string) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(strings.ReplaceAll(zipRelativePath, string(os.PathSeparator), "/"))
 
 	_, err = io.Copy(f, file)
 	if err != nil {
