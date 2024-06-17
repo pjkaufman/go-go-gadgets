@@ -41,7 +41,12 @@ func validateFilesExist(opfFolder string, files map[string]struct{}) {
 	for file := range files {
 		var filePath = getFilePath(opfFolder, file)
 
-		if !filehandler.FileExists(filePath) {
+		fileExists, err := filehandler.FileExists(filePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		if !fileExists {
 			logger.WriteError(fmt.Sprintf(`file from manifest not found: %q must exist`, filePath))
 		}
 	}

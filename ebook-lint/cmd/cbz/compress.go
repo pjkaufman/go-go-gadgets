@@ -77,7 +77,7 @@ func compressCbz(lintDir, cbz string) {
 	var src = filehandler.JoinPath(lintDir, cbz)
 	var dest = filehandler.JoinPath(lintDir, "cbz")
 
-	filehandler.UnzipRunOperationAndRezip(src, dest, func() {
+	err := filehandler.UnzipRunOperationAndRezip(src, dest, func() {
 		var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
 
 		for i, imageFile := range imageFiles {
@@ -88,6 +88,10 @@ func compressCbz(lintDir, cbz string) {
 			images.CompressImage(imageFile)
 		}
 	})
+
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 }
 
 func ValidateCompressFlags(dir string) error {

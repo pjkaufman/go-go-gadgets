@@ -89,7 +89,7 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 	var src = filehandler.JoinPath(lintDir, epub)
 	var dest = filehandler.JoinPath(lintDir, "epub")
 
-	filehandler.UnzipRunOperationAndRezip(src, dest, func() {
+	err := filehandler.UnzipRunOperationAndRezip(src, dest, func() {
 		opfFolder, epubInfo := getEpubInfo(dest, epub)
 
 		validateFilesExist(opfFolder, epubInfo.HtmlFiles)
@@ -118,6 +118,10 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 			images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
 		}
 	})
+
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 }
 
 func ValidateCompressAndLintFlags(lintDir, lang string) error {

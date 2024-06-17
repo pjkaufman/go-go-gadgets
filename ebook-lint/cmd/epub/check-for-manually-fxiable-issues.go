@@ -139,13 +139,16 @@ var fixableCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FileMustExist(epubFile, "epub-file")
+		err = filehandler.FileMustExist(epubFile, "epub-file")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		logger.WriteInfo("Started showing manually fixable issues...\n")
 
 		var epubFolder = filehandler.GetFileFolder(epubFile)
 		var dest = filehandler.JoinPath(epubFolder, "epub")
-		filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
+		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
 			opfFolder, epubInfo := getEpubInfo(dest, epubFile)
 			validateFilesExist(opfFolder, epubInfo.HtmlFiles)
 			validateFilesExist(opfFolder, epubInfo.CssFiles)
@@ -230,6 +233,9 @@ var fixableCmd = &cobra.Command{
 
 			handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
 		})
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		logger.WriteInfo("\nFinished showing manually fixable issues...")
 	},

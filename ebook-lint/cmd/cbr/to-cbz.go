@@ -39,7 +39,10 @@ var cbrToCbzCmd = &cobra.Command{
 		for _, cbr := range cbrs {
 			logger.WriteInfo(fmt.Sprintf("starting to convert %s to a cbz file...", cbr))
 
-			filehandler.ConvertRarToCbz(cbr)
+			err = filehandler.ConvertRarToCbz(cbr)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 		}
 
 		logger.WriteInfo("\nFinished converting cbr files to cbz files")

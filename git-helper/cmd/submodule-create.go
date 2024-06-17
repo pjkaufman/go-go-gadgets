@@ -129,7 +129,11 @@ func getListOfFoldersWithSubmodule(path, submoduleName string) []string {
 		pathParts = append(pathParts, submoduleName)
 		var submoduleFolderPath = filepath.Join(pathParts...)
 
-		var exists = filehandler.FolderExists(submoduleFolderPath)
+		exists, err := filehandler.FolderExists(submoduleFolderPath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		if !exists {
 			continue
 		}

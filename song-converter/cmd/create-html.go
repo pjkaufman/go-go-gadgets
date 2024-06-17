@@ -66,7 +66,10 @@ var CreateHtmlCmd = &cobra.Command{
 		}
 
 		filehandler.FolderMustExist(stagingDir, "working-dir")
-		filehandler.FileMustExist(coverInputFilePath, "cover-file")
+		err = filehandler.FileMustExist(coverInputFilePath, "cover-file")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 		if isWritingToFile {

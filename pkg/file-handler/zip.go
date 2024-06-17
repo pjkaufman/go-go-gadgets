@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -25,35 +24,41 @@ const (
 // then it goes ahead an unzips the contents into the destination directory
 // once that is done it runs the operation func on the destination folder
 // lastly it rezips the folder back to compress.zip
-func UnzipRunOperationAndRezip(src, dest string, operation func()) {
-	var err error
-	if FolderExists(dest) {
+func UnzipRunOperationAndRezip(src, dest string, operation func()) error {
+	folderExists, err := FolderExists(dest)
+	if err != nil {
+		return err
+	}
+
+	if folderExists {
 		err = os.RemoveAll(dest)
 
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to delete the destination directory %q: %s", dest, err))
+			return fmt.Errorf("failed to delete the destination directory %q: %w", dest, err)
 		}
 	}
 
 	err = Unzip(src, dest)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to unzip %q: %s", src, err))
+		return fmt.Errorf("failed to unzip %q: %w", src, err)
 	}
 
 	operation()
 
 	err = Rezip(dest, tempZip)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to rezip content for source %q: %s", src, err))
+		return fmt.Errorf("failed to rezip content for source %q: %w", src, err)
 	}
 
 	err = os.RemoveAll(dest)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to cleanup the destination directory %q: %s", dest, err))
+		return fmt.Errorf("failed to cleanup the destination directory %q: %w", dest, err)
 	}
 
 	MustRename(src, src+".original")
 	MustRename(tempZip, src)
+
+	return nil
 }
 
 // Unzip is based on https://stackoverflow.com/a/24792688

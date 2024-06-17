@@ -30,7 +30,10 @@ var procCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FileMustExist(file, "file")
+		err = filehandler.FileMustExist(file, "file")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		data := filehandler.ReadInBinaryFileContents(file)
 

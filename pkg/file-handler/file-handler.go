@@ -14,57 +14,59 @@ import (
 
 const bytesInAKiloByte float64 = 1024
 
-func FileExists(path string) bool {
+func FileExists(path string) (bool, error) {
 	if strings.TrimSpace(path) == "" {
-		return false
+		return false, nil
 	}
 
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return false
+			return false, nil
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that %q exists: %s`, path, err))
+		return false, fmt.Errorf(`could not verify that %q exists: %s`, path, err)
 	}
 
-	return true
+	return true, nil
 }
 
-func FileMustExist(path, name string) {
+func FileMustExist(path, name string) error {
 	if strings.TrimSpace(path) == "" {
-		logger.WriteError(fmt.Sprintf("%s must have a non-whitespace value", name))
+		return fmt.Errorf("%s must have a non-whitespace value", name)
 	}
 
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf("%s: %q must exist", name, path))
+			return fmt.Errorf("%s: %q must exist", name, path)
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that %q exists: %s`, path, err))
+		return fmt.Errorf(`could not verify that %q exists: %s`, path, err)
 	}
+
+	return nil
 }
 
-func FolderExists(path string) bool {
+func FolderExists(path string) (bool, error) {
 	if strings.TrimSpace(path) == "" {
-		return false
+		return false, nil
 	}
 
 	folderInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return false
+			return false, nil
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that %q exists and is a directory: %s`, path, err))
+		return false, fmt.Errorf(`could not verify that %q exists and is a directory: %s`, path, err)
 	}
 
 	if !folderInfo.IsDir() {
-		return false
+		return false, nil
 	}
 
-	return true
+	return true, nil
 }
 
 func FolderMustExist(path, name string) {
@@ -271,13 +273,20 @@ func MustGetFileSize(path string) float64 {
 	return float64(f.Size()) / bytesInAKiloByte
 }
 
-func MustCreateFolderIfNotExists(path string) {
-	if FolderExists(path) {
-		return
+func MustCreateFolderIfNotExists(path string) error {
+	folderExists, err := FolderExists(path)
+	if err != nil {
+		return err
 	}
 
-	err := os.MkdirAll(path, folderPerms)
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to create folder(s) for path %q: %s", path, err))
+	if folderExists {
+		return nil
 	}
+
+	err = os.MkdirAll(path, folderPerms)
+	if err != nil {
+		return fmt.Errorf("failed to create folder(s) for path %q: %s", path, err)
+	}
+
+	return nil
 }

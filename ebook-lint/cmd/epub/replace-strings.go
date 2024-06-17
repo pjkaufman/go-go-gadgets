@@ -43,8 +43,15 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FileMustExist(epubFile, "epub-file")
-		filehandler.FileMustExist(extraReplacesFilePath, "extra-replace-file")
+		err = filehandler.FileMustExist(epubFile, "epub-file")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		err = filehandler.FileMustExist(extraReplacesFilePath, "extra-replace-file")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		logger.WriteInfo("Starting epub string replacement...\n")
 
@@ -53,7 +60,7 @@ var replaceStringsCmd = &cobra.Command{
 
 		var epubFolder = filehandler.GetFileFolder(epubFile)
 		var dest = filehandler.JoinPath(epubFolder, "epub")
-		filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
+		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
 			opfFolder, epubInfo := getEpubInfo(dest, epubFile)
 			validateFilesExist(opfFolder, epubInfo.HtmlFiles)
 
@@ -100,6 +107,9 @@ var replaceStringsCmd = &cobra.Command{
 				logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
 			}
 		})
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		logger.WriteInfo("\nFinished epub string replacement...")
 	},

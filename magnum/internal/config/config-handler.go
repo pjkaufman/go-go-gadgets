@@ -20,7 +20,10 @@ func WriteConfig(config *Config) {
 	}
 
 	configDir := getConfigLocation()
-	filehandler.MustCreateFolderIfNotExists(configDir)
+	err := filehandler.MustCreateFolderIfNotExists(configDir)
+	if err != nil {
+		logger.WriteError(fmt.Sprintf("failed to json marshal config: %s", err))
+	}
 
 	jsonConfig, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
@@ -34,19 +37,29 @@ func WriteConfig(config *Config) {
 
 func GetConfig() *Config {
 	configDir := getConfigLocation()
-	if !filehandler.FolderExists(configDir) {
+	folderExists, err := filehandler.FolderExists(configDir)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	if !folderExists {
 		return &Config{}
 	}
 
 	configFile := filehandler.JoinPath(configDir, configFileName)
-	if !filehandler.FileExists(configFile) {
+	fileExists, err := filehandler.FileExists(configFile)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	if !fileExists {
 		return &Config{}
 	}
 
 	jsonConfig := filehandler.ReadInFileContents(configFile)
 	var config = &Config{}
 
-	err := json.Unmarshal([]byte(jsonConfig), config)
+	err = json.Unmarshal([]byte(jsonConfig), config)
 	if err != nil {
 		logger.WriteError(fmt.Sprintf("failed to json unmarshal config from %q: %s", configFile, err))
 	}
