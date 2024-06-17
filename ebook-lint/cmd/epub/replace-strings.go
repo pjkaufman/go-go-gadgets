@@ -56,7 +56,12 @@ var replaceStringsCmd = &cobra.Command{
 		logger.WriteInfo("Starting epub string replacement...\n")
 
 		var numHits = make(map[string]int)
-		var extraTextReplacements = linter.ParseTextReplacements(filehandler.ReadInFileContents(extraReplacesFilePath))
+		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		extraTextReplacements := linter.ParseTextReplacements(extraReplaceContents)
 
 		var epubFolder = filehandler.GetFileFolder(epubFile)
 		var dest = filehandler.JoinPath(epubFolder, "epub")
@@ -66,7 +71,10 @@ var replaceStringsCmd = &cobra.Command{
 
 			for file := range epubInfo.HtmlFiles {
 				var filePath = getFilePath(opfFolder, file)
-				fileText := filehandler.ReadInFileContents(filePath)
+				fileText, err := filehandler.ReadInFileContents(filePath)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
 
 				var newText = linter.CommonStringReplace(fileText)
 				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)

@@ -7,6 +7,7 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
+// TODO: have this return an error
 func ParseTextReplacements(text string) map[string]string {
 	replaceValueToReplacement := make(map[string]string)
 

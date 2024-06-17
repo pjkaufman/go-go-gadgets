@@ -39,7 +39,10 @@ var createCsvCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FolderMustExist(stagingDir, "working-dir")
+		err = filehandler.FolderMustExist(stagingDir, "working-dir")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 		if isWritingToFile {
@@ -53,7 +56,10 @@ var createCsvCmd = &cobra.Command{
 
 		for i, fileName := range files {
 			var filePath = filehandler.JoinPath(stagingDir, fileName)
-			var contents = filehandler.ReadInFileContents(filePath)
+			contents, err := filehandler.ReadInFileContents(filePath)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			mdInfo[i] = converter.MdFileInfo{
 				FilePath:     filePath,

@@ -69,33 +69,35 @@ func FolderExists(path string) (bool, error) {
 	return true, nil
 }
 
-func FolderMustExist(path, name string) {
+func FolderMustExist(path, name string) error {
 	if strings.TrimSpace(path) == "" {
-		logger.WriteError(fmt.Sprintf("%s must have a non-whitespace value", name))
+		return fmt.Errorf("%s must have a non-whitespace value", name)
 	}
 
 	folderInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf("%s: %q must exist", name, path))
+			return fmt.Errorf("%s: %q must exist", name, path)
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that %q exists and is a directory: %s`, path, err))
+		return fmt.Errorf(`could not verify that %q exists and is a directory: %w`, path, err)
 	}
 
 	if !folderInfo.IsDir() {
-		logger.WriteError(fmt.Sprintf("%s: %q must be a folder", name, path))
+		return fmt.Errorf("%s: %q must be a folder", name, path)
 	}
+
+	return nil
 }
 
-func GetFoldersInCurrentFolder(path string) []string {
+func GetFoldersInCurrentFolder(path string) ([]string, error) {
 	if strings.TrimSpace(path) == "" {
-		return nil
+		return nil, nil
 	}
 
 	dirs, err := os.ReadDir(path)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not get files/folders in %q: %s`, path, err))
+		return nil, fmt.Errorf(`could not get files/folders in %q: %w`, path, err)
 	}
 
 	var actualDirs []string
@@ -107,7 +109,7 @@ func GetFoldersInCurrentFolder(path string) []string {
 		actualDirs = append(actualDirs, dir.Name())
 	}
 
-	return actualDirs
+	return actualDirs, nil
 }
 
 func GetFileFolder(filePath string) string {
@@ -122,17 +124,17 @@ func JoinPath(elements ...string) string {
 	return path.Join(elements...)
 }
 
-func ReadInFileContents(path string) string {
+func ReadInFileContents(path string) (string, error) {
 	if strings.TrimSpace(path) == "" {
-		return ""
+		return "", nil
 	}
 
 	fileBytes, err := os.ReadFile(path)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not read in file contents for %q: %s`, path, err))
+		return "", fmt.Errorf(`could not read in file contents for %q: %w`, path, err)
 	}
 
-	return string(fileBytes)
+	return string(fileBytes), nil
 }
 
 func ReadInBinaryFileContents(path string) []byte {

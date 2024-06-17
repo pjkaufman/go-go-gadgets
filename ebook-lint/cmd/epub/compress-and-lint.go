@@ -99,7 +99,11 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 		// fix up all xhtml files first
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
-			fileText := filehandler.ReadInFileContents(filePath)
+			fileText, err := filehandler.ReadInFileContents(filePath)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
 			var newText = linter.EnsureEncodingIsPresent(fileText)
 			newText = linter.CommonStringReplace(newText)
 

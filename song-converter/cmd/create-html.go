@@ -65,7 +65,11 @@ var CreateHtmlCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FolderMustExist(stagingDir, "working-dir")
+		err = filehandler.FolderMustExist(stagingDir, "working-dir")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		err = filehandler.FileMustExist(coverInputFilePath, "cover-file")
 		if err != nil {
 			logger.WriteError(err.Error())
@@ -75,7 +79,10 @@ var CreateHtmlCmd = &cobra.Command{
 		if isWritingToFile {
 			logger.WriteInfo("Converting file to html cover")
 		}
-		var coverMd = filehandler.ReadInFileContents(coverInputFilePath)
+		coverMd, err := filehandler.ReadInFileContents(coverInputFilePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		coverHtml := converter.BuildHtmlCover(coverMd)
 
@@ -94,7 +101,10 @@ var CreateHtmlCmd = &cobra.Command{
 
 		for i, fileName := range files {
 			var filePath = filehandler.JoinPath(stagingDir, fileName)
-			fileContents := filehandler.ReadInFileContents(filePath)
+			fileContents, err := filehandler.ReadInFileContents(filePath)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			mdInfo[i] = converter.MdFileInfo{
 				FilePath:     filePath,

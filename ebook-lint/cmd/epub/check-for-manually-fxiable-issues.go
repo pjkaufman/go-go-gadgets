@@ -199,7 +199,10 @@ var fixableCmd = &cobra.Command{
 				}
 
 				var filePath = getFilePath(opfFolder, file)
-				fileText := filehandler.ReadInFileContents(filePath)
+				fileText, err := filehandler.ReadInFileContents(filePath)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
 
@@ -332,7 +335,11 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 	var cssFile = cssFiles[selectedCssFileIndex]
 	var cssFilePath = filehandler.JoinPath(opfFolder, cssFile)
-	var css = filehandler.ReadInFileContents(cssFilePath)
+	css, err := filehandler.ReadInFileContents(cssFilePath)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
 	var newCssText = css
 
 	if addCssSectionIfMissing {

@@ -56,7 +56,11 @@ func GetConfig() *Config {
 		return &Config{}
 	}
 
-	jsonConfig := filehandler.ReadInFileContents(configFile)
+	jsonConfig, err := filehandler.ReadInFileContents(configFile)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
 	var config = &Config{}
 
 	err = json.Unmarshal([]byte(jsonConfig), config)

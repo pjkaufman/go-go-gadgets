@@ -49,7 +49,10 @@ var createCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FolderMustExist(repoFolderPath, "repo-parent-path")
+		err = filehandler.FolderMustExist(repoFolderPath, "repo-parent-path")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		folders := getListOfFoldersWithSubmodule(repoFolderPath, submoduleName)
 
@@ -122,7 +125,12 @@ func init() {
 
 func getListOfFoldersWithSubmodule(path, submoduleName string) []string {
 	var folders []string
-	for _, dir := range filehandler.GetFoldersInCurrentFolder(path) {
+	allFolders, err := filehandler.GetFoldersInCurrentFolder(path)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	for _, dir := range allFolders {
 		var pathParts = []string{path, dir}
 		var folderPath = filepath.Join(pathParts...)
 		pathParts = append(pathParts, pathToSubmodule...)

@@ -22,7 +22,10 @@ var updateCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		filehandler.FolderMustExist(repoFolderPath, "repo-parent-path")
+		err = filehandler.FolderMustExist(repoFolderPath, "repo-parent-path")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		folders := getListOfFoldersWithSubmodule(repoFolderPath, submoduleName)
 		var currentBranch string
