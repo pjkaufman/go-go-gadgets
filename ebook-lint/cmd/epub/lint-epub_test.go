@@ -134,3 +134,25 @@ func zipFilesAreEqual(actual, expected *zip.File) bool {
 
 	return bytes.Equal(expectedContents.Bytes(), actualContents.Bytes())
 }
+
+func BenchmarkLintEpub(b *testing.B) {
+	var (
+		filename       = "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub"
+		compressImages = true
+	)
+
+	for n := 0; n < b.N; n++ {
+		epub.LintEpub(originalFileDir, filename, compressImages)
+
+		var originalEpubPath = originalFileDir + string(os.PathSeparator) + filename
+		err := os.RemoveAll(originalEpubPath)
+		if err != nil {
+			log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
+		}
+
+		err = os.Rename(originalEpubPath+".original", originalEpubPath)
+		if err != nil {
+			log.Fatalf("failed move original file back to its starting location for %q: %s", filename, err)
+		}
+	}
+}
