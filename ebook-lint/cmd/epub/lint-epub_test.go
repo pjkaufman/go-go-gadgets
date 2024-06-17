@@ -30,7 +30,7 @@ var LintEpubTestCases = map[string]LintEpubTestCase{
 		CompressImages: true,
 	},
 	"Linting a file without image compression should work consistently and not affect the images": {
-		Filename:       "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub",
+		Filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co.epub",
 		CompressImages: false,
 	},
 }
