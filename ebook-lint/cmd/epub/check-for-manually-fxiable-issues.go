@@ -231,7 +231,10 @@ var fixableCmd = &cobra.Command{
 					continue
 				}
 
-				filehandler.WriteFileContents(filePath, newText)
+				err = filehandler.WriteFileContents(filePath, newText)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
 			}
 
 			handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
@@ -351,6 +354,10 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 	}
 
 	if newCssText != css {
-		filehandler.WriteFileContents(cssFilePath, newCssText)
+		err = filehandler.WriteFileContents(cssFilePath, newCssText)
+
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 	}
 }

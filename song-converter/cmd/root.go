@@ -29,7 +29,11 @@ func init() {
 
 func writeToFileOrStdOut(content, outputFile string) {
 	if strings.TrimSpace(outputFile) != "" {
-		filehandler.WriteFileContents(outputFile, content)
+		err := filehandler.WriteFileContents(outputFile, content)
+
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 	} else {
 		logger.WriteInfo(content)
 	}

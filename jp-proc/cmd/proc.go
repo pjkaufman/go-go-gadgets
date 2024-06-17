@@ -35,7 +35,10 @@ var procCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		data := filehandler.ReadInBinaryFileContents(file)
+		data, err := filehandler.ReadInBinaryFileContents(file)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var isPng = strings.HasSuffix(file, ".png")
 

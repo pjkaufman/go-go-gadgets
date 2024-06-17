@@ -83,7 +83,10 @@ var replaceStringsCmd = &cobra.Command{
 					continue
 				}
 
-				filehandler.WriteFileContents(filePath, newText)
+				err = filehandler.WriteFileContents(filePath, newText)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
 			}
 
 			var successfulReplaces []string

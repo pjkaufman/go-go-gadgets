@@ -113,7 +113,10 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 				continue
 			}
 
-			filehandler.WriteFileContents(filePath, newText)
+			err = filehandler.WriteFileContents(filePath, newText)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 		}
 
 		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest

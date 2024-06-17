@@ -19,11 +19,13 @@ func CompressImage(filePath string) {
 		return
 	}
 
-	var data, newData []byte
-	data = filehandler.ReadInBinaryFileContents(filePath)
+	var newData []byte
+	data, err := filehandler.ReadInBinaryFileContents(filePath)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 
 	var isPng = strings.HasSuffix(filePath, ".png")
-	var err error
 	if isPng {
 		newData, err = image.PngRemoveExifData(data)
 	} else {
