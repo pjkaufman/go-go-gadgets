@@ -11,6 +11,9 @@ cover:
 lint:
 	golangci-lint run ./...
 
+bench:
+	go test ./... -bench=. -tags="unit" -count=20 -run=^$
+
 install:
 	@echo "Building go tools"
 	@go build -o "${HOME}/.local/bin/ebook-lint" ./ebook-lint/main.go
