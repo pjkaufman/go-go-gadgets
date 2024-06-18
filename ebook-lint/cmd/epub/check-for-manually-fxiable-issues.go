@@ -170,7 +170,7 @@ var fixableCmd = &cobra.Command{
 				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 				if strings.TrimSpace(contextBreak) == "" {
-					return fmt.Errorf("Please provide a non-whitespace section break")
+					return fmt.Errorf("please provide a non-whitespace section break")
 				}
 
 				/**

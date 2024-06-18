@@ -35,7 +35,7 @@ func getEpubInfo(dir, epubName string) (string, linter.EpubInfo, error) {
 
 	epubInfo, err := linter.ParseOpfFile(opfText)
 	if err != nil {
-		return "", linter.EpubInfo{}, fmt.Errorf("Failed to parse %q for %q: %w", opfFile, epubName, err)
+		return "", linter.EpubInfo{}, fmt.Errorf("failed to parse %q for %q: %w", opfFile, epubName, err)
 	}
 
 	var opfFolder = filehandler.GetFileFolder(opfFile)
