@@ -6,7 +6,6 @@ import (
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 var (
@@ -14,15 +13,24 @@ var (
 	quality int = 40
 )
 
-func CompressImage(filePath string) {
-	if !isCompressableImage(filePath) || filehandler.MustGetFileSize(filePath) <= 150 {
-		return
+func CompressImage(filePath string) error {
+	if !isCompressableImage(filePath) {
+		return nil
+	}
+
+	fileSize, err := filehandler.MustGetFileSize(filePath)
+	if err != nil {
+		return err
+	}
+
+	if fileSize < 150 {
+		return nil
 	}
 
 	var newData []byte
 	data, err := filehandler.ReadInBinaryFileContents(filePath)
 	if err != nil {
-		logger.WriteError(err.Error())
+		return err
 	}
 
 	var isPng = strings.HasSuffix(filePath, ".png")
@@ -32,7 +40,7 @@ func CompressImage(filePath string) {
 		newData, err = image.JpegRemoveExifData(data)
 	}
 	if err != nil {
-		logger.WriteError(err.Error())
+		return err
 	}
 
 	if isPng {
@@ -41,12 +49,18 @@ func CompressImage(filePath string) {
 		newData, err = image.JpegResize(newData, width, &quality)
 	}
 	if err != nil {
-		logger.WriteError(err.Error())
+		return err
 	}
 
 	if !bytes.Equal(data, newData) {
-		filehandler.WriteBinaryFileContents(filePath, newData)
+		err = filehandler.WriteBinaryFileContents(filePath, newData)
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func isCompressableImage(imagePath string) bool {

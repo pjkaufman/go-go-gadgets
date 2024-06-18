@@ -6,7 +6,6 @@ import (
 
 	"github.com/andreyvit/diff"
 	"github.com/fatih/color"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 var (
@@ -15,7 +14,7 @@ var (
 )
 
 // GetPrettyDiffString gets the diff string of the 2 passed in values where removals have a red background and additions have a green background
-func GetPrettyDiffString(original, new string) string {
+func GetPrettyDiffString(original, new string) (string, error) {
 	diffString := diff.CharacterDiff(original, new)
 
 	var buff bytes.Buffer
@@ -65,10 +64,10 @@ func GetPrettyDiffString(original, new string) string {
 
 	displayString, err := repairLatin1(buff.String())
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to correct any latin1 bad characters: %s`, err))
+		return "", fmt.Errorf(`failed to correct any latin1 bad characters: %w`, err)
 	}
 
-	return displayString
+	return displayString, nil
 }
 
 // From https://go.dev/play/p/dBrx_ZmrsMN and https://stackoverflow.com/questions/13510458/golang-convert-iso8859-1-to-utf8

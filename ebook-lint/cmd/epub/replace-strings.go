@@ -61,19 +61,29 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		extraTextReplacements := linter.ParseTextReplacements(extraReplaceContents)
+		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var epubFolder = filehandler.GetFileFolder(epubFile)
 		var dest = filehandler.JoinPath(epubFolder, "epub")
-		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
-			opfFolder, epubInfo := getEpubInfo(dest, epubFile)
-			validateFilesExist(opfFolder, epubInfo.HtmlFiles)
+		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() error {
+			opfFolder, epubInfo, err := getEpubInfo(dest, epubFile)
+			if err != nil {
+				return err
+			}
+
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles)
+			if err != nil {
+				return err
+			}
 
 			for file := range epubInfo.HtmlFiles {
 				var filePath = getFilePath(opfFolder, file)
 				fileText, err := filehandler.ReadInFileContents(filePath)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return err
 				}
 
 				var newText = linter.CommonStringReplace(fileText)
@@ -85,7 +95,7 @@ var replaceStringsCmd = &cobra.Command{
 
 				err = filehandler.WriteFileContents(filePath, newText)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return err
 				}
 			}
 
@@ -110,13 +120,15 @@ var replaceStringsCmd = &cobra.Command{
 			}
 
 			if len(failedReplaces) == 0 {
-				return
+				return nil
 			}
 
 			logger.WriteWarn("\nFailed Replaces:")
 			for i, failedReplace := range failedReplaces {
 				logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
 			}
+
+			return nil
 		})
 		if err != nil {
 			logger.WriteError(err.Error())

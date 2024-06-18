@@ -7,7 +7,6 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 const (
@@ -18,42 +17,47 @@ const (
 
 var epubFile string
 
-// TODO: return an error
-func getEpubInfo(dir, epubName string) (string, linter.EpubInfo) {
-	opfFiles := filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir, ".opf")
+func getEpubInfo(dir, epubName string) (string, linter.EpubInfo, error) {
+	opfFiles, err := filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir, ".opf")
+	if err != nil {
+		return "", linter.EpubInfo{}, err
+	}
+
 	if len(opfFiles) < 1 {
-		logger.WriteError(fmt.Sprintf("did not find opf file for %q", epubName))
+		return "", linter.EpubInfo{}, fmt.Errorf("did not find opf file for %q", epubName)
 	}
 
 	var opfFile = opfFiles[0]
 	opfText, err := filehandler.ReadInFileContents(opfFile)
 	if err != nil {
-		logger.WriteError(err.Error())
+		return "", linter.EpubInfo{}, err
 	}
 
 	epubInfo, err := linter.ParseOpfFile(opfText)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("Failed to parse %q for %q: %s", opfFile, epubName, err))
+		return "", linter.EpubInfo{}, fmt.Errorf("Failed to parse %q for %q: %w", opfFile, epubName, err)
 	}
 
 	var opfFolder = filehandler.GetFileFolder(opfFile)
 
-	return opfFolder, epubInfo
+	return opfFolder, epubInfo, nil
 }
 
-func validateFilesExist(opfFolder string, files map[string]struct{}) {
+func validateFilesExist(opfFolder string, files map[string]struct{}) error {
 	for file := range files {
 		var filePath = getFilePath(opfFolder, file)
 
 		fileExists, err := filehandler.FileExists(filePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		if !fileExists {
-			logger.WriteError(fmt.Sprintf(`file from manifest not found: %q must exist`, filePath))
+			return fmt.Errorf(`file from manifest not found: %q must exist`, filePath)
 		}
 	}
+
+	return nil
 }
 
 func validateCommonEpubFlags(epubPath string) error {

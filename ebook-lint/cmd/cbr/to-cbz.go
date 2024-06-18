@@ -35,7 +35,11 @@ var cbrToCbzCmd = &cobra.Command{
 
 		logger.WriteInfo("Starting converting cbr files to cbz files\n")
 
-		cbrs := filehandler.MustGetAllFilesWithExtInASpecificFolder(dir, ".cbr")
+		cbrs, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(dir, ".cbr")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		for _, cbr := range cbrs {
 			logger.WriteInfo(fmt.Sprintf("starting to convert %s to a cbz file...", cbr))
 

@@ -148,10 +148,21 @@ var fixableCmd = &cobra.Command{
 
 		var epubFolder = filehandler.GetFileFolder(epubFile)
 		var dest = filehandler.JoinPath(epubFolder, "epub")
-		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
-			opfFolder, epubInfo := getEpubInfo(dest, epubFile)
-			validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-			validateFilesExist(opfFolder, epubInfo.CssFiles)
+		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() error {
+			opfFolder, epubInfo, err := getEpubInfo(dest, epubFile)
+			if err != nil {
+				return err
+			}
+
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles)
+			if err != nil {
+				return err
+			}
+
+			err = validateFilesExist(opfFolder, epubInfo.CssFiles)
+			if err != nil {
+				return err
+			}
 
 			var addCssSectionIfMissing bool = false
 			var addCssPageIfMissing bool = false
@@ -159,7 +170,7 @@ var fixableCmd = &cobra.Command{
 				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 				if strings.TrimSpace(contextBreak) == "" {
-					logger.WriteError("Please provide a non-whitespace section break")
+					return fmt.Errorf("Please provide a non-whitespace section break")
 				}
 
 				/**
@@ -189,7 +200,7 @@ var fixableCmd = &cobra.Command{
 			}
 
 			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-				logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
+				return fmt.Errorf(CssPathsEmptyWhenArgIsNeeded)
 			}
 
 			var saveAndQuit = false
@@ -201,7 +212,7 @@ var fixableCmd = &cobra.Command{
 				var filePath = getFilePath(opfFolder, file)
 				fileText, err := filehandler.ReadInFileContents(filePath)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return err
 				}
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
@@ -212,7 +223,7 @@ var fixableCmd = &cobra.Command{
 					}
 
 					if potentiallyFixableIssue.isEnabled == nil {
-						logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
+						return fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
 					}
 
 					if runAll || *potentiallyFixableIssue.isEnabled {
@@ -233,11 +244,13 @@ var fixableCmd = &cobra.Command{
 
 				err = filehandler.WriteFileContents(filePath, newText)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return err
 				}
 			}
 
 			handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
+
+			return nil
 		})
 		if err != nil {
 			logger.WriteError(err.Error())
@@ -305,8 +318,13 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	logger.WriteInfo(cliLineSeparator + "\n")
 
 	for original, suggestion := range suggestions {
+		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		// Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
-		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))))
+		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", diffString))
 		switch strings.ToLower(resp) {
 		case "y":
 			newText = strings.Replace(newText, original, suggestion, replaceCount)

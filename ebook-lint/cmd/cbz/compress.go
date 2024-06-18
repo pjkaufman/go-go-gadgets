@@ -41,7 +41,10 @@ var compressCmd = &cobra.Command{
 
 		logger.WriteInfo("Started compressing all cbzs\n")
 
-		cbzs := filehandler.MustGetAllFilesWithExtInASpecificFolder(dir, ".cbz")
+		cbzs, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(dir, ".cbz")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, cbz := range cbzs {
@@ -51,8 +54,15 @@ var compressCmd = &cobra.Command{
 
 			var originalFile = cbz + ".original"
 
-			var newKbSize = filehandler.MustGetFileSize(filehandler.JoinPath(dir, cbz))
-			var oldKbSize = filehandler.MustGetFileSize(filehandler.JoinPath(dir, originalFile))
+			newKbSize, err := filehandler.MustGetFileSize(filehandler.JoinPath(dir, cbz))
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
+			oldKbSize, err := filehandler.MustGetFileSize(filehandler.JoinPath(dir, originalFile))
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			logger.WriteInfo(filesize.FileSizeSummary(originalFile, cbz, oldKbSize, newKbSize))
 
@@ -77,16 +87,24 @@ func compressCbz(lintDir, cbz string) {
 	var src = filehandler.JoinPath(lintDir, cbz)
 	var dest = filehandler.JoinPath(lintDir, "cbz")
 
-	err := filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-		var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
+	err := filehandler.UnzipRunOperationAndRezip(src, dest, func() error {
+		var imageFiles, err = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
+		if err != nil {
+			return err
+		}
 
 		for i, imageFile := range imageFiles {
 			if verbose {
 				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
 			}
 
-			images.CompressImage(imageFile)
+			err = images.CompressImage(imageFile)
+			if err != nil {
+				return err
+			}
 		}
+
+		return nil
 	})
 
 	if err != nil {

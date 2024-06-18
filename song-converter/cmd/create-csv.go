@@ -49,7 +49,11 @@ var createCsvCmd = &cobra.Command{
 			logger.WriteInfo("Converting Markdown files to csv")
 		}
 
-		files := filehandler.MustGetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
+		files, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		sort.Strings(files)
 
 		var mdInfo = make([]converter.MdFileInfo, len(files))

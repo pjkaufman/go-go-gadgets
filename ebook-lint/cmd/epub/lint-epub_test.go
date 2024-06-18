@@ -38,12 +38,13 @@ var LintEpubTestCases = map[string]LintEpubTestCase{
 func TestLintEpub(t *testing.T) {
 	for name, test := range LintEpubTestCases {
 		t.Run(name, func(t *testing.T) {
-			epub.LintEpub(originalFileDir, test.Filename, test.CompressImages)
+			err := epub.LintEpub(originalFileDir, test.Filename, test.CompressImages)
 
+			assert.Nil(t, err)
 			assert.True(t, epubsAreEqual(test.Filename))
 
 			var originalEpubPath = originalFileDir + string(os.PathSeparator) + test.Filename
-			err := os.RemoveAll(originalEpubPath)
+			err = os.RemoveAll(originalEpubPath)
 			if err != nil {
 				log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
 			}
@@ -142,10 +143,13 @@ func BenchmarkLintEpub(b *testing.B) {
 	)
 
 	for n := 0; n < b.N; n++ {
-		epub.LintEpub(originalFileDir, filename, compressImages)
-
 		var originalEpubPath = originalFileDir + string(os.PathSeparator) + filename
-		err := os.RemoveAll(originalEpubPath)
+		err := epub.LintEpub(originalFileDir, filename, compressImages)
+		if err != nil {
+			log.Fatalf("failed to lint epub %q: %s", originalEpubPath, err)
+		}
+
+		err = os.RemoveAll(originalEpubPath)
 		if err != nil {
 			log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
 		}

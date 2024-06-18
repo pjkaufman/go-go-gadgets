@@ -73,14 +73,18 @@ var procCmd = &cobra.Command{
 
 		if !bytes.Equal(data, newData) {
 			if overwrite {
-				filehandler.WriteBinaryFileContents(file, newData)
+				err = filehandler.WriteBinaryFileContents(file, newData)
 			} else {
 				var newFile = strings.Split(file, ".")
 				var ext = newFile[len(newFile)-1]
 				newFile[len(newFile)-1] = "test"
 				newFile = append(newFile, ext)
 
-				filehandler.WriteBinaryFileContents(strings.Join(newFile, "."), newData)
+				err = filehandler.WriteBinaryFileContents(strings.Join(newFile, "."), newData)
+			}
+
+			if err != nil {
+				logger.WriteError(err.Error())
 			}
 		}
 	},

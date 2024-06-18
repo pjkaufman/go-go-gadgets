@@ -53,17 +53,30 @@ var compressAndLintCmd = &cobra.Command{
 
 		logger.WriteInfo("Starting compression and linting for each epub\n")
 
-		epubs := filehandler.MustGetAllFilesWithExtInASpecificFolder(lintDir, ".epub")
+		epubs, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(lintDir, ".epub")
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, epub := range epubs {
 			logger.WriteInfo(fmt.Sprintf("starting epub compressing for %s...", epub))
 
-			LintEpub(lintDir, epub, runCompressImages)
+			err = LintEpub(lintDir, epub, runCompressImages)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			var originalFile = epub + ".original"
-			var newKbSize = filehandler.MustGetFileSize(epub)
-			var oldKbSize = filehandler.MustGetFileSize(originalFile)
+			newKbSize, err := filehandler.MustGetFileSize(epub)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
+			oldKbSize, err := filehandler.MustGetFileSize(originalFile)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			logger.WriteInfo(filesize.FileSizeSummary(originalFile, epub, oldKbSize, newKbSize))
 
@@ -84,24 +97,37 @@ func init() {
 	compressAndLintCmd.Flags().BoolVarP(&runCompressImages, "compress-images", "i", false, "whether or not to also compress images which requires imgp to be installed")
 }
 
-// TODO: make this function return an error
-func LintEpub(lintDir, epub string, runCompressImages bool) {
+func LintEpub(lintDir, epub string, runCompressImages bool) error {
 	var src = filehandler.JoinPath(lintDir, epub)
 	var dest = filehandler.JoinPath(lintDir, "epub")
 
-	err := filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-		opfFolder, epubInfo := getEpubInfo(dest, epub)
+	return filehandler.UnzipRunOperationAndRezip(src, dest, func() error {
+		opfFolder, epubInfo, err := getEpubInfo(dest, epub)
+		if err != nil {
+			return err
+		}
 
-		validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-		validateFilesExist(opfFolder, epubInfo.ImagesFiles)
-		validateFilesExist(opfFolder, epubInfo.OtherFiles)
+		err = validateFilesExist(opfFolder, epubInfo.HtmlFiles)
+		if err != nil {
+			return err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.ImagesFiles)
+		if err != nil {
+			return err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.OtherFiles)
+		if err != nil {
+			return err
+		}
 
 		// fix up all xhtml files first
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
 			fileText, err := filehandler.ReadInFileContents(filePath)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return err
 			}
 
 			var newText = linter.EnsureEncodingIsPresent(fileText)
@@ -115,20 +141,21 @@ func LintEpub(lintDir, epub string, runCompressImages bool) {
 
 			err = filehandler.WriteFileContents(filePath, newText)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return err
 			}
 		}
 
 		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
 
 		if runCompressImages {
-			images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
+			err = images.CompressRelativeImages(opfFolder, epubInfo.ImagesFiles)
+			if err != nil {
+				return err
+			}
 		}
-	})
 
-	if err != nil {
-		logger.WriteError(err.Error())
-	}
+		return nil
+	})
 }
 
 func ValidateCompressAndLintFlags(lintDir, lang string) error {

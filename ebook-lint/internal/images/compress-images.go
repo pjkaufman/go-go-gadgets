@@ -4,8 +4,14 @@ import (
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 )
 
-func CompressRelativeImages(baseFolder string, images map[string]struct{}) {
+func CompressRelativeImages(baseFolder string, images map[string]struct{}) error {
 	for imagePath := range images {
-		CompressImage(filehandler.JoinPath(baseFolder, imagePath))
+		err := CompressImage(filehandler.JoinPath(baseFolder, imagePath))
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

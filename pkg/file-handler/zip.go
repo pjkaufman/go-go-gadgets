@@ -24,7 +24,7 @@ const (
 // then it goes ahead an unzips the contents into the destination directory
 // once that is done it runs the operation func on the destination folder
 // lastly it rezips the folder back to compress.zip
-func UnzipRunOperationAndRezip(src, dest string, operation func()) error {
+func UnzipRunOperationAndRezip(src, dest string, operation func() error) error {
 	folderExists, err := FolderExists(dest)
 	if err != nil {
 		return err
@@ -43,7 +43,10 @@ func UnzipRunOperationAndRezip(src, dest string, operation func()) error {
 		return fmt.Errorf("failed to unzip %q: %w", src, err)
 	}
 
-	operation()
+	err = operation()
+	if err != nil {
+		return err
+	}
 
 	err = Rezip(dest, tempZip)
 	if err != nil {
@@ -55,8 +58,15 @@ func UnzipRunOperationAndRezip(src, dest string, operation func()) error {
 		return fmt.Errorf("failed to cleanup the destination directory %q: %w", dest, err)
 	}
 
-	MustRename(src, src+".original")
-	MustRename(tempZip, src)
+	err = MustRename(src, src+".original")
+	if err != nil {
+		return err
+	}
+
+	err = MustRename(tempZip, src)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

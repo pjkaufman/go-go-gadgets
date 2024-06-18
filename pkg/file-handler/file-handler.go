@@ -8,8 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 const bytesInAKiloByte float64 = 1024
@@ -176,9 +174,9 @@ func WriteFileContents(path, content string) error {
 	return nil
 }
 
-func WriteBinaryFileContents(path string, content []byte) {
+func WriteBinaryFileContents(path string, content []byte) error {
 	if strings.TrimSpace(path) == "" {
-		return
+		return nil
 	}
 
 	var fileMode fs.FileMode
@@ -188,7 +186,7 @@ func WriteBinaryFileContents(path string, content []byte) {
 		if errors.Is(err, fs.ErrNotExist) {
 			fileMode = fs.ModePerm
 		} else {
-			logger.WriteError(fmt.Sprintf(`could not read in existing file info to retain existing permission for %q: %s`, path, err))
+			return fmt.Errorf(`could not read in existing file info to retain existing permission for %q: %w`, path, err)
 		}
 	} else {
 		fileMode = fileInfo.Mode()
@@ -196,14 +194,16 @@ func WriteBinaryFileContents(path string, content []byte) {
 
 	err = os.WriteFile(path, content, fileMode)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`could not write to file %q: %s`, path, err))
+		return fmt.Errorf(`could not write to file %q: %w`, path, err)
 	}
+
+	return nil
 }
 
-func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) []string {
+func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) ([]string, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to read in folder %q: %s`, dir, err))
+		return nil, fmt.Errorf(`failed to read in folder %q: %w`, dir, err)
 	}
 
 	var fileList []string
@@ -213,11 +213,11 @@ func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) []string {
 		}
 	}
 
-	return fileList
+	return fileList, nil
 }
 
 // based on https://stackoverflow.com/a/67629473
-func MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir string, exts ...string) []string {
+func MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir string, exts ...string) ([]string, error) {
 	var a []string
 	err := filepath.WalkDir(dir, func(s string, d fs.DirEntry, e error) error {
 		if e != nil {
@@ -236,10 +236,10 @@ func MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir string, exts ...s
 		return nil
 	})
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to walk dir %q: %s", dir, err))
+		return nil, fmt.Errorf("failed to walk dir %q: %w", dir, err)
 	}
 
-	return a
+	return a, nil
 }
 
 func fileHasOneOfExts(fileName string, exts []string) bool {
@@ -252,29 +252,31 @@ func fileHasOneOfExts(fileName string, exts []string) bool {
 	return false
 }
 
-func MustRename(src, dest string) {
+func MustRename(src, dest string) error {
 	err := os.Rename(src, dest)
 
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to rename %q to %q: %s", src, dest, err))
+		return fmt.Errorf("failed to rename %q to %q: %w", src, dest, err)
 	}
+
+	return nil
 }
 
-func MustGetFileSize(path string) float64 {
+func MustGetFileSize(path string) (float64, error) {
 	if strings.TrimSpace(path) == "" {
-		logger.WriteError("to get a file's size it must have a non-empty path")
+		return 0, fmt.Errorf("to get a file's size it must have a non-empty path")
 	}
 
 	f, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logger.WriteError(fmt.Sprintf(`%q does not exist so the the file size cannot be retrieved`, path))
+			return 0, fmt.Errorf(`%q does not exist so the the file size cannot be retrieved`, path)
 		}
 
-		logger.WriteError(fmt.Sprintf(`could not verify that %q exists to check its size: %s`, path, err))
+		return 0, fmt.Errorf(`could not verify that %q exists to check its size: %w`, path, err)
 	}
 
-	return float64(f.Size()) / bytesInAKiloByte
+	return float64(f.Size()) / bytesInAKiloByte, nil
 }
 
 func MustCreateFolderIfNotExists(path string) error {
