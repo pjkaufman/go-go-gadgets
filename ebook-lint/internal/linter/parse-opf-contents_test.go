@@ -201,6 +201,152 @@ const (
   </guide>
 </package>
 `
+	htmlEncodedOpf = `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+  <metadata xmlns:calibre="http://calibre.kovidgoyal.net/2009/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dc:identifier id="uuid_id" opf:scheme="uuid">18d718b5-d8c1-472c-b846-61feb2918569</dc:identifier>
+    <dc:title>Mossad: The Greatest Missions of the Israeli Secret Service</dc:title>
+    <dc:identifier opf:scheme="ISBN">9780062123404</dc:identifier>
+    <dc:subject>Intelligence &amp; Espionage</dc:subject>
+    <dc:subject>Political Science</dc:subject>
+    <dc:subject>History</dc:subject>
+    <dc:creator opf:file-as="Bar-Zohar, Michael &amp; Mishal, Nissim" opf:role="aut">Michael &amp; Mishal Bar-Zohar</dc:creator>
+    <dc:contributor opf:role="bkp">calibre (0.9.2) [http://calibre-ebook.com]</dc:contributor>
+    <dc:description>&lt;div&gt;&lt;p&gt;The Mossad is widely recognized today as the best intelligence service in the world. It is also the most enigmatic, shrouded in secrecy. &lt;em&gt;Mossad: The Greatest Missions of the Israeli Secret Servic&lt;/em&gt;e unveils the defi ning and most dangerous operations that have shaped Israel and the world at large from the agency's more than sixty-year history, among them: the capture of Adolf Eichmann, the eradication of Black September, the destruction of the Syrian nuclear facility, and the elimination of key Iranian nuclear scientists.&lt;/p&gt;&lt;p&gt;Through intensive research and exclusive interviews with Israeli leaders and Mossad agents, authors Michael Bar-Zohar and Nissim Mishal re-create these missions in riveting detail, vividly bringing to life the heroic operatives who risked everything in the face of unimaginable danger. In the words of Shimon Peres, president of Israel, this gripping, white-knuckle read "tells what should have been known and isn't—that Israel's hidden force is as formidable as its recognized physical strength."&lt;/p&gt;&lt;/div&gt;</dc:description>
+    <dc:publisher>Ecco</dc:publisher>
+    <dc:language>en</dc:language>
+    <meta content="2012-11-08T16:30:59.263804+00:00" name="calibre:timestamp" />
+    <meta name="cover" content="cover" />
+    <meta content="0.4.2" name="Sigil version" />
+  </metadata>
+  <manifest>
+    <item href="Images/calibre_cover.jpg" id="cover" media-type="image/jpeg" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html" id="id154" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_001.html" id="id153" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_002.html" id="id152" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_003.html" id="id151" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_004.html" id="id150" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_005.html" id="id149" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html" id="id148" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_007.html" id="id147" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_008.html" id="id146" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_009.html" id="id145" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_010.html" id="id144" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_011.html" id="id143" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_012.html" id="id142" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_013.html" id="id141" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_014.html" id="id140" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_015.html" id="id139" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_016.html" id="id138" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_017.html" id="id137" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_018.html" id="id136" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_019.html" id="id135" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_020.html" id="id134" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_021.html" id="id133" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_022.html" id="id132" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_023.html" id="id131" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_024.html" id="id130" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_025.html" id="id129" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_026.html" id="id128" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_027.html" id="id127" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_028.html" id="id126" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_029.html" id="id125" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_030.html" id="id124" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_031.html" id="id123" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_032.html" id="id122" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_033.html" id="id121" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_034.html" id="id120" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_035.html" id="id119" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_036.html" id="id118" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_037.html" id="id117" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_038.html" id="id116" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_039.html" id="id115" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_040.html" id="id114" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_041.html" id="id113" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_042.html" id="id112" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_043.html" id="id111" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_044.html" id="id110" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_045.html" id="id19" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_046.html" id="id18" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_047.html" id="id17" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_048.html" id="id16" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_049.html" id="id15" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_050.html" id="id14" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_051.html" id="id13" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_052.html" id="id12" media-type="application/xhtml+xml" />
+    <item href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_053.html" id="id11" media-type="application/xhtml+xml" />
+    <item href="Images/00001.jpg" id="id3" media-type="image/jpeg" />
+    <item href="Images/00002.jpg" id="id4" media-type="image/jpeg" />
+    <item href="Images/00004.jpg" id="id6" media-type="image/jpeg" />
+    <item href="Images/00005.jpg" id="id7" media-type="image/jpeg" />
+    <item href="Styles/page_styles.css" id="page_css" media-type="text/css" />
+    <item href="Styles/stylesheet.css" id="css" media-type="text/css" />
+    <item href="Text/titlepage.xhtml" id="titlepage" media-type="application/xhtml+xml" />
+    <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="titlepage" />
+    <itemref idref="id154" />
+    <itemref idref="id153" />
+    <itemref idref="id152" />
+    <itemref idref="id151" />
+    <itemref idref="id150" />
+    <itemref idref="id149" />
+    <itemref idref="id148" />
+    <itemref idref="id147" />
+    <itemref idref="id146" />
+    <itemref idref="id145" />
+    <itemref idref="id144" />
+    <itemref idref="id143" />
+    <itemref idref="id142" />
+    <itemref idref="id141" />
+    <itemref idref="id140" />
+    <itemref idref="id139" />
+    <itemref idref="id138" />
+    <itemref idref="id137" />
+    <itemref idref="id136" />
+    <itemref idref="id135" />
+    <itemref idref="id134" />
+    <itemref idref="id133" />
+    <itemref idref="id132" />
+    <itemref idref="id131" />
+    <itemref idref="id130" />
+    <itemref idref="id129" />
+    <itemref idref="id128" />
+    <itemref idref="id127" />
+    <itemref idref="id126" />
+    <itemref idref="id125" />
+    <itemref idref="id124" />
+    <itemref idref="id123" />
+    <itemref idref="id122" />
+    <itemref idref="id121" />
+    <itemref idref="id120" />
+    <itemref idref="id119" />
+    <itemref idref="id118" />
+    <itemref idref="id117" />
+    <itemref idref="id116" />
+    <itemref idref="id115" />
+    <itemref idref="id114" />
+    <itemref idref="id113" />
+    <itemref idref="id112" />
+    <itemref idref="id111" />
+    <itemref idref="id110" />
+    <itemref idref="id19" />
+    <itemref idref="id18" />
+    <itemref idref="id17" />
+    <itemref idref="id16" />
+    <itemref idref="id15" />
+    <itemref idref="id14" />
+    <itemref idref="id13" />
+    <itemref idref="id12" />
+    <itemref idref="id11" />
+  </spine>
+  <guide>
+    <reference href="Text/CR%217CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html#filepos3991" title="Table of Contents" type="toc" />
+    <reference href="Text/titlepage.xhtml" title="Cover" type="cover" />
+  </guide>
+</package>
+`
 )
 
 var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
@@ -326,6 +472,86 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 			NavFile: "nav.xhtml",
 			NcxFile: "toc.ncx",
 			Version: 3,
+		},
+	},
+	"make sure that parsing package data that is html encoded is properly decoded": {
+		InputText: htmlEncodedOpf,
+		ExpectedEpubInfo: linter.EpubInfo{
+			HtmlFiles: map[string]struct{}{
+				"Text/titlepage.xhtml":                                {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_001.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_002.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_003.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_004.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_005.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_007.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_008.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_009.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_010.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_011.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_012.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_013.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_014.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_015.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_016.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_017.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_018.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_019.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_020.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_021.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_022.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_023.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_024.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_025.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_026.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_027.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_028.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_029.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_030.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_031.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_032.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_033.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_034.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_035.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_036.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_037.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_038.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_039.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_040.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_041.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_042.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_043.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_044.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_045.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_046.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_047.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_048.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_049.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_050.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_051.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_052.html": {},
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_053.html": {},
+			},
+			ImagesFiles: map[string]struct{}{
+				"Images/calibre_cover.jpg": {},
+				"Images/00001.jpg":         {},
+				"Images/00002.jpg":         {},
+				"Images/00004.jpg":         {},
+				"Images/00005.jpg":         {},
+			},
+			CssFiles: map[string]struct{}{
+				"Styles/page_styles.css": {},
+				"Styles/stylesheet.css":  {},
+			},
+			OtherFiles: map[string]struct{}{
+				"toc.ncx": {},
+			},
+			TocFile: "Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html",
+			NavFile: "",
+			NcxFile: "toc.ncx",
+			Version: 2,
 		},
 	},
 }

@@ -79,6 +79,13 @@ func epubsAreEqual(filename string) bool {
 		return false
 	}
 
+	// first file in each zip should be the mimetype
+	if lintedEpub.File[0].Name != "mimetype" {
+		return false
+	} else if expectedEpub.File[0].Name != "mimetype" {
+		return false
+	}
+
 	for _, zipFile := range lintedEpub.File {
 		var found bool
 		for _, expectedZipFile := range expectedEpub.File {

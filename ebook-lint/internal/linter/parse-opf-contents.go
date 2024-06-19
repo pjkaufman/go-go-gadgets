@@ -3,6 +3,7 @@ package linter
 import (
 	"encoding/xml"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -80,8 +81,13 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 		return epubInfo, ErrNoManifest
 	}
 
+	var filePath string
 	for _, manifestItem := range opfInfo.Manifest.Items {
-		var filePath = hrefToFile(manifestItem.Href)
+		filePath, err = hrefToFile(manifestItem.Href)
+		if err != nil {
+			return epubInfo, fmt.Errorf("failed to convert manifest href %q to file path: %w", manifestItem.Href, err)
+		}
+
 		if epubInfo.Version == 3 && strings.Contains(manifestItem.Properties, "nav") {
 			epubInfo.NavFile = filePath
 		}
@@ -108,7 +114,11 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 	if opfInfo.Guide != nil {
 		for _, guideReference := range opfInfo.Guide.References {
 			if guideReference.Type == "toc" {
-				epubInfo.TocFile = hrefToFile(guideReference.Href)
+				epubInfo.TocFile, err = hrefToFile(guideReference.Href)
+				if err != nil {
+					return epubInfo, fmt.Errorf("failed to convert toc href %q to file path: %w", guideReference.Href, err)
+				}
+
 				break
 			}
 		}
@@ -117,13 +127,13 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 	return epubInfo, nil
 }
 
-func hrefToFile(href string) string {
+func hrefToFile(href string) (string, error) {
 	var poundIndex = strings.Index(href, "#")
 	if poundIndex == -1 {
-		return href
+		return url.QueryUnescape(href)
 	}
 
-	return href[0:poundIndex]
+	return url.QueryUnescape(href[0:poundIndex])
 }
 
 func versionTextToInt(versionText string) (int, error) {
