@@ -86,7 +86,7 @@ var createCsvCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(createCsvCmd)
+	SongConverterCmd.AddCommand(createCsvCmd)
 
 	createCsvCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := createCsvCmd.MarkFlagRequired("working-dir")
