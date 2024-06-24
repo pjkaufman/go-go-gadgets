@@ -25,7 +25,7 @@ func CommandToMarkdown(cmd *cobra.Command, builder *strings.Builder) {
 	var flags = cmd.Flags()
 	if flags != nil {
 		builder.WriteString("#### Flags\n\n")
-		builder.WriteString(flags.FlagUsages())
+		FlagsToMd(flags, builder)
 		builder.WriteString("\n\n")
 	}
 
