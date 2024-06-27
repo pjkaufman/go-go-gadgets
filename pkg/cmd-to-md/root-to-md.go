@@ -16,7 +16,7 @@ func RootToMd(rootCmd *cobra.Command) string {
 
 func handleSubCommands(cmd *cobra.Command, builder *strings.Builder) {
 	for _, subCmd := range cmd.Commands() {
-		CommandToMarkdown(subCmd, builder)
+		CommandToMd(subCmd, builder)
 
 		if len(subCmd.Commands()) != 0 {
 			handleSubCommands(subCmd, builder)

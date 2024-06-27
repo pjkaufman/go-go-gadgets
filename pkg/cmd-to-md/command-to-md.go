@@ -6,7 +6,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CommandToMarkdown(cmd *cobra.Command, builder *strings.Builder) {
+func CommandToMd(cmd *cobra.Command, builder *strings.Builder) {
+	if cmd == nil {
+		return
+	}
+
 	var (
 		name            = cmd.Name()
 		longDescription = cmd.Long
@@ -23,7 +27,7 @@ func CommandToMarkdown(cmd *cobra.Command, builder *strings.Builder) {
 	builder.WriteString("\n\n")
 
 	var flags = cmd.Flags()
-	if flags != nil {
+	if flags != nil && flags.HasFlags() {
 		builder.WriteString("#### Flags\n\n")
 		FlagsToMd(flags, builder)
 		builder.WriteString("\n\n")
