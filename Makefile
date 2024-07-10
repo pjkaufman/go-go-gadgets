@@ -32,3 +32,6 @@ install:
 	@cat-ascii completion bash > "${BASH_COMPLETION_USER_DIR}/cat-ascii-completion"
 	@magnum completion bash > "${BASH_COMPLETION_USER_DIR}/magnum-completion"
 	@jp-proc completion bash > "${BASH_COMPLETION_USER_DIR}/jp-proc-completion"
+
+generate:
+	@go run --tags="generate" ./ebook-lint/main.go generate -g ./ebook-lint/

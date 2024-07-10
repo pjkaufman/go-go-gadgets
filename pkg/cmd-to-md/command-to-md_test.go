@@ -56,7 +56,7 @@ func TestCommandToMd(t *testing.T) {
 	for name, args := range ParseOpfContentsTestCases {
 		t.Run(name, func(t *testing.T) {
 			var actual strings.Builder
-			cmdtomd.CommandToMd(args.Command, &actual)
+			cmdtomd.CommandToMd(args.Command, &actual, 3)
 
 			assert.Equal(t, args.ExpectedOutput, actual.String())
 		})

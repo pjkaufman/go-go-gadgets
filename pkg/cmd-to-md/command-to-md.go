@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CommandToMd(cmd *cobra.Command, builder *strings.Builder) {
+func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 	if cmd == nil {
 		return
 	}
@@ -17,7 +17,7 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder) {
 		example         = cmd.Example
 	)
 
-	builder.WriteString("### " + name + "\n\n")
+	builder.WriteString(strings.Repeat("#", level) + " " + name + "\n\n")
 	if longDescription != "" {
 		builder.WriteString(longDescription)
 	} else {
@@ -28,13 +28,13 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder) {
 
 	var flags = cmd.Flags()
 	if flags != nil && flags.HasFlags() {
-		builder.WriteString("#### Flags\n\n")
+		builder.WriteString(strings.Repeat("#", level+1) + " Flags\n\n")
 		FlagsToMd(flags, builder)
 		builder.WriteString("\n\n")
 	}
 
 	if example != "" {
-		builder.WriteString("#### Usage\n\n``` bash\n")
+		builder.WriteString(strings.Repeat("#", level+1) + " Usage\n\n``` bash\n")
 		builder.WriteString(strings.ReplaceAll(example, "To ", "# To "))
 		builder.WriteString("\n```\n\n")
 	}

@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-const bytesInAKiloByte float64 = 1024
+const (
+	bytesInAKiloByte float64     = 1024
+	fileRead         fs.FileMode = 0666
+)
 
 func FileExists(path string) (bool, error) {
 	if strings.TrimSpace(path) == "" {
@@ -158,7 +161,7 @@ func WriteFileContents(path, content string) error {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			fileMode = fs.ModePerm
+			fileMode = fileRead
 		} else {
 			return fmt.Errorf(`could not read in existing file info to retain existing permission for %q: %w`, path, err)
 		}
@@ -184,7 +187,7 @@ func WriteBinaryFileContents(path string, content []byte) error {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			fileMode = fs.ModePerm
+			fileMode = fileRead
 		} else {
 			return fmt.Errorf(`could not read in existing file info to retain existing permission for %q: %w`, path, err)
 		}
