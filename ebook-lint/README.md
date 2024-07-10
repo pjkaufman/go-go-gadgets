@@ -14,6 +14,15 @@ This is a program that helps lint and make updates to ebooks.
 
 ## Commands
 
+- [cbr](#cbr)
+  - [to-cbz](#to-cbz)
+- [cbz](#cbz)
+  - [compress](#compress)
+- [epub](#epub)
+  - [compress-and-lint](#compress-and-lint)
+  - [fixable](#fixable)
+  - [replace-strings](#replace-strings)
+
 ### cbr
 
 Handles operations on cbr files in particular
@@ -190,9 +199,4 @@ replacements.md is expected to be in the following format:
 | I am another issue to correct | the correction |
 
 ```
-
-### help
-
-Help provides help for any command in the application.
-Simply type ebook-lint help [path to command] for full details.
 

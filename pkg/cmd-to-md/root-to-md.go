@@ -6,24 +6,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const baseLevel = 3
+
 func RootToMd(rootCmd *cobra.Command) string {
-	var builder strings.Builder
+	var commandMd, commandToc strings.Builder
 
-	handleSubCommands(rootCmd, &builder, 3)
+	handleSubCommands(rootCmd, &commandMd, &commandToc, baseLevel)
 
-	return builder.String()
+	return commandToc.String() + "\n" + commandMd.String()
 }
 
-func handleSubCommands(cmd *cobra.Command, builder *strings.Builder, level int) {
+func handleSubCommands(cmd *cobra.Command, commandMd, commandToc *strings.Builder, level int) {
 	for _, subCmd := range cmd.Commands() {
-		if subCmd.Hidden || subCmd.Name() == "completion" {
+		if subCmd.Hidden || subCmd.Name() == "completion" || subCmd.Name() == "help" {
 			continue
 		}
 
-		CommandToMd(subCmd, builder, level)
+		commandToc.WriteString(strings.Repeat(" ", (level-baseLevel)*2) + "- [" + subCmd.Name() + "](#" + subCmd.Name() + ")\n")
+
+		CommandToMd(subCmd, commandMd, level)
 
 		if len(subCmd.Commands()) != 0 {
-			handleSubCommands(subCmd, builder, level+1)
+			handleSubCommands(subCmd, commandMd, commandToc, level+1)
 		}
 	}
 }
