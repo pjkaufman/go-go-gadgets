@@ -35,3 +35,4 @@ install:
 
 generate:
 	@go run --tags="generate" ./ebook-lint/main.go generate -g ./ebook-lint/
+	@go run --tags="generate" ./jp-proc/main.go generate -g ./jp-proc/
