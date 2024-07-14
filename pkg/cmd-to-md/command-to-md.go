@@ -35,7 +35,7 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 
 	if example != "" {
 		builder.WriteString(strings.Repeat("#", level+1) + " Usage\n\n``` bash\n")
-		builder.WriteString(strings.ReplaceAll(example, "To ", "# To "))
+		builder.WriteString(strings.TrimRight(strings.ReplaceAll(example, "To ", "# To "), "\n"))
 		builder.WriteString("\n```\n\n")
 	}
 }

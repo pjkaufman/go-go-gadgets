@@ -1,7 +1,6 @@
 package cmdhandler
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"text/template"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/davecgh/go-spew/spew"
 	cmdtomd "github.com/pjkaufman/go-go-gadgets/pkg/cmd-to-md"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -63,9 +61,8 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 			}
 
 			var b bytes.Buffer
-			writer := bufio.NewWriter(&b)
 
-			err = tmpl.Execute(writer, TmplData{
+			err = tmpl.Execute(&b, TmplData{
 				CommandStrings: cmdtomd.RootToMd(rootCmd),
 				Todos:          todos,
 				Description:    description,
@@ -75,14 +72,6 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
-
-			spew.Dump(TmplData{
-				CommandStrings: cmdtomd.RootToMd(rootCmd),
-				Todos:          todos,
-				Description:    description,
-				Title:          title,
-				CustomValues:   customValues,
-			})
 
 			err = filehandler.WriteFileContents(filehandler.JoinPath(generationDir, "README.md"), b.String())
 			if err != nil {
