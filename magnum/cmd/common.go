@@ -32,7 +32,7 @@ func unreleasedDateIsBeforeDate(releaseDate string, date time.Time) bool {
 
 	release, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to convert date %q to date time: %s`, releaseDate, err))
+		logger.WriteErrorf("failed to convert date %q to date time: %s\n", releaseDate, err)
 	}
 
 	return release.Before(date)

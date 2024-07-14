@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -91,18 +90,18 @@ func init() {
 	createCsvCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := createCsvCmd.MarkFlagRequired("working-dir")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "working-dir" as required on create csv command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"working-dir\" as required on create csv command: %v\n", err)
 	}
 
 	err = createCsvCmd.MarkFlagDirname("working-dir")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "working-dir" as a directory on create csv command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"working-dir\" as a directory on create csv command: %v\n", err)
 	}
 
 	createCsvCmd.Flags().StringVarP(&outputFile, "output-file", "o", "", "the file to write the csv to")
 	err = createCsvCmd.MarkFlagFilename("output-file", "csv")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "output-file" as looking for specific file types on create csv command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"output-file\" as looking for specific file types on create csv command: %v\n", err)
 	}
 }
 

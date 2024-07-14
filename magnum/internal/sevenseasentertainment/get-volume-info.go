@@ -1,7 +1,6 @@
 package sevenseasentertainment
 
 import (
-	"fmt"
 	"slices"
 	"time"
 
@@ -33,7 +32,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 	c.OnHTML(".series-volume", func(e *colly.HTMLElement) {
 		contentHtml, err := e.DOM.Html()
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to get content body: %s", err))
+			logger.WriteErrorf("failed to get content body: %s\n", err)
 		}
 
 		volumeContent = append(volumeContent, contentHtml)
@@ -42,7 +41,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 	var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
 	err = c.Visit(url)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to google cache for %q: %s", url, err))
+		logger.WriteErrorf("failed call to google cache for %q: %s\n", url, err)
 	}
 
 	var volumeInfo = []VolumeInfo{}

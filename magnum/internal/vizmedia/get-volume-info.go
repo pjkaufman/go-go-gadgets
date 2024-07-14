@@ -1,7 +1,6 @@
 package vizmedia
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 	"time"
@@ -40,11 +39,11 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []*Vol
 	var seriesURL = baseURL + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to viz media series page: %s", err))
+		logger.WriteErrorf("failed call to viz media series page: %s\n", err)
 	}
 
 	if strings.TrimSpace(fullVolumeLink) == "" {
-		logger.WriteError(fmt.Sprintf(`failed to get the list of volumes link for %q`, seriesName))
+		logger.WriteErrorf("failed to get the list of volumes link for %q\n", seriesName)
 	}
 
 	return getListOfVolumesWithInfo(c.Clone(), fullVolumeLink, seriesName)
@@ -60,7 +59,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 	c.OnHTML("body > div.bg-off-white.overflow-hide > section > section.row.mar-t-lg.mar-t-xl--lg.mar-last-row > div > article", func(e *colly.HTMLElement) {
 		var html, err = e.DOM.Html()
 		if err != nil {
-			logger.WriteError(fmt.Sprintf(`failed to get the html for the volume info for %q`, fullVolumeLink))
+			logger.WriteErrorf("failed to get the html for the volume info for %q\n", fullVolumeLink)
 		}
 
 		name, volumeReleasePage, isReleased, err := ParseVolumeHtml(html, seriesName, volumeNum)
@@ -89,7 +88,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 	var mangaVolumesLink = baseURL + fullVolumeLink
 	err := c.Visit(mangaVolumesLink)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to viz media volumes page: %s", err))
+		logger.WriteErrorf("failed call to viz media volumes page: %s\n", err)
 	}
 
 	slices.Reverse(volumes)
@@ -105,7 +104,7 @@ func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage string) time.Tim
 		text = strings.TrimSpace(strings.Replace(text, "Release", "", 1))
 		tempDate, err := time.Parse(releaseDateFormat, text)
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to parse %q to a date time value: %v", text, err))
+			logger.WriteErrorf("failed to parse %q to a date time value: %v\n", text, err)
 		}
 
 		releaseDate = tempDate
@@ -114,7 +113,7 @@ func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage string) time.Tim
 	var mangaVolumesLink = baseURL + volumeReleasePage
 	err := c.Visit(mangaVolumesLink)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to viz media volume release page: %s", err))
+		logger.WriteErrorf("failed call to viz media volume release page: %s\n", err)
 	}
 
 	return releaseDate

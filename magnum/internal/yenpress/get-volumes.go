@@ -1,7 +1,6 @@
 package yenpress
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -58,7 +57,7 @@ func GetVolumes(seriesName string, slugOverride *string, verbose bool) ([]*Volum
 	var seriesURL = baseURL + seriesPath + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to yen press: %s", err))
+		logger.WriteErrorf("failed call to yen press: %s\n", err)
 		return nil, 0
 	}
 

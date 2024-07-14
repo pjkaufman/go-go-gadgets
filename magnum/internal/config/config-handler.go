@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 
 	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -27,7 +26,7 @@ func WriteConfig(config *Config) {
 
 	jsonConfig, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to json marshal config: %s", err))
+		logger.WriteErrorf("failed to json marshal config: %s\n", err)
 	}
 
 	configFile := filehandler.JoinPath(configDir, configFileName)
@@ -68,7 +67,7 @@ func GetConfig() *Config {
 
 	err = json.Unmarshal([]byte(jsonConfig), config)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to json unmarshal config from %q: %s", configFile, err))
+		logger.WriteErrorf("failed to json unmarshal config from %q: %s\n", configFile, err)
 	}
 
 	return config

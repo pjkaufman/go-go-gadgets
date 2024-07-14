@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -42,7 +41,7 @@ func init() {
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	logger.WriteInfo(fmt.Sprintf("Checking for volume info for %q", seriesInfo.Name))
+	logger.WriteInfof("Checking for volume info for %q\n", seriesInfo.Name)
 
 	switch seriesInfo.Publisher {
 	case config.YenPress:

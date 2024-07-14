@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -46,12 +45,12 @@ var SetStatus = &cobra.Command{
 		if strings.TrimSpace(name) == "" {
 			name = selectBookName(seriesInfo.Series, false)
 
-			logger.WriteInfo(fmt.Sprintf("%q selected", name))
+			logger.WriteInfof("%q selected\n", name)
 		}
 
 		var status = config.SeriesStatus(bookStatus)
 		if !config.IsSeriesStatus(bookStatus) {
-			logger.WriteWarn(fmt.Sprintf(`Status %q is not a valid book status, so it is being ignored`, bookStatus))
+			logger.WriteWarnf("Status %q is not a valid book status, so it is being ignored\n", bookStatus)
 
 			bookStatus = ""
 		}
@@ -60,7 +59,7 @@ var SetStatus = &cobra.Command{
 		if strings.TrimSpace(bookStatus) == "" {
 			status = selectBookStatus()
 
-			logger.WriteInfo(fmt.Sprintf("%q selected", status))
+			logger.WriteInfof("%q selected\n", status)
 		}
 
 		var foundSeriesToUpdate = false
@@ -73,12 +72,12 @@ var SetStatus = &cobra.Command{
 		}
 
 		if !foundSeriesToUpdate {
-			logger.WriteError(fmt.Sprintf("\n"+`Failed to find %q to set the status to %s.`, seriesName, status))
+			logger.WriteErrorf("\nFailed to find %q to set the status to %s.\n", seriesName, status)
 		}
 
 		config.WriteConfig(seriesInfo)
 
-		logger.WriteInfo(fmt.Sprintf("\n"+`Successfully set %q to have a status of %s.`, name, status))
+		logger.WriteInfof("\nSuccessfully set %q to have a status of %s.\n", name, status)
 	},
 }
 

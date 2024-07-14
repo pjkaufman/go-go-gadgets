@@ -125,7 +125,7 @@ var replaceStringsCmd = &cobra.Command{
 
 			logger.WriteWarn("\nFailed Replaces:")
 			for i, failedReplace := range failedReplaces {
-				logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
+				logger.WriteWarnf("%d. %s\n", i+1, failedReplace)
 			}
 
 			return nil
@@ -144,23 +144,23 @@ func init() {
 	replaceStringsCmd.Flags().StringVarP(&extraReplacesFilePath, "extra-replace-file", "e", "", "the path to the file with extra strings to replace")
 	err := replaceStringsCmd.MarkFlagRequired("extra-replace-file")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "extra-replace-file" as required on replace strings command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as required on replace strings command: %v\n", err)
 	}
 
 	err = replaceStringsCmd.MarkFlagFilename("extra-replace-file", "md")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "extra-replace-file" as looking for specific file types on replace strings command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as looking for specific file types on replace strings command: %v\n", err)
 	}
 
 	replaceStringsCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to replace strings in in")
 	err = replaceStringsCmd.MarkFlagRequired("epub-file")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as required on replace strings command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"epub-file\" as required on replace strings command: %v\n", err)
 	}
 
 	err = replaceStringsCmd.MarkFlagFilename("epub-file", "epub")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as looking for specific file types on replace strings command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"epub-file\" as looking for specific file types on replace strings command: %v\n", err)
 	}
 }
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -47,7 +46,7 @@ var ListCmd = &cobra.Command{
 				logger.WriteInfo("Status: " + config.SeriesStatusToDisplayText(series.Status))
 				logger.WriteInfo("Publisher: " + string(series.Publisher))
 				logger.WriteInfo("Type: " + config.SeriesTypeToDisplayText(series.Type))
-				logger.WriteInfo(fmt.Sprintf("Total Volumes: %d", series.TotalVolumes))
+				logger.WriteInfof("Total Volumes: %d\n", series.TotalVolumes)
 
 				var slugOverride = "N/A"
 				if series.SlugOverride != nil {
