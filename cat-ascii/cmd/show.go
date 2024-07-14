@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -20,7 +19,7 @@ var showCmd = &cobra.Command{
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		var name = args[0]
-		logger.WriteInfo(fmt.Sprintf("Name %s:", name))
+		logger.WriteInfof("Name %s:\n", name)
 		for _, catAscii := range ascii.CAT_ASCII {
 			if strings.EqualFold(name, catAscii.Name) {
 				logger.WriteInfo(catAscii.Ascii)

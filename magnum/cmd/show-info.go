@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -98,7 +97,7 @@ func init() {
 func parseVolumeReleaseDate(name, releaseDate string) time.Time {
 	date, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to parse release date %q for %q: %s", name, releaseDate, err))
+		logger.WriteErrorf("failed to parse release date %q for %q: %s\n", name, releaseDate, err)
 	}
 
 	return date

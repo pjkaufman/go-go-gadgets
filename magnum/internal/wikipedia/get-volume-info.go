@@ -1,7 +1,6 @@
 package wikipedia
 
 import (
-	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -83,7 +82,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 		contentHtml, err = content.Html()
 
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to get content body: %s", err))
+			logger.WriteErrorf("failed to get content body: %s\n", err)
 		}
 	})
 
@@ -93,12 +92,12 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 		var parents = e.DOM.Parent()
 		lnHeadingHtml, err = parents.Html()
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to get content body: %s", err))
+			logger.WriteErrorf("failed to get content body: %s\n", err)
 		}
 
 		startIndexOfLnSection = strings.Index(contentHtml, lnHeadingHtml)
 		if startIndexOfLnSection == -1 {
-			logger.WriteError(fmt.Sprintf("failed to find light novel section: %s", err))
+			logger.WriteErrorf("failed to find light novel section: %s\n", err)
 		}
 	})
 
@@ -109,12 +108,12 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 			var parents = e.DOM.Parent()
 			lnSectionAfterLnHtml, err = parents.Html()
 			if err != nil {
-				logger.WriteError(fmt.Sprintf("failed to get section after light novel section: %s", err))
+				logger.WriteErrorf("failed to get section after light novel section: %s\n", err)
 			}
 
 			endIndexOfLnSection = strings.Index(contentHtml, lnSectionAfterLnHtml)
 			if endIndexOfLnSection == -1 {
-				logger.WriteError(fmt.Sprintf("failed to find section after light novel section: %s", err))
+				logger.WriteErrorf("failed to find section after light novel section: %s\n", err)
 			}
 		})
 	}
@@ -122,7 +121,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	var url = baseURL + wikiPath + seriesSlug
 	err = c.Visit(url)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to wikipedia for %q: %s", url, err))
+		logger.WriteErrorf("failed call to wikipedia for %q: %s\n", url, err)
 	}
 
 	var lnSectionHtml string
@@ -138,11 +137,11 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 
 	var numTables = strings.Count(lnSectionHtml, "wikitable")
 	if numTables == 0 {
-		logger.WriteError(fmt.Sprintf("could not find tables for light novel section: %s", err))
+		logger.WriteErrorf("could not find tables for light novel section: %s\n", err)
 	} else if len(subSectionTiles)+1 == numTables {
 		subSectionTiles = append([]string{title}, subSectionTiles...)
 	} else if len(subSectionTiles) != numTables {
-		logger.WriteError(fmt.Sprintf("number of tables does not match number of table title prefixes for %q: %d vs. %d", title, len(subSectionTiles), numTables))
+		logger.WriteErrorf("number of tables does not match number of table title prefixes for %q: %d vs. %d\n", title, len(subSectionTiles), numTables)
 	}
 
 	var volumeInfo = []VolumeInfo{}

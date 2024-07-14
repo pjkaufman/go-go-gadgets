@@ -275,12 +275,12 @@ func init() {
 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
 	err := fixableCmd.MarkFlagRequired("epub-file")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as required on fixable command: %v`, err))
+		logger.WriteErrorf(`failed to mark flag "epub-file" as required on fixable command: %v\n`, err)
 	}
 
 	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v`, err))
+		logger.WriteErrorf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v\n`, err)
 	}
 }
 
@@ -351,7 +351,7 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt)
 	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(cssFiles) {
-		logger.WriteError(fmt.Sprintf("Please select a valid css file value instead of \"%d\".", selectedCssFileIndex))
+		logger.WriteErrorf("Please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
 	}
 
 	var cssFile = cssFiles[selectedCssFileIndex]

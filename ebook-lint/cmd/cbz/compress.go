@@ -2,7 +2,6 @@ package cbz
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -48,7 +47,7 @@ var compressCmd = &cobra.Command{
 
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, cbz := range cbzs {
-			logger.WriteInfo(fmt.Sprintf("starting cbz compression for %s...", cbz))
+			logger.WriteInfof("starting cbz compression for %s...\n", cbz)
 
 			compressCbz(dir, cbz)
 
@@ -95,7 +94,7 @@ func compressCbz(lintDir, cbz string) {
 
 		for i, imageFile := range imageFiles {
 			if verbose {
-				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
+				logger.WriteInfof("%d of %d: compressing %q\n", i, len(imageFiles), imageFile)
 			}
 
 			err = images.CompressImage(imageFile)

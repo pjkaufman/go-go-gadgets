@@ -1,7 +1,6 @@
 package linter
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -166,7 +165,7 @@ func parseParagraphsStartingWithLowercaseLetters(fileContent string, parsedLines
 		var endingTagStart = strings.Index(previousLine, "</p>")
 		// we cannot continue since the ending tag is missing, but we don't need to error out here
 		if endingTagStart == -1 {
-			logger.WriteWarn(fmt.Sprintf(`failed to find ending paragraph tag for line %q`, previousLine))
+			logger.WriteWarnf(`failed to find ending paragraph tag for line %q\n`, previousLine)
 			continue
 		}
 

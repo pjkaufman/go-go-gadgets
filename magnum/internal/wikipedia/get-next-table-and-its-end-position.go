@@ -1,7 +1,6 @@
 package wikipedia
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -37,7 +36,7 @@ func GetNextTableAndItsEndPosition(sectionHtml string) (string, int) {
 		attemptNum++
 
 		if attemptNum > maxAttempts {
-			logger.WriteError(fmt.Sprintf("something went wrong trying to parse out the table from %s, as there were only %d instances of table endings and we are trying to find the %d table ending", sectionHtml, maxAttempts, attemptNum))
+			logger.WriteErrorf("something went wrong trying to parse out the table from %s, as there were only %d instances of table endings and we are trying to find the %d table ending\n", sectionHtml, maxAttempts, attemptNum)
 		}
 	}
 

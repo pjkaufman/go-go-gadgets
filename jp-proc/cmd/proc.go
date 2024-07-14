@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -44,7 +43,7 @@ var procCmd = &cobra.Command{
 
 		// remove exif data if specified
 		if !quiet && removeExif {
-			logger.WriteInfo(fmt.Sprintf("removing exif data for %s", file))
+			logger.WriteInfof("removing exif data for %s\n", file)
 		}
 
 		var newData []byte
@@ -59,7 +58,7 @@ var procCmd = &cobra.Command{
 
 		var resizeImage = width != 0
 		if !quiet && resizeImage {
-			logger.WriteInfo(fmt.Sprintf("resizing image to width %d for %s", width, file))
+			logger.WriteInfof("resizing image to width %d for %s\n", width, file)
 		}
 
 		if isPng {
@@ -96,12 +95,12 @@ func init() {
 	procCmd.Flags().StringVarP(&file, "file", "f", "", "the image file to operate on")
 	err := procCmd.MarkFlagRequired("file")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "file" as required on root command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"file\" as required on root command: %v\n", err)
 	}
 
 	err = procCmd.MarkFlagFilename("file", "png", "jpg", "jpeg")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "file" as looking for specific file types on root command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on root command: %v\n", err)
 	}
 
 	procCmd.Flags().BoolVarP(&removeExif, "remove-exif", "e", false, "whether or not to remove exif data from the image")

@@ -2,7 +2,6 @@ package cbr
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -41,7 +40,7 @@ var cbrToCbzCmd = &cobra.Command{
 		}
 
 		for _, cbr := range cbrs {
-			logger.WriteInfo(fmt.Sprintf("starting to convert %s to a cbz file...", cbr))
+			logger.WriteInfof("starting to convert %s to a cbz file...\n", cbr)
 
 			err = filehandler.ConvertRarToCbz(cbr)
 			if err != nil {

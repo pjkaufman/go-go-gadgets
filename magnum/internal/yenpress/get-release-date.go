@@ -1,7 +1,6 @@
 package yenpress
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gocolly/colly/v2"
@@ -28,12 +27,12 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 	var volumeURL = baseURL + info.RelativeLink
 	err := c.Visit(volumeURL)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed call to yen press: %s", err))
+		logger.WriteErrorf("failed call to Yen Press: %s\n", err)
 	}
 
 	if releaseDate == "" {
 		if verbose {
-			logger.WriteInfo(fmt.Sprintf("no release date found on the page: %q", volumeURL))
+			logger.WriteInfof("no release date found on the page: %q\n", volumeURL)
 		}
 
 		return nil
@@ -41,7 +40,7 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 
 	date, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to parse %q to a date time value: %v", releaseDate, err))
+		logger.WriteErrorf("failed to parse %q to a date time value: %v\n", releaseDate, err)
 	}
 
 	return &date

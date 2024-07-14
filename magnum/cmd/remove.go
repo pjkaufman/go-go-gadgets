@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -33,7 +32,7 @@ var RemoveCmd = &cobra.Command{
 
 		config.WriteConfig(seriesInfo)
 
-		logger.WriteInfo(fmt.Sprintf("The %q was removed from the series list.", seriesName))
+		logger.WriteInfof("The %q was removed from the series list.\n", seriesName)
 	},
 }
 
@@ -43,7 +42,7 @@ func init() {
 	RemoveCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
 	err := RemoveCmd.MarkFlagRequired("name")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "name" as required on remove command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"name\" as required on remove command: %v\n", err)
 	}
 }
 

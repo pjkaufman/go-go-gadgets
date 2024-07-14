@@ -25,17 +25,11 @@ const (
 // once that is done it runs the operation func on the destination folder
 // lastly it rezips the folder back to compress.zip
 func UnzipRunOperationAndRezip(src, dest string, operation func() error) error {
-	folderExists, err := FolderExists(dest)
+	dest = filepath.Clean(dest)
+
+	err := os.RemoveAll(dest)
 	if err != nil {
-		return err
-	}
-
-	if folderExists {
-		err = os.RemoveAll(dest)
-
-		if err != nil {
-			return fmt.Errorf("failed to delete the destination directory %q: %w", dest, err)
-		}
+		return fmt.Errorf("failed to delete the destination directory %q: %w", dest, err)
 	}
 
 	err = Unzip(src, dest)
@@ -78,9 +72,7 @@ func Unzip(src, dest string) error {
 		return err
 	}
 	defer func() {
-		if err := r.Close(); err != nil {
-			panic(err)
-		}
+		r.Close()
 	}()
 
 	err = os.MkdirAll(dest, folderPerms)
@@ -88,7 +80,7 @@ func Unzip(src, dest string) error {
 		return err
 	}
 
-	var files = make(chan *zip.File, len(r.File))
+	files := make(chan *zip.File, len(r.File))
 	g, ctx := errgroup.WithContext(context.Background())
 	for i := 0; i < numWorkers; i++ {
 		g.Go(func() error {
@@ -126,15 +118,13 @@ func extractAndWriteFile(dest string, f *zip.File) error {
 		return err
 	}
 	defer func() {
-		if err := rc.Close(); err != nil {
-			panic(err)
-		}
+		rc.Close()
 	}()
 
 	path := filepath.Join(dest, f.Name)
 
 	// Check for ZipSlip (Directory traversal)
-	if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
+	if !strings.HasPrefix(path, dest+string(os.PathSeparator)) {
 		return fmt.Errorf("illegal file path: %s", path)
 	}
 
@@ -155,9 +145,7 @@ func extractAndWriteFile(dest string, f *zip.File) error {
 			return err
 		}
 		defer func() {
-			if err := f.Close(); err != nil {
-				panic(err)
-			}
+			f.Close()
 		}()
 
 		_, err = io.Copy(f, rc)

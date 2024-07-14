@@ -2,7 +2,6 @@ package epub
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -60,7 +59,7 @@ var compressAndLintCmd = &cobra.Command{
 
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, epub := range epubs {
-			logger.WriteInfo(fmt.Sprintf("starting epub compressing for %s...", epub))
+			logger.WriteInfof("starting epub compressing for %s...\n", epub)
 
 			err = LintEpub(lintDir, epub, runCompressImages)
 			if err != nil {

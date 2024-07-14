@@ -38,11 +38,11 @@ var updateCmd = &cobra.Command{
 			masterBranch = getGitMasterBranch()
 			currentBranch = commandhandler.MustGetCommandOutput(gitProgramName, fmt.Sprintf(`failed to get current branch for %q`, folder), getCurrentBranchArgs...)
 			if strings.Contains(currentBranch, branchName) {
-				logger.WriteInfo(fmt.Sprintf(`Skipping %q since it already has %q as its branch`, submoduleDir, branchName))
+				logger.WriteInfof("Skipping %q since it already has %q as its branch\n", submoduleDir, branchName)
 				continue
 			}
 
-			logger.WriteInfo(fmt.Sprintf(`Updating %q's branch to %q`, submoduleDir, branchName))
+			logger.WriteInfof("Updating %q's branch to %q\n", submoduleDir, branchName)
 
 			checkoutLatestFromMaster(submoduleDir, masterBranch)
 
@@ -65,24 +65,24 @@ func init() {
 	updateCmd.Flags().StringVarP(&submoduleName, "submodule", "s", "", "the name of the submodule to operate on")
 	err := updateCmd.MarkFlagRequired("submodule")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "submodule" as required on update command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"submodule\" as required on update command: %v\n", err)
 	}
 
 	updateCmd.Flags().StringVarP(&repoFolderPath, "repo-parent-path", "d", "", "the path to the parent folder of the repos to operate on")
 	err = updateCmd.MarkFlagRequired("repo-parent-path")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "repo-parent-path" as required on update command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"repo-parent-path\" as required on update command: %v\n", err)
 	}
 
 	err = updateCmd.MarkFlagDirname("repo-parent-path")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "repo-parent-path" as directory on update command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"repo-parent-path\" as directory on update command: %v\n", err)
 	}
 
 	updateCmd.Flags().StringVarP(&branchName, "branch-name", "b", "", "the submodule branch name to checkout and use")
 	err = updateCmd.MarkFlagRequired("branch-name")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "branch-name" as required on update command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"branch-name\" as required on update command: %v\n", err)
 	}
 }
 

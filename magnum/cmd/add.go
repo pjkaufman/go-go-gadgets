@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -94,7 +93,7 @@ func init() {
 	AddCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
 	err := AddCmd.MarkFlagRequired("name")
 	if err != nil {
-		logger.WriteError(fmt.Sprintf(`failed to mark flag "name" as required on add command: %v`, err))
+		logger.WriteErrorf("failed to mark flag \"name\" as required on add command: %v\n", err)
 	}
 
 	AddCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "the publisher of the series")
