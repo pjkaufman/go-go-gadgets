@@ -1,0 +1,24 @@
+<!-- This file is generated from  https://github.com/pjkaufman/go-go-gadgets/jp-proc/README.md.tmpl. Please make any necessary changes there. -->
+
+# {{ .Title }}
+
+{{ .Description }}
+
+## How does this program compare with imgp?
+
+| Operation | Original Size | New Size (imgp) | New Size (imgp with optimize flag) | New Size (jp-proc) |
+| --------- | ------------- | --------------- | ---------------------------------- | ------------------ |
+| Resize jpeg to 800x600 and remove exif data | 3.4M | 57KB | 56KB | 68KB |
+| Resize jpeg to 800x600 and remove exif data and set quality to 40 | 3.4M | 32KB | 28KB | 37KB |
+{{- if .Todos }}
+
+## TODOs
+
+{{- range .Todos }}
+- {{ . }}
+{{- end}}
+{{- end}}
+
+## Commands
+
+{{ .CommandStrings }}

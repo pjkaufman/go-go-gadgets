@@ -1,0 +1,39 @@
+<!-- This file is generated from  https://github.com/pjkaufman/go-go-gadgets/magnum/README.md.tmpl. Please make any necessary changes there. -->
+
+# {{ .Title }}
+
+{{ .Description }}
+
+{{- if .CustomValues.supportedPublishers }}
+
+## Supported Publishers
+
+{{- range .CustomValues.supportedPublishers }}
+{{- if . }}
+- {{ . }}
+{{- end}}
+{{- end}}
+{{- end}}
+
+{{- if .CustomValues.novelsToAdd }}
+
+## Light Novels to Account for
+
+{{- range .CustomValues.novelsToAdd }}
+{{- if . }}
+- {{ . }}
+{{- end}}
+{{- end}}
+{{- end}}
+{{- if .Todos }}
+
+## TODOs
+
+{{- range .Todos }}
+- {{ . }}
+{{- end}}
+{{- end}}
+
+## Commands
+
+{{ .CommandStrings }}

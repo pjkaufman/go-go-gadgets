@@ -29,3 +29,22 @@ func IsPublisherType(val string) bool {
 		return false
 	}
 }
+
+func PublisherToDisplayString(val PublisherType) string {
+	switch val {
+	case YenPress:
+		return "Yen Press"
+	case JNovelClub:
+		return "JNovel Club"
+	case SevenSeasEntertainment:
+		return "Seven Seas Entertainment"
+	case OnePeaceBooks:
+		return "One Peace Books"
+	case VizMedia:
+		return "Viz Media"
+	case HanashiMedia:
+		return "Hanashi Media"
+	default:
+		return ""
+	}
+}

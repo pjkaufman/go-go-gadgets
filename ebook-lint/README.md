@@ -45,7 +45,6 @@ ebook-lint cbr to-cbz -d folder
 
 # To convert all cbrs to cbzs in the current directory:
 ebook-lint cbr to-cbz 
-
 ```
 
 ### cbz
@@ -71,7 +70,6 @@ ebook-lint cbz compress -d folder
 
 # To compress images in all cbzs in the current directory:
 ebook-lint cbz compress
-
 ```
 
 ### epub
@@ -107,7 +105,6 @@ ebook-lint epub compress-and-lint -i
 
 # To just make general modifications to all epubs in the current directory:
 ebook-lint epub compress-and-lint
-
 ```
 
 #### fixable
@@ -169,7 +166,6 @@ ebook-lint epub fixable -f test.epub -t
 
 # To run a combination of options:
 ebook-lint epub fixable -f test.epub -otn
-
 ```
 
 #### replace-strings
@@ -197,6 +193,6 @@ replacements.md is expected to be in the following format:
 | I am typo | I the correct value |
 ...
 | I am another issue to correct | the correction |
-
 ```
+
 
