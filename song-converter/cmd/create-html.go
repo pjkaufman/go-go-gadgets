@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -40,6 +41,7 @@ var (
 	bodyHtmlOutputFile string
 	coverOutputFile    string
 	coverInputFilePath string
+	versionDescriptor  string
 )
 
 // CreateHtmlCmd represents the CreateSongs command
@@ -84,7 +86,7 @@ var CreateHtmlCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		coverHtml := converter.BuildHtmlCover(coverMd)
+		coverHtml := converter.BuildHtmlCover(coverMd, versionDescriptor, time.Now())
 
 		if isWritingToFile {
 			logger.WriteInfo("Finished creating html cover file")
@@ -131,7 +133,7 @@ var CreateHtmlCmd = &cobra.Command{
 }
 
 func init() {
-	SongConverterCmd.AddCommand(CreateHtmlCmd)
+	rootCmd.AddCommand(CreateHtmlCmd)
 
 	CreateHtmlCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := CreateHtmlCmd.MarkFlagRequired("working-dir")
@@ -159,6 +161,12 @@ func init() {
 	err = CreateHtmlCmd.MarkFlagFilename("output", "html")
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"output\" as a looking for specific file types on create html command: %v\n", err)
+	}
+
+	CreateHtmlCmd.Flags().StringVarP(&versionDescriptor, "version-type", "v", "", "the version descriptor for the type of songs to generate (generally just abridged or unabridged)")
+	err = CreateHtmlCmd.MarkFlagRequired("version-type")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"version-type\" as required on create html command: %v\n", err)
 	}
 }
 

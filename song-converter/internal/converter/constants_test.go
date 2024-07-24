@@ -3,9 +3,10 @@
 package converter_test
 
 const (
-	coverFileMd = `# Church Songs - E Version
+	coverFileMd = `# Church Songs - E Version {{TYPE}}
 
-<br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/>
+Date: {{DATE_GENERATED}}
+<br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/>
 
 ### Key:
 
@@ -29,9 +30,10 @@ ZW= Zelma Wanagas
 non returns*
 
 *\*Punctuation alters the alphabetical order*`
-	coverFileHtml = `<div style="text-align: center">
-<h1 id="church-songs-e-version">Church Songs - E Version</h1>
-<p><br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/></p>
+	coverFileHtmlFormat = `<div style="text-align: center">
+<h1 id="church-songs-e-version-%s">Church Songs - E Version %s</h1>
+<p>Date: %s
+<br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/></p>
 <h3 id="key">Key:</h3>
 <h4 id="books">Books</h4>
 <p>R=Red Book (Songs We Love)<br>
