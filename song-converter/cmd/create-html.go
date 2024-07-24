@@ -133,7 +133,7 @@ var CreateHtmlCmd = &cobra.Command{
 }
 
 func init() {
-	SongConverterCmd.AddCommand(CreateHtmlCmd)
+	rootCmd.AddCommand(CreateHtmlCmd)
 
 	CreateHtmlCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := CreateHtmlCmd.MarkFlagRequired("working-dir")

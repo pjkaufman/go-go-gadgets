@@ -37,3 +37,4 @@ generate:
 	@go run --tags="generate" ./ebook-lint/main.go generate -g ./ebook-lint/
 	@go run --tags="generate" ./jp-proc/main.go generate -g ./jp-proc/
 	@go run --tags="generate" ./magnum/main.go generate -g ./magnum/
+	@go run --tags="generate" ./song-converter/main.go generate -g ./song-converter/
