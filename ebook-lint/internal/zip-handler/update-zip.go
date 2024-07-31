@@ -1,16 +1,14 @@
-package epubhandler
+package ziphandler
 
 import (
 	"archive/zip"
 	"fmt"
 	"os"
-	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
-func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, EpubInfo, string) []string) error {
+func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) []string) error {
 	r, zipFiles, err := filehandler.GetFilesFromZip(src)
 	if err != nil {
 		return fmt.Errorf("failed to get zip contents for %q: %w", src, err)
@@ -18,43 +16,16 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 
 	defer r.Close()
 
-	var (
-		opfFilename string
-		opfFile     *zip.File
-	)
-	for filename, file := range zipFiles {
-		if strings.HasSuffix(filename, "opf") {
-			opfFilename = filename
-			opfFile = file
-			break
-		}
-	}
-
-	if opfFile == nil {
-		return fmt.Errorf("failed to find the opf file for %q", src)
-	}
-
-	fileContents, err := filehandler.ReadInZipFileContents(opfFile)
-	if err != nil {
-		return err
-	}
-
-	epubInfo, err := ParseOpfFile(fileContents)
-	if err != nil {
-		logger.WriteError(fmt.Sprintf("Failed to parse %q for %q: %s", opfFilename, src, err))
-	}
-	var opfFolder = filehandler.GetFileFolder(opfFilename)
-
-	var tempEpub = src + ".temp"
+	var tempZip = src + ".temp"
 	var runOperation = func() error {
-		tempEpubFile, err := os.Create(tempEpub)
+		tempZipFile, err := os.Create(tempZip)
 		if err != nil {
-			return fmt.Errorf("failed to create temporary epub file %q for %q: %w", tempEpub, src, err)
+			return fmt.Errorf("failed to create temporary zip file %q for %q: %w", tempZip, src, err)
 		}
 
-		defer tempEpubFile.Close()
+		defer tempZipFile.Close()
 
-		w := zip.NewWriter(tempEpubFile)
+		w := zip.NewWriter(tempZipFile)
 		defer w.Close()
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
@@ -63,11 +34,10 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 				return fmt.Errorf("failed to copy mimetype to zip file")
 			}
 		} else {
-			// TODO: add mimetype if missing
 			return fmt.Errorf("no mimetype exists for %q", src)
 		}
 
-		filesHandled := operation(zipFiles, w, epubInfo, opfFolder)
+		filesHandled := operation(zipFiles, w)
 		filesHandled = append(filesHandled, "mimetype")
 
 		var handled bool
@@ -105,7 +75,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 	}
 
 	filehandler.MustRename(src, src+".original")
-	filehandler.MustRename(tempEpub, src)
+	filehandler.MustRename(tempZip, src)
 
 	return nil
 }
