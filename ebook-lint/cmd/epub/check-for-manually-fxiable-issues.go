@@ -1,11 +1,13 @@
 package epub
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -146,93 +148,104 @@ var fixableCmd = &cobra.Command{
 
 		logger.WriteInfo("Started showing manually fixable issues...\n")
 
-		// var epubFolder = filehandler.GetFileFolder(epubFile)
-		// var dest = filehandler.JoinPath(epubFolder, "epub")
-		// filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() {
-		// 	opfFolder, epubInfo := getEpubInfo(dest, epubFile)
-		// 	validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-		// 	validateFilesExist(opfFolder, epubInfo.CssFiles)
+		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
+			validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+			validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
 
-		// 	var addCssSectionIfMissing bool = false
-		// 	var addCssPageIfMissing bool = false
-		// 	if runAll || runSectionBreak {
-		// 		contextBreak = logger.GetInputString("What is the section break for the epub?:")
+			var handledFiles []string
+			var addCssSectionIfMissing bool = false
+			var addCssPageIfMissing bool = false
+			if runAll || runSectionBreak {
+				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
-		// 		if strings.TrimSpace(contextBreak) == "" {
-		// 			logger.WriteError("Please provide a non-whitespace section break")
-		// 		}
+				if strings.TrimSpace(contextBreak) == "" {
+					logger.WriteError("Please provide a non-whitespace section break")
+				}
 
-		// 		/**
-		// 		TODO: handle the scenario where the section break is an image
+				/**
+				TODO: handle the scenario where the section break is an image
 
-		// 		Image Context Breaks
-		// 		To use an image:
+				Image Context Breaks
+				To use an image:
 
-		// 		In the CSS:
-		// 		hr.image {
-		// 		display:block;
-		// 		background: transparent url("images/sectionBreakImage.png") no-repeat center;
-		// 		height:2em;
-		// 		border:0;
-		// 		}
+				In the CSS:
+				hr.image {
+				display:block;
+				background: transparent url("images/sectionBreakImage.png") no-repeat center;
+				height:2em;
+				border:0;
+				}
 
-		// 		In the HTML:
-		// 		<hr class="image" />
-		// 		**/
-		// 	}
+				In the HTML:
+				<hr class="image" />
+				**/
+			}
 
-		// 	var cssFiles = make([]string, len(epubInfo.CssFiles))
-		// 	var i = 0
-		// 	for cssFile := range epubInfo.CssFiles {
-		// 		cssFiles[i] = cssFile
-		// 		i++
-		// 	}
+			var cssFiles = make([]string, len(epubInfo.CssFiles))
+			var i = 0
+			for cssFile := range epubInfo.CssFiles {
+				cssFiles[i] = cssFile
+				i++
+			}
 
-		// 	if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-		// 		logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
-		// 	}
+			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+				logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
+			}
 
-		// 	var saveAndQuit = false
-		// 	for file := range epubInfo.HtmlFiles {
-		// 		if saveAndQuit {
-		// 			break
-		// 		}
+			var saveAndQuit = false
+			for file := range epubInfo.HtmlFiles {
+				if saveAndQuit {
+					break
+				}
 
-		// 		var filePath = getFilePath(opfFolder, file)
-		// 		fileText := filehandler.ReadInFileContents(filePath)
+				var filePath = getFilePath(opfFolder, file)
+				zipFile := zipFiles[filePath]
 
-		// 		var newText = linter.CleanupHtmlSpacing(fileText)
+				fileText, err := filehandler.ReadInZipFileContents(zipFile)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
 
-		// 		for _, potentiallyFixableIssue := range potentiallyFixableIssues {
-		// 			if saveAndQuit {
-		// 				break
-		// 			}
+				var newText = linter.CleanupHtmlSpacing(fileText)
 
-		// 			if potentiallyFixableIssue.isEnabled == nil {
-		// 				logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
-		// 			}
+				for _, potentiallyFixableIssue := range potentiallyFixableIssues {
+					if saveAndQuit {
+						break
+					}
 
-		// 			if runAll || *potentiallyFixableIssue.isEnabled {
-		// 				suggestions := potentiallyFixableIssue.getSuggestions(newText)
+					if potentiallyFixableIssue.isEnabled == nil {
+						logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
+					}
 
-		// 				var updateMade bool
-		// 				newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
+					if runAll || *potentiallyFixableIssue.isEnabled {
+						suggestions := potentiallyFixableIssue.getSuggestions(newText)
 
-		// 				if potentiallyFixableIssue.addCssIfMissing && updateMade {
-		// 					addCssSectionIfMissing = addCssSectionIfMissing || updateMade
-		// 				}
-		// 			}
-		// 		}
+						var updateMade bool
+						newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
 
-		// 		if fileText == newText {
-		// 			continue
-		// 		}
+						if potentiallyFixableIssue.addCssIfMissing && updateMade {
+							addCssSectionIfMissing = addCssSectionIfMissing || updateMade
+						}
+					}
+				}
 
-		// 		filehandler.WriteFileContents(filePath, newText)
-		// 	}
+				if fileText == newText {
+					continue
+				}
 
-		// 	handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak)
-		// })
+				err = filehandler.WriteZipCompressedString(w, filePath, newText)
+				if err != nil {
+					logger.WriteError(err.Error())
+				}
+
+				handledFiles = append(handledFiles, filePath)
+			}
+
+			return handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
+		})
+		if err != nil {
+			logger.WriteError(fmt.Sprintf("failed to fix manually fixable issues for %q: %s", epubFile, err))
+		}
 
 		logger.WriteInfo("\nFinished showing manually fixable issues...")
 	},
@@ -317,9 +330,9 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	return newText, valueReplaced, false
 }
 
-func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder string, cssFiles []string, contextBreak string) {
+func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder string, cssFiles []string, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) []string {
 	if !addCssSectionIfMissing && !addCssPageIfMissing {
-		return
+		return handledFiles
 	}
 
 	var cssSelectionPrompt = "Please enter the number of the css file to append the css to:\n"
@@ -334,7 +347,8 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 	var cssFile = cssFiles[selectedCssFileIndex]
 	var cssFilePath = filehandler.JoinPath(opfFolder, cssFile)
-	css, err := filehandler.ReadInFileContents(cssFilePath)
+	zipFile := zipFiles[cssFilePath]
+	css, err := filehandler.ReadInZipFileContents(zipFile)
 	if err != nil {
 		logger.WriteError(err.Error())
 	}
@@ -349,11 +363,14 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 		newCssText = linter.AddCssPageBreakIfMissing(newCssText)
 	}
 
-	if newCssText != css {
-		err = filehandler.WriteFileContents(cssFilePath, newCssText)
-
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
+	if newCssText == css {
+		return handledFiles
 	}
+
+	err = filehandler.WriteZipCompressedString(w, cssFilePath, newCssText)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	return append(handledFiles, cssFilePath)
 }
