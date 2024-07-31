@@ -307,10 +307,7 @@ func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
 
 func WriteZipCompressedBytes(w *zip.Writer, filename string, data []byte) error {
 	var reader = bytes.NewReader(data)
-	f, err := w.CreateHeader(&zip.FileHeader{
-		Name:   filename,
-		Method: zip.Store,
-	})
+	f, err := w.Create(filename)
 	if err != nil {
 		return err
 	}

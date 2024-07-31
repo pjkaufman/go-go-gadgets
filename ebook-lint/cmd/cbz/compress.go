@@ -1,12 +1,17 @@
 package cbz
 
 import (
+	"archive/zip"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	filesize "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/file-size"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/images"
+	ziphandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/zip-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
+	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -81,20 +86,51 @@ func init() {
 }
 
 func compressCbz(lintDir, cbz string) {
-	// var src = filehandler.JoinPath(lintDir, cbz)
-	// var dest = filehandler.JoinPath(lintDir, "cbz")
+	var src = filehandler.JoinPath(lintDir, cbz)
 
-	// filehandler.UnzipRunOperationAndRezip(src, dest, func() {
-	// 	var imageFiles = filehandler.MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dest, image.CompressableImageExts...)
+	err := ziphandler.UpdateZip(src, func(zipFiles map[string]*zip.File, w *zip.Writer) []string {
+		var (
+			handledFiles, imagePaths []string
+		)
+		for filePath := range zipFiles {
+			if !fileHasOneOfExts(filePath, image.CompressableImageExts) {
+				continue
+			}
 
-	// 	for i, imageFile := range imageFiles {
-	// 		if verbose {
-	// 			logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, len(imageFiles), imageFile))
-	// 		}
+			imagePaths = append(imagePaths, filePath)
+		}
 
-	// 		images.CompressImage(imageFile)
-	// 	}
-	// })
+		var numFiles = len(imagePaths)
+		for i, imagePath := range imagePaths {
+			if verbose {
+				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, numFiles, imagePath))
+			}
+
+			imageFile := zipFiles[imagePath]
+
+			data, err := filehandler.ReadInZipFileBytes(imageFile)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
+			newData, err := images.CompressImage(imagePath, data)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
+			err = filehandler.WriteZipCompressedBytes(w, imagePath, newData)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
+
+			handledFiles = append(handledFiles, imagePath)
+		}
+
+		return handledFiles
+	})
+	if err != nil {
+		logger.WriteError(fmt.Sprintf("failed to compress cbz images for %q: %s", cbz, err))
+	}
 }
 
 func ValidateCompressFlags(dir string) error {
@@ -103,4 +139,14 @@ func ValidateCompressFlags(dir string) error {
 	}
 
 	return nil
+}
+
+func fileHasOneOfExts(fileName string, exts []string) bool {
+	for _, ext := range exts {
+		if strings.HasSuffix(fileName, ext) {
+			return true
+		}
+	}
+
+	return false
 }

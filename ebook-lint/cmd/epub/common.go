@@ -46,7 +46,7 @@ var epubFile string
 // 	}
 // }
 
-func validateFilesExist(opfFolder string, files map[string]struct{}, zipFiles map[string]*zip.File) {
+func validateFilesExist(opfFolder string, files map[string]struct{}, zipFiles map[string]*zip.File) error {
 	for file := range files {
 		var filePath = getFilePath(opfFolder, file)
 

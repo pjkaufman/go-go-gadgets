@@ -2,7 +2,6 @@ package epub
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -125,10 +124,6 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 			newText = linter.EnsureLanguageIsSet(newText, lang)
 
-			if fileText == newText {
-				continue
-			}
-
 			err = filehandler.WriteZipCompressedString(w, filePath, newText)
 			if err != nil {
 				logger.WriteError(err.Error())
@@ -155,10 +150,6 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 					logger.WriteError(err.Error())
 				}
 
-				if bytes.Equal(data, newData) {
-					continue
-				}
-
 				err = filehandler.WriteZipCompressedBytes(w, filePath, newData)
 				if err != nil {
 					logger.WriteError(err.Error())
@@ -170,9 +161,12 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 		return handledFiles
 	})
+
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to update epub %q: %s", src, err))
+		return fmt.Errorf("failed to update epub %q: %s", src, err)
 	}
+
+	return nil
 }
 
 func ValidateCompressAndLintFlags(lintDir, lang string) error {

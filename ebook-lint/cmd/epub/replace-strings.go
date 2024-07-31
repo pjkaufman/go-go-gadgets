@@ -3,6 +3,7 @@ package epub
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -57,7 +58,15 @@ var replaceStringsCmd = &cobra.Command{
 		logger.WriteInfo("Starting epub string replacement...\n")
 
 		var numHits = make(map[string]int)
-		var extraTextReplacements = linter.ParseTextReplacements(filehandler.ReadInFileContents(extraReplacesFilePath))
+		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
 			validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
@@ -75,10 +84,6 @@ var replaceStringsCmd = &cobra.Command{
 
 				var newText = linter.CommonStringReplace(fileText)
 				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
-
-				if fileText == newText {
-					continue
-				}
 
 				err = filehandler.WriteZipCompressedString(w, filePath, newText)
 				if err != nil {

@@ -476,7 +476,7 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 	},
 	"make sure that parsing package data that is html encoded is properly decoded": {
 		InputText: htmlEncodedOpf,
-		ExpectedEpubInfo: linter.EpubInfo{
+		ExpectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"Text/titlepage.xhtml":                                {},
 				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html": {},

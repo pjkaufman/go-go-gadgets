@@ -17,9 +17,11 @@ func CompressImage(filePath string, data []byte) ([]byte, error) {
 		return data, nil
 	}
 
-	var newData []byte
-
-	var isPng = strings.HasSuffix(filePath, ".png")
+	var (
+		newData []byte
+		isPng   = strings.HasSuffix(filePath, ".png")
+		err     error
+	)
 	if isPng {
 		newData, err = image.PngRemoveExifData(data)
 	} else {

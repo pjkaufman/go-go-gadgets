@@ -229,10 +229,6 @@ var fixableCmd = &cobra.Command{
 					}
 				}
 
-				if fileText == newText {
-					continue
-				}
-
 				err = filehandler.WriteZipCompressedString(w, filePath, newText)
 				if err != nil {
 					logger.WriteError(err.Error())
