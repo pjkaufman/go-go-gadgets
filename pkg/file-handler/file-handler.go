@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 )
 
@@ -32,7 +31,7 @@ func FileExists(path string) (bool, error) {
 	return true, nil
 }
 
-func FileMustExist(path, name string) error {
+func FileArgExists(path, name string) error {
 	if strings.TrimSpace(path) == "" {
 		return fmt.Errorf("%s must have a non-whitespace value", name)
 	}
@@ -70,7 +69,7 @@ func FolderExists(path string) (bool, error) {
 	return true, nil
 }
 
-func FolderMustExist(path, name string) error {
+func FolderArgExists(path, name string) error {
 	if strings.TrimSpace(path) == "" {
 		return fmt.Errorf("%s must have a non-whitespace value", name)
 	}
@@ -203,7 +202,7 @@ func WriteBinaryFileContents(path string, content []byte) error {
 	return nil
 }
 
-func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) ([]string, error) {
+func GetAllFilesWithExtInASpecificFolder(dir, ext string) ([]string, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, fmt.Errorf(`failed to read in folder %q: %w`, dir, err)
@@ -219,43 +218,7 @@ func MustGetAllFilesWithExtInASpecificFolder(dir, ext string) ([]string, error) 
 	return fileList, nil
 }
 
-// based on https://stackoverflow.com/a/67629473
-func MustGetAllFilesWithExtsInASpecificFolderAndSubFolders(dir string, exts ...string) ([]string, error) {
-	var a []string
-	err := filepath.WalkDir(dir, func(s string, d fs.DirEntry, e error) error {
-		if e != nil {
-			return e
-		}
-
-		var name = strings.ToLower(d.Name())
-		if len(exts) == 1 {
-			if strings.HasSuffix(name, exts[0]) {
-				a = append(a, s)
-			}
-		} else if fileHasOneOfExts(name, exts) {
-			a = append(a, s)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to walk dir %q: %w", dir, err)
-	}
-
-	return a, nil
-}
-
-func fileHasOneOfExts(fileName string, exts []string) bool {
-	for _, ext := range exts {
-		if strings.HasSuffix(fileName, ext) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func MustRename(src, dest string) error {
+func Rename(src, dest string) error {
 	err := os.Rename(src, dest)
 
 	if err != nil {
@@ -265,7 +228,7 @@ func MustRename(src, dest string) error {
 	return nil
 }
 
-func MustGetFileSize(path string) (float64, error) {
+func GetFileSize(path string) (float64, error) {
 	if strings.TrimSpace(path) == "" {
 		return 0, fmt.Errorf("to get a file's size it must have a non-empty path")
 	}
@@ -282,7 +245,7 @@ func MustGetFileSize(path string) (float64, error) {
 	return float64(f.Size()) / bytesInAKiloByte, nil
 }
 
-func MustCreateFolderIfNotExists(path string) error {
+func CreateFolderIfNotExists(path string) error {
 	folderExists, err := FolderExists(path)
 	if err != nil {
 		return err

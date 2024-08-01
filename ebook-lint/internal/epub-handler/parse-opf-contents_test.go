@@ -1,18 +1,18 @@
 //go:build unit
 
-package linter_test
+package epubhandler_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/stretchr/testify/assert"
 )
 
 type ParseOpfContentsTestCase struct {
 	InputText        string
-	ExpectedEpubInfo linter.EpubInfo
+	ExpectedEpubInfo epubhandler.EpubInfo
 	ExpectedErr      error
 	IsSyntaxError    bool
 }
@@ -356,11 +356,11 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 	},
 	"make sure that parsing an opf that does have a package tag, but no version info results in an error": {
 		InputText:   noVersionFile,
-		ExpectedErr: linter.ErrNoPackageInfo,
+		ExpectedErr: epubhandler.ErrNoPackageInfo,
 	},
 	"make sure that parsing an opf that does not have a manifest tag results in an error": {
 		InputText:   noManifestFile,
-		ExpectedErr: linter.ErrNoManifest,
+		ExpectedErr: epubhandler.ErrNoManifest,
 	},
 	"make sure that parsing an opf that does have a manifest tag, but no ending manifest tag results in an error": {
 		InputText:     noManifestEndFile,
@@ -368,11 +368,11 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 	},
 	"make sure that parsing an opf that does have a manifest tag, but no list items in it results in an error": {
 		InputText:   noManifestContentsFile,
-		ExpectedErr: linter.ErrNoItemEls,
+		ExpectedErr: epubhandler.ErrNoItemEls,
 	},
 	"make sure that parsing an epub 2 has the proper version info and other package data": {
 		InputText: epub2PackageFile,
-		ExpectedEpubInfo: linter.EpubInfo{
+		ExpectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"titlepage.xhtml":         {},
 				"chapter_1.html":          {},
@@ -418,7 +418,7 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 	},
 	"make sure that parsing an epub 3 has the proper version info and other package data": {
 		InputText: epub3PackageFile,
-		ExpectedEpubInfo: linter.EpubInfo{
+		ExpectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"Text/CoverPage.html":       {},
 				"Text/TableOfContents.html": {},
@@ -476,7 +476,7 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 	},
 	"make sure that parsing package data that is html encoded is properly decoded": {
 		InputText: htmlEncodedOpf,
-		ExpectedEpubInfo: linter.EpubInfo{
+		ExpectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"Text/titlepage.xhtml":                                {},
 				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html": {},
@@ -559,13 +559,13 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 func TestParseOpfContents(t *testing.T) {
 	for name, args := range ParseOpfContentsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := linter.ParseOpfFile(args.InputText)
+			actual, err := epubhandler.ParseOpfFile(args.InputText)
 
 			if !args.IsSyntaxError {
 				assert.Equal(t, args.ExpectedErr, err)
 			} else {
 				assert.NotNil(t, err)
-				assert.True(t, strings.HasPrefix(err.Error(), linter.ErrorParsingXmlMessageStart), "A syntax error must start with the syntax error prefix")
+				assert.True(t, strings.HasPrefix(err.Error(), epubhandler.ErrorParsingXmlMessageStart), "A syntax error must start with the syntax error prefix")
 			}
 
 			if err == nil {

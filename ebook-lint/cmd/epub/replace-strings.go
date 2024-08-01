@@ -1,11 +1,13 @@
 package epub
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -43,12 +45,12 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(epubFile, "epub-file")
+		err = filehandler.FileArgExists(epubFile, "epub-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(extraReplacesFilePath, "extra-replace-file")
+		err = filehandler.FileArgExists(extraReplacesFilePath, "extra-replace-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -66,37 +68,32 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		var epubFolder = filehandler.GetFileFolder(epubFile)
-		var dest = filehandler.JoinPath(epubFolder, "epub")
-		err = filehandler.UnzipRunOperationAndRezip(epubFile, dest, func() error {
-			opfFolder, epubInfo, err := getEpubInfo(dest, epubFile)
+		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles)
-			if err != nil {
-				return err
-			}
+			var handledFiles []string
 
 			for file := range epubInfo.HtmlFiles {
 				var filePath = getFilePath(opfFolder, file)
-				fileText, err := filehandler.ReadInFileContents(filePath)
+				zipFile := zipFiles[filePath]
+
+				fileText, err := filehandler.ReadInZipFileContents(zipFile)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				var newText = linter.CommonStringReplace(fileText)
 				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
 
-				if fileText == newText {
-					continue
+				err = filehandler.WriteZipCompressedString(w, filePath, newText)
+				if err != nil {
+					return nil, err
 				}
 
-				err = filehandler.WriteFileContents(filePath, newText)
-				if err != nil {
-					return err
-				}
+				handledFiles = append(handledFiles, filePath)
 			}
 
 			var successfulReplaces []string
@@ -120,18 +117,18 @@ var replaceStringsCmd = &cobra.Command{
 			}
 
 			if len(failedReplaces) == 0 {
-				return nil
+				return handledFiles, nil
 			}
 
 			logger.WriteWarn("\nFailed Replaces:")
 			for i, failedReplace := range failedReplaces {
-				logger.WriteWarnf("%d. %s\n", i+1, failedReplace)
+				logger.WriteWarnf("%d. %s", i+1, failedReplace)
 			}
 
-			return nil
+			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteErrorf("failed to replace strings in %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("\nFinished epub string replacement...")

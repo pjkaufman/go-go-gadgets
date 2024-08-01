@@ -29,7 +29,7 @@ var procCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(file, "file")
+		err = filehandler.FileArgExists(file, "file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

@@ -1,4 +1,4 @@
-package linter
+package epubhandler
 
 import (
 	"encoding/xml"

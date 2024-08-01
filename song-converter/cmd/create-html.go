@@ -67,12 +67,12 @@ var CreateHtmlCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FolderMustExist(stagingDir, "working-dir")
+		err = filehandler.FolderArgExists(stagingDir, "working-dir")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(coverInputFilePath, "cover-file")
+		err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -96,7 +96,7 @@ var CreateHtmlCmd = &cobra.Command{
 			logger.WriteInfo("Converting Markdown files to html")
 		}
 
-		files, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
+		files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

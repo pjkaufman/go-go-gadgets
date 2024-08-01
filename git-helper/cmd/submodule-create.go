@@ -49,7 +49,7 @@ var createCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FolderMustExist(repoFolderPath, "repo-parent-path")
+		err = filehandler.FolderArgExists(repoFolderPath, "repo-parent-path")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

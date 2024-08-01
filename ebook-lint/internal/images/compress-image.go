@@ -1,46 +1,34 @@
 package images
 
 import (
-	"bytes"
 	"strings"
 
-	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 )
 
 var (
-	width   int = 800
-	quality int = 40
+	width         int = 800
+	quality       int = 40
+	minimumKbSize     = 150
 )
 
-func CompressImage(filePath string) error {
-	if !isCompressableImage(filePath) {
-		return nil
+func CompressImage(filePath string, data []byte) ([]byte, error) {
+	if !isCompressableImage(filePath) || len(data)/1024 <= minimumKbSize {
+		return data, nil
 	}
 
-	fileSize, err := filehandler.MustGetFileSize(filePath)
-	if err != nil {
-		return err
-	}
-
-	if fileSize < 150 {
-		return nil
-	}
-
-	var newData []byte
-	data, err := filehandler.ReadInBinaryFileContents(filePath)
-	if err != nil {
-		return err
-	}
-
-	var isPng = strings.HasSuffix(filePath, ".png")
+	var (
+		newData []byte
+		isPng   = strings.HasSuffix(filePath, ".png")
+		err     error
+	)
 	if isPng {
 		newData, err = image.PngRemoveExifData(data)
 	} else {
 		newData, err = image.JpegRemoveExifData(data)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if isPng {
@@ -49,18 +37,10 @@ func CompressImage(filePath string) error {
 		newData, err = image.JpegResize(newData, width, &quality)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if !bytes.Equal(data, newData) {
-		err = filehandler.WriteBinaryFileContents(filePath, newData)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return newData, nil
 }
 
 func isCompressableImage(imagePath string) bool {
