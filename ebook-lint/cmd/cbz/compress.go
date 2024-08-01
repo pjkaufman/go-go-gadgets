@@ -52,7 +52,10 @@ var compressCmd = &cobra.Command{
 		for _, cbz := range cbzs {
 			logger.WriteInfof("starting cbz compression for %s...\n", cbz)
 
-			compressCbz(dir, cbz)
+			err = compressCbz(dir, cbz)
+			if err != nil {
+				logger.WriteError(err.Error())
+			}
 
 			var originalFile = cbz + ".original"
 
@@ -85,10 +88,10 @@ func init() {
 	compressCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra information about the image compression")
 }
 
-func compressCbz(lintDir, cbz string) {
+func compressCbz(lintDir, cbz string) error {
 	var src = filehandler.JoinPath(lintDir, cbz)
 
-	err := ziphandler.UpdateZip(src, func(zipFiles map[string]*zip.File, w *zip.Writer) []string {
+	err := ziphandler.UpdateZip(src, func(zipFiles map[string]*zip.File, w *zip.Writer) ([]string, error) {
 		var (
 			handledFiles, imagePaths []string
 		)
@@ -103,34 +106,36 @@ func compressCbz(lintDir, cbz string) {
 		var numFiles = len(imagePaths)
 		for i, imagePath := range imagePaths {
 			if verbose {
-				logger.WriteInfo(fmt.Sprintf(`%d of %d: compressing %q`, i, numFiles, imagePath))
+				logger.WriteInfof(`%d of %d: compressing %q`, i, numFiles, imagePath)
 			}
 
 			imageFile := zipFiles[imagePath]
 
 			data, err := filehandler.ReadInZipFileBytes(imageFile)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return nil, err
 			}
 
 			newData, err := images.CompressImage(imagePath, data)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return nil, err
 			}
 
 			err = filehandler.WriteZipCompressedBytes(w, imagePath, newData)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return nil, err
 			}
 
 			handledFiles = append(handledFiles, imagePath)
 		}
 
-		return handledFiles
+		return handledFiles, nil
 	})
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("failed to compress cbz images for %q: %s", cbz, err))
+		return fmt.Errorf("failed to compress cbz images for %q: %s", cbz, err)
 	}
+
+	return nil
 }
 
 func ValidateCompressFlags(dir string) error {

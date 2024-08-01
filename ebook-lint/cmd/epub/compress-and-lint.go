@@ -101,10 +101,21 @@ func init() {
 
 func LintEpub(lintDir, epub string, runCompressImages bool) error {
 	var src = filehandler.JoinPath(lintDir, epub)
-	err := epubhandler.UpdateEpub(src, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
-		validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
-		validateFilesExist(opfFolder, epubInfo.ImagesFiles, zipFiles)
-		validateFilesExist(opfFolder, epubInfo.OtherFiles, zipFiles)
+	err := epubhandler.UpdateEpub(src, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.ImagesFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.OtherFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
 
 		var handledFiles []string
 
@@ -116,7 +127,7 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return nil, err
 			}
 
 			var newText = linter.EnsureEncodingIsPresent(fileText)
@@ -126,7 +137,7 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 			err = filehandler.WriteZipCompressedString(w, filePath, newText)
 			if err != nil {
-				logger.WriteError(err.Error())
+				return nil, err
 			}
 
 			handledFiles = append(handledFiles, filePath)
@@ -142,26 +153,25 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 				data, err := filehandler.ReadInZipFileBytes(imageFile)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				newData, err := images.CompressImage(filePath, data)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				err = filehandler.WriteZipCompressedBytes(w, filePath, newData)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				handledFiles = append(handledFiles, filePath)
 			}
 		}
 
-		return handledFiles
+		return handledFiles, nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to update epub %q: %s", src, err)
 	}

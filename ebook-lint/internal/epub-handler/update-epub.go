@@ -7,10 +7,9 @@ import (
 	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
-func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, EpubInfo, string) []string) error {
+func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, EpubInfo, string) ([]string, error)) error {
 	r, zipFiles, err := filehandler.GetFilesFromZip(src)
 	if err != nil {
 		return fmt.Errorf("failed to get zip contents for %q: %w", src, err)
@@ -41,7 +40,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 
 	epubInfo, err := ParseOpfFile(fileContents)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("Failed to parse %q for %q: %s", opfFilename, src, err))
+		return fmt.Errorf("failed to parse %q for %q: %s", opfFilename, src, err)
 	}
 	var opfFolder = filehandler.GetFileFolder(opfFilename)
 
@@ -67,7 +66,11 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 			return fmt.Errorf("no mimetype exists for %q", src)
 		}
 
-		filesHandled := operation(zipFiles, w, epubInfo, opfFolder)
+		filesHandled, err := operation(zipFiles, w, epubInfo, opfFolder)
+		if err != nil {
+			return err
+		}
+
 		filesHandled = append(filesHandled, "mimetype")
 
 		var handled bool

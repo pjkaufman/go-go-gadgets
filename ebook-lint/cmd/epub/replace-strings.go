@@ -68,7 +68,7 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
+		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 
 			var handledFiles []string
@@ -79,7 +79,7 @@ var replaceStringsCmd = &cobra.Command{
 
 				fileText, err := filehandler.ReadInZipFileContents(zipFile)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				var newText = linter.CommonStringReplace(fileText)
@@ -87,7 +87,7 @@ var replaceStringsCmd = &cobra.Command{
 
 				err = filehandler.WriteZipCompressedString(w, filePath, newText)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				handledFiles = append(handledFiles, filePath)
@@ -114,7 +114,7 @@ var replaceStringsCmd = &cobra.Command{
 			}
 
 			if len(failedReplaces) == 0 {
-				return handledFiles
+				return handledFiles, nil
 			}
 
 			logger.WriteWarn("\nFailed Replaces:")
@@ -122,7 +122,7 @@ var replaceStringsCmd = &cobra.Command{
 				logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
 			}
 
-			return handledFiles
+			return handledFiles, nil
 		})
 		if err != nil {
 			logger.WriteError(fmt.Sprintf("failed to replace strings in %q: %s", epubFile, err))

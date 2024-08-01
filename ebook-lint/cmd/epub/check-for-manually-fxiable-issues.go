@@ -148,18 +148,26 @@ var fixableCmd = &cobra.Command{
 
 		logger.WriteInfo("Started showing manually fixable issues...\n")
 
-		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) []string {
-			validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
-			validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
+		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+			if err != nil {
+				return nil, err
+			}
 
-			var handledFiles []string
-			var addCssSectionIfMissing bool = false
-			var addCssPageIfMissing bool = false
+			err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
+			if err != nil {
+				return nil, err
+			}
+
+			var (
+				handledFiles                                []string
+				addCssSectionIfMissing, addCssPageIfMissing bool
+			)
 			if runAll || runSectionBreak {
 				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 				if strings.TrimSpace(contextBreak) == "" {
-					logger.WriteError("Please provide a non-whitespace section break")
+					return nil, errors.New("please provide a non-whitespace section break")
 				}
 
 				/**
@@ -189,7 +197,7 @@ var fixableCmd = &cobra.Command{
 			}
 
 			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-				logger.WriteError(CssPathsEmptyWhenArgIsNeeded)
+				return nil, fmt.Errorf(CssPathsEmptyWhenArgIsNeeded)
 			}
 
 			var saveAndQuit = false
@@ -203,7 +211,7 @@ var fixableCmd = &cobra.Command{
 
 				fileText, err := filehandler.ReadInZipFileContents(zipFile)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				var newText = linter.CleanupHtmlSpacing(fileText)
@@ -214,7 +222,7 @@ var fixableCmd = &cobra.Command{
 					}
 
 					if potentiallyFixableIssue.isEnabled == nil {
-						logger.WriteError(fmt.Sprintf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name))
+						return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
 					}
 
 					if runAll || *potentiallyFixableIssue.isEnabled {
@@ -231,7 +239,7 @@ var fixableCmd = &cobra.Command{
 
 				err = filehandler.WriteZipCompressedString(w, filePath, newText)
 				if err != nil {
-					logger.WriteError(err.Error())
+					return nil, err
 				}
 
 				handledFiles = append(handledFiles, filePath)
@@ -326,9 +334,9 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	return newText, valueReplaced, false
 }
 
-func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder string, cssFiles []string, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) []string {
+func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder string, cssFiles []string, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) ([]string, error) {
 	if !addCssSectionIfMissing && !addCssPageIfMissing {
-		return handledFiles
+		return handledFiles, nil
 	}
 
 	var cssSelectionPrompt = "Please enter the number of the css file to append the css to:\n"
@@ -338,7 +346,7 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt)
 	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(cssFiles) {
-		logger.WriteErrorf("Please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
+		return nil, fmt.Errorf("please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
 	}
 
 	var cssFile = cssFiles[selectedCssFileIndex]
@@ -346,11 +354,10 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 	zipFile := zipFiles[cssFilePath]
 	css, err := filehandler.ReadInZipFileContents(zipFile)
 	if err != nil {
-		logger.WriteError(err.Error())
+		return nil, err
 	}
 
 	var newCssText = css
-
 	if addCssSectionIfMissing {
 		newCssText = linter.AddCssSectionBreakIfMissing(newCssText, contextBreak)
 	}
@@ -360,13 +367,13 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 	}
 
 	if newCssText == css {
-		return handledFiles
+		return handledFiles, nil
 	}
 
 	err = filehandler.WriteZipCompressedString(w, cssFilePath, newCssText)
 	if err != nil {
-		logger.WriteError(err.Error())
+		return nil, err
 	}
 
-	return append(handledFiles, cssFilePath)
+	return append(handledFiles, cssFilePath), nil
 }

@@ -8,7 +8,7 @@ import (
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 )
 
-func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) []string) error {
+func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]string, error)) error {
 	r, zipFiles, err := filehandler.GetFilesFromZip(src)
 	if err != nil {
 		return fmt.Errorf("failed to get zip contents for %q: %w", src, err)
@@ -37,7 +37,11 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) []s
 			return fmt.Errorf("no mimetype exists for %q", src)
 		}
 
-		filesHandled := operation(zipFiles, w)
+		filesHandled, err := operation(zipFiles, w)
+		if err != nil {
+			return err
+		}
+
 		filesHandled = append(filesHandled, "mimetype")
 
 		var handled bool
