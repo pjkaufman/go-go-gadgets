@@ -69,7 +69,10 @@ var replaceStringsCmd = &cobra.Command{
 		}
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
-			validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+			if err != nil {
+				return nil, err
+			}
 
 			var handledFiles []string
 
@@ -119,13 +122,13 @@ var replaceStringsCmd = &cobra.Command{
 
 			logger.WriteWarn("\nFailed Replaces:")
 			for i, failedReplace := range failedReplaces {
-				logger.WriteWarn(fmt.Sprintf("%d. %s", i+1, failedReplace))
+				logger.WriteWarnf("%d. %s", i+1, failedReplace)
 			}
 
 			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to replace strings in %q: %s", epubFile, err))
+			logger.WriteErrorf("failed to replace strings in %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("\nFinished epub string replacement...")
