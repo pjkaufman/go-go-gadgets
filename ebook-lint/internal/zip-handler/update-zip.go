@@ -78,8 +78,15 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 		return fmt.Errorf("failed to close zip reader: %w", err)
 	}
 
-	filehandler.MustRename(src, src+".original")
-	filehandler.MustRename(tempZip, src)
+	err = filehandler.Rename(src, src+".original")
+	if err != nil {
+		return err
+	}
+
+	err = filehandler.Rename(tempZip, src)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

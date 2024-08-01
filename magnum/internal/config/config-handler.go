@@ -19,7 +19,7 @@ func WriteConfig(config *Config) {
 	}
 
 	configDir := getConfigLocation()
-	err := filehandler.MustCreateFolderIfNotExists(configDir)
+	err := filehandler.CreateFolderIfNotExists(configDir)
 	if err != nil {
 		logger.WriteError(err.Error())
 	}

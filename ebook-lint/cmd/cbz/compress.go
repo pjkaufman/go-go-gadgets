@@ -43,7 +43,7 @@ var compressCmd = &cobra.Command{
 
 		logger.WriteInfo("Started compressing all cbzs\n")
 
-		cbzs, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(dir, ".cbz")
+		cbzs, err := filehandler.GetAllFilesWithExtInASpecificFolder(dir, ".cbz")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -59,12 +59,12 @@ var compressCmd = &cobra.Command{
 
 			var originalFile = cbz + ".original"
 
-			newKbSize, err := filehandler.MustGetFileSize(filehandler.JoinPath(dir, cbz))
+			newKbSize, err := filehandler.GetFileSize(filehandler.JoinPath(dir, cbz))
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
 
-			oldKbSize, err := filehandler.MustGetFileSize(filehandler.JoinPath(dir, originalFile))
+			oldKbSize, err := filehandler.GetFileSize(filehandler.JoinPath(dir, originalFile))
 			if err != nil {
 				logger.WriteError(err.Error())
 			}

@@ -141,7 +141,7 @@ var fixableCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(epubFile, "epub-file")
+		err = filehandler.FileArgExists(epubFile, "epub-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

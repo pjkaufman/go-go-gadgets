@@ -40,7 +40,7 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 				logger.WriteError(err.Error())
 			}
 
-			err = filehandler.FolderMustExist(generationDir, "generation-dir")
+			err = filehandler.FolderArgExists(generationDir, "generation-dir")
 			if err != nil {
 				logger.WriteError(err.Error())
 			}

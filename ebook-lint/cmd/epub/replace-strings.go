@@ -45,12 +45,12 @@ var replaceStringsCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(epubFile, "epub-file")
+		err = filehandler.FileArgExists(epubFile, "epub-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileMustExist(extraReplacesFilePath, "extra-replace-file")
+		err = filehandler.FileArgExists(extraReplacesFilePath, "extra-replace-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

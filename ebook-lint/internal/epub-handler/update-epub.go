@@ -107,8 +107,15 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 		return fmt.Errorf("failed to close zip reader: %w", err)
 	}
 
-	filehandler.MustRename(src, src+".original")
-	filehandler.MustRename(tempEpub, src)
+	err = filehandler.Rename(src, src+".original")
+	if err != nil {
+		return err
+	}
+
+	err = filehandler.Rename(tempEpub, src)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

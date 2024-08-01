@@ -55,7 +55,7 @@ var compressAndLintCmd = &cobra.Command{
 
 		logger.WriteInfo("Starting compression and linting for each epub\n")
 
-		epubs, err := filehandler.MustGetAllFilesWithExtInASpecificFolder(lintDir, ".epub")
+		epubs, err := filehandler.GetAllFilesWithExtInASpecificFolder(lintDir, ".epub")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -70,12 +70,12 @@ var compressAndLintCmd = &cobra.Command{
 			}
 
 			var originalFile = epub + ".original"
-			newKbSize, err := filehandler.MustGetFileSize(epub)
+			newKbSize, err := filehandler.GetFileSize(epub)
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
 
-			oldKbSize, err := filehandler.MustGetFileSize(originalFile)
+			oldKbSize, err := filehandler.GetFileSize(originalFile)
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
