@@ -167,7 +167,7 @@ var fixableCmd = &cobra.Command{
 				contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 				if strings.TrimSpace(contextBreak) == "" {
-					return nil, errors.New("please provide a non-whitespace section break")
+					return nil, fmt.Errorf("please provide a non-whitespace section break")
 				}
 
 				/**
@@ -248,7 +248,7 @@ var fixableCmd = &cobra.Command{
 			return handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
 		})
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("failed to fix manually fixable issues for %q: %s", epubFile, err))
+			logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("\nFinished showing manually fixable issues...")
