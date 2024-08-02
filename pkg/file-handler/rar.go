@@ -13,21 +13,14 @@ func ConvertRarToCbz(src string) error {
 
 	var srcDir = GetFileFolder(src)
 	var tempFolder = JoinPath(srcDir, "cbz")
-	fileExists, err := FolderExists(tempFolder)
+
+	err = os.RemoveAll(tempFolder)
 	if err != nil {
-		return err
-	}
-
-	if fileExists {
-		err = os.RemoveAll(tempFolder)
-
-		if err != nil {
-			return fmt.Errorf("failed to delete the destination directory %q: %w", tempFolder, err)
-		}
+		return fmt.Errorf("failed to delete the destination directory %q: %w", tempFolder, err)
 	}
 
 	rar := archiver.NewRar()
-	err = rar.Unarchive(src, "cbz")
+	err = rar.Unarchive(src, tempFolder)
 	if err != nil {
 		return fmt.Errorf(`failed to unarchive %q: %w`, src, err)
 	}

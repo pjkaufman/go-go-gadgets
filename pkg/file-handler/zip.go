@@ -29,11 +29,11 @@ func Rezip(src, dest string) error {
 	w := zip.NewWriter(file)
 	defer w.Close()
 
-	var mimetypePath = src + string(os.PathSeparator) + "mimetype"
-	err = copyMimetypeToZip(w, src, mimetypePath)
-	if err != nil {
-		return err
-	}
+	// var mimetypePath = src + string(os.PathSeparator) + "mimetype"
+	// err = copyMimetypeToZip(w, src, mimetypePath)
+	// if err != nil {
+	// 	return err
+	// }
 
 	walker := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -45,9 +45,9 @@ func Rezip(src, dest string) error {
 			return nil
 		}
 
-		if mimetypePath == path {
-			return nil
-		}
+		// if mimetypePath == path {
+		// 	return nil
+		// }
 
 		err = writeToZip(w, src, path)
 		if err != nil {
@@ -86,30 +86,30 @@ func writeToZip(w *zip.Writer, src, path string) error {
 	return nil
 }
 
-func copyMimetypeToZip(w *zip.Writer, src, path string) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+// func copyMimetypeToZip(w *zip.Writer, src, path string) error {
+// 	file, err := os.Open(path)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
 
-	// need a zip relative path to avoid creating extra directories inside of the zip
-	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
-	f, err := w.CreateHeader(&zip.FileHeader{
-		Name:   strings.ReplaceAll(zipRelativePath, string(os.PathSeparator), "/"),
-		Method: zip.Store,
-	})
-	if err != nil {
-		return err
-	}
+// 	// need a zip relative path to avoid creating extra directories inside of the zip
+// 	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
+// 	f, err := w.CreateHeader(&zip.FileHeader{
+// 		Name:   strings.ReplaceAll(zipRelativePath, string(os.PathSeparator), "/"),
+// 		Method: zip.Store,
+// 	})
+// 	if err != nil {
+// 		return err
+// 	}
 
-	_, err = io.Copy(f, file)
-	if err != nil {
-		return err
-	}
+// 	_, err = io.Copy(f, file)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func GetFilesFromZip(src string) (*zip.ReadCloser, map[string]*zip.File, error) {
 	r, err := zip.OpenReader(src)
