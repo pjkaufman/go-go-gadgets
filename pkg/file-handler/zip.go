@@ -6,85 +6,82 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 const (
 	// have to use these or similar permissions to avoid permission denied errors in some cases
 	folderPerms fs.FileMode = 0755
-	numWorkers  int         = 5
+	// numWorkers  int         = 5
 )
 
 // Rezip is based on https://stackoverflow.com/a/63233911
-func Rezip(src, dest string) error {
-	file, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
+// func Rezip(src, dest string) error {
+// 	file, err := os.Create(dest)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	defer file.Close()
+// 	defer file.Close()
 
-	w := zip.NewWriter(file)
-	defer w.Close()
+// 	w := zip.NewWriter(file)
+// 	defer w.Close()
 
-	// var mimetypePath = src + string(os.PathSeparator) + "mimetype"
-	// err = copyMimetypeToZip(w, src, mimetypePath)
-	// if err != nil {
-	// 	return err
-	// }
+// 	// var mimetypePath = src + string(os.PathSeparator) + "mimetype"
+// 	// err = copyMimetypeToZip(w, src, mimetypePath)
+// 	// if err != nil {
+// 	// 	return err
+// 	// }
 
-	walker := func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+// 	walker := func(path string, info os.FileInfo, err error) error {
+// 		if err != nil {
+// 			return err
+// 		}
 
-		// skip empty directories
-		if info.IsDir() {
-			return nil
-		}
+// 		// skip empty directories
+// 		if info.IsDir() {
+// 			return nil
+// 		}
 
-		// if mimetypePath == path {
-		// 	return nil
-		// }
+// 		// if mimetypePath == path {
+// 		// 	return nil
+// 		// }
 
-		err = writeToZip(w, src, path)
-		if err != nil {
-			return err
-		}
+// 		err = writeToZip(w, src, path)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		return nil
-	}
-	err = filepath.Walk(src, walker)
-	if err != nil {
-		return err
-	}
+// 		return nil
+// 	}
+// 	err = filepath.Walk(src, walker)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func writeToZip(w *zip.Writer, src, path string) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+// func writeToZip(w *zip.Writer, src, path string) error {
+// 	file, err := os.Open(path)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer file.Close()
 
-	// need a zip relative path to avoid creating extra directories inside of the zip
-	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
-	f, err := w.Create(zipRelativePath)
-	if err != nil {
-		return err
-	}
+// 	// need a zip relative path to avoid creating extra directories inside of the zip
+// 	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
+// 	f, err := w.Create(zipRelativePath)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	_, err = io.Copy(f, file)
-	if err != nil {
-		return err
-	}
+// 	_, err = io.Copy(f, file)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // func copyMimetypeToZip(w *zip.Writer, src, path string) error {
 // 	file, err := os.Open(path)
