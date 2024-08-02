@@ -42,8 +42,8 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 	if err != nil {
 		return fmt.Errorf("failed to parse %q for %q: %s", opfFilename, src, err)
 	}
-	var opfFolder = filehandler.GetFileFolder(opfFilename)
 
+	var opfFolder = filehandler.GetFileFolder(opfFilename)
 	var tempEpub = src + ".temp"
 	var runOperation = func() error {
 		tempEpubFile, err := os.Create(tempEpub)
@@ -58,8 +58,9 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
 			err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
+
 			if err != nil {
-				return fmt.Errorf("failed to copy mimetype to zip file")
+				return fmt.Errorf("failed to copy mimetype to zip file: %w", err)
 			}
 		} else {
 			// TODO: add mimetype if missing

@@ -5,108 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/fs"
 )
-
-const (
-	// have to use these or similar permissions to avoid permission denied errors in some cases
-	folderPerms fs.FileMode = 0755
-	// numWorkers  int         = 5
-)
-
-// Rezip is based on https://stackoverflow.com/a/63233911
-// func Rezip(src, dest string) error {
-// 	file, err := os.Create(dest)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	defer file.Close()
-
-// 	w := zip.NewWriter(file)
-// 	defer w.Close()
-
-// 	// var mimetypePath = src + string(os.PathSeparator) + "mimetype"
-// 	// err = copyMimetypeToZip(w, src, mimetypePath)
-// 	// if err != nil {
-// 	// 	return err
-// 	// }
-
-// 	walker := func(path string, info os.FileInfo, err error) error {
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		// skip empty directories
-// 		if info.IsDir() {
-// 			return nil
-// 		}
-
-// 		// if mimetypePath == path {
-// 		// 	return nil
-// 		// }
-
-// 		err = writeToZip(w, src, path)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		return nil
-// 	}
-// 	err = filepath.Walk(src, walker)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-// func writeToZip(w *zip.Writer, src, path string) error {
-// 	file, err := os.Open(path)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
-
-// 	// need a zip relative path to avoid creating extra directories inside of the zip
-// 	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
-// 	f, err := w.Create(zipRelativePath)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	_, err = io.Copy(f, file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-// func copyMimetypeToZip(w *zip.Writer, src, path string) error {
-// 	file, err := os.Open(path)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer file.Close()
-
-// 	// need a zip relative path to avoid creating extra directories inside of the zip
-// 	var zipRelativePath = strings.Replace(path, src+string(os.PathSeparator), "", 1)
-// 	f, err := w.CreateHeader(&zip.FileHeader{
-// 		Name:   strings.ReplaceAll(zipRelativePath, string(os.PathSeparator), "/"),
-// 		Method: zip.Store,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	_, err = io.Copy(f, file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
 
 func GetFilesFromZip(src string) (*zip.ReadCloser, map[string]*zip.File, error) {
 	r, err := zip.OpenReader(src)
@@ -127,18 +26,7 @@ func GetFilesFromZip(src string) (*zip.ReadCloser, map[string]*zip.File, error) 
 }
 
 func WriteZipCompressedString(w *zip.Writer, filename, contents string) error {
-	var reader = bytes.NewReader([]byte(contents))
-	f, err := w.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, reader)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return compressedWriteToZip(w, bytes.NewReader([]byte(contents)), filename)
 }
 
 func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
@@ -148,32 +36,11 @@ func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	}
 	defer file.Close()
 
-	f, err := w.Create(zipFile.Name)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, file)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return compressedWriteToZip(w, file, zipFile.Name)
 }
 
 func WriteZipCompressedBytes(w *zip.Writer, filename string, data []byte) error {
-	var reader = bytes.NewReader(data)
-	f, err := w.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, reader)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return compressedWriteToZip(w, bytes.NewReader(data), filename)
 }
 
 func WriteZipUncompressedFile(w *zip.Writer, zipFile *zip.File) error {
@@ -183,20 +50,7 @@ func WriteZipUncompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	}
 	defer file.Close()
 
-	f, err := w.CreateHeader(&zip.FileHeader{
-		Name:   zipFile.Name,
-		Method: zip.Store,
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(f, file)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return uncompressedWriteToZip(w, file, zipFile.Name)
 }
 
 func ReadInZipFileContents(zipFile *zip.File) (string, error) {
@@ -229,4 +83,32 @@ func ReadInZipFileBytes(zipFile *zip.File) ([]byte, error) {
 	}
 
 	return fileBytes.Bytes(), nil
+}
+
+func compressedWriteToZip(w *zip.Writer, reader io.Reader, filename string) error {
+	f, err := w.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, reader)
+
+	return err
+}
+
+func uncompressedWriteToZip(w *zip.Writer, reader io.Reader, filename string) error {
+	f, err := w.CreateHeader(&zip.FileHeader{
+		Name:   filename,
+		Method: zip.Store,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, reader)
+	if err != nil {
+		return err
+	}
+
+	return err
 }

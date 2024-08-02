@@ -12,6 +12,7 @@ import (
 const (
 	bytesInAKiloByte float64     = 1024
 	fileRead         fs.FileMode = 0666
+	folderPerms      fs.FileMode = 0755
 )
 
 func FileExists(path string) (bool, error) {
