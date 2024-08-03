@@ -29,6 +29,10 @@ func WriteZipCompressedString(w *zip.Writer, filename, contents string) error {
 	return compressedWriteToZip(w, bytes.NewReader([]byte(contents)), filename)
 }
 
+func WriteZipUncompressedString(w *zip.Writer, filename, contents string) error {
+	return uncompressedWriteToZip(w, bytes.NewReader([]byte(contents)), filename)
+}
+
 func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	file, err := zipFile.Open()
 	if err != nil {

@@ -28,7 +28,7 @@ func ZipsAreEqual(filename, originalFileDir, expectedFileDir string, firstFileMu
 	defer expectedZip.Close()
 
 	if len(actualZip.File) != len(expectedZip.File) {
-		return false, fmt.Sprintf("expected %d files in cbz, but got %d files", len(expectedZip.File), len(actualZip.File))
+		return false, fmt.Sprintf("expected %d files in zip, but got %d files", len(expectedZip.File), len(actualZip.File))
 	}
 
 	if firstFileMustBeMimetype {
