@@ -30,11 +30,10 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
 			err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
+
 			if err != nil {
 				return fmt.Errorf("failed to copy mimetype to zip file")
 			}
-		} else {
-			return fmt.Errorf("no mimetype exists for %q", src)
 		}
 
 		filesHandled, err := operation(zipFiles, w)

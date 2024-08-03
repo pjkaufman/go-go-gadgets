@@ -52,7 +52,7 @@ var compressCmd = &cobra.Command{
 		for _, cbz := range cbzs {
 			logger.WriteInfof("starting cbz compression for %s...\n", cbz)
 
-			err = compressCbz(dir, cbz)
+			err = CompressCbz(dir, cbz)
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
@@ -88,7 +88,7 @@ func init() {
 	compressCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra information about the image compression")
 }
 
-func compressCbz(lintDir, cbz string) error {
+func CompressCbz(lintDir, cbz string) error {
 	var src = filehandler.JoinPath(lintDir, cbz)
 
 	err := ziphandler.UpdateZip(src, func(zipFiles map[string]*zip.File, w *zip.Writer) ([]string, error) {
