@@ -9,6 +9,8 @@ import (
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 )
 
+const defaultMimetypeContents = "application/epub+zip"
+
 func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, EpubInfo, string) ([]string, error)) error {
 	r, zipFiles, err := filehandler.GetFilesFromZip(src)
 	if err != nil {
@@ -63,8 +65,11 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 				return fmt.Errorf("failed to copy mimetype to zip file: %w", err)
 			}
 		} else {
-			// TODO: add mimetype if missing
-			return fmt.Errorf("no mimetype exists for %q", src)
+			err = filehandler.WriteFileContents("mimetype", defaultMimetypeContents)
+
+			if err != nil {
+				return fmt.Errorf("failed to add default mimetype to zip file: %w", err)
+			}
 		}
 
 		filesHandled, err := operation(zipFiles, w, epubInfo, opfFolder)

@@ -31,6 +31,10 @@ var LintEpubTestCases = map[string]LintEpubTestCase{
 		Filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co.epub",
 		CompressImages: false,
 	},
+	"Linting a file without a mimetype should have the mimetype added": {
+		Filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co-missing_mimetype.epub",
+		CompressImages: false,
+	},
 }
 
 func TestLintEpub(t *testing.T) {
