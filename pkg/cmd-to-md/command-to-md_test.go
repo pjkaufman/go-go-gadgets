@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type ParseOpfContentsTestCase struct {
+type CommandToMdTestCase struct {
 	Command        *cobra.Command
 	ExpectedOutput string
 }
 
-var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
+var CommandToMdTestCases = map[string]CommandToMdTestCase{
 	"make sure that a nil command results in an empty string being generated": {
 		Command:        nil,
 		ExpectedOutput: "",
@@ -25,9 +25,6 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 		Command: &cobra.Command{
 			Use:   "test",
 			Short: "Short description",
-			// Long:  "Long description",
-			// Example: `To run the test command:
-			// cmd tomd test --flag`,
 		},
 		ExpectedOutput: "### test\n\nShort description\n\n",
 	},
@@ -49,11 +46,10 @@ cmd to md test --flag`,
 		},
 		ExpectedOutput: "### test\n\nLong description\n\n#### Usage\n\n``` bash\n# To run the test command:\ncmd to md test --flag\n```\n\n",
 	},
-	// TODO: add simple and complex test with actual flags
 }
 
 func TestCommandToMd(t *testing.T) {
-	for name, args := range ParseOpfContentsTestCases {
+	for name, args := range CommandToMdTestCases {
 		t.Run(name, func(t *testing.T) {
 			var actual strings.Builder
 			cmdtomd.CommandToMd(args.Command, &actual, 3)

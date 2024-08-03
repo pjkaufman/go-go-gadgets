@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	tableHeader = `| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |`
-	separator   = `| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |`
+	TableHeader = `| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |`
+	Separator   = `| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |`
 )
 
 func FlagsToMd(flags *pflag.FlagSet, builder *strings.Builder) {
@@ -17,8 +17,8 @@ func FlagsToMd(flags *pflag.FlagSet, builder *strings.Builder) {
 		return
 	}
 
-	builder.WriteString(tableHeader + "\n")
-	builder.WriteString(separator)
+	builder.WriteString(TableHeader + "\n")
+	builder.WriteString(Separator)
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		if flag.Hidden {
