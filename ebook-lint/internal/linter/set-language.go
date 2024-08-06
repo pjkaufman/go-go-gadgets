@@ -1,7 +1,6 @@
 package linter
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -61,7 +60,6 @@ func EnsureLanguageIsSet(text, lang string) string {
 	}
 
 	newHtmlEl.WriteString(htmlEl[:langAttrIndex])
-	fmt.Println("Adds", htmlEl[:langAttrIndex])
 	if htmlEl[langAttrIndex-1:langAttrIndex] == ":" {
 		xmlLangAttributeIsHandled = true
 	} else {
@@ -69,8 +67,6 @@ func EnsureLanguageIsSet(text, lang string) string {
 	}
 
 	handleLangAttribute()
-
-	fmt.Println("after first handling", newHtmlEl.String())
 
 	langAttrIndex = strings.Index(htmlEl[endOfAttr:], langAttribute)
 	if langAttrIndex != -1 {
