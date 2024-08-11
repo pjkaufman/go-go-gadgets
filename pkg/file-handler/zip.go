@@ -96,7 +96,6 @@ func compressedWriteToZip(w *zip.Writer, reader io.Reader, filename string) erro
 	}
 
 	_, err = io.Copy(f, reader)
-
 	return err
 }
 
@@ -110,9 +109,5 @@ func uncompressedWriteToZip(w *zip.Writer, reader io.Reader, filename string) er
 	}
 
 	_, err = io.Copy(f, reader)
-	if err != nil {
-		return err
-	}
-
 	return err
 }
