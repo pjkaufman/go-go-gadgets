@@ -17,29 +17,31 @@ type BuildHtmlSongsTestCase struct {
 	ExpectError   bool
 }
 
+var multipleFileMdInfo = []converter.MdFileInfo{
+	{
+		FilePath:     "Above It All (There Stands Jesus).md",
+		FileContents: AboveItAllFileMd,
+	},
+	{
+		FilePath:     "Be Thou Exalted.md",
+		FileContents: BeThouExaltedFileMd,
+	},
+	{
+		FilePath:     "Behold The Heavens.md",
+		FileContents: BeholdTheHeavensFileMd,
+	},
+	{
+		FilePath:     "He Is.md",
+		FileContents: HeIsFileMd,
+	},
+}
+
 var BuildHtmlSongsTestCases = map[string]BuildHtmlSongsTestCase{
 	"no files provided should just result in an empty string an no headers": {
 		ExpectedSongs: []string{},
 	},
 	"multiple files should be a new line character followed by each song with a new line character after it": {
-		InputMdInfo: []converter.MdFileInfo{
-			{
-				FilePath:     "Above It All (There Stands Jesus).md",
-				FileContents: AboveItAllFileMd,
-			},
-			{
-				FilePath:     "Be Thou Exalted.md",
-				FileContents: BeThouExaltedFileMd,
-			},
-			{
-				FilePath:     "Behold The Heavens.md",
-				FileContents: BeholdTheHeavensFileMd,
-			},
-			{
-				FilePath:     "He Is.md",
-				FileContents: HeIsFileMd,
-			},
-		},
+		InputMdInfo:   multipleFileMdInfo,
 		ExpectedSongs: []string{"above-it-all-there-stands-jesus", "be-thou-exalted", "behold-the-heavens", "he-is"},
 		ExpectedHtml:  fmt.Sprintf("%s\n%s\n%s\n%s\n", AboveItAllFileHtml, BeThouExaltedFileHtml, BeholdTheHeavensFileHtml, HeIsFileHtml),
 	},
@@ -72,5 +74,11 @@ func TestBuildHtmlSongs(t *testing.T) {
 			assert.Equal(t, args.ExpectedHtml, actual)
 			assert.Equal(t, args.ExpectedSongs, actualSongIds)
 		})
+	}
+}
+
+func BenchmarkBuildHtmlSongs(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		converter.BuildHtmlSongs(multipleFileMdInfo)
 	}
 }
