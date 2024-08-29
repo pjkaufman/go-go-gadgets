@@ -11,63 +11,69 @@ type MdFileInfo struct {
 	FileContents string
 }
 
-const (
-	h1Indicator        = "<h1"
-	endingTagIndicator = ">"
-)
-
 func BuildHtmlSongs(mdInfo []MdFileInfo) (string, []string, error) {
-	var (
-		html                                                   = strings.Builder{}
-		headerIdMap                                            = make(map[string]int, len(mdInfo))
-		headerIds                                              = make([]string, len(mdInfo))
-		headerId, h1OpeningTag                                 string
-		firstH1IndexStart, firstH1IndexEnd, h1IdStart, h1IdEnd int
-	)
+	html := strings.Builder{}
+	html.Grow(estimateCapacity(mdInfo)) // Pre-allocate capacity
+
+	headerIdMap := make(map[string]int, len(mdInfo))
+	headerIds := make([]string, len(mdInfo))
+
 	for i, mdData := range mdInfo {
 		fileContentInHtml, err := ConvertMdToHtmlSong(mdData.FilePath, mdData.FileContents)
 		if err != nil {
 			return "", nil, err
 		}
 
-		firstH1IndexStart = strings.Index(fileContentInHtml, h1Indicator)
-		if firstH1IndexStart != -1 {
-			firstH1IndexEnd = strings.Index(fileContentInHtml[firstH1IndexStart:], endingTagIndicator)
-			if firstH1IndexEnd == -1 {
-				return "", nil, fmt.Errorf("no h1 heading found for file %q", mdData.FilePath)
-			}
-
-			h1OpeningTag = fileContentInHtml[firstH1IndexStart : firstH1IndexStart+firstH1IndexEnd]
-			h1IdStart = strings.Index(h1OpeningTag, "id=\"")
-			if h1IdStart == -1 {
-				return "", nil, fmt.Errorf("no h1 heading id found for file %q", mdData.FilePath)
-			}
-
-			h1IdEnd = strings.Index(h1OpeningTag[h1IdStart+4:], "\"")
-			if h1IdStart == -1 {
-				return "", nil, fmt.Errorf("no h1 heading id found for file %q", mdData.FilePath)
-			}
-
-			headerId = h1OpeningTag[h1IdStart+4 : h1IdStart+4+h1IdEnd]
-
-			if num, ok := headerIdMap[headerId]; ok {
-				num++
-				headerIdMap[headerId] = num
-
-				var newHeaderId = fmt.Sprintf(`%s-%d`, headerId, num)
-				fileContentInHtml = strings.Replace(fileContentInHtml, "id=\""+headerId+"\"", "id=\""+newHeaderId+"\"", 1)
-				headerId = newHeaderId
-			}
-
-			headerIdMap[headerId] = 1
-			headerIds[i] = headerId
-
-		} else {
-			return "", nil, fmt.Errorf("no h1 heading found for file %q", mdData.FilePath)
+		updatedContent, headerId, err := extractAndUpdateH1Id(fileContentInHtml, headerIdMap)
+		if err != nil {
+			return "", nil, fmt.Errorf("error processing file %q: %w", mdData.FilePath, err)
 		}
 
-		html.WriteString(fileContentInHtml + "\n")
+		headerIds[i] = headerId
+		html.WriteString(updatedContent)
+		html.WriteByte('\n')
 	}
 
 	return html.String(), headerIds, nil
+}
+
+func estimateCapacity(mdInfo []MdFileInfo) int {
+	totalSize := 0
+	for _, info := range mdInfo {
+		totalSize += len(info.FileContents) * 2 // Rough estimate, HTML might be larger than Markdown
+	}
+	return totalSize
+}
+
+func extractAndUpdateH1Id(content string, headerIdMap map[string]int) (string, string, error) {
+	h1Start := strings.Index(content, "<h1")
+	if h1Start == -1 {
+		return "", "", fmt.Errorf("no h1 heading found")
+	}
+
+	idStart := strings.Index(content[h1Start:], "id=\"")
+	if idStart == -1 {
+		return "", "", fmt.Errorf("no h1 heading id found")
+	}
+	idStart += h1Start + 4
+
+	idEnd := strings.IndexByte(content[idStart:], '"')
+	if idEnd == -1 {
+		return "", "", fmt.Errorf("malformed h1 heading id")
+	}
+	idEnd += idStart
+
+	headerId := content[idStart:idEnd]
+	newHeaderId := headerId
+
+	if num, ok := headerIdMap[headerId]; ok {
+		num++
+		headerIdMap[headerId] = num
+		newHeaderId = fmt.Sprintf("%s-%d", headerId, num)
+
+		content = content[:idStart] + newHeaderId + content[idEnd:]
+	}
+
+	headerIdMap[newHeaderId] = 1
+	return content, newHeaderId, nil
 }
