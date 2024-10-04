@@ -75,6 +75,29 @@ var SetLanguageTestCases = map[string]SetLanguageTestCase{
 		ExpectedText: `<?xml version='1.0' encoding='utf-8'?>
 		<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"></body></html>`,
 	},
+	"when no language currently exists and the html element does not start the file, make sure that the language attributes are added correctly": {
+		InputText: `<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head></head>
+	<body>
+		<div id="body" xml:lang="en-US">
+			<div class="story">
+			</div>
+		</div>
+	</body>
+</html>`,
+		InputLang: "en",
+		ExpectedText: `<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+	<head></head>
+	<body>
+		<div id="body" xml:lang="en-US">
+			<div class="story">
+			</div>
+		</div>
+	</body>
+</html>`,
+	},
 }
 
 func TestSetLanguage(t *testing.T) {

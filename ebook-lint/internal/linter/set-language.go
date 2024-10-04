@@ -21,12 +21,14 @@ func EnsureLanguageIsSet(text, lang string) string {
 		return text
 	}
 
-	var attributeEnd = htmlOpenStart + htmlOpenEnd
-	var htmlEl = text[htmlOpenStart:attributeEnd]
-	var newHtmlEl strings.Builder
-	var langAttrIndex = strings.Index(htmlEl, langAttribute)
+	var (
+		attributeEnd  = htmlOpenStart + htmlOpenEnd
+		htmlEl        = text[htmlOpenStart:attributeEnd]
+		newHtmlEl     strings.Builder
+		langAttrIndex = strings.Index(htmlEl, langAttribute)
+	)
 	if langAttrIndex == -1 {
-		return text[:htmlOpenEnd] + " " + langAttribute + "\"" + lang + "\" " + xmlLangAttribute + "\"" + lang + "\"" + text[htmlOpenEnd:]
+		return text[:attributeEnd] + " " + langAttribute + "\"" + lang + "\" " + xmlLangAttribute + "\"" + lang + "\"" + text[attributeEnd:]
 	}
 
 	var (
