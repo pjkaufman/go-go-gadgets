@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	width         int = 800
+	desiredWidth  int = 800
 	quality       int = 40
 	minimumKbSize     = 150
 )
@@ -31,16 +31,19 @@ func CompressImage(filePath string, data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if isPng {
-		newData, err = image.PngResize(newData, width)
-	} else {
-		newData, err = image.JpegResize(newData, width, &quality)
-	}
-	if err != nil {
-		return nil, err
+	var widthToUse = desiredWidth
+	_, width := image.GetImageDimensions(newData)
+	if width < desiredWidth {
+		desiredWidth = width
 	}
 
-	return newData, nil
+	if isPng && widthToUse == desiredWidth {
+		newData, err = image.PngResize(newData, widthToUse)
+	} else if !isPng {
+		newData, err = image.JpegResize(newData, widthToUse, &quality)
+	}
+
+	return newData, err
 }
 
 func isCompressableImage(imagePath string) bool {
