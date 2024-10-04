@@ -6,12 +6,16 @@ import (
 	_ "embed"
 	"testing"
 
+	"github.com/liut/jpegquality"
 	image_pkg "github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
 )
 
 //go:embed testdata/jpeg/22-canon_tags.jpg
 var canonTagsJpeg []byte
+
+//go:embed testdata/jpeg/Fujifilm_FinePix_E500.jpg
+var finePixEs500Jpeg []byte
 
 type JpegResizeTestCase struct {
 	InputFileData  []byte
@@ -47,6 +51,28 @@ var JpegResizeTestCases = map[string]JpegResizeTestCase{
 		NewWidth:       800,
 		DesiredQuality: &quality40,
 	},
+	"Resizing a JPEG to be smaller when its height is larger should work": {
+		InputFileData:  finePixEs500Jpeg,
+		OriginalHeight: 100,
+		OriginalWidth:  59,
+		NewHeight:      42,
+		NewWidth:       25,
+	},
+	"Resizing a JPEG to be larger when its height is larger should work": {
+		InputFileData:  finePixEs500Jpeg,
+		OriginalHeight: 100,
+		OriginalWidth:  59,
+		NewHeight:      200,
+		NewWidth:       118,
+	},
+	"Resizing a JPEG to be smaller when its height is larger should work with quality specified": {
+		InputFileData:  finePixEs500Jpeg,
+		OriginalHeight: 100,
+		OriginalWidth:  59,
+		NewHeight:      42,
+		NewWidth:       25,
+		DesiredQuality: &quality40,
+	},
 }
 
 func TestJpegResize(t *testing.T) {
@@ -62,6 +88,13 @@ func TestJpegResize(t *testing.T) {
 			height, width = image_pkg.GetImageDimensions(newData)
 			assert.Equal(t, test.NewHeight, height, "height was not the expected value")
 			assert.Equal(t, test.NewWidth, width, "width was not the expected value")
+
+			if test.DesiredQuality != nil {
+				qualityInfo, err := jpegquality.NewWithBytes(newData)
+				assert.Nil(t, err)
+
+				assert.Equal(t, *test.DesiredQuality, qualityInfo.Quality(), "desired quality was different than the one used in the resize")
+			}
 		})
 	}
 }

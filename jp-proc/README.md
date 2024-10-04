@@ -18,9 +18,6 @@ Given how this works, I find it easier to just go ahead and do a simple program 
 | Resize jpeg to 800x600 and remove exif data | 3.4M | 57KB | 56KB | 68KB |
 | Resize jpeg to 800x600 and remove exif data and set quality to 40 | 3.4M | 32KB | 28KB | 37KB |
 
-## TODOs
-- Resize png test
-
 ## Commands
 
 - [proc](#proc)

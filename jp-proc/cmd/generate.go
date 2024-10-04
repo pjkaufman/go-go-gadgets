@@ -19,7 +19,5 @@ Given how this works, I find it easier to just go ahead and do a simple program 
 )
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, []string{
-		"Resize png test",
-	}, nil)
+	cmdhandler.AddGenerateCmd(rootCmd, title, description, nil, nil)
 }
