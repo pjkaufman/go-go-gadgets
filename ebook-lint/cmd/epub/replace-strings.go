@@ -122,7 +122,7 @@ var replaceStringsCmd = &cobra.Command{
 
 			logger.WriteWarn("\nFailed Replaces:")
 			for i, failedReplace := range failedReplaces {
-				logger.WriteWarnf("%d. %s", i+1, failedReplace)
+				logger.WriteWarnf("%d. %s\n", i+1, failedReplace)
 			}
 
 			return handledFiles, nil
