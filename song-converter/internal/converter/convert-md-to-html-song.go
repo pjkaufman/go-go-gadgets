@@ -23,6 +23,7 @@ type SongMetadata struct {
 const (
 	emptyColumnContent = "&nbsp;&nbsp;&nbsp;&nbsp;"
 	closeMetadata      = "</div><br>"
+	maxAuthorSize      = 36
 )
 
 var commonOrPotentialIssueFixer = strings.NewReplacer("\u00a0\u00a0\n", "<br>\n", "\\&", "&", "\n\n", "\n")
@@ -105,10 +106,15 @@ func buildMetadataDiv(metadata *SongMetadata) string {
 			metadataHtml.WriteString("<div class=\"metadata\">")
 		}
 
+		var authorClass = "author"
+		if row1 == 1 && len(metadata.Authors) > maxAuthorSize {
+			authorClass = "author-60"
+		}
+
 		if strings.EqualFold(metadata.InChurch, "Y") {
-			addBoldRowEntry(metadata.Authors, "author")
+			addBoldRowEntry(metadata.Authors, authorClass)
 		} else {
-			addRegularRowEntry(metadata.Authors, "author")
+			addRegularRowEntry(metadata.Authors, authorClass)
 		}
 
 		addBoldRowEntry(metadata.SongKey, "key")
