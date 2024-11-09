@@ -59,11 +59,20 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 		defer w.Close()
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
-			err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
+			if mimetypeFile.UncompressedSize64 == uint64(len([]byte(defaultMimetypeContents))) {
+				err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
 
-			if err != nil {
-				return fmt.Errorf("failed to copy mimetype to zip file: %w", err)
+				if err != nil {
+					return fmt.Errorf("failed to copy mimetype to zip file: %w", err)
+				}
+			} else {
+				err = filehandler.WriteZipUncompressedString(w, "mimetype", defaultMimetypeContents)
+
+				if err != nil {
+					return fmt.Errorf("failed to update mimetype to match the default one in zip file: %w", err)
+				}
 			}
+
 		} else {
 			err = filehandler.WriteZipUncompressedString(w, "mimetype", defaultMimetypeContents)
 
