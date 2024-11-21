@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var volumeNameAndRedirectLinkRegex = regexp.MustCompile(`<a[^>]*href=['"](/read[^"']*)['"]>([^<\n]+)</a>`)
+var volumeNameAndRedirectLinkRegex = regexp.MustCompile(`<a[^>]*href=['"](/manga-books[^"']*)['"]>([^<\n]+)</a>`)
 
 func ParseVolumeHtml(html, seriesName string, volume int) (string, string, bool, error) {
 	var nameAndLinkInfo = volumeNameAndRedirectLinkRegex.FindStringSubmatch(html)

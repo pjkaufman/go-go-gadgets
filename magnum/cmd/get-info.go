@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"strings"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -23,6 +24,22 @@ var GetInfoCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
 
+		if seriesName != "" {
+			if !seriesInfo.HasSeries(seriesName) {
+				logger.WriteWarnf("No series with the name %q is in the series list.", seriesName)
+				return
+			}
+
+			for i, series := range seriesInfo.Series {
+				if strings.EqualFold(seriesName, series.Name) {
+					seriesInfo.Series[i] = getSeriesVolumeInfo(series)
+					return
+				}
+			}
+
+			return // on the off chance that we somehow have it, but then don't find it
+		}
+
 		for i, series := range seriesInfo.Series {
 			if series.Status != config.Completed || includeCompleted {
 				seriesInfo.Series[i] = getSeriesVolumeInfo(series)
@@ -38,6 +55,7 @@ func init() {
 
 	GetInfoCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
 	GetInfoCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
+	GetInfoCmd.Flags().StringVarP(&seriesName, "series", "s", "", "get info for just the specified series")
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
