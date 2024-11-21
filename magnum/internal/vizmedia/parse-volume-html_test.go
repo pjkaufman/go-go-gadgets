@@ -30,13 +30,13 @@ var (
 
 
 		<span class="product-tag pad-x-rg pad-y-sm pos-a t-0 r-0 z-2 bg-off-black color-white">Series Debut!</span>
-	<a tabindex="-1" role="presentation" href="/read/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
+	<a tabindex="-1" role="presentation" href="/manga-books/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
 		<img class="" alt="" src="https://dw9to29mmj727.cloudfront.net/products/1421581744.jpg" style="display: inline-block;">
 	</a>
 </figure>
 <div class="pad-x-md pad-x-lg--lg pad-b-md pad-b-lg--lg">
 	<div class="mar-b-sm"><a class="color-mid-gray hover-red">Manga</a></div>
-	<a class="color-off-black hover-red" href="/read/manga/twin-star-exorcists-volume-1/product/3702">Twin Star Exorcists, Vol. 1</a>
+	<a class="color-off-black hover-red" href="/manga-books/manga/twin-star-exorcists-volume-1/product/3702">Twin Star Exorcists, Vol. 1</a>
 </div>
 </article>`
 	twinStarExorcistVolume30 = `<article class="g-3 g-3--md mar-b-lg g-omega bg-white color-off-black type-sm type-rg--lg">
@@ -50,13 +50,13 @@ var (
 
 
 		<span class="product-tag pad-x-rg pad-y-sm pos-a t-0 r-0 z-2 bg-mid-gray color-white">Pre-Order</span>
-	<a tabindex="-1" role="presentation" href="/read/manga/twin-star-exorcists-volume-30/product/7744" class="product-thumb ar-inner type-center">
+	<a tabindex="-1" role="presentation" href="/manga-books/manga/twin-star-exorcists-volume-30/product/7744" class="product-thumb ar-inner type-center">
 		<img class="" alt="" src="https://dw9to29mmj727.cloudfront.net/products/197474311X.jpg" style="display: inline-block;">
 	</a>
 </figure>
 <div class="pad-x-md pad-x-lg--lg pad-b-md pad-b-lg--lg">
 	<div class="mar-b-sm"><a class="color-mid-gray hover-red">Manga</a></div>
-	<a class="color-off-black hover-red" href="/read/manga/twin-star-exorcists-volume-30/product/7744">Twin Star Exorcists, Vol. 30</a>
+	<a class="color-off-black hover-red" href="/manga-books/manga/twin-star-exorcists-volume-30/product/7744">Twin Star Exorcists, Vol. 30</a>
 </div>
 </article>`
 	noTitle = `<article class="g-3 g-3--md mar-b-lg bg-white color-off-black type-sm type-rg--lg">
@@ -70,13 +70,13 @@ var (
 
 
 		<span class="product-tag pad-x-rg pad-y-sm pos-a t-0 r-0 z-2 bg-off-black color-white">Series Debut!</span>
-	<a tabindex="-1" role="presentation" href="/read/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
+	<a tabindex="-1" role="presentation" href="/manga-books/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
 		<img class="" alt="" src="https://dw9to29mmj727.cloudfront.net/products/1421581744.jpg" style="display: inline-block;">
 	</a>
 </figure>
 <div class="pad-x-md pad-x-lg--lg pad-b-md pad-b-lg--lg">
 	<div class="mar-b-sm"><a class="color-mid-gray hover-red">Manga</a></div>
-	<a class="color-off-black hover-red" href="/read/manga/twin-star-exorcists-volume-1/product/3702"></a>
+	<a class="color-off-black hover-red" href="/manga-books/manga/twin-star-exorcists-volume-1/product/3702"></a>
 </div>
 </article>`
 	noRedirectLink = `<article class="g-3 g-3--md mar-b-lg bg-white color-off-black type-sm type-rg--lg">
@@ -90,7 +90,7 @@ var (
 
 
 		<span class="product-tag pad-x-rg pad-y-sm pos-a t-0 r-0 z-2 bg-off-black color-white">Series Debut!</span>
-	<a tabindex="-1" role="presentation" href="/read/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
+	<a tabindex="-1" role="presentation" href="/manga-books/manga/twin-star-exorcists-volume-1/product/3702" class="product-thumb ar-inner type-center">
 		<img class="" alt="" src="https://dw9to29mmj727.cloudfront.net/products/1421581744.jpg" style="display: inline-block;">
 	</a>
 </figure>
@@ -107,14 +107,14 @@ var ParseVolumeHtmlTestCases = map[string]ParseVolumeHtmlTestCase{
 		InputSeriesName:      "Twin Star Exorcists",
 		ExpectedName:         "Twin Star Exorcists, Vol. 1",
 		ExpectedIsReleased:   true,
-		ExpectedRedirectLink: "/read/manga/twin-star-exorcists-volume-1/product/3702",
+		ExpectedRedirectLink: "/manga-books/manga/twin-star-exorcists-volume-1/product/3702",
 	},
 	"a volume with pre-order info should properly have its name and reading link parsed out": {
 		InputHtml:            twinStarExorcistVolume30,
 		InputSeriesName:      "Twin Star Exorcists",
 		ExpectedName:         "Twin Star Exorcists, Vol. 30",
 		ExpectedIsReleased:   false,
-		ExpectedRedirectLink: "/read/manga/twin-star-exorcists-volume-30/product/7744",
+		ExpectedRedirectLink: "/manga-books/manga/twin-star-exorcists-volume-30/product/7744",
 	},
 	"a volume with no title results in an error": {
 		InputHtml:   noTitle,
