@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type AddCssPageBreakIfMissingTestCase struct {
-	Input          string
-	ExpectedOutput string
+type addCssPageBreakIfMissingTestCase struct {
+	input          string
+	expectedOutput string
 }
 
 var cssFileWithHrBlankSpace = `p {
@@ -22,34 +22,34 @@ border:0;
 height:2em;
 }`
 
-var AddCssPageBreakIfMissingTestCases = map[string]AddCssPageBreakIfMissingTestCase{
+var addCssPageBreakIfMissingTestCases = map[string]addCssPageBreakIfMissingTestCase{
 	"make sure that an empty input becomes the hr blank space": {
-		Input:          "",
-		ExpectedOutput: linter.HrBlankSpace + "\n",
+		input:          "",
+		expectedOutput: linter.HrBlankSpace + "\n",
 	},
 	"make sure that a solely whitespace input becomes the hr blank space": {
-		Input: `
+		input: `
 				   `,
-		ExpectedOutput: linter.HrBlankSpace + "\n",
+		expectedOutput: linter.HrBlankSpace + "\n",
 	},
 	"make sure that input that already contains blank space does not get it added": {
-		Input:          cssFileWithHrBlankSpace,
-		ExpectedOutput: cssFileWithHrBlankSpace,
+		input:          cssFileWithHrBlankSpace,
+		expectedOutput: cssFileWithHrBlankSpace,
 	},
 	"make sure that input that does not contain blank space does get it added": {
-		Input: `p {
+		input: `p {
 height: 10px,
 }`,
-		ExpectedOutput: cssFileWithHrBlankSpace,
+		expectedOutput: cssFileWithHrBlankSpace,
 	},
 }
 
 func TestAddCssPageBreakIfMissing(t *testing.T) {
-	for name, args := range AddCssPageBreakIfMissingTestCases {
+	for name, args := range addCssPageBreakIfMissingTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.AddCssPageBreakIfMissing(args.Input)
+			actual := linter.AddCssPageBreakIfMissing(args.input)
 
-			assert.Equal(t, args.ExpectedOutput, actual)
+			assert.Equal(t, args.expectedOutput, actual)
 		})
 	}
 }

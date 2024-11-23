@@ -12,10 +12,10 @@ import (
 
 const contextBreak = "------"
 
-type AddCssSectionBreakIfMissingTestCase struct {
-	InputText         string
-	InputContextBreak string
-	ExpectedOutput    string
+type addCssSectionBreakIfMissingTestCase struct {
+	inputText         string
+	inputContextBreak string
+	expectedOutput    string
 }
 
 var cssFileWithHrCharacter = fmt.Sprintf(`p {
@@ -34,38 +34,38 @@ font-size:1em;
 padding:1em;
 }`, contextBreak)
 
-var AddCssSectionBreakIfMissingTestCases = map[string]AddCssSectionBreakIfMissingTestCase{
+var addCssSectionBreakIfMissingTestCases = map[string]addCssSectionBreakIfMissingTestCase{
 	"make sure that an empty input becomes the hr blank space": {
-		InputText:         "",
-		InputContextBreak: contextBreak,
-		ExpectedOutput:    linter.HrCharacter + "\n" + fmt.Sprintf(linter.HrContentAfterTemplate, contextBreak),
+		inputText:         "",
+		inputContextBreak: contextBreak,
+		expectedOutput:    linter.HrCharacter + "\n" + fmt.Sprintf(linter.HrContentAfterTemplate, contextBreak),
 	},
 	"make sure that a solely whitespace input becomes the hr blank space": {
-		InputText: `
+		inputText: `
 				   `,
-		InputContextBreak: contextBreak,
-		ExpectedOutput:    linter.HrCharacter + "\n" + fmt.Sprintf(linter.HrContentAfterTemplate, contextBreak),
+		inputContextBreak: contextBreak,
+		expectedOutput:    linter.HrCharacter + "\n" + fmt.Sprintf(linter.HrContentAfterTemplate, contextBreak),
 	},
 	"make sure that input that already contains blank space does not get it added": {
-		InputText:         cssFileWithHrCharacter,
-		InputContextBreak: contextBreak,
-		ExpectedOutput:    cssFileWithHrCharacter,
+		inputText:         cssFileWithHrCharacter,
+		inputContextBreak: contextBreak,
+		expectedOutput:    cssFileWithHrCharacter,
 	},
 	"make sure that input that does not contain blank space does get it added": {
-		InputText: `p {
+		inputText: `p {
 height: 10px,
 }`,
-		InputContextBreak: contextBreak,
-		ExpectedOutput:    cssFileWithHrCharacter,
+		inputContextBreak: contextBreak,
+		expectedOutput:    cssFileWithHrCharacter,
 	},
 }
 
 func TestAddCssSectionBreakIfMissing(t *testing.T) {
-	for name, args := range AddCssSectionBreakIfMissingTestCases {
+	for name, args := range addCssSectionBreakIfMissingTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.AddCssSectionBreakIfMissing(args.InputText, args.InputContextBreak)
+			actual := linter.AddCssSectionBreakIfMissing(args.inputText, args.inputContextBreak)
 
-			assert.Equal(t, args.ExpectedOutput, actual)
+			assert.Equal(t, args.expectedOutput, actual)
 		})
 	}
 }

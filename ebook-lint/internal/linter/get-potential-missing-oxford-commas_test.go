@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type GetPotentialMissingOxfordCommasTestCase struct {
+type getPotentialMissingOxfordCommasTestCase struct {
 	InputText           string
 	ExpectedSuggestions map[string]string
 }
 
-var GetPotentialMissingOxfordCommasTestCases = map[string]GetPotentialMissingOxfordCommasTestCase{
+var getPotentialMissingOxfordCommasTestCases = map[string]getPotentialMissingOxfordCommasTestCase{
 	"make sure that a file with no missing and's or or's without a comma proceeding it gets no suggestions": {
 		InputText: `<p>Here is some content.</p>
 <p>Here is some more content</p>`,
@@ -41,7 +41,7 @@ var GetPotentialMissingOxfordCommasTestCases = map[string]GetPotentialMissingOxf
 }
 
 func TestGetPotentialMissingOxfordCommas(t *testing.T) {
-	for name, args := range GetPotentialMissingOxfordCommasTestCases {
+	for name, args := range getPotentialMissingOxfordCommasTestCases {
 		t.Run(name, func(t *testing.T) {
 			actual := linter.GetPotentialMissingOxfordCommas(args.InputText)
 

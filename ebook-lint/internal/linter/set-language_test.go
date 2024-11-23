@@ -9,74 +9,74 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type SetLanguageTestCase struct {
-	InputText    string
-	InputLang    string
-	ExpectedText string
+type setLanguageTestCase struct {
+	inputText    string
+	inputLang    string
+	expectedText string
 }
 
-var SetLanguageTestCases = map[string]SetLanguageTestCase{
+var setLanguageTestCases = map[string]setLanguageTestCase{
 	"when the html tag is missing, no change is made": {
-		InputText:    "",
-		InputLang:    "en",
-		ExpectedText: "",
+		inputText:    "",
+		inputLang:    "en",
+		expectedText: "",
 	},
 	"when the html tag is present, but does not have lang, lang should be added": {
-		InputText:    `<html xml:lang="en"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html xml:lang="en" lang="en"></html>`,
+		inputText:    `<html xml:lang="en"></html>`,
+		inputLang:    "en",
+		expectedText: `<html xml:lang="en" lang="en"></html>`,
 	},
 	"when the html tag is present, but does not have xml:lang, xml:lang should be added": {
-		InputText:    `<html lang="en"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html lang="en" xml:lang="en"></html>`,
+		inputText:    `<html lang="en"></html>`,
+		inputLang:    "en",
+		expectedText: `<html lang="en" xml:lang="en"></html>`,
 	},
 	"when the html tag is present with an empty lang attribute, the lang should be added": {
-		InputText:    `<html lang="" xml:lang="es"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html lang="en" xml:lang="es"></html>`,
+		inputText:    `<html lang="" xml:lang="es"></html>`,
+		inputLang:    "en",
+		expectedText: `<html lang="en" xml:lang="es"></html>`,
 	},
 	"when the html tag is present with a whitespace lang attribute, the lang should be added": {
-		InputText:    `<html lang="   " xml:lang="es"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html lang="en" xml:lang="es"></html>`,
+		inputText:    `<html lang="   " xml:lang="es"></html>`,
+		inputLang:    "en",
+		expectedText: `<html lang="en" xml:lang="es"></html>`,
 	},
 	"when the html tag is present with an empty xml:lang attribute, the xml:lang should be added": {
-		InputText:    `<html xml:lang="" lang="es"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html xml:lang="en" lang="es"></html>`,
+		inputText:    `<html xml:lang="" lang="es"></html>`,
+		inputLang:    "en",
+		expectedText: `<html xml:lang="en" lang="es"></html>`,
 	},
 	"when the html tag is present with a whitespace xml:lang attribute, the xml:lang should be added": {
-		InputText:    `<html xml:lang="   " lang="es"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html xml:lang="en" lang="es"></html>`,
+		inputText:    `<html xml:lang="   " lang="es"></html>`,
+		inputLang:    "en",
+		expectedText: `<html xml:lang="en" lang="es"></html>`,
 	},
 	"when the html tag is present with a value for lang, no change should be made even if the lang differs from the provided lang": {
-		InputText:    `<html xml:lang="en" lang="es"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html xml:lang="en" lang="es"></html>`,
+		inputText:    `<html xml:lang="en" lang="es"></html>`,
+		inputLang:    "en",
+		expectedText: `<html xml:lang="en" lang="es"></html>`,
 	},
 	"when the html tag is present with a value for xml:lang, no change should be made even if the lang differs from the provided xml:lang": {
-		InputText:    `<html xml:lang="es" lang="en"></html>`,
-		InputLang:    "en",
-		ExpectedText: `<html xml:lang="es" lang="en"></html>`,
+		inputText:    `<html xml:lang="es" lang="en"></html>`,
+		inputLang:    "en",
+		expectedText: `<html xml:lang="es" lang="en"></html>`,
 	},
 	"make sure we preserve other values in the html element": {
-		InputText: `<?xml version='1.0' encoding='utf-8'?>
+		inputText: `<?xml version='1.0' encoding='utf-8'?>
 		<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"></body></html>`,
-		InputLang: "en",
-		ExpectedText: `<?xml version='1.0' encoding='utf-8'?>
+		inputLang: "en",
+		expectedText: `<?xml version='1.0' encoding='utf-8'?>
 		<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"></body></html>`,
 	},
 	"make sure we preserve other values in the html element when they are between the lang attributes": {
-		InputText: `<?xml version='1.0' encoding='utf-8'?>
+		inputText: `<?xml version='1.0' encoding='utf-8'?>
 		<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"></body></html>`,
-		InputLang: "en",
-		ExpectedText: `<?xml version='1.0' encoding='utf-8'?>
+		inputLang: "en",
+		expectedText: `<?xml version='1.0' encoding='utf-8'?>
 		<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"></body></html>`,
 	},
 	"when no language currently exists and the html element does not start the file, make sure that the language attributes are added correctly": {
-		InputText: `<?xml version="1.0" encoding="utf-8"?>
+		inputText: `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head></head>
 	<body>
@@ -86,8 +86,8 @@ var SetLanguageTestCases = map[string]SetLanguageTestCase{
 		</div>
 	</body>
 </html>`,
-		InputLang: "en",
-		ExpectedText: `<?xml version="1.0" encoding="utf-8"?>
+		inputLang: "en",
+		expectedText: `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 	<head></head>
 	<body>
@@ -101,10 +101,10 @@ var SetLanguageTestCases = map[string]SetLanguageTestCase{
 }
 
 func TestSetLanguage(t *testing.T) {
-	for name, args := range SetLanguageTestCases {
+	for name, args := range setLanguageTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.EnsureLanguageIsSet(args.InputText, args.InputLang)
-			assert.Equal(t, args.ExpectedText, actual)
+			actual := linter.EnsureLanguageIsSet(args.inputText, args.inputLang)
+			assert.Equal(t, args.expectedText, actual)
 		})
 	}
 }
