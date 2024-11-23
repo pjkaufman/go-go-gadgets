@@ -17,12 +17,9 @@ import (
 )
 
 var (
-	dir     string
-	verbose bool
-)
-
-const (
-	DirArgEmpty = "directory must have a non-whitespace value"
+	dir            string
+	verbose        bool
+	ErrDirArgEmpty = errors.New("directory must have a non-whitespace value")
 )
 
 // compressCmd represents the compress command
@@ -140,7 +137,7 @@ func CompressCbz(lintDir, cbz string) error {
 
 func ValidateCompressFlags(dir string) error {
 	if strings.TrimSpace(dir) == "" {
-		return errors.New(DirArgEmpty)
+		return ErrDirArgEmpty
 	}
 
 	return nil

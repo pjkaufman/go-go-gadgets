@@ -3,6 +3,7 @@
 package epubhandler_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -10,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type ParseOpfContentsTestCase struct {
-	InputText        string
-	ExpectedEpubInfo epubhandler.EpubInfo
-	ExpectedErr      error
-	IsSyntaxError    bool
+type parseOpfContentsTestCase struct {
+	inputText        string
+	expectedEpubInfo epubhandler.EpubInfo
+	expectedErr      error
+	isSyntaxError    bool
 }
 
 const (
@@ -349,30 +350,30 @@ const (
 `
 )
 
-var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
+var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 	"make sure that parsing an opf that does not have a package tag results in an error": {
-		InputText:     noPackageFile,
-		IsSyntaxError: true,
+		inputText:     noPackageFile,
+		isSyntaxError: true,
 	},
 	"make sure that parsing an opf that does have a package tag, but no version info results in an error": {
-		InputText:   noVersionFile,
-		ExpectedErr: epubhandler.ErrNoPackageInfo,
+		inputText:   noVersionFile,
+		expectedErr: epubhandler.ErrNoPackageInfo,
 	},
 	"make sure that parsing an opf that does not have a manifest tag results in an error": {
-		InputText:   noManifestFile,
-		ExpectedErr: epubhandler.ErrNoManifest,
+		inputText:   noManifestFile,
+		expectedErr: epubhandler.ErrNoManifest,
 	},
 	"make sure that parsing an opf that does have a manifest tag, but no ending manifest tag results in an error": {
-		InputText:     noManifestEndFile,
-		IsSyntaxError: true,
+		inputText:     noManifestEndFile,
+		isSyntaxError: true,
 	},
 	"make sure that parsing an opf that does have a manifest tag, but no list items in it results in an error": {
-		InputText:   noManifestContentsFile,
-		ExpectedErr: epubhandler.ErrNoItemEls,
+		inputText:   noManifestContentsFile,
+		expectedErr: epubhandler.ErrNoItemEls,
 	},
 	"make sure that parsing an epub 2 has the proper version info and other package data": {
-		InputText: epub2PackageFile,
-		ExpectedEpubInfo: epubhandler.EpubInfo{
+		inputText: epub2PackageFile,
+		expectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"titlepage.xhtml":         {},
 				"chapter_1.html":          {},
@@ -417,8 +418,8 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 		},
 	},
 	"make sure that parsing an epub 3 has the proper version info and other package data": {
-		InputText: epub3PackageFile,
-		ExpectedEpubInfo: epubhandler.EpubInfo{
+		inputText: epub3PackageFile,
+		expectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"Text/CoverPage.html":       {},
 				"Text/TableOfContents.html": {},
@@ -475,8 +476,8 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 		},
 	},
 	"make sure that parsing package data that is html encoded is properly decoded": {
-		InputText: htmlEncodedOpf,
-		ExpectedEpubInfo: epubhandler.EpubInfo{
+		inputText: htmlEncodedOpf,
+		expectedEpubInfo: epubhandler.EpubInfo{
 			HtmlFiles: map[string]struct{}{
 				"Text/titlepage.xhtml":                                {},
 				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html": {},
@@ -557,19 +558,19 @@ var ParseOpfContentsTestCases = map[string]ParseOpfContentsTestCase{
 }
 
 func TestParseOpfContents(t *testing.T) {
-	for name, args := range ParseOpfContentsTestCases {
+	for name, args := range parseOpfContentsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := epubhandler.ParseOpfFile(args.InputText)
+			actual, err := epubhandler.ParseOpfFile(args.inputText)
 
-			if !args.IsSyntaxError {
-				assert.Equal(t, args.ExpectedErr, err)
+			if !args.isSyntaxError {
+				assert.True(t, errors.Is(err, args.expectedErr))
 			} else {
 				assert.NotNil(t, err)
 				assert.True(t, strings.HasPrefix(err.Error(), epubhandler.ErrorParsingXmlMessageStart), "A syntax error must start with the syntax error prefix")
 			}
 
 			if err == nil {
-				assert.Equal(t, args.ExpectedEpubInfo, actual)
+				assert.Equal(t, args.expectedEpubInfo, actual)
 			}
 		})
 	}

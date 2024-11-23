@@ -10,45 +10,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type FilesSizeSummaryTestCase struct {
-	InputBeforeKbSize   float64
-	InputAfterKbSize    float64
-	ExpectedBeforeSize  string
-	ExpectedAfterString string
+type filesSizeSummaryTestCase struct {
+	inputBeforeKbSize   float64
+	inputAfterKbSize    float64
+	expectedBeforeSize  string
+	expectedAfterString string
 }
 
-var FilesSizeSummaryTestCases = map[string]FilesSizeSummaryTestCase{
+var filesSizeSummaryTestCases = map[string]filesSizeSummaryTestCase{
 	"make sure that kilobytes are left as is when they do not exceed 1,024": {
-		InputBeforeKbSize:   100,
-		InputAfterKbSize:    50,
-		ExpectedBeforeSize:  "100.00 KB",
-		ExpectedAfterString: "50.00 KB",
+		inputBeforeKbSize:   100,
+		inputAfterKbSize:    50,
+		expectedBeforeSize:  "100.00 KB",
+		expectedAfterString: "50.00 KB",
 	},
 	"make sure that kilobytes are truncated when they have more than 2 decimal places": {
-		InputBeforeKbSize:   100.5678,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "100.57 KB",
-		ExpectedAfterString: "50.88 KB",
+		inputBeforeKbSize:   100.5678,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "100.57 KB",
+		expectedAfterString: "50.88 KB",
 	},
 	"make sure that kilobytes are converted to megabytes when there are more than 1024 of them": {
-		InputBeforeKbSize:   1025,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "1.00 MB",
-		ExpectedAfterString: "50.88 KB",
+		inputBeforeKbSize:   1025,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "1.00 MB",
+		expectedAfterString: "50.88 KB",
 	},
 	"make sure that kilobytes are converted to gigabytes when there are more than 1000000 of them": {
-		InputBeforeKbSize:   2000000,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "2.00 GB",
-		ExpectedAfterString: "50.88 KB",
+		inputBeforeKbSize:   2000000,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "2.00 GB",
+		expectedAfterString: "50.88 KB",
 	},
 }
 
 func TestFilesSizeSummary(t *testing.T) {
-	for name, args := range FilesSizeSummaryTestCases {
+	for name, args := range filesSizeSummaryTestCases {
 		t.Run(name, func(t *testing.T) {
-			var expected = fmt.Sprintf(filesize.FilesSummaryTemplate, filesize.CliLineSeparator, args.ExpectedBeforeSize, args.ExpectedAfterString)
-			actual := filesize.FilesSizeSummary(args.InputBeforeKbSize, args.InputAfterKbSize)
+			var expected = fmt.Sprintf(filesize.FilesSummaryTemplate, filesize.CliLineSeparator, args.expectedBeforeSize, args.expectedAfterString)
+			actual := filesize.FilesSizeSummary(args.inputBeforeKbSize, args.inputAfterKbSize)
 
 			assert.Equal(t, expected, actual)
 		})

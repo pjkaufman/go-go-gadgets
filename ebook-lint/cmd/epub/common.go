@@ -8,9 +8,12 @@ import (
 )
 
 const (
-	EpubPathArgEmpty   = "epub-file must have a non-whitespace value"
-	EpubPathArgNonEpub = "epub-file must be an Epub file"
-	cliLineSeparator   = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+	cliLineSeparator = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+)
+
+var (
+	ErrEpubPathArgEmpty   = errors.New("epub-file must have a non-whitespace value")
+	ErrEpubPathArgNonEpub = errors.New("epub-file must be an Epub file")
 )
 
 var epubFile string
@@ -29,11 +32,11 @@ func validateFilesExist(opfFolder string, files map[string]struct{}, zipFiles ma
 
 func validateCommonEpubFlags(epubPath string) error {
 	if strings.TrimSpace(epubPath) == "" {
-		return errors.New(EpubPathArgEmpty)
+		return ErrEpubPathArgEmpty
 	}
 
 	if !strings.HasSuffix(epubPath, ".epub") {
-		return errors.New(EpubPathArgNonEpub)
+		return ErrEpubPathArgNonEpub
 	}
 
 	return nil

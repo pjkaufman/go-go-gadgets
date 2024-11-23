@@ -10,51 +10,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type FileSizeSummaryTestCase struct {
-	InputFile           string
-	InputBeforeKbSize   float64
-	InputAfterKbSize    float64
-	ExpectedBeforeSize  string
-	ExpectedAfterString string
+type fileSizeSummaryTestCase struct {
+	inputFile           string
+	inputBeforeKbSize   float64
+	inputAfterKbSize    float64
+	expectedBeforeSize  string
+	expectedAfterString string
 }
 
-var FileSizeSummaryTestCases = map[string]FileSizeSummaryTestCase{
+var fileSizeSummaryTestCases = map[string]fileSizeSummaryTestCase{
 	"make sure that kilobytes are left as is when they do not exceed 1,024": {
-		InputFile:           "test.cbz",
-		InputBeforeKbSize:   100,
-		InputAfterKbSize:    50,
-		ExpectedBeforeSize:  "100.00 KB",
-		ExpectedAfterString: "50.00 KB",
+		inputFile:           "test.cbz",
+		inputBeforeKbSize:   100,
+		inputAfterKbSize:    50,
+		expectedBeforeSize:  "100.00 KB",
+		expectedAfterString: "50.00 KB",
 	},
 	"make sure that kilobytes are truncated when they have more than 2 decimal places": {
-		InputFile:           "test.cbz",
-		InputBeforeKbSize:   100.5678,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "100.57 KB",
-		ExpectedAfterString: "50.88 KB",
+		inputFile:           "test.cbz",
+		inputBeforeKbSize:   100.5678,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "100.57 KB",
+		expectedAfterString: "50.88 KB",
 	},
 	"make sure that kilobytes are converted to megabytes when there are more than 1024 of them": {
-		InputFile:           "test.cbz",
-		InputBeforeKbSize:   1025,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "1.00 MB",
-		ExpectedAfterString: "50.88 KB",
+		inputFile:           "test.cbz",
+		inputBeforeKbSize:   1025,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "1.00 MB",
+		expectedAfterString: "50.88 KB",
 	},
 	"make sure that kilobytes are converted to gigabytes when there are more than 1000000 of them": {
-		InputFile:           "test.cbz",
-		InputBeforeKbSize:   2000000,
-		InputAfterKbSize:    50.878567,
-		ExpectedBeforeSize:  "2.00 GB",
-		ExpectedAfterString: "50.88 KB",
+		inputFile:           "test.cbz",
+		inputBeforeKbSize:   2000000,
+		inputAfterKbSize:    50.878567,
+		expectedBeforeSize:  "2.00 GB",
+		expectedAfterString: "50.88 KB",
 	},
 }
 
 func TestFileSizeSummary(t *testing.T) {
-	for name, args := range FileSizeSummaryTestCases {
+	for name, args := range fileSizeSummaryTestCases {
 		t.Run(name, func(t *testing.T) {
-			var originalFile = args.InputFile + ".original"
-			var expected = fmt.Sprintf(filesize.FileSummaryTemplate, filesize.CliLineSeparator, originalFile, args.ExpectedBeforeSize, args.InputFile, args.ExpectedAfterString)
-			actual := filesize.FileSizeSummary(originalFile, args.InputFile, args.InputBeforeKbSize, args.InputAfterKbSize)
+			var originalFile = args.inputFile + ".original"
+			var expected = fmt.Sprintf(filesize.FileSummaryTemplate, filesize.CliLineSeparator, originalFile, args.expectedBeforeSize, args.inputFile, args.expectedAfterString)
+			actual := filesize.FileSizeSummary(originalFile, args.inputFile, args.inputBeforeKbSize, args.inputAfterKbSize)
 
 			assert.Equal(t, expected, actual)
 		})

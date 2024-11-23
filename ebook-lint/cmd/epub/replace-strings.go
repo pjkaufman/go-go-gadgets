@@ -14,11 +14,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var extraReplacesFilePath string
-
-const (
-	ExtraStringReplaceArgNonMd = "extra-replace-file must be a Markdown file"
-	ExtraStringReplaceArgEmpty = "extra-replace-file must have a non-whitespace value"
+var (
+	extraReplacesFilePath         string
+	ErrExtraStringReplaceArgNonMd = errors.New("extra-replace-file must be a Markdown file")
+	ErrExtraStringReplaceArgEmpty = errors.New("extra-replace-file must have a non-whitespace value")
 )
 
 // replaceStringsCmd represents the replaceStrings command
@@ -168,11 +167,11 @@ func ValidateReplaceStringsFlags(epubPath, extraReplaceStringsPath string) error
 	}
 
 	if strings.TrimSpace(extraReplaceStringsPath) == "" {
-		return errors.New(ExtraStringReplaceArgEmpty)
+		return ErrExtraStringReplaceArgEmpty
 	}
 
 	if !strings.HasSuffix(extraReplaceStringsPath, ".md") {
-		return errors.New(ExtraStringReplaceArgNonMd)
+		return ErrExtraStringReplaceArgNonMd
 	}
 
 	return nil

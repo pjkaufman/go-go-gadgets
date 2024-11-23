@@ -17,14 +17,11 @@ import (
 )
 
 var (
-	lintDir           string
-	lang              string
-	runCompressImages bool
-)
-
-const (
-	LintDirArgEmpty = "directory must have a non-whitespace value"
-	LangArgEmpty    = "lang must have a non-whitespace value"
+	lintDir            string
+	lang               string
+	runCompressImages  bool
+	ErrLintDirArgEmpty = errors.New("directory must have a non-whitespace value")
+	ErrLangArgEmpty    = errors.New("lang must have a non-whitespace value")
 )
 
 // compressAndLintCmd represents the compressAndLint command
@@ -181,11 +178,11 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 
 func ValidateCompressAndLintFlags(lintDir, lang string) error {
 	if strings.TrimSpace(lintDir) == "" {
-		return errors.New(LintDirArgEmpty)
+		return ErrLintDirArgEmpty
 	}
 
 	if strings.TrimSpace(lang) == "" {
-		return errors.New(LangArgEmpty)
+		return ErrLangArgEmpty
 	}
 
 	return nil

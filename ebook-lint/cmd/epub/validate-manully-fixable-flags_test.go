@@ -3,57 +3,57 @@
 package epub_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/cmd/epub"
 	"github.com/stretchr/testify/assert"
 )
 
-type ValidateManuallyFixableFlagsTestCase struct {
-	InputEpubFile          string
-	InputRunAll            bool
-	InputRunBrokenLines    bool
-	InputRunSectionBreak   bool
-	InputRunPageBreak      bool
-	InputRunOxfordCommas   bool
-	InputRunAlthoughBut    bool
-	InputRunThoughts       bool
-	InputRunConversation   bool
-	InputRunNecessaryWords bool
-	ExpectedError          string
+type validateManuallyFixableFlagsTestCase struct {
+	inputEpubFile          string
+	inputRunAll            bool
+	inputRunBrokenLines    bool
+	inputRunSectionBreak   bool
+	inputRunPageBreak      bool
+	inputRunOxfordCommas   bool
+	inputRunAlthoughBut    bool
+	inputRunThoughts       bool
+	inputRunConversation   bool
+	inputRunNecessaryWords bool
+	expectedErr            error
 }
 
-var ValidateManuallyFixableFlagsTestCases = map[string]ValidateManuallyFixableFlagsTestCase{
+var validateManuallyFixableFlagsTestCases = map[string]validateManuallyFixableFlagsTestCase{
 	"make sure that all bool flags being false causes a validation error": {
-		InputEpubFile: "test.epub",
-		ExpectedError: epub.OneRunBoolArgMustBeEnabled,
+		inputEpubFile: "test.epub",
+		expectedErr:   epub.ErrOneRunBoolArgMustBeEnabled,
 	},
 	"make sure that an empty epub file path causes a validation error": {
-		InputEpubFile: "	  ",
-		InputRunAll:   true,
-		ExpectedError: epub.EpubPathArgEmpty,
+		inputEpubFile: "	  ",
+		inputRunAll:   true,
+		expectedErr:   epub.ErrEpubPathArgEmpty,
 	},
 	"make sure that a non-epub file path causes a validation error": {
-		InputEpubFile: "file.txt",
-		InputRunAll:   true,
-		ExpectedError: epub.EpubPathArgNonEpub,
+		inputEpubFile: "file.txt",
+		inputRunAll:   true,
+		expectedErr:   epub.ErrEpubPathArgNonEpub,
 	},
 	"make sure that an epub file with at least 1 boolean passes validation": {
-		InputEpubFile:        "test.epub",
-		InputRunSectionBreak: true,
-		ExpectedError:        "",
+		inputEpubFile:        "test.epub",
+		inputRunSectionBreak: true,
 	},
 }
 
 func TestValidateManuallyFixableFlags(t *testing.T) {
-	for name, args := range ValidateManuallyFixableFlagsTestCases {
+	for name, args := range validateManuallyFixableFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := epub.ValidateManuallyFixableFlags(args.InputEpubFile, args.InputRunAll, args.InputRunBrokenLines, args.InputRunSectionBreak, args.InputRunPageBreak, args.InputRunOxfordCommas, args.InputRunAlthoughBut, args.InputRunThoughts, args.InputRunConversation, args.InputRunNecessaryWords)
+			err := epub.ValidateManuallyFixableFlags(args.inputEpubFile, args.inputRunAll, args.inputRunBrokenLines, args.inputRunSectionBreak, args.inputRunPageBreak, args.inputRunOxfordCommas, args.inputRunAlthoughBut, args.inputRunThoughts, args.inputRunConversation, args.inputRunNecessaryWords)
 
 			if err != nil {
-				assert.Equal(t, args.ExpectedError, err.Error())
+				assert.True(t, errors.Is(err, args.expectedErr))
 			} else {
-				assert.Equal(t, args.ExpectedError, "")
+				assert.Nil(t, args.expectedErr)
 			}
 		})
 	}

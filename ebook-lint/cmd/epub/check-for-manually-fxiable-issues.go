@@ -85,11 +85,9 @@ var (
 			isEnabled:      &runThoughts,
 		},
 	}
-)
-
-const (
-	OneRunBoolArgMustBeEnabled   = "either run-all, run-broken-lines, run-section-breaks, run-page-breaks, run-oxford-commas, or run-although-but must be specified"
-	CssPathsEmptyWhenArgIsNeeded = "css-paths must have a value when including handling section or page breaks"
+	// errors
+	ErrOneRunBoolArgMustBeEnabled   = errors.New("either run-all, run-broken-lines, run-section-breaks, run-page-breaks, run-oxford-commas, or run-although-but must be specified")
+	ErrCssPathsEmptyWhenArgIsNeeded = errors.New("css-paths must have a value when including handling section or page breaks")
 )
 
 // fixableCmd represents the fixable command
@@ -197,7 +195,7 @@ var fixableCmd = &cobra.Command{
 			}
 
 			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-				return nil, fmt.Errorf(CssPathsEmptyWhenArgIsNeeded)
+				return nil, ErrCssPathsEmptyWhenArgIsNeeded
 			}
 
 			var saveAndQuit = false
@@ -286,7 +284,7 @@ func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSe
 	}
 
 	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut && !runConversation && !runThoughts && !runNecessaryWords {
-		return errors.New(OneRunBoolArgMustBeEnabled)
+		return ErrOneRunBoolArgMustBeEnabled
 	}
 
 	return nil

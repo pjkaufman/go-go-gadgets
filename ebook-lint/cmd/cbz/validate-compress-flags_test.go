@@ -3,37 +3,37 @@
 package cbz_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/cmd/cbz"
 	"github.com/stretchr/testify/assert"
 )
 
-type ValidateCompressFlagsTestCase struct {
-	InputDir      string
-	ExpectedError string
+type validateCompressFlagsTestCase struct {
+	inputDir    string
+	expectedErr error
 }
 
-var ValidateCompressFlagsTestCases = map[string]ValidateCompressFlagsTestCase{
+var validateCompressFlagsTestCases = map[string]validateCompressFlagsTestCase{
 	"make sure that an empty directory causes a validation error": {
-		InputDir:      "	",
-		ExpectedError: cbz.DirArgEmpty,
+		inputDir:    "	",
+		expectedErr: cbz.ErrDirArgEmpty,
 	},
 	"make sure that a non-whitespace directory passes validation": {
-		InputDir:      "folder",
-		ExpectedError: "",
+		inputDir: "folder",
 	},
 }
 
 func TestValidateCompressFlags(t *testing.T) {
-	for name, args := range ValidateCompressFlagsTestCases {
+	for name, args := range validateCompressFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := cbz.ValidateCompressFlags(args.InputDir)
+			err := cbz.ValidateCompressFlags(args.inputDir)
 
 			if err != nil {
-				assert.Equal(t, args.ExpectedError, err.Error())
+				assert.True(t, errors.Is(err, args.expectedErr))
 			} else {
-				assert.Equal(t, args.ExpectedError, "")
+				assert.Nil(t, args.expectedErr)
 			}
 		})
 	}

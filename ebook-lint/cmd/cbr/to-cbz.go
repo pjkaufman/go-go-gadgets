@@ -10,10 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dir string
-
-const (
-	DirArgEmpty = "directory must have a non-whitespace value"
+var (
+	dir            string
+	ErrDirArgEmpty = errors.New("directory must have a non-whitespace value")
 )
 
 // cbrToCbzCmd represents the toCbz command
@@ -60,7 +59,7 @@ func init() {
 
 func ValidateToCbrFlags(dir string) error {
 	if strings.TrimSpace(dir) == "" {
-		return errors.New(DirArgEmpty)
+		return ErrDirArgEmpty
 	}
 
 	return nil
