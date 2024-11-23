@@ -2,6 +2,7 @@ package epubhandler
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -52,10 +53,10 @@ type GuideReference struct {
 const ErrorParsingXmlMessageStart = "error parsing xml: "
 
 var (
-	ErrNoPackageInfo   = fmt.Errorf("no package info found for the epub - please verify that the opf has a version in it")
-	ErrNoItemEls       = fmt.Errorf("no manifest items found for the epub - please verify that the opf has items in it")
-	ErrNoManifest      = fmt.Errorf("no manifest found")
-	ErrNoEndOfManifest = fmt.Errorf("manifest is incorrectly formatted since it has no closing manifest element")
+	ErrNoPackageInfo   = errors.New("no package info found for the epub - please verify that the opf has a version in it")
+	ErrNoItemEls       = errors.New("no manifest items found for the epub - please verify that the opf has items in it")
+	ErrNoManifest      = errors.New("no manifest found")
+	ErrNoEndOfManifest = errors.New("manifest is incorrectly formatted since it has no closing manifest element")
 )
 
 func ParseOpfFile(text string) (EpubInfo, error) {
