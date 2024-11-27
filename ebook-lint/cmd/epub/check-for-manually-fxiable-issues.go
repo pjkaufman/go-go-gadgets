@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/atotto/clipboard"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -144,112 +147,19 @@ var fixableCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		logger.WriteInfo("Started showing manually fixable issues...\n")
+		if useTui {
+			err = runTuiEpubFixable()
+		} else {
+			err = runCliEpubFixable()
 
-		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
-			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 			if err != nil {
-				return nil, err
+				logger.WriteInfo("\nFinished showing manually fixable issues...")
 			}
+		}
 
-			err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
-			if err != nil {
-				return nil, err
-			}
-
-			var (
-				handledFiles                                []string
-				addCssSectionIfMissing, addCssPageIfMissing bool
-			)
-			if runAll || runSectionBreak {
-				contextBreak = logger.GetInputString("What is the section break for the epub?:")
-
-				if strings.TrimSpace(contextBreak) == "" {
-					return nil, fmt.Errorf("please provide a non-whitespace section break")
-				}
-
-				/**
-				TODO: handle the scenario where the section break is an image
-
-				Image Context Breaks
-				To use an image:
-
-				In the CSS:
-				hr.image {
-				display:block;
-				background: transparent url("images/sectionBreakImage.png") no-repeat center;
-				height:2em;
-				border:0;
-				}
-
-				In the HTML:
-				<hr class="image" />
-				**/
-			}
-
-			var cssFiles = make([]string, len(epubInfo.CssFiles))
-			var i = 0
-			for cssFile := range epubInfo.CssFiles {
-				cssFiles[i] = cssFile
-				i++
-			}
-
-			if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-				return nil, ErrCssPathsEmptyWhenArgIsNeeded
-			}
-
-			var saveAndQuit = false
-			for file := range epubInfo.HtmlFiles {
-				if saveAndQuit {
-					break
-				}
-
-				var filePath = getFilePath(opfFolder, file)
-				zipFile := zipFiles[filePath]
-
-				fileText, err := filehandler.ReadInZipFileContents(zipFile)
-				if err != nil {
-					return nil, err
-				}
-
-				var newText = linter.CleanupHtmlSpacing(fileText)
-
-				for _, potentiallyFixableIssue := range potentiallyFixableIssues {
-					if saveAndQuit {
-						break
-					}
-
-					if potentiallyFixableIssue.isEnabled == nil {
-						return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
-					}
-
-					if runAll || *potentiallyFixableIssue.isEnabled {
-						suggestions := potentiallyFixableIssue.getSuggestions(newText)
-
-						var updateMade bool
-						newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
-
-						if potentiallyFixableIssue.addCssIfMissing && updateMade {
-							addCssSectionIfMissing = addCssSectionIfMissing || updateMade
-						}
-					}
-				}
-
-				err = filehandler.WriteZipCompressedString(w, filePath, newText)
-				if err != nil {
-					return nil, err
-				}
-
-				handledFiles = append(handledFiles, filePath)
-			}
-
-			return handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
-		})
 		if err != nil {
 			logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
 		}
-
-		logger.WriteInfo("\nFinished showing manually fixable issues...")
 	},
 }
 
@@ -265,6 +175,7 @@ func init() {
 	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
 	fixableCmd.Flags().BoolVarP(&runConversation, "run-conversation", "c", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "run-necessary-words", "w", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
+	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "u", false, "whether to use the terminal UI for suggesting fixes")
 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
 	err := fixableCmd.MarkFlagRequired("epub-file")
 	if err != nil {
@@ -375,3 +286,601 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 	return append(handledFiles, cssFilePath), nil
 }
+
+type fixableTuiModel struct {
+	stage                    fixableStage
+	currentSuggestionGroup   string
+	suggestions              map[string]string
+	originalText             string
+	currentSuggestionKey     string
+	editMode                 bool
+	editedText               string
+	contextBreakInput        string
+	currentFile              string
+	cssFiles                 []string
+	selectedCssFileIndex     int
+	potentiallyFixableIssues []potentiallyFixableIssue
+	currentIssueIndex        int
+	runAll                   bool
+	fileTexts                map[string]string
+	handledFiles             []string
+	saveAndQuit              bool
+	currentFileIndex         int
+	fileNames                []string
+}
+
+type fixableStage int
+
+const (
+	stageContextBreak fixableStage = iota
+	stageCssSelection
+	suggestionsProcessing
+	finalStage
+)
+
+var (
+	useTui bool
+)
+
+// Style variables for TUI
+var (
+	titleStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("81")).Bold(true)
+	subtitleStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("246"))
+	activeStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("190"))
+	inactiveStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	diffAddStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
+	diffRemoveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+)
+
+func (m *fixableTuiModel) initializeFileProcessing() {
+	m.fileNames = make([]string, 0, len(m.fileTexts))
+	for filename := range m.fileTexts {
+		m.fileNames = append(m.fileNames, filename)
+	}
+	m.currentFileIndex = 0
+	m.currentFile = m.fileNames[0]
+	m.originalText = m.fileTexts[m.currentFile]
+}
+
+func (m *fixableTuiModel) processNextFile() bool {
+	m.currentFileIndex++
+	if m.currentFileIndex >= len(m.fileNames) {
+		return false
+	}
+	m.currentFile = m.fileNames[m.currentFileIndex]
+	m.originalText = m.fileTexts[m.currentFile]
+	m.currentIssueIndex = 0
+	return true
+}
+
+func (m *fixableTuiModel) retrieveSuggestions() {
+	// Reset suggestions for the current issue
+	m.currentSuggestionGroup = ""
+	m.suggestions = make(map[string]string)
+
+	// Find next enabled issue
+	for m.currentIssueIndex < len(m.potentiallyFixableIssues) {
+		issue := m.potentiallyFixableIssues[m.currentIssueIndex]
+
+		// Special handling for section breaks
+		if issue.name == "Potential Section Breaks" && m.contextBreakInput == "" {
+			m.currentIssueIndex++
+			continue
+		}
+
+		if m.runAll || *issue.isEnabled {
+			// For section breaks, pass the context break
+			var suggestions map[string]string
+			if issue.name == "Potential Section Breaks" {
+				suggestions = issue.getSuggestions(m.originalText)
+			} else {
+				suggestions = issue.getSuggestions(m.originalText)
+			}
+
+			if len(suggestions) > 0 {
+				m.currentSuggestionGroup = issue.name
+				m.suggestions = suggestions
+
+				// Select the first suggestion
+				for key := range suggestions {
+					m.currentSuggestionKey = key
+					return
+				}
+			}
+		}
+		m.currentIssueIndex++
+	}
+
+	// If no suggestions found, try next file
+	if m.processNextFile() {
+		m.retrieveSuggestions()
+	} else {
+		// No more files or suggestions
+		m.stage = finalStage
+	}
+}
+
+func (m fixableTuiModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m fixableTuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch m.stage {
+	case stageContextBreak:
+		return m.updateContextBreak(msg)
+	case stageCssSelection:
+		return m.updateCssSelection(msg)
+	case suggestionsProcessing:
+		return m.updateSuggestions(msg)
+	case finalStage:
+		return m, tea.Quit
+	}
+	return m, nil
+}
+
+func (m *fixableTuiModel) updateContextBreak(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEnter:
+			if strings.TrimSpace(m.contextBreakInput) != "" {
+				m.stage = stageCssSelection
+				return m, nil
+			}
+		case tea.KeyBackspace:
+			if len(m.contextBreakInput) > 0 {
+				m.contextBreakInput = m.contextBreakInput[:len(m.contextBreakInput)-1]
+			}
+		case tea.KeyRunes:
+			m.contextBreakInput += string(msg.Runes)
+		}
+	}
+	return m, nil
+}
+
+func (m *fixableTuiModel) updateCssSelection(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			if m.selectedCssFileIndex >= 0 && m.selectedCssFileIndex < len(m.cssFiles) {
+				m.stage = suggestionsProcessing
+				m.initializeFileProcessing()
+				m.retrieveSuggestions()
+				return m, nil
+			}
+		case "up":
+			if m.selectedCssFileIndex > 0 {
+				m.selectedCssFileIndex--
+			}
+		case "down":
+			if m.selectedCssFileIndex < len(m.cssFiles)-1 {
+				m.selectedCssFileIndex++
+			}
+		}
+	}
+	return m, nil
+}
+
+func (m *fixableTuiModel) updateSuggestions(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		case "e":
+			if !m.editMode && m.currentSuggestionKey != "" {
+				m.editMode = true
+				m.editedText = m.suggestions[m.currentSuggestionKey]
+				return m, nil
+			}
+
+		case "enter":
+			if m.editMode {
+				// Save edited text
+				m.suggestions[m.currentSuggestionKey] = m.editedText
+				m.editMode = false
+				return m, nil
+			}
+
+			// Accept current suggestion
+			if m.currentSuggestionKey != "" {
+				m.originalText = strings.Replace(m.originalText, m.currentSuggestionKey, m.suggestions[m.currentSuggestionKey], 1)
+				m.fileTexts[m.currentFile] = m.originalText
+				delete(m.suggestions, m.currentSuggestionKey)
+
+				if len(m.suggestions) > 0 {
+					// Select the first remaining suggestion
+					for key := range m.suggestions {
+						m.currentSuggestionKey = key
+						break
+					}
+				} else {
+					// Move to next issue or file
+					m.currentIssueIndex++
+					m.retrieveSuggestions()
+				}
+			} else {
+				// Move to next issue or file
+				m.currentIssueIndex++
+				m.retrieveSuggestions()
+			}
+			return m, nil
+
+		case "c":
+			// Copy current suggestion to clipboard
+			if m.currentSuggestionKey != "" {
+				clipboard.WriteAll(m.suggestions[m.currentSuggestionKey])
+			}
+			return m, nil
+
+		case "right", "l":
+			if m.editMode {
+				return m, nil
+			}
+			// Move to next suggestion
+			if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
+				var keys []string
+				for key := range m.suggestions {
+					keys = append(keys, key)
+				}
+
+				// Find current key index
+				currentIndex := -1
+				for i, key := range keys {
+					if key == m.currentSuggestionKey {
+						currentIndex = i
+						break
+					}
+				}
+
+				// Select next key
+				nextIndex := (currentIndex + 1) % len(keys)
+				m.currentSuggestionKey = keys[nextIndex]
+			}
+			return m, nil
+
+		case "left", "h":
+			if m.editMode {
+				return m, nil
+			}
+			// Move to previous suggestion
+			if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
+				var keys []string
+				for key := range m.suggestions {
+					keys = append(keys, key)
+				}
+
+				// Find current key index
+				currentIndex := -1
+				for i, key := range keys {
+					if key == m.currentSuggestionKey {
+						currentIndex = i
+						break
+					}
+				}
+
+				// Select previous key
+				prevIndex := (currentIndex - 1 + len(keys)) % len(keys)
+				m.currentSuggestionKey = keys[prevIndex]
+			}
+			return m, nil
+		}
+
+		// Handle edit mode text input
+		if m.editMode {
+			switch msg.Type {
+			case tea.KeyBackspace:
+				if len(m.editedText) > 0 {
+					m.editedText = m.editedText[:len(m.editedText)-1]
+				}
+			case tea.KeyRunes:
+				m.editedText += string(msg.Runes)
+			}
+			return m, nil
+		}
+	}
+	return m, nil
+}
+
+func (m fixableTuiModel) View() string {
+	switch m.stage {
+	case stageContextBreak:
+		return fmt.Sprintf("Enter section break context:\n\n> %s", m.contextBreakInput)
+
+	case stageCssSelection:
+		var s strings.Builder
+		s.WriteString("Select CSS file to modify:\n\n")
+		for i, file := range m.cssFiles {
+			if i == m.selectedCssFileIndex {
+				s.WriteString(fmt.Sprintf("> %s\n", file))
+			} else {
+				s.WriteString(fmt.Sprintf("  %s\n", file))
+			}
+		}
+		return s.String()
+
+	case suggestionsProcessing:
+		if m.saveAndQuit {
+			return "Finished processing files. Saving changes...\n"
+		}
+
+		// No more suggestions
+		if len(m.suggestions) == 0 {
+			return "No more suggestions. Press 'q' to quit.\n"
+		}
+
+		var s strings.Builder
+		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.currentFile)) + "\n")
+		s.WriteString(subtitleStyle.Render(fmt.Sprintf("Issue Group: %s", m.currentSuggestionGroup)) + "\n\n")
+
+		// Show current suggestion
+		if m.currentSuggestionKey != "" {
+			if m.editMode {
+				s.WriteString("Edit Mode (press enter to confirm):\n")
+				s.WriteString(activeStyle.Render(m.editedText) + "\n\n")
+			} else {
+				// Generate diff view
+				diffString, err := stringdiff.GetPrettyDiffString(
+					strings.TrimLeft(m.currentSuggestionKey, "\n"),
+					strings.TrimLeft(m.suggestions[m.currentSuggestionKey], "\n"),
+				)
+				if err != nil {
+					s.WriteString("Error generating diff: " + err.Error() + "\n")
+				} else {
+					s.WriteString(diffString + "\n\n")
+				}
+			}
+		}
+
+		// Controls help
+		s.WriteString(subtitleStyle.Render("Controls:") + "\n")
+		s.WriteString("← / → : Previous/Next Suggestion   ")
+		s.WriteString("Enter: Accept   ")
+		s.WriteString("E: Edit   ")
+		s.WriteString("C: Copy   ")
+		s.WriteString("Q: Quit\n")
+
+		// Suggestion progress
+		s.WriteString(fmt.Sprintf("\nSuggestion %d of %d", 1, len(m.suggestions)) + "\n")
+
+		return s.String()
+
+	case finalStage:
+		return "Processing complete. Press 'q' to quit.\n"
+
+	default:
+		return "Unexpected stage\n"
+	}
+}
+
+// Updated existing fixableCmd to support TUI
+// func updateFixableCmd() {
+// 	fixableCmd.Run = func(cmd *cobra.Command, args []string) {
+// 		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords)
+// 		if err != nil {
+// 			logger.WriteError(err.Error())
+// 			return
+// 		}
+
+// 		err = filehandler.FileArgExists(epubFile, "epub-file")
+// 		if err != nil {
+// 			logger.WriteError(err.Error())
+// 			return
+// 		}
+
+// 		if useTui {
+// 			err = runTuiEpubFixable()
+// 		} else {
+// 			err = runCliEpubFixable()
+// 		}
+
+// 		if err != nil {
+// 			logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
+// 		}
+// 	}
+// }
+
+func runTuiEpubFixable() error {
+	return epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		var cssFiles = make([]string, 0, len(epubInfo.CssFiles))
+		for cssFile := range epubInfo.CssFiles {
+			cssFiles = append(cssFiles, cssFile)
+		}
+
+		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+			return nil, ErrCssPathsEmptyWhenArgIsNeeded
+		}
+
+		// Prepare initial model
+		var initialModel = fixableTuiModel{
+			stage:                    stageContextBreak,
+			potentiallyFixableIssues: potentiallyFixableIssues,
+			runAll:                   runAll,
+			fileTexts:                make(map[string]string),
+			cssFiles:                 cssFiles,
+		}
+
+		// Collect file contents
+		for file := range epubInfo.HtmlFiles {
+			var filePath = getFilePath(opfFolder, file)
+			zipFile := zipFiles[filePath]
+
+			fileText, err := filehandler.ReadInZipFileContents(zipFile)
+			if err != nil {
+				return nil, err
+			}
+
+			initialModel.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
+		}
+
+		// Run TUI
+		p := tea.NewProgram(&initialModel)
+		finalModel, err := p.Run()
+		if err != nil {
+			return nil, err
+		}
+
+		model := finalModel.(*fixableTuiModel)
+
+		// Process and write updated files
+		for filePath, fileText := range model.fileTexts {
+			err = filehandler.WriteZipCompressedString(w, filePath, fileText)
+			if err != nil {
+				return nil, err
+			}
+			model.handledFiles = append(model.handledFiles, filePath)
+		}
+
+		// Handle CSS changes
+		return handleCssChanges(false, false, opfFolder, cssFiles, model.contextBreakInput, zipFiles, w, model.handledFiles)
+	})
+}
+
+func runCliEpubFixable() error {
+	logger.WriteInfo("Started showing manually fixable issues...\n")
+
+	return epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
+		if err != nil {
+			return nil, err
+		}
+
+		var (
+			handledFiles                                []string
+			addCssSectionIfMissing, addCssPageIfMissing bool
+		)
+		if runAll || runSectionBreak {
+			contextBreak = logger.GetInputString("What is the section break for the epub?:")
+
+			if strings.TrimSpace(contextBreak) == "" {
+				return nil, fmt.Errorf("please provide a non-whitespace section break")
+			}
+
+			/**
+			TODO: handle the scenario where the section break is an image
+
+			Image Context Breaks
+			To use an image:
+
+			In the CSS:
+			hr.image {
+			display:block;
+			background: transparent url("images/sectionBreakImage.png") no-repeat center;
+			height:2em;
+			border:0;
+			}
+
+			In the HTML:
+			<hr class="image" />
+			**/
+		}
+
+		var cssFiles = make([]string, len(epubInfo.CssFiles))
+		var i = 0
+		for cssFile := range epubInfo.CssFiles {
+			cssFiles[i] = cssFile
+			i++
+		}
+
+		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+			return nil, ErrCssPathsEmptyWhenArgIsNeeded
+		}
+
+		var saveAndQuit = false
+		for file := range epubInfo.HtmlFiles {
+			if saveAndQuit {
+				break
+			}
+
+			var filePath = getFilePath(opfFolder, file)
+			zipFile := zipFiles[filePath]
+
+			fileText, err := filehandler.ReadInZipFileContents(zipFile)
+			if err != nil {
+				return nil, err
+			}
+
+			var newText = linter.CleanupHtmlSpacing(fileText)
+
+			for _, potentiallyFixableIssue := range potentiallyFixableIssues {
+				if saveAndQuit {
+					break
+				}
+
+				if potentiallyFixableIssue.isEnabled == nil {
+					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
+				}
+
+				if runAll || *potentiallyFixableIssue.isEnabled {
+					suggestions := potentiallyFixableIssue.getSuggestions(newText)
+
+					var updateMade bool
+					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
+
+					if potentiallyFixableIssue.addCssIfMissing && updateMade {
+						addCssSectionIfMissing = addCssSectionIfMissing || updateMade
+					}
+				}
+			}
+
+			err = filehandler.WriteZipCompressedString(w, filePath, newText)
+			if err != nil {
+				return nil, err
+			}
+
+			handledFiles = append(handledFiles, filePath)
+		}
+
+		return handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
+	})
+	// if err != nil {
+	// 	logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
+	// }
+
+	// logger.WriteInfo("\nFinished showing manually fixable issues...")
+}
+
+// func init() {
+// 	EpubCmd.AddCommand(fixableCmd)
+
+// 	fixableCmd.Flags().BoolVarP(&runAll, "run-all", "a", false, "whether to run all of the fixable suggestions")
+// 	fixableCmd.Flags().BoolVarP(&runBrokenLines, "run-broken-lines", "b", false, "whether to run the logic for getting broken line suggestions")
+// 	fixableCmd.Flags().BoolVarP(&runSectionBreak, "run-section-breaks", "s", false, "whether to run the logic for getting section break suggestions (must be used with css-paths)")
+// 	fixableCmd.Flags().BoolVarP(&runPageBreak, "run-page-breaks", "p", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
+// 	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "run-oxford-commas", "o", false, "whether to run the logic for getting oxford comma suggestions")
+// 	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "run-although-but", "n", false, "whether to run the logic for getting although but suggestions")
+// 	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
+// 	fixableCmd.Flags().BoolVarP(&runConversation, "run-conversation", "c", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
+// 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "run-necessary-words", "w", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
+// 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
+
+// 	err := fixableCmd.MarkFlagRequired("epub-file")
+// 	if err != nil {
+// 		logger.WriteErrorf(`failed to mark flag "epub-file" as required on fixable command: %v\n`, err)
+// 	}
+
+// 	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
+// 	if err != nil {
+// 		logger.WriteErrorf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v\n`, err)
+// 	}
+
+// 	// Update run function to support TUI
+// 	updateFixableCmd()
+// }
