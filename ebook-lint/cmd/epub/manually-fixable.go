@@ -16,6 +16,7 @@ type FixableTuiModel struct {
 	filePaths                                           []string
 	fileTexts                                           map[string]string
 	currentFilePathIndex, currentSuggestIndex           int
+	width, height                                       int
 	cssFiles, handledFiles                              []string
 	runAll, addCssSectionIfMissing, addCssPageIfMissing bool
 	Err                                                 error
@@ -57,6 +58,12 @@ func (f FixableTuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if f.Err != nil {
 		return f, tea.Quit
+	}
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		f.width = msg.Width
+		f.height = msg.Height
 	}
 
 	switch f.currentStage {
@@ -133,7 +140,7 @@ func (f FixableTuiModel) getNextSuggestion() FixableTuiModel {
 
 			if len(suggestions) != 0 {
 				var err error
-				f.suggestionHandler, err = tui.NewSuggestionsModel(currentFilePath, f.potentiallyFixableIssues[f.currentSuggestIndex].name, fmt.Sprintf("File %d of %d", f.currentFilePathIndex+1, len(f.filePaths)), suggestions)
+				f.suggestionHandler, err = tui.NewSuggestionsModel(currentFilePath, f.potentiallyFixableIssues[f.currentSuggestIndex].name, fmt.Sprintf("File %d of %d", f.currentFilePathIndex+1, len(f.filePaths)), suggestions, f.width, f.height)
 				if err != nil {
 					f.Err = err
 

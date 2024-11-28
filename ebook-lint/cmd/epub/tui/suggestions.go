@@ -2,11 +2,13 @@ package tui
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/muesli/reflow/wordwrap"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
@@ -16,6 +18,7 @@ type SuggestionsModel struct {
 	suggestionInput                                  textarea.Model
 	currentSuggestIndex                              int
 	Done, ChangeMade, replaceAll, editMode           bool
+	width, height                                    int
 	Err                                              error
 }
 
@@ -24,7 +27,7 @@ type suggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[string]string) (SuggestionsModel, error) {
+func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[string]string, width, height int) (SuggestionsModel, error) {
 	ti := textarea.New()
 	ti.Placeholder = "Enter an edited version of the original string"
 	ti.CharLimit = 2000
@@ -60,6 +63,8 @@ func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[str
 		group:                   subtitle,
 		fileStatus:              fileStatus,
 		sectionSuggestionStates: sectionSuggestionStates,
+		width:                   width,
+		height:                  height,
 	}, nil
 }
 
@@ -122,6 +127,9 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 			return f, nil
 		}
 	case tea.WindowSizeMsg:
+		f.width = msg.Width
+		f.height = msg.Height
+
 		return f, tea.ClearScreen
 	case error:
 		f.Err = msg
@@ -194,7 +202,15 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 			return f, nil
 		}
 	case tea.WindowSizeMsg:
-		return f, tea.ClearScreen
+		f.width = msg.Width
+		f.height = msg.Height
+
+		f.suggestionInput.SetWidth(msg.Width - 4)
+
+		return f, tea.Batch(
+			tea.ClearScreen,
+			f.suggestionInput.Focus(),
+		)
 	case error:
 		f.Err = msg
 
@@ -217,14 +233,16 @@ func (f SuggestionsModel) View() string {
 	}
 
 	s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", f.file)) + "\n")
-	s.WriteString(fileStatusStyle.Render(f.fileStatus))
-	s.WriteString("\n")
+	s.WriteString(fileStatusStyle.Render(f.fileStatus) + "\n")
 	s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", f.group)) + "\n\n")
+	s.WriteString(fmt.Sprint(len(f.group)) + " - " + f.group + "\n")
 
 	if f.editMode {
 		s.WriteString(f.suggestionInput.View())
 	} else {
-		s.WriteString(f.sectionSuggestionStates[f.currentSuggestIndex].display)
+		// s.WriteString(fmt.Sprint(len(f.sectionSuggestionStates[f.currentSuggestIndex].display)) + "\n")
+		// s.WriteString(fmt.Sprint(f.width) + "\n")
+		s.WriteString(wordwrap.String(f.sectionSuggestionStates[f.currentSuggestIndex].display, f.width))
 	}
 
 	s.WriteString("\n\n")
@@ -257,12 +275,12 @@ func (f SuggestionsModel) displaySuggestionControls(s *strings.Builder) {
 		s.WriteString("E: Edit   ")
 		s.WriteString("C: Copy   ")
 		s.WriteString("Enter: Accept   ")
-		s.WriteString("Q/Esc: Quit")
+		s.WriteString("Q/Esc: Quit\n")
 	} else {
 		s.WriteString("Ctrl+R: Reset   ")
 		s.WriteString("Ctrl+E: Cancel edit   ")
 		s.WriteString("Ctrl+S: Accept   ")
-		s.WriteString("Esc: Quit")
+		s.WriteString("Esc: Quit   ")
 		s.WriteString("Ctrl+C: Exit without saving\n")
 	}
 }
@@ -288,6 +306,11 @@ func (f SuggestionsModel) moveToPreviousSuggestion() SuggestionsModel {
 	return f
 }
 
+var removeStartingLineWhitespace = regexp.MustCompile(`\n[ \t]+`)
+
 func getStringDiff(original, new string) (string, error) {
-	return stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(new, "\n"))
+	original = removeStartingLineWhitespace.ReplaceAllString(original, "\n")
+	new = removeStartingLineWhitespace.ReplaceAllString(new, "\n")
+
+	return stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n \t"), strings.TrimLeft(new, "\n \t"))
 }
