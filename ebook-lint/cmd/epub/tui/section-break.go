@@ -31,6 +31,10 @@ func (f SectionBreakModel) Init() tea.Cmd {
 }
 
 func (f SectionBreakModel) Update(msg tea.Msg) (SectionBreakModel, tea.Cmd) {
+	if f.Done {
+		return f, nil
+	}
+
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -55,6 +59,10 @@ func (f SectionBreakModel) Update(msg tea.Msg) (SectionBreakModel, tea.Cmd) {
 }
 
 func (f SectionBreakModel) View() string {
+	if f.Done {
+		return ""
+	}
+
 	var s strings.Builder
 
 	s.WriteString("What is the section break for the epub?\n\n")
@@ -67,7 +75,7 @@ func (f SectionBreakModel) View() string {
 }
 
 func (f SectionBreakModel) displaySectionBreakControls(s *strings.Builder) {
-	s.WriteString(subtitleStyle.Render("Controls:") + "\n")
+	s.WriteString(groupStyle.Render("Controls:") + "\n")
 	s.WriteString("Enter: Continue   Ctrl+C/Esc: Quit\n")
 }
 

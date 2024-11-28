@@ -221,7 +221,7 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	logger.WriteInfo(cliLineSeparator + "\n")
 
 	for original, suggestion := range suggestions {
-		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
+		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"), true)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -453,126 +453,126 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 // }
 
 // func (m *fixableTuiModel) updateSuggestions(msg tea.Msg) (tea.Model, tea.Cmd) {
-// 	switch msg := msg.(type) {
-// 	case tea.KeyMsg:
-// 		switch msg.String() {
-// 		case "ctrl+c", "q":
-// 			return m, tea.Quit
+// switch msg := msg.(type) {
+// case tea.KeyMsg:
+// 	switch msg.String() {
+// 	case "ctrl+c", "q":
+// 		return m, tea.Quit
 
-// 		case "e":
-// 			if !m.editMode && m.currentSuggestionKey != "" {
-// 				m.editMode = true
-// 				m.editedText = m.suggestions[m.currentSuggestionKey]
-// 				return m, nil
-// 			}
+// 	case "e":
+// 		if !m.editMode && m.currentSuggestionKey != "" {
+// 			m.editMode = true
+// 			m.editedText = m.suggestions[m.currentSuggestionKey]
+// 			return m, nil
+// 		}
 
-// 		case "enter":
-// 			if m.editMode {
-// 				// Save edited text
-// 				m.suggestions[m.currentSuggestionKey] = m.editedText
-// 				m.editMode = false
-// 				return m, nil
-// 			}
+// 	case "enter":
+// 		if m.editMode {
+// 			// Save edited text
+// 			m.suggestions[m.currentSuggestionKey] = m.editedText
+// 			m.editMode = false
+// 			return m, nil
+// 		}
 
-// 			// Accept current suggestion
-// 			if m.currentSuggestionKey != "" {
-// 				// TODO: the replace count should be -1 in some instances
-// 				m.originalText = strings.Replace(m.originalText, m.currentSuggestionKey, m.suggestions[m.currentSuggestionKey], 1)
-// 				m.fileTexts[m.currentFile] = m.originalText
-// 				// delete(m.suggestions, m.currentSuggestionKey)
+// 		// Accept current suggestion
+// 		if m.currentSuggestionKey != "" {
+// 			// TODO: the replace count should be -1 in some instances
+// 			m.originalText = strings.Replace(m.originalText, m.currentSuggestionKey, m.suggestions[m.currentSuggestionKey], 1)
+// 			m.fileTexts[m.currentFile] = m.originalText
+// 			// delete(m.suggestions, m.currentSuggestionKey)
 
-// 				if len(m.suggestions) > 0 {
-// 					// Select the first remaining suggestion
-// 					for key := range m.suggestions {
-// 						m.currentSuggestionKey = key
-// 						break
-// 					}
-// 				} else {
-// 					// Move to next issue or file
-// 					m.currentIssueIndex++
-// 					m.retrieveSuggestions()
+// 			if len(m.suggestions) > 0 {
+// 				// Select the first remaining suggestion
+// 				for key := range m.suggestions {
+// 					m.currentSuggestionKey = key
+// 					break
 // 				}
 // 			} else {
 // 				// Move to next issue or file
 // 				m.currentIssueIndex++
 // 				m.retrieveSuggestions()
 // 			}
-// 			return m, nil
-
-// 		case "c":
-// 			// Copy current suggestion to clipboard
-// 			if m.currentSuggestionKey != "" {
-// 				clipboard.WriteAll(m.suggestions[m.currentSuggestionKey])
-// 			}
-// 			return m, nil
-
-// 		case "right", "l":
-// 			if m.editMode {
-// 				return m, nil
-// 			}
-// 			// Move to next suggestion
-// 			if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
-// 				var keys []string
-// 				for key := range m.suggestions {
-// 					keys = append(keys, key)
-// 				}
-
-// 				// Find current key index
-// 				currentIndex := -1
-// 				for i, key := range keys {
-// 					if key == m.currentSuggestionKey {
-// 						currentIndex = i
-// 						break
-// 					}
-// 				}
-
-// 				// Select next key
-// 				nextIndex := (currentIndex + 1) % len(keys)
-// 				m.currentSuggestionKey = keys[nextIndex]
-// 			}
-// 			return m, nil
-
-// 		case "left", "h":
-// 			if m.editMode {
-// 				return m, nil
-// 			}
-// 			// Move to previous suggestion
-// 			if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
-// 				var keys []string
-// 				for key := range m.suggestions {
-// 					keys = append(keys, key)
-// 				}
-
-// 				// Find current key index
-// 				currentIndex := -1
-// 				for i, key := range keys {
-// 					if key == m.currentSuggestionKey {
-// 						currentIndex = i
-// 						break
-// 					}
-// 				}
-
-// 				// Select previous key
-// 				prevIndex := (currentIndex - 1 + len(keys)) % len(keys)
-// 				m.currentSuggestionKey = keys[prevIndex]
-// 			}
-// 			return m, nil
+// 		} else {
+// 			// Move to next issue or file
+// 			m.currentIssueIndex++
+// 			m.retrieveSuggestions()
 // 		}
+// 		return m, nil
 
-// 		// Handle edit mode text input
+// 	case "c":
+// 		// Copy current suggestion to clipboard
+// 		if m.currentSuggestionKey != "" {
+// 			clipboard.WriteAll(m.suggestions[m.currentSuggestionKey])
+// 		}
+// 		return m, nil
+
+// 	case "right", "l":
 // 		if m.editMode {
-// 			switch msg.Type {
-// 			case tea.KeyBackspace:
-// 				if len(m.editedText) > 0 {
-// 					m.editedText = m.editedText[:len(m.editedText)-1]
-// 				}
-// 			case tea.KeyRunes:
-// 				m.editedText += string(msg.Runes)
-// 			}
 // 			return m, nil
 // 		}
+// 		// Move to next suggestion
+// 		if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
+// 			var keys []string
+// 			for key := range m.suggestions {
+// 				keys = append(keys, key)
+// 			}
+
+// 			// Find current key index
+// 			currentIndex := -1
+// 			for i, key := range keys {
+// 				if key == m.currentSuggestionKey {
+// 					currentIndex = i
+// 					break
+// 				}
+// 			}
+
+// 			// Select next key
+// 			nextIndex := (currentIndex + 1) % len(keys)
+// 			m.currentSuggestionKey = keys[nextIndex]
+// 		}
+// 		return m, nil
+
+// 	case "left", "h":
+// 		if m.editMode {
+// 			return m, nil
+// 		}
+// 		// Move to previous suggestion
+// 		if m.currentSuggestionKey != "" && len(m.suggestions) > 1 {
+// 			var keys []string
+// 			for key := range m.suggestions {
+// 				keys = append(keys, key)
+// 			}
+
+// 			// Find current key index
+// 			currentIndex := -1
+// 			for i, key := range keys {
+// 				if key == m.currentSuggestionKey {
+// 					currentIndex = i
+// 					break
+// 				}
+// 			}
+
+// 			// Select previous key
+// 			prevIndex := (currentIndex - 1 + len(keys)) % len(keys)
+// 			m.currentSuggestionKey = keys[prevIndex]
+// 		}
+// 		return m, nil
 // 	}
-// 	return m, nil
+
+// 	// Handle edit mode text input
+// 	if m.editMode {
+// 		switch msg.Type {
+// 		case tea.KeyBackspace:
+// 			if len(m.editedText) > 0 {
+// 				m.editedText = m.editedText[:len(m.editedText)-1]
+// 			}
+// 		case tea.KeyRunes:
+// 			m.editedText += string(msg.Runes)
+// 		}
+// 		return m, nil
+// 	}
+// }
+// return m, nil
 // }
 
 // func (m fixableTuiModel) View() string {
@@ -603,8 +603,8 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 // 		}
 
 // 		var s strings.Builder
-// 		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.currentFile)) + "\n")
-// 		s.WriteString(subtitleStyle.Render(fmt.Sprintf("Issue Group: %s", m.currentSuggestionGroup)) + "\n\n")
+// s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.currentFile)) + "\n")
+// s.WriteString(subtitleStyle.Render(fmt.Sprintf("Issue Group: %s", m.currentSuggestionGroup)) + "\n\n")
 
 // 		// Show current suggestion
 // 		if m.currentSuggestionKey != "" {
@@ -627,11 +627,11 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 
 // 		// Controls help
 // 		s.WriteString(subtitleStyle.Render("Controls:") + "\n")
-// 		s.WriteString("← / → : Previous/Next Suggestion   ")
-// 		s.WriteString("Enter: Accept   ")
-// 		s.WriteString("E: Edit   ")
-// 		s.WriteString("C: Copy   ")
-// 		s.WriteString("Q: Quit\n")
+// s.WriteString("← / → : Previous/Next Suggestion   ")
+// s.WriteString("Enter: Accept   ")
+// s.WriteString("E: Edit   ")
+// s.WriteString("C: Copy   ")
+// s.WriteString("Q: Quit\n")
 
 // 		// Suggestion progress
 // 		s.WriteString(fmt.Sprintf("\nSuggestion %d of %d", 1, len(m.suggestions)) + "\n")
@@ -703,20 +703,26 @@ func runTuiEpubFixable() error {
 		// 	cssFiles:                 cssFiles,
 		// }
 
+		var (
+			initialModel = NewFixableTuiModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
+			i            = 0
+		)
+		initialModel.filePaths = make([]string, len(epubInfo.HtmlFiles))
+
 		// Collect file contents
-		// for file := range epubInfo.HtmlFiles {
-		// 	var filePath = getFilePath(opfFolder, file)
-		// 	zipFile := zipFiles[filePath]
+		for file := range epubInfo.HtmlFiles {
+			var filePath = getFilePath(opfFolder, file)
+			zipFile := zipFiles[filePath]
 
-		// 	fileText, err := filehandler.ReadInZipFileContents(zipFile)
-		// 	if err != nil {
-		// 		return nil, err
-		// 	}
+			fileText, err := filehandler.ReadInZipFileContents(zipFile)
+			if err != nil {
+				return nil, err
+			}
 
-		// 	initialModel.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
-		// }
-
-		var initialModel = NewFixableTuiModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
+			initialModel.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
+			initialModel.filePaths[i] = filePath
+			i++
+		}
 
 		p := tea.NewProgram(&initialModel)
 		_, err = p.Run()

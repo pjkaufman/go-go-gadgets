@@ -2,28 +2,24 @@ package epub
 
 import (
 	"fmt"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/cmd/epub/tui"
+	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 type FixableTuiModel struct {
 	currentStage                                        stage
 	currentFile                                         string
 	sectionBreakInput                                   tui.SectionBreakModel
+	suggestionHandler                                   tui.SuggestionsModel
 	potentiallyFixableIssues                            []potentiallyFixableIssue
-	sectionSuggestionStates                             []suggestionState
+	filePaths                                           []string
 	fileTexts                                           map[string]string
+	currentFilePathIndex, currentSuggestIndex           int
 	cssFiles, handledFiles                              []string
 	runAll, addCssSectionIfMissing, addCssPageIfMissing bool
-	err                                                 error
-}
-
-type suggestionState struct {
-	isAccepted, isEditing                                    bool
-	original, originalSuggestion, currentSuggestion, display string
 }
 
 var (
@@ -54,6 +50,7 @@ func NewFixableTuiModel(runAll, runSectionBreak bool, potentiallyFixableIssues [
 		sectionBreakInput:        tui.NewSectionBreakModel(),
 		currentStage:             startingStage,
 		potentiallyFixableIssues: potentiallyFixableIssues,
+		fileTexts:                make(map[string]string),
 		cssFiles:                 cssFiles,
 		runAll:                   runAll,
 	}
@@ -68,40 +65,16 @@ func (f FixableTuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch f.currentStage {
 	case sectionContextBreak:
 		f.sectionBreakInput, cmd = f.sectionBreakInput.Update(msg)
+		f = f.advanceStageIfNeeded()
 
 		return f, cmd
 	case suggestionsProcessing:
-		return f.handlePotentialSuggestionsKeys(msg)
+		f.suggestionHandler, cmd = f.suggestionHandler.Update(msg)
+		f = f.advanceStageIfNeeded()
+
+		return f, cmd
 	}
 
-	// TODO: handle this differently
-	f.sectionBreakInput, cmd = f.sectionBreakInput.Update(msg)
-
-	return f, cmd
-}
-
-func (f FixableTuiModel) handlePotentialSuggestionsKeys(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		// case tea.KeyEnter:
-		// 	contextBreak = f.sectionBreakInput.Value()
-
-		// 	if strings.TrimSpace(contextBreak) != "" {
-		// 		f.currentStage = suggestionsProcessing
-		// 	}
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return f, tea.Quit
-		}
-
-	case error:
-		f.err = msg
-		return f, nil
-	}
-
-	f.sectionBreakInput, cmd = f.sectionBreakInput.Update(msg)
 	return f, cmd
 }
 
@@ -110,27 +83,57 @@ func (f FixableTuiModel) View() string {
 	case sectionContextBreak:
 		return f.sectionBreakInput.View()
 	case suggestionsProcessing:
-		return f.getPotentialSuggestionsView()
+		return f.suggestionHandler.View()
 	}
 
 	return f.sectionBreakInput.View()
 }
 
-func (f FixableTuiModel) getPotentialSuggestionsView() string {
-	var s strings.Builder
+func (f FixableTuiModel) advanceStageIfNeeded() FixableTuiModel {
+	switch f.currentStage {
+	case sectionContextBreak:
+		if f.sectionBreakInput.Done {
+			contextBreak = f.sectionBreakInput.Value()
+			f.currentStage = suggestionsProcessing
+			f = f.getNextSuggestion()
+		}
+	case suggestionsProcessing:
+		if f.suggestionHandler.Done {
+			if f.currentFilePathIndex+1 < len(f.filePaths) {
+				f = f.getNextSuggestion()
 
-	s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", f.currentFile)) + "\n")
+				return f
+			}
 
-	s.WriteString("Suggested Change:\n\n")
-	s.WriteString("This is a place holder")
-	s.WriteString("\n\n")
+			f.currentStage = stageCssSelection
+			logger.WriteError("Not implemented stage yet")
+		}
+	}
 
-	f.displayPotentialSuggestionsControls(&s)
-
-	return s.String()
+	return f
 }
 
-func (f FixableTuiModel) displayPotentialSuggestionsControls(s *strings.Builder) {
-	s.WriteString(subtitleStyle.Render("Controls:") + "\n")
-	s.WriteString("Enter: Continue   Ctrl+C/Esc: Quit\n")
+func (f FixableTuiModel) getNextSuggestion() FixableTuiModel {
+	for f.currentFilePathIndex+1 < len(f.filePaths) {
+		for f.currentSuggestIndex+1 < len(f.potentiallyFixableIssues) {
+			var (
+				currentFilePath = f.filePaths[f.currentFilePathIndex]
+				suggestions     = f.potentiallyFixableIssues[f.currentSuggestIndex].getSuggestions(f.fileTexts[currentFilePath])
+			)
+
+			if len(suggestions) != 0 {
+				f.suggestionHandler = tui.NewSuggestionsModel(currentFilePath, f.potentiallyFixableIssues[f.currentSuggestIndex].name, fmt.Sprintf("File %d of %d", f.currentFilePathIndex+1, len(f.filePaths)), suggestions)
+				f.currentSuggestIndex++
+
+				return f
+			}
+
+			f.currentSuggestIndex++
+		}
+
+		f.currentFilePathIndex++
+		f.currentSuggestIndex = 0
+	}
+
+	return f
 }
