@@ -5,13 +5,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 type SectionBreakModel struct {
 	sectionBreakInput textinput.Model
 	sectionBreak      string
 	Done              bool
+	Err               error
 }
 
 func NewSectionBreakModel() SectionBreakModel {
@@ -31,10 +31,6 @@ func (f SectionBreakModel) Init() tea.Cmd {
 }
 
 func (f SectionBreakModel) Update(msg tea.Msg) (SectionBreakModel, tea.Cmd) {
-	if f.Done {
-		return f, nil
-	}
-
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -49,9 +45,12 @@ func (f SectionBreakModel) Update(msg tea.Msg) (SectionBreakModel, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return f, tea.Quit
 		}
-
+	case tea.WindowSizeMsg:
+		return f, tea.ClearScreen
 	case error:
-		logger.WriteError(msg.Error())
+		f.Err = msg
+
+		return f, nil
 	}
 
 	f.sectionBreakInput, cmd = f.sectionBreakInput.Update(msg)
@@ -59,11 +58,8 @@ func (f SectionBreakModel) Update(msg tea.Msg) (SectionBreakModel, tea.Cmd) {
 }
 
 func (f SectionBreakModel) View() string {
-	if f.Done {
-		return ""
-	}
-
 	var s strings.Builder
+	clearScreen(&s)
 
 	s.WriteString("What is the section break for the epub?\n\n")
 	s.WriteString(f.sectionBreakInput.View())

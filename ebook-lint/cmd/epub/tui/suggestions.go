@@ -2,13 +2,11 @@ package tui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
@@ -18,6 +16,7 @@ type SuggestionsModel struct {
 	suggestionInput                                  textarea.Model
 	currentSuggestIndex                              int
 	Done, ChangeMade, replaceAll, editMode           bool
+	Err                                              error
 }
 
 type suggestionState struct {
@@ -25,7 +24,7 @@ type suggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[string]string) SuggestionsModel {
+func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[string]string) (SuggestionsModel, error) {
 	ti := textarea.New()
 	ti.Placeholder = "Enter an edited version of the original string"
 	ti.CharLimit = 2000
@@ -36,11 +35,16 @@ func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[str
 	)
 
 	for original, suggestion := range suggestions {
+		var display, err = getStringDiff(original, suggestion)
+		if err != nil {
+			return SuggestionsModel{}, err
+		}
+
 		sectionSuggestionStates[i] = suggestionState{
 			original:           original,
 			originalSuggestion: suggestion,
 			currentSuggestion:  suggestion,
-			display:            getStringDiff(original, suggestion, false),
+			display:            display,
 		}
 
 		i++
@@ -56,7 +60,7 @@ func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[str
 		group:                   subtitle,
 		fileStatus:              fileStatus,
 		sectionSuggestionStates: sectionSuggestionStates,
-	}
+	}, nil
 }
 
 func (f SuggestionsModel) Init() tea.Cmd {
@@ -74,6 +78,7 @@ func (f SuggestionsModel) Update(msg tea.Msg) (SuggestionsModel, tea.Cmd) {
 func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd) {
 	var (
 		cmd               tea.Cmd
+		err               error
 		currentSuggestion suggestionState
 	)
 
@@ -86,21 +91,29 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 		switch msg.String() {
 		case "ctrl+c":
 			// TODO: populate this up without breaking the CLI
-			logger.WriteInfo("User killed program")
-			os.Exit(1)
+			f.Err = fmt.Errorf("User killed program")
+			return f, nil
 		case "esc":
 			return f, tea.Quit
 		case "ctrl+s":
 			currentSuggestion.currentSuggestion = f.suggestionInput.Value()
 			f.editMode = false
 
-			f.sectionSuggestionStates[f.currentSuggestIndex].display = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion), false)
+			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion))
+			if err != nil {
+				f.Err = err
+				return f, nil
+			}
 
 			return f, nil
 		case "ctrl+e":
 			f.editMode = false
 
-			f.sectionSuggestionStates[f.currentSuggestIndex].display = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion), false)
+			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion))
+			if err != nil {
+				f.Err = err
+				return f, nil
+			}
 
 			return f, nil
 		case "ctrl+r":
@@ -108,6 +121,12 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 
 			return f, nil
 		}
+	case tea.WindowSizeMsg:
+		return f, tea.ClearScreen
+	case error:
+		f.Err = msg
+
+		return f, nil
 	}
 
 	f.suggestionInput, cmd = f.suggestionInput.Update(msg)
@@ -128,8 +147,8 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			logger.WriteInfo("User killed program")
-			os.Exit(1)
+			f.Err = fmt.Errorf("User killed program")
+			return f, nil
 		case "q", "esc":
 			return f, tea.Quit
 		case "e":
@@ -159,7 +178,8 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 			// Copy original value to the clipboard
 			err := clipboard.WriteAll(currentSuggestion.original)
 			if err != nil {
-				logger.WriteError(err.Error())
+				f.Err = err
+				return f, nil
 			}
 
 			return f, nil
@@ -173,6 +193,12 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 
 			return f, nil
 		}
+	case tea.WindowSizeMsg:
+		return f, tea.ClearScreen
+	case error:
+		f.Err = msg
+
+		return f, nil
 	default:
 		f.suggestionInput, cmd = f.suggestionInput.Update(msg)
 	}
@@ -181,14 +207,18 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 }
 
 func (f SuggestionsModel) View() string {
-	if len(f.sectionSuggestionStates) == 0 {
-		return "No suggestions found"
-	}
-
 	var s strings.Builder
+	clearScreen(&s)
+
+	if len(f.sectionSuggestionStates) == 0 {
+		s.WriteString("No suggestions found")
+
+		return s.String()
+	}
 
 	s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", f.file)) + "\n")
 	s.WriteString(fileStatusStyle.Render(f.fileStatus))
+	s.WriteString("\n")
 	s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", f.group)) + "\n\n")
 
 	if f.editMode {
@@ -258,11 +288,6 @@ func (f SuggestionsModel) moveToPreviousSuggestion() SuggestionsModel {
 	return f
 }
 
-func getStringDiff(original, new string, isCli bool) string {
-	diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(new, "\n"), isCli)
-	if err != nil {
-		logger.WriteError(err.Error())
-	}
-
-	return diffString
+func getStringDiff(original, new string) (string, error) {
+	return stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(new, "\n"))
 }

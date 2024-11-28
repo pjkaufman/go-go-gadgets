@@ -221,7 +221,7 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	logger.WriteInfo(cliLineSeparator + "\n")
 
 	for original, suggestion := range suggestions {
-		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"), true)
+		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -724,13 +724,17 @@ func runTuiEpubFixable() error {
 			i++
 		}
 
-		p := tea.NewProgram(&initialModel)
-		_, err = p.Run()
+		p := tea.NewProgram(&initialModel, tea.WithAltScreen())
+		finalModel, err := p.Run()
 		if err != nil {
 			return nil, err
 		}
 
-		// model := finalModel.(*tui.FixableTuiModel)
+		model := finalModel.(*FixableTuiModel)
+
+		if model.Err != nil {
+			return nil, model.Err
+		}
 
 		// Process and write updated files
 		// for filePath, fileText := range model.fileTexts {

@@ -4,9 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/cmd/epub/tui"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 type FixableTuiModel struct {
@@ -20,16 +18,8 @@ type FixableTuiModel struct {
 	currentFilePathIndex, currentSuggestIndex           int
 	cssFiles, handledFiles                              []string
 	runAll, addCssSectionIfMissing, addCssPageIfMissing bool
+	Err                                                 error
 }
-
-var (
-	titleStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("81")).Bold(true)
-	subtitleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("246"))
-	// activeStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("190"))
-	// inactiveStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	// diffAddStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
-	// diffRemoveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
-)
 
 type stage int
 
@@ -62,13 +52,30 @@ func (f FixableTuiModel) Init() tea.Cmd {
 
 func (f FixableTuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
+	if f.Err != nil {
+		return f, tea.Quit
+	}
+
 	switch f.currentStage {
 	case sectionContextBreak:
+		if f.sectionBreakInput.Err != nil {
+			f.Err = f.sectionBreakInput.Err
+
+			return f, tea.Quit
+		}
+
 		f.sectionBreakInput, cmd = f.sectionBreakInput.Update(msg)
 		f = f.advanceStageIfNeeded()
 
 		return f, cmd
 	case suggestionsProcessing:
+		if f.suggestionHandler.Err != nil {
+			f.Err = f.suggestionHandler.Err
+
+			return f, tea.Quit
+		}
+
 		f.suggestionHandler, cmd = f.suggestionHandler.Update(msg)
 		f = f.advanceStageIfNeeded()
 
@@ -86,7 +93,7 @@ func (f FixableTuiModel) View() string {
 		return f.suggestionHandler.View()
 	}
 
-	return f.sectionBreakInput.View()
+	return ""
 }
 
 func (f FixableTuiModel) advanceStageIfNeeded() FixableTuiModel {
@@ -106,7 +113,8 @@ func (f FixableTuiModel) advanceStageIfNeeded() FixableTuiModel {
 			}
 
 			f.currentStage = stageCssSelection
-			logger.WriteError("Not implemented stage yet")
+			f.Err = fmt.Errorf("Not implemented stage yet")
+			// TODO: figure out how to close the program
 		}
 	}
 
@@ -122,7 +130,14 @@ func (f FixableTuiModel) getNextSuggestion() FixableTuiModel {
 			)
 
 			if len(suggestions) != 0 {
-				f.suggestionHandler = tui.NewSuggestionsModel(currentFilePath, f.potentiallyFixableIssues[f.currentSuggestIndex].name, fmt.Sprintf("File %d of %d", f.currentFilePathIndex+1, len(f.filePaths)), suggestions)
+				var err error
+				f.suggestionHandler, err = tui.NewSuggestionsModel(currentFilePath, f.potentiallyFixableIssues[f.currentSuggestIndex].name, fmt.Sprintf("File %d of %d", f.currentFilePathIndex+1, len(f.filePaths)), suggestions)
+				if err != nil {
+					f.Err = err
+
+					return f
+				}
+
 				f.currentSuggestIndex++
 
 				return f
