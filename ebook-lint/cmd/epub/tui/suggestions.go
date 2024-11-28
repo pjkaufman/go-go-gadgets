@@ -32,6 +32,8 @@ func NewSuggestionsModel(title, subtitle, fileStatus string, suggestions map[str
 	ti.Placeholder = "Enter an edited version of the original string"
 	ti.CharLimit = 2000
 	ti.ShowLineNumbers = false
+	ti.SetWidth(width - 4)
+
 	var (
 		sectionSuggestionStates = make([]suggestionState, len(suggestions))
 		i                       = 0
@@ -104,7 +106,7 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 			currentSuggestion.currentSuggestion = f.suggestionInput.Value()
 			f.editMode = false
 
-			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion))
+			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(currentSuggestion.original, currentSuggestion.currentSuggestion)
 			if err != nil {
 				f.Err = err
 				return f, nil
@@ -114,7 +116,7 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 		case "ctrl+e":
 			f.editMode = false
 
-			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(strings.TrimSpace(currentSuggestion.original), strings.TrimSpace(currentSuggestion.currentSuggestion))
+			f.sectionSuggestionStates[f.currentSuggestIndex].display, err = getStringDiff(currentSuggestion.original, currentSuggestion.currentSuggestion)
 			if err != nil {
 				f.Err = err
 				return f, nil
@@ -130,7 +132,9 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 		f.width = msg.Width
 		f.height = msg.Height
 
-		return f, tea.ClearScreen
+		f.suggestionInput.SetWidth(msg.Width - 4)
+
+		return f, tea.Batch(tea.ClearScreen, f.suggestionInput.Focus())
 	case error:
 		f.Err = msg
 
@@ -164,7 +168,7 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 				f.editMode = true
 				f.suggestionInput.SetValue(currentSuggestion.currentSuggestion)
 
-				return f, nil
+				return f, f.suggestionInput.Focus()
 			}
 		case "enter":
 			if !currentSuggestion.isAccepted {
@@ -204,13 +208,9 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 	case tea.WindowSizeMsg:
 		f.width = msg.Width
 		f.height = msg.Height
-
 		f.suggestionInput.SetWidth(msg.Width - 4)
 
-		return f, tea.Batch(
-			tea.ClearScreen,
-			f.suggestionInput.Focus(),
-		)
+		return f, tea.ClearScreen
 	case error:
 		f.Err = msg
 
@@ -225,24 +225,30 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 func (f SuggestionsModel) View() string {
 	var s strings.Builder
 	clearScreen(&s)
-
+	s.WriteString("\n")
 	if len(f.sectionSuggestionStates) == 0 {
 		s.WriteString("No suggestions found")
-
 		return s.String()
 	}
 
 	s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", f.file)) + "\n")
 	s.WriteString(fileStatusStyle.Render(f.fileStatus) + "\n")
-	s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", f.group)) + "\n\n")
-	s.WriteString(fmt.Sprint(len(f.group)) + " - " + f.group + "\n")
+	s.WriteString(groupStyle.Render(wordwrap.String(fmt.Sprintf("Issue Group: %s", f.group)+"\n\n", f.width-10)))
+
+	// currentSuggestion := f.sectionSuggestionStates[f.currentSuggestIndex]
+	// fmt.Printf("DEBUG: Original: '%s'\n", currentSuggestion.original)
+	// fmt.Printf("DEBUG: Current Suggestion: '%s'\n", currentSuggestion.currentSuggestion)
+	// fmt.Printf("DEBUG: Display: '%s'\n", currentSuggestion.display)
+
+	// // Print out the display string with explicit representation
+	// fmt.Printf("DEBUG: Display Representation: %q\n", currentSuggestion.display)
+	// fmt.Printf("DEBUG: Terminal Width: %d\n", f.width)
+	// s.WriteString(fmt.Sprintf("DEBUG: Terminal Width: %d\n", f.width))
 
 	if f.editMode {
 		s.WriteString(f.suggestionInput.View())
 	} else {
-		// s.WriteString(fmt.Sprint(len(f.sectionSuggestionStates[f.currentSuggestIndex].display)) + "\n")
-		// s.WriteString(fmt.Sprint(f.width) + "\n")
-		s.WriteString(wordwrap.String(f.sectionSuggestionStates[f.currentSuggestIndex].display, f.width))
+		s.WriteString(wordwrap.String(f.sectionSuggestionStates[f.currentSuggestIndex].display, f.width-10))
 	}
 
 	s.WriteString("\n\n")
@@ -254,6 +260,7 @@ func (f SuggestionsModel) View() string {
 	s.WriteString(".\n\n")
 
 	f.displaySuggestionControls(&s)
+	s.WriteString(fmt.Sprintf("height: %d | width: %d\n", f.height, f.width))
 
 	// s.WriteString("\nOriginal:")
 	// s.WriteString(f.sectionSuggestionStates[f.currentSuggestIndex].original)
@@ -306,11 +313,27 @@ func (f SuggestionsModel) moveToPreviousSuggestion() SuggestionsModel {
 	return f
 }
 
-var removeStartingLineWhitespace = regexp.MustCompile(`\n[ \t]+`)
+var removeStartingLineWhitespace = regexp.MustCompile(`(^|\n)[ \t]+`)
 
 func getStringDiff(original, new string) (string, error) {
-	original = removeStartingLineWhitespace.ReplaceAllString(original, "\n")
-	new = removeStartingLineWhitespace.ReplaceAllString(new, "\n")
+	// fmt.Printf("Original (before trim): '%s'\n", original)
+	// fmt.Printf("New (before trim): '%s'\n", new)
 
-	return stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n \t"), strings.TrimLeft(new, "\n \t"))
+	original = strings.TrimSpace(removeStartingLineWhitespace.ReplaceAllString(original, "\n"))
+	new = strings.TrimSpace(removeStartingLineWhitespace.ReplaceAllString(new, "\n"))
+	// fmt.Printf("Original (after trim): '%s'\n", original)
+	// fmt.Printf("New (after trim): '%s'\n", new)
+
+	// fmt.Printf("DIFF DEBUG: Original after regex: '%s'\n", original)
+	// fmt.Printf("DIFF DEBUG: New after regex: '%s'\n", new)
+
+	var diffString, err = stringdiff.GetPrettyDiffString(original, new)
+	diffString = strings.TrimSpace(diffString)
+
+	// fmt.Printf("DIFF DEBUG: Result: '%s'\n", diffString)
+	// fmt.Printf("DIFF DEBUG: Result Representation: %q\n", diffString)
+
+	// fmt.Printf("Diff String (after trim): '%s'\n", strings.TrimSpace(diffString))
+
+	return diffString, err
 }
