@@ -16,7 +16,11 @@ var (
 )
 
 func clearScreen(s *strings.Builder) {
-	s.WriteString("\r\033[K") // Clear current line
-	s.WriteString("\033[2J")  // Clear entire screen
-	s.WriteString("\033[H")   // Move cursor to top-left
+	// s.WriteString("\r\033[K") // Clear current line
+	// s.WriteString("\033[2J")  // Clear entire screen
+	// s.WriteString("\033[H")   // Move cursor to top-left
+	// Use ANSI escape sequences for cross-platform screen clearing
+	s.WriteString("\033[2J") // Clear entire screen
+	s.WriteString("\033[H")  // Move cursor to top-left
+	s.WriteString("\r")      // Move to the start of the line
 }

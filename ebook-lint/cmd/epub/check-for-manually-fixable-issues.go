@@ -646,33 +646,6 @@ func handleCssChanges(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolde
 // 	}
 // }
 
-// Updated existing fixableCmd to support TUI
-// func updateFixableCmd() {
-// 	fixableCmd.Run = func(cmd *cobra.Command, args []string) {
-// 		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords)
-// 		if err != nil {
-// 			logger.WriteError(err.Error())
-// 			return
-// 		}
-
-// 		err = filehandler.FileArgExists(epubFile, "epub-file")
-// 		if err != nil {
-// 			logger.WriteError(err.Error())
-// 			return
-// 		}
-
-// 		if useTui {
-// 			err = runTuiEpubFixable()
-// 		} else {
-// 			err = runCliEpubFixable()
-// 		}
-
-// 		if err != nil {
-// 			logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
-// 		}
-// 	}
-// }
-
 func runTuiEpubFixable() error {
 	return epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
@@ -693,15 +666,6 @@ func runTuiEpubFixable() error {
 		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
 			return nil, ErrCssPathsEmptyWhenArgIsNeeded
 		}
-
-		// Prepare initial model
-		// var initialModel = fixableTuiModel{
-		// 	stage:                    stageContextBreak,
-		// 	potentiallyFixableIssues: potentiallyFixableIssues,
-		// 	runAll:                   runAll,
-		// 	fileTexts:                make(map[string]string),
-		// 	cssFiles:                 cssFiles,
-		// }
 
 		var (
 			initialModel = NewFixableTuiModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
@@ -860,31 +824,3 @@ func runCliEpubFixable() error {
 
 	// logger.WriteInfo("\nFinished showing manually fixable issues...")
 }
-
-// func init() {
-// 	EpubCmd.AddCommand(fixableCmd)
-
-// 	fixableCmd.Flags().BoolVarP(&runAll, "run-all", "a", false, "whether to run all of the fixable suggestions")
-// 	fixableCmd.Flags().BoolVarP(&runBrokenLines, "run-broken-lines", "b", false, "whether to run the logic for getting broken line suggestions")
-// 	fixableCmd.Flags().BoolVarP(&runSectionBreak, "run-section-breaks", "s", false, "whether to run the logic for getting section break suggestions (must be used with css-paths)")
-// 	fixableCmd.Flags().BoolVarP(&runPageBreak, "run-page-breaks", "p", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
-// 	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "run-oxford-commas", "o", false, "whether to run the logic for getting oxford comma suggestions")
-// 	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "run-although-but", "n", false, "whether to run the logic for getting although but suggestions")
-// 	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
-// 	fixableCmd.Flags().BoolVarP(&runConversation, "run-conversation", "c", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
-// 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "run-necessary-words", "w", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
-// 	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
-
-// 	err := fixableCmd.MarkFlagRequired("epub-file")
-// 	if err != nil {
-// 		logger.WriteErrorf(`failed to mark flag "epub-file" as required on fixable command: %v\n`, err)
-// 	}
-
-// 	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
-// 	if err != nil {
-// 		logger.WriteErrorf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v\n`, err)
-// 	}
-
-// 	// Update run function to support TUI
-// 	updateFixableCmd()
-// }

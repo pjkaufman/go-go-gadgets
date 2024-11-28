@@ -36,8 +36,10 @@ func NewFixableTuiModel(runAll, runSectionBreak bool, potentiallyFixableIssues [
 		startingStage = suggestionsProcessing
 	}
 
+	var input = tui.NewSectionBreakModel()
+
 	return FixableTuiModel{
-		sectionBreakInput:        tui.NewSectionBreakModel(),
+		sectionBreakInput:        input,
 		currentStage:             startingStage,
 		potentiallyFixableIssues: potentiallyFixableIssues,
 		fileTexts:                make(map[string]string),
