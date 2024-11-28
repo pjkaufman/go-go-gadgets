@@ -694,8 +694,7 @@ func runTuiEpubFixable() error {
 			return nil, err
 		}
 
-		model := finalModel.(*FixableTuiModel)
-
+		model := finalModel.(FixableTuiModel)
 		if model.Err != nil {
 			return nil, model.Err
 		}
