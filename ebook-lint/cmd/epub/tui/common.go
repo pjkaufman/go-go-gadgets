@@ -10,9 +10,9 @@ var (
 	titleStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("81")).Bold(true)
 	groupStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("246"))
 	fileStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("190"))
-	// inactiveStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	// diffAddStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
-	// diffRemoveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+	warningStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#F7DC6F"))
+	generalStyle    = lipgloss.NewStyle().Foreground(lipgloss.NewStyle().GetForeground())
+	suggestionStyle = lipgloss.NewStyle()
 )
 
 func clearScreen(s *strings.Builder) {

@@ -668,7 +668,8 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = NewFixableTuiModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
+			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
+			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues)
 			i            = 0
 		)
 		initialModel.filePaths = make([]string, len(epubInfo.HtmlFiles))
@@ -694,7 +695,7 @@ func runTuiEpubFixable() error {
 			return nil, err
 		}
 
-		model := finalModel.(FixableTuiModel)
+		model := finalModel.(fixableIssuesModel)
 		if model.Err != nil {
 			return nil, model.Err
 		}

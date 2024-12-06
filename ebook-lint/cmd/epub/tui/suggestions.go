@@ -8,7 +8,6 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/muesli/reflow/wordwrap"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
@@ -147,9 +146,13 @@ func (f SuggestionsModel) handleEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd
 
 func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.Cmd) {
 	var (
+		cmds              []tea.Cmd
 		cmd               tea.Cmd
 		currentSuggestion suggestionState
 	)
+
+	f.suggestionInput, cmd = f.suggestionInput.Update(msg)
+	cmds = append(cmds, cmd)
 
 	if f.currentSuggestIndex+1 < len(f.sectionSuggestionStates) {
 		currentSuggestion = f.sectionSuggestionStates[f.currentSuggestIndex]
@@ -159,7 +162,7 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			f.Err = fmt.Errorf("User killed program")
+			f.Err = fmt.Errorf("user killed program")
 			return f, nil
 		case "q", "esc":
 			return f, tea.Quit
@@ -168,7 +171,8 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 				f.editMode = true
 				f.suggestionInput.SetValue(currentSuggestion.currentSuggestion)
 
-				return f, f.suggestionInput.Focus()
+				cmd = f.suggestionInput.Focus()
+				cmds = append(cmds, cmd)
 			}
 		case "enter":
 			if !currentSuggestion.isAccepted {
@@ -184,112 +188,87 @@ func (f SuggestionsModel) handleNonEditKeys(msg tea.Msg) (SuggestionsModel, tea.
 			}
 
 			f = f.moveToNextSuggestion()
-
-			return f, nil
 		case "c":
 			// Copy original value to the clipboard
 			err := clipboard.WriteAll(currentSuggestion.original)
 			if err != nil {
 				f.Err = err
-				return f, nil
+				return f, tea.Quit
 			}
-
-			return f, nil
 		case "right", "l":
 			f = f.moveToNextSuggestion()
-
-			return f, nil
-
 		case "left", "h":
 			f = f.moveToPreviousSuggestion()
-
-			return f, nil
 		}
 	case tea.WindowSizeMsg:
 		f.width = msg.Width
 		f.height = msg.Height
 		f.suggestionInput.SetWidth(msg.Width - 4)
 
-		return f, tea.ClearScreen
+		cmds = append(cmds, tea.ClearScreen)
 	case error:
 		f.Err = msg
 
-		return f, nil
-	default:
-		f.suggestionInput, cmd = f.suggestionInput.Update(msg)
+		return f, tea.Quit
 	}
 
-	return f, cmd
+	return f, tea.Batch(cmds...)
 }
 
 func (f SuggestionsModel) View() string {
 	var s strings.Builder
 	clearScreen(&s)
-	s.WriteString("\n")
+	// s.WriteString("\n")
 	if len(f.sectionSuggestionStates) == 0 {
-		s.WriteString("No suggestions found")
+		s.WriteString(warningStyle.Width(f.width).Render("No suggestions found"))
 		return s.String()
 	}
 
-	s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", f.file)) + "\n")
-	s.WriteString(fileStatusStyle.Render(f.fileStatus) + "\n")
-	s.WriteString(groupStyle.Render(wordwrap.String(fmt.Sprintf("Issue Group: %s", f.group)+"\n\n", f.width-10)))
+	s.WriteString(titleStyle.Width(f.width).Render(fmt.Sprintf("Current File: %s", f.file)) + "\n")
+	s.WriteString(fileStatusStyle.Width(f.width).Render(f.fileStatus) + "\n")
+	s.WriteString(groupStyle.Width(f.width).Render(fmt.Sprintf("Issue Group: %s", f.group) + "\n\n"))
 
-	// currentSuggestion := f.sectionSuggestionStates[f.currentSuggestIndex]
-	// fmt.Printf("DEBUG: Original: '%s'\n", currentSuggestion.original)
-	// fmt.Printf("DEBUG: Current Suggestion: '%s'\n", currentSuggestion.currentSuggestion)
-	// fmt.Printf("DEBUG: Display: '%s'\n", currentSuggestion.display)
+	// if f.editMode {
+	// 	s.WriteString(f.suggestionInput.View() + "\n\n")
+	// } else {
+	// 	// TODO: if need be write \r here
+	// 	// s.WriteString("\r")
+	// 	// s.WriteString(wordwrap.String(f.sectionSuggestionStates[f.currentSuggestIndex].display, f.width-10))
+	// 	s.WriteString(suggestionStyle.Width(f.width).Render(f.sectionSuggestionStates[f.currentSuggestIndex].display + "\n\n"))
+	// }
 
-	// // Print out the display string with explicit representation
-	// fmt.Printf("DEBUG: Display Representation: %q\n", currentSuggestion.display)
-	// fmt.Printf("DEBUG: Terminal Width: %d\n", f.width)
-	// s.WriteString(fmt.Sprintf("DEBUG: Terminal Width: %d\n", f.width))
-
-	if f.editMode {
-		s.WriteString(f.suggestionInput.View())
-	} else {
-		s.WriteString(wordwrap.String(f.sectionSuggestionStates[f.currentSuggestIndex].display, f.width-10))
-	}
-
-	s.WriteString("\n\n")
-
-	s.WriteString("Suggestion ")
-	s.WriteString(fmt.Sprint(f.currentSuggestIndex + 1))
-	s.WriteString(" of ")
-	s.WriteString(fmt.Sprint(len(f.sectionSuggestionStates)))
-	s.WriteString(".\n\n")
+	s.WriteString(generalStyle.Width(f.width).Render(fmt.Sprintf("Suggestion %d of %d.\n\n", f.currentSuggestIndex+1, len(f.sectionSuggestionStates))))
 
 	f.displaySuggestionControls(&s)
-	s.WriteString(fmt.Sprintf("height: %d | width: %d\n", f.height, f.width))
-
-	// s.WriteString("\nOriginal:")
-	// s.WriteString(f.sectionSuggestionStates[f.currentSuggestIndex].original)
-	// s.WriteString("\nOriginal Suggestion:")
-	// s.WriteString(f.sectionSuggestionStates[f.currentSuggestIndex].originalSuggestion)
-	// s.WriteString("\nCurrent Suggestion:")
-	// s.WriteString(f.sectionSuggestionStates[f.currentSuggestIndex].currentSuggestion)
-	// s.WriteString("\nDisplay Value:")
-	// s.WriteString(f.suggestionInput.Value())
+	s.WriteString(generalStyle.Width(f.width).Render(fmt.Sprintf("height: %d | width: %d\n", f.height, f.width)))
 
 	return s.String()
 }
 
 func (f SuggestionsModel) displaySuggestionControls(s *strings.Builder) {
-	s.WriteString(groupStyle.Render("Controls:") + "\n")
+	s.WriteString(groupStyle.Width(f.width).Render("Controls:") + "\n")
 
+	var controls []string
 	if !f.editMode {
-		s.WriteString("← / → : Previous/Next Suggestion   ")
-		s.WriteString("E: Edit   ")
-		s.WriteString("C: Copy   ")
-		s.WriteString("Enter: Accept   ")
-		s.WriteString("Q/Esc: Quit\n")
+		controls = []string{
+			"← / → : Previous/Next Suggestion",
+			"E: Edit",
+			"C: Copy",
+			"Enter: Accept",
+			"Q/Esc: Quit",
+			"Ctrl+C: Exit without saving",
+		}
 	} else {
-		s.WriteString("Ctrl+R: Reset   ")
-		s.WriteString("Ctrl+E: Cancel edit   ")
-		s.WriteString("Ctrl+S: Accept   ")
-		s.WriteString("Esc: Quit   ")
-		s.WriteString("Ctrl+C: Exit without saving\n")
+		controls = []string{
+			"Ctrl+R: Reset",
+			"Ctrl+E: Cancel edit",
+			"Ctrl+S: Accept",
+			"Esc: Quit",
+			"Ctrl+C: Exit without saving",
+		}
 	}
+
+	s.WriteString(generalStyle.Width(f.width).Render(strings.Join(controls, "   ") + "\n"))
 }
 
 func (f SuggestionsModel) moveToNextSuggestion() SuggestionsModel {
