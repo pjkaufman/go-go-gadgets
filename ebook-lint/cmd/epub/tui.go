@@ -270,19 +270,21 @@ const (
 )
 
 type fixableIssuesModel struct {
-	currentStage                                         stage
-	sectionBreakInput                                    textinput.Model
-	filePaths, cssFiles                                  []string
-	fileTexts                                            map[string]string
-	runAll                                               bool
-	potentiallyFixableIssues                             []potentiallyFixableIssue
-	potentialFixableIssueIndex, currentFileIndex         int
-	sectionSuggestionStates                              []suggestionState
-	currentFile, currentSuggestionTitle, SelectedCssFile string
-	currentSuggestionIndex, currentCssIndex              int
-	currentFileState                                     *suggestionState
-	height, width                                        int
-	Err                                                  error
+	currentStage                 stage
+	sectionBreakInfo             sectionBreakStageInfo
+	potentiallyFixableIssuesInfo potentiallyFixableStageInfo
+	cssSelectionInfo             cssSelectionStageInfo
+	// filePaths, cssFiles                                  []string
+	// fileTexts                                            map[string]string
+	runAll bool
+	// potentiallyFixableIssues                             []potentiallyFixableIssue
+	// potentialFixableIssueIndex, currentFileIndex         int
+	// sectionSuggestionStates                              []suggestionState
+	// currentFile, currentSuggestionTitle, SelectedCssFile string
+	// currentSuggestionIndex, currentCssIndex              int
+	// currentFileState                                     *suggestionState
+	height, width int
+	Err           error
 }
 
 type sectionBreakStageInfo struct {
@@ -294,7 +296,9 @@ type potentiallyFixableStageInfo struct {
 	currentSuggestionIndex                       int
 	currentFile, currentSuggestionTitle          string
 	potentiallyFixableIssues                     []potentiallyFixableIssue
+	currentSuggestion                            *potentiallyFixableIssue
 	potentialFixableIssueIndex, currentFileIndex int
+	cssUpdateRequired                            bool
 	sectionSuggestionStates                      []suggestionState
 	filePaths                                    []string
 	fileTexts                                    map[string]string
@@ -311,7 +315,7 @@ type suggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyFixableIssue) fixableIssuesModel {
+func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyFixableIssue, cssFiles []string) fixableIssuesModel {
 	ti := textinput.New()
 	ti.Width = 20
 	ti.CharLimit = 200
@@ -325,11 +329,18 @@ func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potential
 	}
 
 	return fixableIssuesModel{
-		sectionBreakInput:        ti,
-		runAll:                   runAll,
-		currentStage:             currentStage,
-		fileTexts:                map[string]string{},
-		potentiallyFixableIssues: potentiallyFixableIssues,
+		sectionBreakInfo: sectionBreakStageInfo{
+			sectionBreakInput: ti,
+		},
+		potentiallyFixableIssuesInfo: potentiallyFixableStageInfo{
+			fileTexts:                map[string]string{},
+			potentiallyFixableIssues: potentiallyFixableIssues,
+		},
+		cssSelectionInfo: cssSelectionStageInfo{
+			cssFiles: cssFiles,
+		},
+		runAll:       runAll,
+		currentStage: currentStage,
 	}
 }
 
@@ -343,11 +354,12 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var (
-		cmds []tea.Cmd
-		cmd  tea.Cmd
+		cmds         []tea.Cmd
+		cmd          tea.Cmd
+		initialStage = m.currentStage
 	)
 
-	m.sectionBreakInput, cmd = m.sectionBreakInput.Update(msg)
+	m.sectionBreakInfo.sectionBreakInput, cmd = m.sectionBreakInfo.sectionBreakInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
@@ -357,7 +369,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case sectionBreak:
 			switch key {
 			case "enter":
-				contextBreak = strings.TrimSpace(m.sectionBreakInput.Value())
+				contextBreak = strings.TrimSpace(m.sectionBreakInfo.sectionBreakInput.Value())
 				if contextBreak != "" {
 					m.currentStage = suggestionsProcessing
 
@@ -368,7 +380,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					}
 
-					cmds = append(cmds, tea.ClearScreen)
+					// cmds = append(cmds, tea.ClearScreen)
 				}
 			case "ctrl+c", "esc":
 				return m, tea.Quit
@@ -385,11 +397,11 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				}
 
-				cmds = append(cmds, tea.ClearScreen)
+				// cmds = append(cmds, tea.ClearScreen)
 			case "left":
 				m.moveToPreviousSuggestion()
 
-				cmds = append(cmds, tea.ClearScreen)
+				// cmds = append(cmds, tea.ClearScreen)
 			case "c":
 				// Copy original value to the clipboard
 				// original, err := repairUnicode(m.currentFileState.original)
@@ -401,11 +413,33 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				// err = clipboard.WriteAll(original)
 				// TODO: make sure values are utf-8 compliant
-				err := clipboard.WriteAll(m.currentFileState.original)
+				err := clipboard.WriteAll(m.potentiallyFixableIssuesInfo.currentFileState.original)
 				if err != nil {
 					m.Err = err
 
 					return m, tea.Quit
+				}
+			case "enter":
+				if !m.potentiallyFixableIssuesInfo.currentFileState.isAccepted && m.potentiallyFixableIssuesInfo.currentSuggestion != nil {
+					var replaceCount = 1
+					if m.potentiallyFixableIssuesInfo.currentSuggestion.updateAllInstances {
+						replaceCount = -1
+					}
+
+					m.potentiallyFixableIssuesInfo.fileTexts[m.potentiallyFixableIssuesInfo.currentFile] = strings.Replace(m.potentiallyFixableIssuesInfo.fileTexts[m.potentiallyFixableIssuesInfo.currentFile], m.potentiallyFixableIssuesInfo.currentFileState.original, m.potentiallyFixableIssuesInfo.currentFileState.currentSuggestion, replaceCount)
+
+					if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssIfMissing {
+						m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
+					}
+
+					err := m.moveToNextSuggestion()
+					if err != nil {
+						m.Err = err
+
+						return m, tea.Quit
+					}
+
+					// cmds = append(cmds, tea.ClearScreen)
 				}
 			}
 		case stageCssSelection:
@@ -413,19 +447,17 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "ctrl+c", "esc":
 				return m, tea.Quit
 			case "up":
-				if m.currentCssIndex > 0 {
-					m.currentCssIndex--
-					m.SelectedCssFile = m.cssFiles[m.currentCssIndex]
-
-					cmds = append(cmds, tea.ClearScreen)
+				if m.cssSelectionInfo.currentCssIndex > 0 {
+					m.cssSelectionInfo.currentCssIndex--
+					m.cssSelectionInfo.SelectedCssFile = m.cssSelectionInfo.cssFiles[m.cssSelectionInfo.currentCssIndex]
 				}
 			case "down":
-				if m.currentCssIndex+1 < len(m.cssFiles) {
-					m.currentCssIndex++
-					m.SelectedCssFile = m.cssFiles[m.currentCssIndex]
-
-					cmds = append(cmds, tea.ClearScreen)
+				if m.cssSelectionInfo.currentCssIndex+1 < len(m.cssSelectionInfo.cssFiles) {
+					m.cssSelectionInfo.currentCssIndex++
+					m.cssSelectionInfo.SelectedCssFile = m.cssSelectionInfo.cssFiles[m.cssSelectionInfo.currentCssIndex]
 				}
+			case "enter":
+				m.currentStage = finalStage
 			}
 		default:
 			switch key {
@@ -443,6 +475,12 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
+	if m.currentStage == finalStage {
+		return m, tea.Quit
+	} else if m.currentStage != initialStage {
+		cmds = append(cmds, tea.ClearScreen)
+	}
+
 	return m, tea.Batch(cmds...)
 }
 
@@ -452,28 +490,34 @@ func (m fixableIssuesModel) View() string {
 
 	switch m.currentStage {
 	case sectionBreak:
-		s.WriteString("\n" + m.sectionBreakInput.View() + "\n\n")
+		s.WriteString("\n" + m.sectionBreakInfo.sectionBreakInput.View() + "\n\n")
 	case suggestionsProcessing:
-		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.currentFile)) + "\n")
-		s.WriteString(fileStatusStyle.Render(fmt.Sprintf("File %d of %d", m.currentFileIndex+1, len(m.filePaths))) + "\n")
-		s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", m.currentSuggestionTitle) + "\n"))
+		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.potentiallyFixableIssuesInfo.currentFile)) + "\n")
+		s.WriteString(fileStatusStyle.Render(fmt.Sprintf("File %d of %d", m.potentiallyFixableIssuesInfo.currentFileIndex+1, len(m.potentiallyFixableIssuesInfo.filePaths))) + "\n")
+		s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", m.potentiallyFixableIssuesInfo.currentSuggestionTitle) + "\n"))
 
-		if m.currentFileState == nil {
+		if m.potentiallyFixableIssuesInfo.currentFileState == nil {
 			s.WriteString("\nNo current file is selected. Something may have gone wrong...\n\n")
 		} else {
 			s.WriteString("\nSuggested change:\n")
-			s.WriteString(displayStyle.Width(m.width-columnPadding).Render(fmt.Sprintf(`"%s"`, m.currentFileState.display)) + "\n\n")
-			s.WriteString(fmt.Sprintf("Suggestion %d of %d.\n\n", m.currentSuggestionIndex+1, len(m.sectionSuggestionStates)))
+			s.WriteString(displayStyle.Width(m.width-columnPadding).Render(fmt.Sprintf(`"%s"`, m.potentiallyFixableIssuesInfo.currentFileState.display)) + "\n\n")
+			s.WriteString(fmt.Sprintf("Suggestion %d of %d.\n\n", m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates)))
 		}
 	case stageCssSelection:
-		for i, cssFile := range m.cssFiles {
+		var startingChar = "\n"
+		for i, cssFile := range m.cssSelectionInfo.cssFiles {
+
 			cursor := " "
-			if m.currentCssIndex == i {
+			if m.cssSelectionInfo.currentCssIndex == i {
 				cursor = ">"
 			}
 
-			s.WriteString(fmt.Sprintf("\n%s %s\n", cursor, cssFile))
+			s.WriteString(fmt.Sprintf("%s%s %d. %s\n", startingChar, cursor, i+1, cssFile))
+
+			startingChar = ""
 		}
+
+		s.WriteString("\n")
 	}
 
 	m.displayControls(&s)
@@ -544,21 +588,22 @@ func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 }
 
 func (m *fixableIssuesModel) setupForNextSuggestions() error {
-	for m.currentFileIndex+1 < len(m.filePaths) {
-		for m.potentialFixableIssueIndex+1 < len(m.potentiallyFixableIssues) {
-			var potentialFixableIssue = m.potentiallyFixableIssues[m.potentialFixableIssueIndex]
+	for m.potentiallyFixableIssuesInfo.currentFileIndex+1 < len(m.potentiallyFixableIssuesInfo.filePaths) {
+		for m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex+1 < len(m.potentiallyFixableIssuesInfo.potentiallyFixableIssues) {
+			var potentialFixableIssue = m.potentiallyFixableIssuesInfo.potentiallyFixableIssues[m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex]
 			if !m.runAll && (potentialFixableIssue.isEnabled == nil || *potentialFixableIssue.isEnabled) {
-				m.potentialFixableIssueIndex++
+				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 				continue
 			}
 
 			var (
-				currentFilePath = m.filePaths[m.currentFileIndex]
-				suggestions     = potentialFixableIssue.getSuggestions(m.fileTexts[currentFilePath])
+				currentFilePath = m.potentiallyFixableIssuesInfo.filePaths[m.potentiallyFixableIssuesInfo.currentFileIndex]
+				suggestions     = potentialFixableIssue.getSuggestions(m.potentiallyFixableIssuesInfo.fileTexts[currentFilePath])
 			)
 
 			if len(suggestions) != 0 {
-				m.sectionSuggestionStates = make([]suggestionState, len(suggestions))
+				m.potentiallyFixableIssuesInfo.currentSuggestion = &potentialFixableIssue
+				m.potentiallyFixableIssuesInfo.sectionSuggestionStates = make([]suggestionState, len(suggestions))
 
 				var i = 0
 				for original, suggestion := range suggestions {
@@ -567,7 +612,7 @@ func (m *fixableIssuesModel) setupForNextSuggestions() error {
 						return err
 					}
 
-					m.sectionSuggestionStates[i] = suggestionState{
+					m.potentiallyFixableIssuesInfo.sectionSuggestionStates[i] = suggestionState{
 						original:           original,
 						originalSuggestion: suggestion,
 						currentSuggestion:  suggestion,
@@ -577,31 +622,35 @@ func (m *fixableIssuesModel) setupForNextSuggestions() error {
 					i++
 				}
 
-				m.currentSuggestionIndex = 0
-				m.currentFileState = &m.sectionSuggestionStates[0]
-				m.currentSuggestionTitle = potentialFixableIssue.name
+				m.potentiallyFixableIssuesInfo.currentSuggestionIndex = 0
+				m.potentiallyFixableIssuesInfo.currentFileState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[0]
+				m.potentiallyFixableIssuesInfo.currentSuggestionTitle = potentialFixableIssue.name
 
-				m.potentialFixableIssueIndex++
+				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 
 				return nil
 			}
 
-			m.potentialFixableIssueIndex++
+			m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 		}
 
-		m.currentFileIndex++
-		m.potentialFixableIssueIndex = 0
+		m.potentiallyFixableIssuesInfo.currentFileIndex++
+		m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
 	}
 
+	// if m.potentiallyFixableIssuesInfo.cssUpdateRequired {
 	m.currentStage = stageCssSelection
+	// } else {
+	// 	m.currentStage = finalStage
+	// }
 
 	return nil
 }
 
 func (m *fixableIssuesModel) moveToNextSuggestion() error {
-	if m.currentSuggestionIndex+1 < len(m.sectionSuggestionStates) {
-		m.currentSuggestionIndex++
-		m.currentFileState = &m.sectionSuggestionStates[m.currentSuggestionIndex]
+	if m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1 < len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates) {
+		m.potentiallyFixableIssuesInfo.currentSuggestionIndex++
+		m.potentiallyFixableIssuesInfo.currentFileState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[m.potentiallyFixableIssuesInfo.currentSuggestionIndex]
 
 		return nil
 	}
@@ -610,9 +659,9 @@ func (m *fixableIssuesModel) moveToNextSuggestion() error {
 }
 
 func (m *fixableIssuesModel) moveToPreviousSuggestion() {
-	if m.currentSuggestionIndex > 0 {
-		m.currentSuggestionIndex--
-		m.currentFileState = &m.sectionSuggestionStates[m.currentSuggestionIndex]
+	if m.potentiallyFixableIssuesInfo.currentSuggestionIndex > 0 {
+		m.potentiallyFixableIssuesInfo.currentSuggestionIndex--
+		m.potentiallyFixableIssuesInfo.currentFileState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[m.potentiallyFixableIssuesInfo.currentSuggestionIndex]
 	}
 }
 

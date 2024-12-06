@@ -668,11 +668,10 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
-			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues)
+			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
 			i            = 0
 		)
-		initialModel.filePaths = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
 
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
@@ -684,8 +683,8 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
-			initialModel.filePaths[i] = filePath
+			initialModel.potentiallyFixableIssuesInfo.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
+			initialModel.potentiallyFixableIssuesInfo.filePaths[i] = filePath
 			i++
 		}
 
