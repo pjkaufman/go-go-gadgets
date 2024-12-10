@@ -48,16 +48,16 @@ type sectionBreakStageInfo struct {
 }
 
 type potentiallyFixableStageInfo struct {
-	filePaths                                                            []string
-	fileTexts                                                            map[string]string
-	currentFile, currentSuggestionName                                   string
-	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex int
-	suggestions                                                          []potentiallyFixableIssue
-	currentSuggestion                                                    *potentiallyFixableIssue
-	cssUpdateRequired, isEditing                                         bool
-	sectionSuggestionStates                                              []suggestionState
-	currentSuggestionState                                               *suggestionState
-	suggestionEdit                                                       textarea.Model
+	filePaths                                                                           []string
+	fileTexts                                                                           map[string]string
+	currentFile, currentSuggestionName                                                  string
+	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
+	suggestions                                                                         []potentiallyFixableIssue
+	currentSuggestion                                                                   *potentiallyFixableIssue
+	cssUpdateRequired, addCssSectionBreakIfMissing, addCssPageBreakIfMissing, isEditing bool
+	sectionSuggestionStates                                                             []suggestionState
+	currentSuggestionState                                                              *suggestionState
+	suggestionEdit                                                                      textarea.Model
 }
 
 type cssSelectionStageInfo struct {
@@ -218,7 +218,11 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted = true
 
-						if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssIfMissing {
+						if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssSectionBreakIfMissing {
+							m.potentiallyFixableIssuesInfo.addCssSectionBreakIfMissing = true
+							m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
+						} else if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssPageBreakIfMissing {
+							m.potentiallyFixableIssuesInfo.addCssPageBreakIfMissing = true
 							m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
 						}
 
