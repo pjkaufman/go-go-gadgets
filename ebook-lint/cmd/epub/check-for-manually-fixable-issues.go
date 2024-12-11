@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -351,7 +352,11 @@ func runTuiEpubFixable() error {
 
 		model := finalModel.(fixableIssuesModel)
 		if model.Err != nil {
-			// TODO: add a check for a specific error to signify that the user killed the program
+			if errors.Is(model.Err, errUserKilledProgram) {
+				logger.WriteInfo("Quitting. User exited the program...")
+				os.Exit(0)
+			}
+
 			return nil, model.Err
 		}
 

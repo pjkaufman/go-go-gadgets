@@ -1,6 +1,7 @@
 package epub
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
@@ -21,6 +22,8 @@ var (
 	acceptedChangeTitleStyle = lipgloss.NewStyle().Bold(true)
 	displayStyle             = lipgloss.NewStyle()
 )
+
+var errUserKilledProgram = errors.New("user killed program")
 
 const columnPadding = 10
 
@@ -145,13 +148,21 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, tea.Quit
 					}
 				}
-			case "ctrl+c", "esc":
+			case "ctrl+c":
+				m.Err = errUserKilledProgram
+
+				return m, tea.Quit
+			case "esc":
 				return m, tea.Quit
 			}
 		case suggestionsProcessing:
 			if m.potentiallyFixableIssuesInfo.isEditing {
 				switch key {
-				case "ctrl+c", "esc":
+				case "ctrl+c":
+					m.Err = errUserKilledProgram
+
+					return m, tea.Quit
+				case "esc":
 					return m, tea.Quit
 				case "ctrl+s":
 					m.potentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.potentiallyFixableIssuesInfo.currentSuggestionState.original, m.potentiallyFixableIssuesInfo.suggestionEdit.Value())
@@ -179,7 +190,11 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			} else {
 				switch key {
-				case "ctrl+c", "esc":
+				case "ctrl+c":
+					m.Err = errUserKilledProgram
+
+					return m, tea.Quit
+				case "esc":
 					return m, tea.Quit
 				case "right":
 					err := m.moveToNextSuggestion()
@@ -245,7 +260,11 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case stageCssSelection:
 			switch key {
-			case "ctrl+c", "esc":
+			case "ctrl+c":
+				m.Err = errUserKilledProgram
+
+				return m, tea.Quit
+			case "esc":
 				return m, tea.Quit
 			case "up":
 				if m.cssSelectionInfo.currentCssIndex > 0 {
@@ -262,7 +281,11 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		default:
 			switch key {
-			case "ctrl+c", "esc":
+			case "ctrl+c":
+				m.Err = errUserKilledProgram
+
+				return m, tea.Quit
+			case "esc":
 				return m, tea.Quit
 			}
 		}
@@ -339,31 +362,29 @@ func (m fixableIssuesModel) View() string {
 func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 	s.WriteString(groupStyle.Render("Controls:") + "\n")
 
-	// TODO: swap to esc as exit and ctrl+c as kill
 	var controls []string
 	switch m.currentStage {
 	case sectionBreak:
 		controls = []string{
 			"Enter: Accept",
-			"Ctrl+C/Esc: Quit",
+			"Esc: Quit",
+			"Ctrl+C: Exit without saving",
 		}
 	case suggestionsProcessing:
-		// TODO: handle edit mode
 		if m.potentiallyFixableIssuesInfo.isEditing {
 			controls = []string{
 				"Ctrl+R: Reset",
 				"Ctrl+E: Cancel edit",
 				"Ctrl+S: Accept",
-				"Ctrl+C/Esc: Quit",
-				// "Esc: Quit",
-				// "Ctrl+C: Exit without saving",
+				"Esc: Quit",
+				"Ctrl+C: Exit without saving",
 			}
 		} else if m.potentiallyFixableIssuesInfo.currentSuggestionState != nil && m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
 			controls = []string{
 				"← / → : Previous/Next Suggestion",
 				"C: Copy",
-				"Ctrl+C/Esc: Quit",
-				// "Ctrl+C: Exit without saving",
+				"Esc: Quit",
+				"Ctrl+C: Exit without saving",
 			}
 		} else {
 			controls = []string{
@@ -371,20 +392,42 @@ func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 				"E: Edit",
 				"C: Copy",
 				"Enter: Accept",
-				"Ctrl+C/Esc: Quit",
-				// "Ctrl+C: Exit without saving",
+				"Esc: Quit",
+				"Ctrl+C: Exit without saving",
 			}
 		}
 	case stageCssSelection:
 		controls = []string{
 			"↑ / ↓ : Previous/Next Suggestion",
 			"Enter: Accept",
-			"Ctrl+C/Esc: Quit",
-			// "Ctrl+C: Exit without saving",
+			"Esc: Quit",
+			"Ctrl+C: Exit without saving",
 		}
 	}
 
-	s.WriteString(strings.Join(controls, " • ") + "\n")
+	var (
+		line     strings.Builder
+		maxWidth = m.width - columnPadding
+	)
+	for _, help := range controls {
+		if line.Len() == 0 {
+			line.WriteString(help)
+			s.WriteString(help)
+		} else if line.Len()+len(help)+3 <= maxWidth {
+			s.WriteString(" • " + help)
+			line.WriteString(" • " + help)
+		} else {
+			s.WriteString("\n")
+			line.Reset()
+
+			line.WriteString(help)
+			s.WriteString(help)
+		}
+	}
+
+	if line.Len() != 0 {
+		s.WriteString("\n")
+	}
 }
 
 func (m *fixableIssuesModel) setupForNextSuggestions() error {
@@ -494,27 +537,3 @@ func alignWhitespace(original, new string) string {
 
 	return strings.Join(newLines, "\n")
 }
-
-// func repairUTF8(s string) (string, error) {
-// 	buf := make([]byte, 0, len(s))
-// 	for i, r := range s {
-// 		b, size := utf8.DecodeRune([]byte(r)
-// 		// if err != nil {
-// 		// 	return "", fmt.Errorf("character at index %d is not valid UTF-8", i)
-// 		// }
-// 		buf = append(buf, b)
-// 		i += size - 1
-// 	}
-// 	return string(buf), nil
-// }
-
-// func repairUnicode(s string) (string, error) {
-// 	buf := make([]byte, 0, len(s))
-// 	for i, r := range s {
-// 		if r > 0x10FFFF {
-// 			return "", fmt.Errorf("character %q at index %d is not part of Unicode", string(r), i)
-// 		}
-// 		buf = append(buf, byte(r))
-// 	}
-// 	return string(buf), nil
-// }
