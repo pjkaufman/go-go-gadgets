@@ -380,12 +380,13 @@ func (m fixableIssuesModel) View() string {
 				s.WriteString(m.potentiallyFixableIssuesInfo.suggestionEdit.View() + "\n\n")
 			} else {
 				if m.potentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.potentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
-					return lipgloss.JoinHorizontal(lipgloss.Top,
+					s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top,
 						m.potentiallyFixableIssuesInfo.suggestionDisplay.View(),
 						m.potentiallyFixableIssuesInfo.scrollbar.View(),
-					)
+					))
+				} else {
+					s.WriteString(m.potentiallyFixableIssuesInfo.suggestionDisplay.View())
 				}
-				s.WriteString(m.potentiallyFixableIssuesInfo.suggestionDisplay.View())
 
 				s.WriteString(fmt.Sprintf("\033[0m\n\nSuggestion %d of %d.\n\n", m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates)))
 			}
