@@ -9,8 +9,10 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pjkaufman/go-go-gadgets/ebook-lint/cmd/epub/tui"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
@@ -21,11 +23,16 @@ var (
 	fileStatusStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("190"))
 	acceptedChangeTitleStyle = lipgloss.NewStyle().Bold(true)
 	displayStyle             = lipgloss.NewStyle()
+
+	maxDisplayHeight = 20
 )
 
 var errUserKilledProgram = errors.New("user killed program")
 
-const columnPadding = 10
+const (
+	columnPadding   = 3
+	scollbarPadding = 3
+)
 
 type stage int
 
@@ -61,6 +68,8 @@ type potentiallyFixableStageInfo struct {
 	sectionSuggestionStates                                                             []suggestionState
 	currentSuggestionState                                                              *suggestionState
 	suggestionEdit                                                                      textarea.Model
+	suggestionDisplay                                                                   viewport.Model
+	scrollbar                                                                           tea.Model
 }
 
 type cssSelectionStageInfo struct {
@@ -92,14 +101,22 @@ func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potential
 		currentStage = suggestionsProcessing
 	}
 
+	v := viewport.New(80, 20)
+	v.MouseWheelEnabled = true
+
+	sb := tui.NewVertical()
+	sb.Style = sb.Style.Border(lipgloss.RoundedBorder(), true)
+
 	return fixableIssuesModel{
 		sectionBreakInfo: sectionBreakStageInfo{
 			input: ti,
 		},
 		potentiallyFixableIssuesInfo: potentiallyFixableStageInfo{
-			fileTexts:      map[string]string{},
-			suggestions:    potentiallyFixableIssues,
-			suggestionEdit: ta,
+			fileTexts:         map[string]string{},
+			suggestions:       potentiallyFixableIssues,
+			suggestionEdit:    ta,
+			suggestionDisplay: v,
+			scrollbar:         sb,
 		},
 		cssSelectionInfo: cssSelectionStageInfo{
 			cssFiles: cssFiles,
@@ -130,6 +147,12 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.potentiallyFixableIssuesInfo.suggestionEdit, cmd = m.potentiallyFixableIssuesInfo.suggestionEdit.Update(msg)
 	cmds = append(cmds, cmd)
 
+	m.potentiallyFixableIssuesInfo.suggestionDisplay, cmd = m.potentiallyFixableIssuesInfo.suggestionDisplay.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.potentiallyFixableIssuesInfo.scrollbar, cmd = m.potentiallyFixableIssuesInfo.scrollbar.Update(m.potentiallyFixableIssuesInfo.suggestionDisplay)
+	cmds = append(cmds, cmd)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		key := msg.String()
@@ -141,12 +164,14 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if contextBreak != "" {
 					m.currentStage = suggestionsProcessing
 
-					err := m.setupForNextSuggestions()
+					cmd, err := m.setupForNextSuggestions()
 					if err != nil {
 						m.Err = err
 
 						return m, tea.Quit
 					}
+
+					cmds = append(cmds, cmd)
 				}
 			case "ctrl+c":
 				m.Err = errUserKilledProgram
@@ -197,14 +222,17 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "esc":
 					return m, tea.Quit
 				case "right":
-					err := m.moveToNextSuggestion()
+					cmd, err := m.moveToNextSuggestion()
 					if err != nil {
 						m.Err = err
 
 						return m, tea.Quit
 					}
+
+					cmds = append(cmds, cmd)
 				case "left":
-					m.moveToPreviousSuggestion()
+					cmd = m.moveToPreviousSuggestion()
+					cmds = append(cmds, cmd)
 				case "c":
 					// Copy original value to the clipboard
 					// original, err := repairUnicode(m.currentFileState.original)
@@ -241,12 +269,14 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
 						}
 
-						err := m.moveToNextSuggestion()
+						cmd, err := m.moveToNextSuggestion()
 						if err != nil {
 							m.Err = err
 
 							return m, tea.Quit
 						}
+
+						cmds = append(cmds, cmd)
 					}
 				case "e":
 					if m.potentiallyFixableIssuesInfo.currentSuggestionState != nil && !m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
@@ -291,9 +321,18 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
+		maxDisplayHeight = msg.Height / 2
 		m.width = msg.Width
 
-		m.potentiallyFixableIssuesInfo.suggestionEdit.SetWidth(m.width - columnPadding)
+		var maxWidth = m.width - columnPadding
+		m.potentiallyFixableIssuesInfo.suggestionEdit.SetWidth(maxWidth)
+		m.potentiallyFixableIssuesInfo.suggestionDisplay.Width = maxWidth - scollbarPadding
+		if m.potentiallyFixableIssuesInfo.suggestionDisplay.Height > maxDisplayHeight {
+			m.potentiallyFixableIssuesInfo.suggestionDisplay.Height = maxDisplayHeight
+		}
+
+		m.potentiallyFixableIssuesInfo.scrollbar, cmd = m.potentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.potentiallyFixableIssuesInfo.suggestionDisplay.Height))
+		cmds = append(cmds, cmd)
 
 		cmds = append(cmds, tea.ClearScreen)
 	case error:
@@ -325,19 +364,30 @@ func (m fixableIssuesModel) View() string {
 		if m.potentiallyFixableIssuesInfo.currentSuggestionState == nil {
 			s.WriteString("\nNo current file is selected. Something may have gone wrong...\n\n")
 		} else {
+			var (
+				suggestion     = displayStyle.Width(m.width - columnPadding).Render(fmt.Sprintf(`"%s"`, m.potentiallyFixableIssuesInfo.currentSuggestionState.display))
+				expectedHeight = strings.Count(suggestion, "\n") + 1
+			)
 			if m.potentiallyFixableIssuesInfo.isEditing {
 				s.WriteString("\nEditing suggestion:\n\n")
 			} else if m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
 				s.WriteString("\n" + acceptedChangeTitleStyle.Render("Accepted change:") + "\n")
 			} else {
-				s.WriteString("\nSuggested change:\n")
+				s.WriteString(fmt.Sprintf("\nSuggested change (%d/%d):\n", expectedHeight, maxDisplayHeight))
 			}
 
 			if m.potentiallyFixableIssuesInfo.isEditing {
 				s.WriteString(m.potentiallyFixableIssuesInfo.suggestionEdit.View() + "\n\n")
 			} else {
-				s.WriteString(displayStyle.Width(m.width-columnPadding).Render(fmt.Sprintf(`"%s"`, m.potentiallyFixableIssuesInfo.currentSuggestionState.display)) + "\n\n\033[0m")
-				s.WriteString(fmt.Sprintf("Suggestion %d of %d.\n\n", m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates)))
+				if m.potentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.potentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
+					return lipgloss.JoinHorizontal(lipgloss.Top,
+						m.potentiallyFixableIssuesInfo.suggestionDisplay.View(),
+						m.potentiallyFixableIssuesInfo.scrollbar.View(),
+					)
+				}
+				s.WriteString(m.potentiallyFixableIssuesInfo.suggestionDisplay.View())
+
+				s.WriteString(fmt.Sprintf("\033[0m\n\nSuggestion %d of %d.\n\n", m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates)))
 			}
 		}
 	case stageCssSelection:
@@ -430,7 +480,7 @@ func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 	}
 }
 
-func (m *fixableIssuesModel) setupForNextSuggestions() error {
+func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 	for m.potentiallyFixableIssuesInfo.currentFileIndex+1 < len(m.potentiallyFixableIssuesInfo.filePaths) {
 		m.potentiallyFixableIssuesInfo.currentFile = m.potentiallyFixableIssuesInfo.filePaths[m.potentiallyFixableIssuesInfo.currentFileIndex]
 
@@ -453,7 +503,7 @@ func (m *fixableIssuesModel) setupForNextSuggestions() error {
 				for original, suggestion := range suggestions {
 					var display, err = getStringDiff(original, suggestion)
 					if err != nil {
-						return err
+						return nil, err
 					}
 
 					m.potentiallyFixableIssuesInfo.sectionSuggestionStates[i] = suggestionState{
@@ -468,11 +518,12 @@ func (m *fixableIssuesModel) setupForNextSuggestions() error {
 
 				m.potentiallyFixableIssuesInfo.currentSuggestionIndex = 0
 				m.potentiallyFixableIssuesInfo.currentSuggestionState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[0]
+				cmd := m.setSuggestionDisplay()
 				m.potentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.name
 
 				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 
-				return nil
+				return cmd, nil
 			}
 
 			m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
@@ -488,25 +539,52 @@ func (m *fixableIssuesModel) setupForNextSuggestions() error {
 		m.currentStage = finalStage
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (m *fixableIssuesModel) moveToNextSuggestion() error {
+func (m *fixableIssuesModel) moveToNextSuggestion() (tea.Cmd, error) {
 	if m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1 < len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates) {
 		m.potentiallyFixableIssuesInfo.currentSuggestionIndex++
 		m.potentiallyFixableIssuesInfo.currentSuggestionState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[m.potentiallyFixableIssuesInfo.currentSuggestionIndex]
 
-		return nil
+		return m.setSuggestionDisplay(), nil
 	}
 
 	return m.setupForNextSuggestions()
 }
 
-func (m *fixableIssuesModel) moveToPreviousSuggestion() {
+func (m *fixableIssuesModel) moveToPreviousSuggestion() tea.Cmd {
 	if m.potentiallyFixableIssuesInfo.currentSuggestionIndex > 0 {
 		m.potentiallyFixableIssuesInfo.currentSuggestionIndex--
 		m.potentiallyFixableIssuesInfo.currentSuggestionState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[m.potentiallyFixableIssuesInfo.currentSuggestionIndex]
+		return m.setSuggestionDisplay()
 	}
+
+	return nil
+}
+
+func (m *fixableIssuesModel) setSuggestionDisplay() tea.Cmd {
+	if m.potentiallyFixableIssuesInfo.currentSuggestionState == nil {
+		return nil
+	}
+
+	var (
+		suggestion     = displayStyle.Width(m.width - columnPadding - scollbarPadding).Render(fmt.Sprintf(`"%s"`, m.potentiallyFixableIssuesInfo.currentSuggestionState.display))
+		expectedHeight = strings.Count(suggestion, "\n") + 1
+	)
+
+	if expectedHeight < maxDisplayHeight {
+		m.potentiallyFixableIssuesInfo.suggestionDisplay.Height = expectedHeight
+	} else {
+		m.potentiallyFixableIssuesInfo.suggestionDisplay.Height = maxDisplayHeight
+	}
+
+	m.potentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
+
+	var cmd tea.Cmd
+	m.potentiallyFixableIssuesInfo.scrollbar, cmd = m.potentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.potentiallyFixableIssuesInfo.suggestionDisplay.Height))
+
+	return cmd
 }
 
 func getStringDiff(original, new string) (string, error) {
