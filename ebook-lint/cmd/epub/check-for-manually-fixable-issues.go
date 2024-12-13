@@ -480,9 +480,4 @@ func runCliEpubFixable() error {
 
 		return handleCssChangesCli(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
 	})
-	// if err != nil {
-	// 	logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
-	// }
-
-	// logger.WriteInfo("\nFinished showing manually fixable issues...")
 }
