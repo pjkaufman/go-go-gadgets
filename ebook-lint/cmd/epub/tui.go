@@ -321,7 +321,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
-		maxDisplayHeight = msg.Height / 2
+		maxDisplayHeight = msg.Height / 3
 		m.width = msg.Width
 
 		var maxWidth = m.width - columnPadding
