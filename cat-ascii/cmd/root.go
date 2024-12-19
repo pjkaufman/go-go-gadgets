@@ -50,8 +50,8 @@ func fitsInTerminal(art string, termWidth, termHeight int) bool {
 }
 
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
+		logger.WriteErrorf("Error: %v\n", err)
 		os.Exit(1)
 	}
 }
