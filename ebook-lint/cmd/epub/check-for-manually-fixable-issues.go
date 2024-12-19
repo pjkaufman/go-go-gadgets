@@ -90,8 +90,8 @@ var (
 		},
 	}
 	// errors
-	ErrOneRunBoolArgMustBeEnabled   = errors.New("either run-all, run-broken-lines, run-section-breaks, run-page-breaks, run-oxford-commas, or run-although-but must be specified")
-	ErrCssPathsEmptyWhenArgIsNeeded = errors.New("css-paths must have a value when including handling section or page breaks")
+	ErrOneRunBoolArgMustBeEnabled = errors.New("at least one rule to run must be enabled")
+	ErrNoCssFiles                 = errors.New("the epub must have at least 1 css file in order to handle section or page breaks")
 )
 
 // fixableCmd represents the fixable command
@@ -143,7 +143,7 @@ var fixableCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileArgExists(epubFile, "epub-file")
+		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -167,25 +167,25 @@ var fixableCmd = &cobra.Command{
 func init() {
 	EpubCmd.AddCommand(fixableCmd)
 
-	fixableCmd.Flags().BoolVarP(&runAll, "run-all", "a", false, "whether to run all of the fixable suggestions")
-	fixableCmd.Flags().BoolVarP(&runBrokenLines, "run-broken-lines", "b", false, "whether to run the logic for getting broken line suggestions")
-	fixableCmd.Flags().BoolVarP(&runSectionBreak, "run-section-breaks", "s", false, "whether to run the logic for getting section break suggestions (must be used with css-paths)")
-	fixableCmd.Flags().BoolVarP(&runPageBreak, "run-page-breaks", "p", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
-	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "run-oxford-commas", "o", false, "whether to run the logic for getting oxford comma suggestions")
-	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "run-although-but", "n", false, "whether to run the logic for getting although but suggestions")
-	fixableCmd.Flags().BoolVarP(&runThoughts, "run-thoughts", "t", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
-	fixableCmd.Flags().BoolVarP(&runConversation, "run-conversation", "c", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
-	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "run-necessary-words", "w", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
-	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "u", false, "whether to use the terminal UI for suggesting fixes")
-	fixableCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to find manually fixable issues in")
-	err := fixableCmd.MarkFlagRequired("epub-file")
+	fixableCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
+	fixableCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")
+	fixableCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with css-paths)")
+	fixableCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
+	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions")
+	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "although-but", "", false, "whether to run the logic for getting although but suggestions")
+	fixableCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
+	fixableCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
+	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
+	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
+	fixableCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
+	err := fixableCmd.MarkFlagRequired("file")
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "epub-file" as required on fixable command: %v\n`, err)
+		logger.WriteErrorf(`failed to mark flag "file" as required on fixable command: %v\n`, err)
 	}
 
-	err = fixableCmd.MarkFlagFilename("epub-file", "epub")
+	err = fixableCmd.MarkFlagFilename("file", "epub")
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "epub-file" as looking for specific file types on fixable command: %v\n`, err)
+		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on fixable command: %v\n`, err)
 	}
 }
 
@@ -320,7 +320,7 @@ func runTuiEpubFixable() error {
 		}
 
 		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-			return nil, ErrCssPathsEmptyWhenArgIsNeeded
+			return nil, ErrNoCssFiles
 		}
 
 		var (
@@ -426,7 +426,7 @@ func runCliEpubFixable() error {
 		}
 
 		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-			return nil, ErrCssPathsEmptyWhenArgIsNeeded
+			return nil, ErrNoCssFiles
 		}
 
 		var saveAndQuit = false
