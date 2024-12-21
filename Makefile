@@ -1,4 +1,4 @@
-.PHONY: test install cover lint
+.PHONY: test install cover lint bench generate install-termux
 
 test:
 	go test ./... -tags "unit"
@@ -38,3 +38,10 @@ generate:
 	@go run --tags="generate" ./jp-proc/main.go generate -g ./jp-proc/
 	@go run --tags="generate" ./magnum/main.go generate -g ./magnum/
 	@go run --tags="generate" ./song-converter/main.go generate -g ./song-converter/
+
+install-termux:
+	@echo "Building ebook-lint for Termux"
+	@go build -o "${PREFIX}/bin/ebook-lint" ./ebook-lint/main.go
+	@mkdir -p ${PREFIX}/share/bash-completion/completions
+	@echo "Generating bash completion for ebook-lint"
+	@ebook-lint completion bash > "${PREFIX}/share/bash-completion/completions/ebook-lint"
