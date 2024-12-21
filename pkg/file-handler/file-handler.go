@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -259,6 +261,50 @@ func CreateFolderIfNotExists(path string) error {
 	err = os.MkdirAll(path, folderPerms)
 	if err != nil {
 		return fmt.Errorf("failed to create folder(s) for path %q: %s", path, err)
+	}
+
+	return nil
+}
+
+func GetDataDir(folder string) (string, error) {
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if dataHome == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("could not determine user home directory: %w", err)
+		}
+		if runtime.GOOS == "windows" {
+			dataHome = filepath.Join(home, "AppData", "Local")
+		} else {
+			dataHome = filepath.Join(home, ".local", "share")
+		}
+	}
+
+	return filepath.Join(dataHome, folder), nil
+}
+
+func CreateTemp(dir, path string) (*os.File, error) {
+	tmpFile, err := os.CreateTemp(dir, path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temporary file: %w", err)
+	}
+
+	return tmpFile, nil
+}
+
+func DeleteFile(path string) error {
+	err := os.Remove(path)
+	if err != nil {
+		return fmt.Errorf("failed to delete file %q", path)
+	}
+
+	return nil
+}
+
+func DeleteFolder(path string) error {
+	err := os.RemoveAll(path)
+	if err != nil {
+		return fmt.Errorf("failed to delete folder %q", path)
 	}
 
 	return nil

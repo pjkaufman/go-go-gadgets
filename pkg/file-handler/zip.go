@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func GetFilesFromZip(src string) (*zip.ReadCloser, map[string]*zip.File, error) {
@@ -110,4 +113,56 @@ func uncompressedWriteToZip(w *zip.Writer, reader io.Reader, filename string) er
 
 	_, err = io.Copy(f, reader)
 	return err
+}
+
+func UnzipFile(zipFile *os.File, destDir string) error {
+	zipReader, err := zip.OpenReader(zipFile.Name())
+	if err != nil {
+		return fmt.Errorf("failed to open zip file: %w", err)
+	}
+	defer zipReader.Close()
+
+	if err := os.MkdirAll(destDir, folderPerms); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	for _, file := range zipReader.File {
+		destPath := filepath.Join(destDir, file.Name)
+
+		// Check for zip slip vulnerability
+		if !strings.HasPrefix(destPath, filepath.Clean(destDir)+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path in zip: %s", file.Name)
+		}
+
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(destPath, file.Mode()); err != nil {
+				return fmt.Errorf("failed to create directory %s: %w", destPath, err)
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(destPath), folderPerms); err != nil {
+			return fmt.Errorf("failed to create directory for file %s: %w", destPath, err)
+		}
+
+		destFile, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return fmt.Errorf("failed to create destination file %s: %w", destPath, err)
+		}
+
+		srcFile, err := file.Open()
+		if err != nil {
+			destFile.Close()
+			return fmt.Errorf("failed to open zip file %s: %w", file.Name, err)
+		}
+
+		_, err = io.Copy(destFile, srcFile)
+		srcFile.Close()
+		destFile.Close()
+		if err != nil {
+			return fmt.Errorf("failed to copy file contents from %s: %w", file.Name, err)
+		}
+	}
+
+	return nil
 }

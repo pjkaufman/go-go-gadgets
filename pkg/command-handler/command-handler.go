@@ -25,6 +25,20 @@ func MustRunCommand(programName, errorMsg string, args ...string) {
 	}
 }
 
+func MustGetCommandOutputEvenIfExitError(programName, errorMsg string, args ...string) string {
+	cmd := exec.Command(programName, args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		if _, ok := err.(*exec.ExitError); ok {
+			return string(output)
+		}
+
+		logger.WriteErrorf("%s: %s\n", errorMsg, err)
+	}
+
+	return string(output)
+}
+
 func MustChangeDirectoryTo(path string) {
 	err := os.Chdir(path)
 
