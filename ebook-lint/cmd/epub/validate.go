@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
@@ -16,16 +14,15 @@ import (
 )
 
 var validateCmd = &cobra.Command{
-	Use:   "validate [epub-file]",
+	Use:   "validate",
 	Short: "Validate an EPUB file using EPUBCheck",
 	Long: `Validates an EPUB file using W3C EPUBCheck tool. 
 If EPUBCheck is not installed, it will automatically download and install the latest version.`,
-	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		epubFile := args[0]
 
-		if _, err := os.Stat(epubFile); os.IsNotExist(err) {
-			logger.WriteErrorf("EPUB file does not exist: %s", epubFile)
+		err := validateCommonEpubFlags(epubFile)
+		if err != nil {
+			logger.WriteError(err.Error())
 		}
 
 		epubcheckDir, err := filehandler.GetDataDir("epubcheck")
@@ -41,7 +38,7 @@ If EPUBCheck is not installed, it will automatically download and install the la
 			}
 		}
 
-		jarPath := filepath.Join(epubcheckDir, "epubcheck.jar")
+		jarPath := filehandler.JoinPath(epubcheckDir, "epubcheck.jar")
 		output := commandhandler.MustGetCommandOutputEvenIfExitError("java", "failed to run EPUBCheck", "-jar", jarPath, epubFile)
 
 		logger.WriteInfo(output)
@@ -50,6 +47,17 @@ If EPUBCheck is not installed, it will automatically download and install the la
 
 func init() {
 	EpubCmd.AddCommand(validateCmd)
+
+	validateCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to validate")
+	err := validateCmd.MarkFlagRequired("file")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"file\" as required on validate command: %v\n", err)
+	}
+
+	err = validateCmd.MarkFlagFilename("file", "epub")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validate command: %v\n", err)
+	}
 }
 
 func downloadEPUBCheck(epubcheckDir string) error {
@@ -66,7 +74,6 @@ func downloadEPUBCheck(epubcheckDir string) error {
 		return err
 	}
 
-	// Get latest release info from GitHub API
 	resp, err := http.Get("https://api.github.com/repos/w3c/epubcheck/releases/latest")
 	if err != nil {
 		return fmt.Errorf("failed to get latest release info: %w", err)
@@ -78,7 +85,6 @@ func downloadEPUBCheck(epubcheckDir string) error {
 		return fmt.Errorf("failed to decode release info: %w", err)
 	}
 
-	// Find the .zip asset
 	var downloadURL string
 	for _, asset := range release.Assets {
 		if strings.HasSuffix(asset.Name, ".zip") {
@@ -91,7 +97,6 @@ func downloadEPUBCheck(epubcheckDir string) error {
 		return fmt.Errorf("could not find EPUBCheck zip file in release %s", release.TagName)
 	}
 
-	// Download the zip file
 	logger.WriteInfof("Downloading EPUBCheck %s...\n", release.TagName)
 	resp, err = http.Get(downloadURL)
 	if err != nil {
@@ -107,18 +112,15 @@ func downloadEPUBCheck(epubcheckDir string) error {
 	defer filehandler.DeleteFile(tmpFile.Name())
 	defer tmpFile.Close()
 
-	// Save zip file
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
 		return fmt.Errorf("failed to save downloaded file: %w", err)
 	}
 
-	// Unzip the file using our Go implementation
 	logger.WriteInfo("Extracting EPUBCheck...")
 	if err := filehandler.UnzipFile(tmpFile, epubcheckDir); err != nil {
 		return fmt.Errorf("failed to extract EPUBCheck: %w", err)
 	}
 
-	// Find and move the jar file to the right location
 	folders, err := filehandler.GetFoldersInCurrentFolder(epubcheckDir)
 	if err != nil {
 		return err
@@ -133,7 +135,6 @@ func downloadEPUBCheck(epubcheckDir string) error {
 				return fmt.Errorf("failed to move epubcheck.jar: %w", err)
 			}
 
-			// Copy library files as well
 			srcLib := filehandler.JoinPath(epubcheckDir, folder, "lib")
 			destLib := filehandler.JoinPath(epubcheckDir, "lib")
 			err = filehandler.Rename(srcLib, destLib)
@@ -141,7 +142,6 @@ func downloadEPUBCheck(epubcheckDir string) error {
 				return fmt.Errorf("failed to move epubcheck libraries: %w", err)
 			}
 
-			// Clean up the extracted directory
 			err = filehandler.DeleteFolder(filehandler.JoinPath(epubcheckDir, folder))
 			if err != nil {
 				return err
