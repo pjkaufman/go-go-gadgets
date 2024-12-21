@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc"
 	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -16,10 +17,13 @@ import (
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate an EPUB file using EPUBCheck",
-	Long: `Validates an EPUB file using W3C EPUBCheck tool. 
-If EPUBCheck is not installed, it will automatically download and install the latest version.`,
+	Long: heredoc.Doc(`Validates an EPUB file using W3C EPUBCheck tool.
+	If EPUBCheck is not installed, it will automatically download and install the latest version.`),
+	Example: heredoc.Doc(`
+	ebook-lint epub validate -f test.epub
+	will run EPUBCheck against the file specified.
+`),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		err := validateCommonEpubFlags(epubFile)
 		if err != nil {
 			logger.WriteError(err.Error())
