@@ -105,7 +105,6 @@ A tool to display nice little cat ASCII art.
 ### Core Libraries
 - [cobra](https://github.com/spf13/cobra) - CLI application framework
 - [pflag](https://github.com/spf13/pflag) - Command line flag parsing
-- [promptui](https://github.com/manifoldco/promptui) - Interactive prompt UI
 - [colly](https://github.com/gocolly/colly) - Web scraping framework
 
 ### User Interface
@@ -113,6 +112,7 @@ A tool to display nice little cat ASCII art.
 - [bubbletea](https://github.com/charmbracelet/bubbletea) - TUI framework
 - [lipgloss](https://github.com/charmbracelet/lipgloss) - TUI styling
 - [color](https://github.com/fatih/color) - Terminal color output
+- [promptui](https://github.com/manifoldco/promptui) - Interactive prompt UI
 
 ### File Processing
 - [archiver](https://github.com/mholt/archiver) - Archive file handling
