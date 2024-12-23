@@ -35,7 +35,7 @@ var (
 	runSectionBreak          bool
 	runPageBreak             bool
 	runOxfordCommas          bool
-	runAlthoughBut           bool
+	runLackingClause         bool
 	runThoughts              bool
 	runConversation          bool
 	runNecessaryWords        bool
@@ -79,9 +79,9 @@ var (
 			isEnabled:      &runOxfordCommas,
 		},
 		{
-			name:           "Potential Although But Instances",
-			getSuggestions: linter.GetPotentialAlthoughButInstances,
-			isEnabled:      &runAlthoughBut,
+			name:           "Potentially Lacking Subordinate Clause Instances",
+			getSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
+			isEnabled:      &runLackingClause,
 		},
 		{
 			name:           "Potential Thought Instances",
@@ -103,27 +103,27 @@ var fixableCmd = &cobra.Command{
 	Note: this will require a css file to already exist in the epub
 	
 	To just fix broken paragraph endings:
-	ebook-lint epub fixable -f test.epub -b
+	ebook-lint epub fixable -f test.epub --broken-lines
 
 	To just update section breaks:
-	ebook-lint epub fixable -f test.epub -s
+	ebook-lint epub fixable -f test.epub --section-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just update page breaks:
-	ebook-lint epub fixable -f test.epub -p
+	ebook-lint epub fixable -f test.epub --page-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just fix missing oxford commas:
-	ebook-lint epub fixable -f test.epub -o
+	ebook-lint epub fixable -f test.epub --oxford-commas
 
-	To just fix although but instances:
-	ebook-lint epub fixable -f test.epub -n
+	To just fix potentially lacking subordinate clause instances:
+	ebook-lint epub fixable -f test.epub --lacking-subordinate-clause
 
 	To just fix instances of thoughts in parentheses:
-	ebook-lint epub fixable -f test.epub -t
+	ebook-lint epub fixable -f test.epub --thoughts
 
 	To run a combination of options:
-	ebook-lint epub fixable -f test.epub -otn
+	ebook-lint epub fixable -f test.epub -oxford-commas --thoughts --necessary-words
 	`),
 	Long: heredoc.Doc(`Goes through all of the content files and runs the specified fixable actions on them asking
 	for user input on each value found that matches the potential fix criteria.
@@ -132,13 +132,13 @@ var fixableCmd = &cobra.Command{
 	- Section breaks being hardcoded instead of an hr
 	- Page breaks being hardcoded instead of an hr
 	- Oxford commas being missing before or's or and's
-	- Possible instances of sentences that have although ..., but in them
+	- Possible instances of sentences with two subordinate clauses (i.e. have although..., but)
 	- Possible instances of thoughts that are in parentheses
 	- Possible instances of conversation encapsulated in square brackets
 	- Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords)
+		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -169,10 +169,10 @@ func init() {
 
 	fixableCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
 	fixableCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")
-	fixableCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with css-paths)")
-	fixableCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with css-paths)")
+	fixableCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with an epub with a css file)")
+	fixableCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with an epub with a css file)")
 	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions")
-	fixableCmd.Flags().BoolVarP(&runAlthoughBut, "although-but", "", false, "whether to run the logic for getting although but suggestions")
+	fixableCmd.Flags().BoolVarP(&runLackingClause, "lacking-subordinate-clause", "", false, "whether to run the logic for getting potentially lacking subordinate clause suggestions")
 	fixableCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
 	fixableCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
