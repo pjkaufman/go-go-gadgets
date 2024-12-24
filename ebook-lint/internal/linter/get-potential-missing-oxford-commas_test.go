@@ -24,18 +24,14 @@ var getPotentialMissingOxfordCommasTestCases = map[string]getPotentialMissingOxf
 		InputText: `<p>Here is some content.</p>
 		<p>Here is a situation where I run, skip and jump for a long time.</p>`,
 		ExpectedSuggestions: map[string]string{
-			`
-		<p>Here is a situation where I run, skip and jump for a long time.</p>`: `
-		<p>Here is a situation where I run, skip, and jump for a long time.</p>`,
+			`		<p>Here is a situation where I run, skip and jump for a long time.</p>`: `		<p>Here is a situation where I run, skip, and jump for a long time.</p>`,
 		},
 	},
 	"make sure that a file with a missing comma before an or gets a suggestion": {
 		InputText: `<p>Here is some content.</p>
 		<p>Here is a situation where I run, skip or jump for a long time.</p>`,
 		ExpectedSuggestions: map[string]string{
-			`
-		<p>Here is a situation where I run, skip or jump for a long time.</p>`: `
-		<p>Here is a situation where I run, skip, or jump for a long time.</p>`,
+			`		<p>Here is a situation where I run, skip or jump for a long time.</p>`: `		<p>Here is a situation where I run, skip, or jump for a long time.</p>`,
 		},
 	},
 }

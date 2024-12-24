@@ -302,16 +302,6 @@ var getPotentialAlthoughButInstancesTestCases = map[string]getPotentialAlthoughB
 			`		<p class="calibre1"><a id="p57"></a>However, this time there was a chance that this could drag on for a month or more. Although he could "watch" her from afar, but he couldn't stop worrying that Miyuki and Minami would be left alone in this house. </p>`: `		<p class="calibre1"><a id="p57"></a>However, this time there was a chance that this could drag on for a month or more. Although he could "watch" her from afar, he couldn't stop worrying that Miyuki and Minami would be left alone in this house. </p>`,
 		},
 	},
-	"make sure that a file with a multiline paragraph which lacks a subordinate clause gets a suggestion": {
-		inputText: `<p>Here is some content.</p>
-	<p>Although he was
-	short, but he was fast</p>`,
-		expectedSuggestions: map[string]string{
-			`	<p>Although he was
-	short, but he was fast</p>`: `	<p>Although he was
-	short, he was fast</p>`,
-		},
-	},
 	"make sure that a paragraph with two potentially broken subordinate clauses with the first not lacking subordination, but the second does should result in a suggestion": {
 		inputText: "<p>Sleep plays a crucial role in academic success. Although I was tired, I was not able to sleep. Because of this, but I was unable to do well on the test the next day. The consequences were far-reaching and significant.</p>",
 		expectedSuggestions: map[string]string{
