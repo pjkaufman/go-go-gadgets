@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	squareBracketNecessaryWordRegex = regexp.MustCompile(`(<p[^\n>]*>[^\n[]*)\[([^\n[\]]*)\]([^\n]*)(</p>)`)
-	squareBracketContentRegex       = regexp.MustCompile(`\[([^\n\]]*)\]`)
+	squareBracketNecessaryWordRegex = regexp.MustCompile(`(<p[^\n>]*?>[^\n[]*?)\[([^\n[\]]*?)\]([^\n]*?)(</p>)`)
+	squareBracketContentRegex       = regexp.MustCompile(`\[([^\n\]]*?)\]`)
 )
 
 func GetPotentialSquareBracketNecessaryWords(fileContent string) map[string]string {

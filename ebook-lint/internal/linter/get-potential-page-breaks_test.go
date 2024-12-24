@@ -26,8 +26,7 @@ var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
 		<p class="calibre1"><a id="p169"></a>If there are objects with a simple structure and the same properties, then they can be recognized as a single "set" allowing decomposition of the </p>
 		<p class="calibre1">"set" rather than each object separately. </p>`,
 		expectedSuggestions: map[string]string{
-			`
-		<p>    	</p>`: "\n" + linter.PageBrakeEl,
+			`		<p>    	</p>`: linter.PageBrakeEl,
 		},
 	},
 	"make sure that a file with an empty div gets that value as a suggestion": {
@@ -36,8 +35,7 @@ var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
 		<p class="calibre1"><a id="p169"></a>If there are objects with a simple structure and the same properties, then they can be recognized as a single "set" allowing decomposition of the </p>
 		<p class="calibre1">"set" rather than each object separately. </p>`,
 		expectedSuggestions: map[string]string{
-			`
-		<div>    	</div>`: "\n" + linter.PageBrakeEl,
+			`		<div>    	</div>`: linter.PageBrakeEl,
 		},
 	},
 }

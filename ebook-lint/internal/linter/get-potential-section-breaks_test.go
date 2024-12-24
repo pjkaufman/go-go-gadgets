@@ -30,8 +30,8 @@ var getPotentialSectionBreaksTestCases = map[string]getPotentialSectionBreaksTes
 <p>Here is some more content</p>`, contextBreak),
 		inputContextBreak: contextBreak,
 		expectedSuggestions: map[string]string{
-			fmt.Sprintf("\n<p>%s</p>", contextBreak):                    "\n" + linter.SectionBreakEl,
-			fmt.Sprintf("\n<p><a id=\"pg10\"></a>%s</p>", contextBreak): "\n<p><a id=\"pg10\"></a>" + linter.SectionBreakEl + "</p>",
+			fmt.Sprintf("<p>%s</p>", contextBreak):                    linter.SectionBreakEl,
+			fmt.Sprintf("<p><a id=\"pg10\"></a>%s</p>", contextBreak): "<p><a id=\"pg10\"></a>" + linter.SectionBreakEl + "</p>",
 		},
 	},
 }

@@ -2,7 +2,7 @@ package linter
 
 import "regexp"
 
-var squareBracketConversationRegex = regexp.MustCompile(`(<p[^\n>]*>\s*(<a[^>]*></a>\s*)?)\[([^\n]*)\](\s*</p>)`)
+var squareBracketConversationRegex = regexp.MustCompile(`(<p[^\n>]*?>[\r\t\f\v ]*?(<a[^>]*?></a>[\r\t\f\v ]*?)?)\[([^\n]*?)\]([\r\t\f\v ]*?</p>)`)
 
 func GetPotentialSquareBracketConversationInstances(fileContent string) map[string]string {
 	var subMatches = squareBracketConversationRegex.FindAllStringSubmatch(fileContent, -1)

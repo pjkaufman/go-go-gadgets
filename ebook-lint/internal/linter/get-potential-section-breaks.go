@@ -9,7 +9,7 @@ import (
 const SectionBreakEl = `<hr class="character" />`
 
 func GetPotentialSectionBreaks(fileContent, sectionBreakIndicator string) map[string]string {
-	var contextBreakRegex = regexp.MustCompile(fmt.Sprintf(`(\n[ \t]*<p[^\n>]*>([^\n])*)%s(([^\n]*)</p>)`, regexp.QuoteMeta(sectionBreakIndicator)))
+	var contextBreakRegex = regexp.MustCompile(fmt.Sprintf(`(?m)^([\r\t\f\v ]*?<p[^\n>]*?>([^\n])*?)%s(([^\n]*?)</p>)`, regexp.QuoteMeta(sectionBreakIndicator)))
 
 	var subMatches = contextBreakRegex.FindAllStringSubmatch(fileContent, -1)
 	var originalToSuggested = make(map[string]string, len(subMatches))
@@ -18,7 +18,7 @@ func GetPotentialSectionBreaks(fileContent, sectionBreakIndicator string) map[st
 	}
 
 	for _, groups := range subMatches {
-		var replaceValue = "\n" + SectionBreakEl
+		var replaceValue = SectionBreakEl
 		if strings.TrimSpace(groups[2]) != "" || strings.TrimSpace(groups[4]) != "" {
 			replaceValue = groups[1] + SectionBreakEl + groups[3]
 		}

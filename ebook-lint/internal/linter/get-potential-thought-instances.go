@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-var thoughtParagraphs = regexp.MustCompile(`(<p[^\n>]*>[^\n(]*)\(([^\n()]*)\)([^\n]*)(</p>)`)
-var parenthesesContent = regexp.MustCompile(`\(([^\n\)]*)\)`)
+var thoughtParagraphs = regexp.MustCompile(`(<p[^\n>]*?>[^\n(]*?)\(([^\n()]*?)\)([^\n]*?)(</p>)`)
+var parenthesesContent = regexp.MustCompile(`\(([^\n\)]*?)\)`)
 
 func GetPotentialThoughtInstances(fileContent string) map[string]string {
 	var subMatches = thoughtParagraphs.FindAllStringSubmatch(fileContent, -1)
