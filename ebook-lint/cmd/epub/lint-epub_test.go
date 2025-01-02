@@ -12,9 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type LintEpubTestCase struct {
-	Filename       string
-	CompressImages bool
+type lintEpubTestCase struct {
+	filename                string
+	compressImages, verbose bool
+	removableFileExts       []string
 }
 
 const (
@@ -22,34 +23,40 @@ const (
 	lintedFileDir   = "testdata/linted"
 )
 
-var LintEpubTestCases = map[string]LintEpubTestCase{
+var LintEpubTestCases = map[string]lintEpubTestCase{
 	"Linting a file with image compression should work consistently": {
-		Filename:       "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub",
-		CompressImages: true,
+		filename:       "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub",
+		compressImages: true,
 	},
 	"Linting a file without image compression should work consistently and not affect the images": {
-		Filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co.epub",
-		CompressImages: false,
+		filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co.epub",
+		compressImages: false,
 	},
 	"Linting a file without a mimetype should have the mimetype added": {
-		Filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co-missing_mimetype.epub",
-		CompressImages: false,
+		filename:       "jules-verne_in-search-of-the-castaways_j-b-lippincott-co-missing_mimetype.epub",
+		compressImages: false,
+	},
+	"Linting a file with an extra text file should have it removed": {
+		filename:          "jules-verne_from-the-earth-to-the-moon_ward-lock-co-extra_txt.epub",
+		compressImages:    true,
+		verbose:           true,
+		removableFileExts: []string{".txt"},
 	},
 }
 
 func TestLintEpub(t *testing.T) {
 	for name, test := range LintEpubTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := epub.LintEpub(originalFileDir, test.Filename, test.CompressImages)
+			err := epub.LintEpub(originalFileDir, test.filename, test.compressImages, test.verbose, test.removableFileExts)
 			assert.Nil(t, err)
 
 			// This runs after the operation of LintEpub which leads to the linted file taking the place of the original.
 			// This means that we are able to assume that the original file's location should have data comparable to that found
 			// in the linted file.
-			equalityStatus, issue := filehandler.ZipsAreEqual(test.Filename, originalFileDir, lintedFileDir, true)
+			equalityStatus, issue := filehandler.ZipsAreEqual(test.filename, originalFileDir, lintedFileDir, true)
 			assert.True(t, equalityStatus, issue)
 
-			var originalEpubPath = originalFileDir + string(os.PathSeparator) + test.Filename
+			var originalEpubPath = originalFileDir + string(os.PathSeparator) + test.filename
 			err = os.RemoveAll(originalEpubPath)
 			if err != nil {
 				log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
@@ -57,7 +64,7 @@ func TestLintEpub(t *testing.T) {
 
 			err = os.Rename(originalEpubPath+".original", originalEpubPath)
 			if err != nil {
-				log.Fatalf("failed move original file back to its starting location for %q: %s", test.Filename, err)
+				log.Fatalf("failed move original file back to its starting location for %q: %s", test.filename, err)
 			}
 		})
 	}
@@ -65,13 +72,13 @@ func TestLintEpub(t *testing.T) {
 
 func BenchmarkLintEpub(b *testing.B) {
 	var (
-		filename       = "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub"
-		compressImages = true
+		filename                = "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub"
+		compressImages, verbose = true, false
 	)
 
 	for n := 0; n < b.N; n++ {
 		var originalEpubPath = originalFileDir + string(os.PathSeparator) + filename
-		err := epub.LintEpub(originalFileDir, filename, compressImages)
+		err := epub.LintEpub(originalFileDir, filename, compressImages, verbose, []string{})
 		if err != nil {
 			log.Fatalf("failed to lint epub %q: %s", originalEpubPath, err)
 		}

@@ -19,7 +19,9 @@ import (
 var (
 	lintDir            string
 	lang               string
+	removableFileTypes string
 	runCompressImages  bool
+	verbose            bool
 	ErrLintDirArgEmpty = errors.New("directory must have a non-whitespace value")
 	ErrLangArgEmpty    = errors.New("lang must have a non-whitespace value")
 )
@@ -57,11 +59,13 @@ var compressAndLintCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
+		var removableFileExts = strings.Split(removableFileTypes, ",")
+
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, epub := range epubs {
 			logger.WriteInfof("starting epub compressing for %s...\n", epub)
 
-			err = LintEpub(lintDir, epub, runCompressImages)
+			err = LintEpub(lintDir, epub, runCompressImages, verbose, removableFileExts)
 			if err != nil {
 				logger.WriteError(err.Error())
 			}
@@ -93,10 +97,12 @@ func init() {
 
 	compressAndLintCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
 	compressAndLintCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
+	compressAndLintCmd.Flags().StringVarP(&removableFileTypes, "removable-file-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
+	compressAndLintCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
 	compressAndLintCmd.Flags().BoolVarP(&runCompressImages, "compress-images", "i", false, "whether or not to also compress images which requires imgp to be installed")
 }
 
-func LintEpub(lintDir, epub string, runCompressImages bool) error {
+func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFileExts []string) error {
 	var src = filehandler.JoinPath(lintDir, epub)
 	err := epubhandler.UpdateEpub(src, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
@@ -115,10 +121,12 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 		}
 
 		var handledFiles []string
+		var manifestFiles = make(map[string]struct{}, len(epubInfo.HtmlFiles)+len(epubInfo.ImagesFiles)+len(epubInfo.CssFiles)+len(epubInfo.OtherFiles))
 
 		// fix up all xhtml files first
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
+			manifestFiles[filePath] = struct{}{}
 
 			zipFile := zipFiles[filePath]
 
@@ -140,11 +148,10 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 			handledFiles = append(handledFiles, filePath)
 		}
 
-		//TODO: get all files in the repo and prompt the user whether they want to delete them if they are not in the manifest
-
 		if runCompressImages {
 			for imagePath := range epubInfo.ImagesFiles {
 				var filePath = filehandler.JoinPath(opfFolder, imagePath)
+				manifestFiles[filePath] = struct{}{}
 
 				imageFile := zipFiles[filePath]
 
@@ -164,6 +171,34 @@ func LintEpub(lintDir, epub string, runCompressImages bool) error {
 				}
 
 				handledFiles = append(handledFiles, filePath)
+			}
+		}
+
+		// handle the files that are present in the epub, but not present in the actual manifest
+		if len(removableFileExts) == 0 {
+			return handledFiles, nil
+		}
+
+		for otherPath := range epubInfo.OtherFiles {
+			manifestFiles[filehandler.JoinPath(opfFolder, otherPath)] = struct{}{}
+		}
+
+		for otherPath := range epubInfo.CssFiles {
+			manifestFiles[filehandler.JoinPath(opfFolder, otherPath)] = struct{}{}
+		}
+
+		for filePath := range zipFiles {
+			if _, exists := manifestFiles[filePath]; exists {
+				continue
+			}
+
+			if hasExt(removableFileExts, filePath) {
+				// label file as handled despite not saving it to the destination
+				handledFiles = append(handledFiles, filePath)
+
+				if verbose {
+					logger.WriteInfof("Removed file %q from the epub since it is not in the manifest.\n", filePath)
+				}
 			}
 		}
 
@@ -190,4 +225,14 @@ func ValidateCompressAndLintFlags(lintDir, lang string) error {
 
 func getFilePath(opfFolder, file string) string {
 	return filehandler.JoinPath(opfFolder, file)
+}
+
+func hasExt(slice []string, file string) bool {
+	for _, item := range slice {
+		if strings.HasSuffix(file, item) {
+			return true
+		}
+	}
+
+	return false
 }
