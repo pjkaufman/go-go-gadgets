@@ -22,6 +22,7 @@ This is a program that helps lint and make updates to ebooks.
   - [compress-and-lint](#compress-and-lint)
   - [fixable](#fixable)
   - [replace-strings](#replace-strings)
+  - [validate](#validate)
 
 ### cbr
 
@@ -93,6 +94,8 @@ Some of the things that the linting includes:
 | i | compress-images | whether or not to also compress images which requires imgp to be installed |  | false | false |  |
 | d | directory | the location to run the epub lint logic | string | . | false |  |
 | l | lang | the language to add to the xhtml, htm, or html files if the lang is not already specified | string | en | false |  |
+|  | removable-file-types | A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg') | string | .jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css | false |  |
+| v | verbose | whether or not to show extra logs like what files were removed from the epub |  | false | false |  |
 
 ##### Usage
 
@@ -116,7 +119,7 @@ Potential things that can be fixed:
 - Section breaks being hardcoded instead of an hr
 - Page breaks being hardcoded instead of an hr
 - Oxford commas being missing before or's or and's
-- Possible instances of sentences that have although ..., but in them
+- Possible instances of sentences with two subordinate clauses (i.e. have although..., but)
 - Possible instances of thoughts that are in parentheses
 - Possible instances of conversation encapsulated in square brackets
 - Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
@@ -126,16 +129,17 @@ Potential things that can be fixed:
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
-| f | epub-file | the epub file to find manually fixable issues in | string |  | true | Should be a file with one of the following extensions: epub |
-| a | run-all | whether to run all of the fixable suggestions |  | false | false |  |
-| n | run-although-but | whether to run the logic for getting although but suggestions |  | false | false |  |
-| b | run-broken-lines | whether to run the logic for getting broken line suggestions |  | false | false |  |
-| c | run-conversation | whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation) |  | false | false |  |
-| w | run-necessary-words | whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence) |  | false | false |  |
-| o | run-oxford-commas | whether to run the logic for getting oxford comma suggestions |  | false | false |  |
-| p | run-page-breaks | whether to run the logic for getting page break suggestions (must be used with css-paths) |  | false | false |  |
-| s | run-section-breaks | whether to run the logic for getting section break suggestions (must be used with css-paths) |  | false | false |  |
-| t | run-thoughts | whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) |  | false | false |  |
+| a | all | whether to run all of the fixable suggestions |  | false | false |  |
+|  | broken-lines | whether to run the logic for getting broken line suggestions |  | false | false |  |
+|  | conversation | whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation) |  | false | false |  |
+| f | file | the epub file to find manually fixable issues in | string |  | true | Should be a file with one of the following extensions: epub |
+|  | lacking-subordinate-clause | whether to run the logic for getting potentially lacking subordinate clause suggestions |  | false | false |  |
+|  | necessary-words | whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence) |  | false | false |  |
+|  | oxford-commas | whether to run the logic for getting oxford comma suggestions |  | false | false |  |
+|  | page-breaks | whether to run the logic for getting page break suggestions (must be used with an epub with a css file) |  | false | false |  |
+|  | section-breaks | whether to run the logic for getting section break suggestions (must be used with an epub with a css file) |  | false | false |  |
+|  | thoughts | whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) |  | false | false |  |
+| t | use-tui | whether to use the terminal UI for suggesting fixes |  | false | false |  |
 
 ##### Usage
 
@@ -145,27 +149,27 @@ ebook-lint epub fixable -f test.epub -a
 Note: this will require a css file to already exist in the epub
 
 # To just fix broken paragraph endings:
-ebook-lint epub fixable -f test.epub -b
+ebook-lint epub fixable -f test.epub --broken-lines
 
 # To just update section breaks:
-ebook-lint epub fixable -f test.epub -s
+ebook-lint epub fixable -f test.epub --section-breaks
 Note: this will require a css file to already exist in the epub
 
 # To just update page breaks:
-ebook-lint epub fixable -f test.epub -p
+ebook-lint epub fixable -f test.epub --page-breaks
 Note: this will require a css file to already exist in the epub
 
 # To just fix missing oxford commas:
-ebook-lint epub fixable -f test.epub -o
+ebook-lint epub fixable -f test.epub --oxford-commas
 
-# To just fix although but instances:
-ebook-lint epub fixable -f test.epub -n
+# To just fix potentially lacking subordinate clause instances:
+ebook-lint epub fixable -f test.epub --lacking-subordinate-clause
 
 # To just fix instances of thoughts in parentheses:
-ebook-lint epub fixable -f test.epub -t
+ebook-lint epub fixable -f test.epub --thoughts
 
 # To run a combination of options:
-ebook-lint epub fixable -f test.epub -otn
+ebook-lint epub fixable -f test.epub -oxford-commas --thoughts --necessary-words
 ```
 
 #### replace-strings
@@ -193,6 +197,24 @@ replacements.md is expected to be in the following format:
 | I am typo | I the correct value |
 ...
 | I am another issue to correct | the correction |
+```
+
+#### validate
+
+Validates an EPUB file using W3C EPUBCheck tool.
+If EPUBCheck is not installed, it will automatically download and install the latest version.
+
+##### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| f | file | the epub file to validate | string |  | true | Should be a file with one of the following extensions: epub |
+
+##### Usage
+
+``` bash
+ebook-lint epub validate -f test.epub
+will run EPUBCheck against the file specified.
 ```
 
 

@@ -66,6 +66,7 @@ Gets the book release info for books that have been added to the list of series 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | include-completed | get info for completed series |  | false | false |  |
+| s | series | get info for just the specified series | string |  | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
 
 #### Usage
