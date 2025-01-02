@@ -59,7 +59,10 @@ var compressAndLintCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		var removableFileExts = strings.Split(removableFileTypes, ",")
+		var removableFileExts []string
+		if len(removableFileTypes) != 0 {
+			removableFileExts = strings.Split(removableFileTypes, ",")
+		}
 
 		var totalBeforeFileSize, totalAfterFileSize float64
 		for _, epub := range epubs {

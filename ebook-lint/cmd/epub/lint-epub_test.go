@@ -42,6 +42,12 @@ var LintEpubTestCases = map[string]lintEpubTestCase{
 		verbose:           true,
 		removableFileExts: []string{".txt"},
 	},
+	"Linting a file with an extra text file with no removable file exts should not have it removed": {
+		filename:          "jules-verne_from-the-earth-to-the-moon_ward-lock-co-extra_txt_no_change.epub",
+		compressImages:    true,
+		verbose:           true,
+		removableFileExts: []string{},
+	},
 }
 
 func TestLintEpub(t *testing.T) {
