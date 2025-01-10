@@ -142,6 +142,7 @@ var fixableCmd = &cobra.Command{
 	- Possible instances of thoughts that are in parentheses
 	- Possible instances of conversation encapsulated in square brackets
 	- Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
+	- Possible instances of single quotes that should actually be double quotes (i.e. when a word is in single quotes, but is not inside of double quotes)
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords, runSingleQuotes)
