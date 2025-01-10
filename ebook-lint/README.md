@@ -138,6 +138,7 @@ Potential things that can be fixed:
 |  | oxford-commas | whether to run the logic for getting oxford comma suggestions |  | false | false |  |
 |  | page-breaks | whether to run the logic for getting page break suggestions (must be used with an epub with a css file) |  | false | false |  |
 |  | section-breaks | whether to run the logic for getting section break suggestions (must be used with an epub with a css file) |  | false | false |  |
+|  | single-quotes | whether to run the logic for getting incorrect single quote suggestions |  | false | false |  |
 |  | thoughts | whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) |  | false | false |  |
 | t | use-tui | whether to use the terminal UI for suggesting fixes |  | false | false |  |
 
