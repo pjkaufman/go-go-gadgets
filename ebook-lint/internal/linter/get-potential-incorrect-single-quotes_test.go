@@ -29,6 +29,16 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p>She said "don't touch the 'red' button"</p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a file with a possesive use of a single quote does not get a suggestion": {
+		inputText:           `<p>Charles' was not happy. Twas harder on Bob's faculties though.</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with a word ending with s that is single quoted gets a suggestion and is not considered a possesive": {
+		inputText: `<p>Charles' 'Great Expectations' is long</p>`,
+		expectedSuggestions: map[string]string{
+			"<p>Charles' 'Great Expectations' is long</p>": `<p>Charles' "Great Expectations" is long</p>`,
+		},
+	},
 	"make sure that a file with a contraction and single quoted word outside of double quotes should get a suggestion for just the single quoted word": {
 		inputText: `<p>It's a 'beautiful' day</p>`,
 		expectedSuggestions: map[string]string{

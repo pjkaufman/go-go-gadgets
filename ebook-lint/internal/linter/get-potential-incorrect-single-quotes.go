@@ -34,10 +34,9 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) map[string]string {
 func convertQuotes(input string) (string, bool, error) {
 	var (
 		runes              = []rune(input)
-		result             = make([]rune, 0, len(runes))
 		insideDoubleQuotes = false
 		doubleQuoteCount   = 0
-		singleQuoteCount   = 0 // Only counts non-contraction single quotes
+		singleQuoteCount   = 0 // Only counts non-possesive and non-contraction single quotes
 		updateMade         = false
 	)
 
@@ -47,30 +46,30 @@ func convertQuotes(input string) (string, bool, error) {
 		if currentRune == '"' {
 			insideDoubleQuotes = !insideDoubleQuotes
 			doubleQuoteCount++
-			result = append(result, currentRune)
 		} else if currentRune == '\'' {
 			// Check if it's a contraction (surrounded by letters)
 			isPrevLetter := i > 0 && unicode.IsLetter(runes[i-1])
 			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
 			isContraction := isPrevLetter && isNextLetter
 
-			if !isContraction {
+			isPrevS := i > 0 && runes[i-1] == 's'
+			isNextS := i < len(runes)-1 && runes[i+1] == 's'
+			isPrevWord := i > 0 && unicode.IsLetter(runes[i-1])
+			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
+			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
+
+			if !isContraction && !isPossessive {
 				singleQuoteCount++
 			}
 
-			// If it's not a contraction and not inside double quotes, convert to double quote
-			if !isContraction && !insideDoubleQuotes {
-				result = append(result, '"')
+			// If it's not a contraction, not a possessive, and not inside double quotes, convert to double quote
+			if !isContraction && !isPossessive && !insideDoubleQuotes {
+				runes[i] = '"'
 				updateMade = true
-			} else {
-				result = append(result, '\'')
 			}
-		} else {
-			result = append(result, currentRune)
 		}
 	}
 
-	// Validate quote counts
 	if doubleQuoteCount%2 != 0 {
 		return "", false, fmt.Errorf("unmatched double quotes: found %d double quotes", doubleQuoteCount)
 	}
@@ -79,5 +78,5 @@ func convertQuotes(input string) (string, bool, error) {
 		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction single quotes", singleQuoteCount)
 	}
 
-	return string(result), updateMade, nil
+	return string(runes), updateMade, nil
 }

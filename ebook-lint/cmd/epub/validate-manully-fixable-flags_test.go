@@ -21,6 +21,7 @@ type validateManuallyFixableFlagsTestCase struct {
 	inputRunThoughts       bool
 	inputRunConversation   bool
 	inputRunNecessaryWords bool
+	inputRunSingleQuotes   bool
 	expectedErr            error
 }
 
@@ -48,7 +49,7 @@ var validateManuallyFixableFlagsTestCases = map[string]validateManuallyFixableFl
 func TestValidateManuallyFixableFlags(t *testing.T) {
 	for name, args := range validateManuallyFixableFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := epub.ValidateManuallyFixableFlags(args.inputEpubFile, args.inputRunAll, args.inputRunBrokenLines, args.inputRunSectionBreak, args.inputRunPageBreak, args.inputRunOxfordCommas, args.inputRunAlthoughBut, args.inputRunThoughts, args.inputRunConversation, args.inputRunNecessaryWords)
+			err := epub.ValidateManuallyFixableFlags(args.inputEpubFile, args.inputRunAll, args.inputRunBrokenLines, args.inputRunSectionBreak, args.inputRunPageBreak, args.inputRunOxfordCommas, args.inputRunAlthoughBut, args.inputRunThoughts, args.inputRunConversation, args.inputRunNecessaryWords, args.inputRunSingleQuotes)
 
 			if err != nil {
 				assert.True(t, errors.Is(err, args.expectedErr))

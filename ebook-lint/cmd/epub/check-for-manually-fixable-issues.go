@@ -39,6 +39,7 @@ var (
 	runThoughts              bool
 	runConversation          bool
 	runNecessaryWords        bool
+	runSingleQuotes          bool
 	useTui                   bool
 	potentiallyFixableIssues = []potentiallyFixableIssue{
 		{
@@ -55,6 +56,11 @@ var (
 			name:           "Potential Broken Lines",
 			getSuggestions: linter.GetPotentiallyBrokenLines,
 			isEnabled:      &runBrokenLines,
+		},
+		{
+			name:           "Potential Incorrect Single Quotes",
+			getSuggestions: linter.GetPotentialIncorrectSingleQuotes,
+			isEnabled:      &runSingleQuotes,
 		},
 		{
 			name: "Potential Section Breaks",
@@ -138,7 +144,7 @@ var fixableCmd = &cobra.Command{
 	- Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords)
+		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords, runSingleQuotes)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -176,6 +182,7 @@ func init() {
 	fixableCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
 	fixableCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
+	fixableCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
 	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
 	fixableCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
 	err := fixableCmd.MarkFlagRequired("file")
@@ -189,13 +196,13 @@ func init() {
 	}
 }
 
-func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords bool) error {
+func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords, runSingleQuotes bool) error {
 	err := validateCommonEpubFlags(epubPath)
 	if err != nil {
 		return err
 	}
 
-	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut && !runConversation && !runThoughts && !runNecessaryWords {
+	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut && !runConversation && !runThoughts && !runNecessaryWords && !runSingleQuotes {
 		return ErrOneRunBoolArgMustBeEnabled
 	}
 
