@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var outputJson bool
+
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate an EPUB file using EPUBCheck",
@@ -43,7 +45,12 @@ var validateCmd = &cobra.Command{
 		}
 
 		jarPath := filehandler.JoinPath(epubcheckDir, "epubcheck.jar")
-		output := commandhandler.MustGetCommandOutputEvenIfExitError("java", "failed to run EPUBCheck", "-jar", jarPath, epubFile)
+		extraInputs := []string{"-jar", jarPath, epubFile}
+		if outputJson {
+			extraInputs = append(extraInputs, "--json")
+		}
+
+		output := commandhandler.MustGetCommandOutputEvenIfExitError("java", "failed to run EPUBCheck", extraInputs...)
 
 		logger.WriteInfo(output)
 	},
@@ -62,6 +69,8 @@ func init() {
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validate command: %v\n", err)
 	}
+
+	validateCmd.Flags().BoolVarP(&outputJson, "json", "", false, "the output of the validation should be in json")
 }
 
 func downloadEPUBCheck(epubcheckDir string) error {
