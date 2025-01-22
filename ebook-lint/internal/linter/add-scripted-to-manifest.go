@@ -1,42 +1,52 @@
 package linter
 
 import (
-	"encoding/xml"
 	"fmt"
-	"path/filepath"
 	"strings"
-
-	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 )
 
-func AddScriptedToManifest(opfContents string, zipPath string) (string, error) {
-	opfInfo, err := epubhandler.GetOpfXml(opfContents)
+const (
+	startTag = "<manifest>"
+	endTag   = "</manifest>"
+)
+
+func AddScriptedToManifest(opfContents string, fileName string) (string, error) {
+	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
 		return "", err
 	}
 
-	var fileName = filepath.Base(zipPath)
-	for _, item := range opfInfo.Manifest.Items {
-		if strings.HasSuffix(item.Href, fileName) {
-			if item.Properties == nil {
-				var tempVal = "scripted"
-				item.Properties = &tempVal
-			} else if !strings.Contains(*item.Properties, "scripted") {
-				if *item.Properties == "" {
-					*item.Properties = "scripted"
-				} else {
-					*item.Properties += " scripted"
+	lines := strings.Split(manifestContent, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, fmt.Sprintf(`href="%s"`, fileName)) {
+
+			if strings.Contains(line, "properties=\"\"") {
+				lines[i] = strings.Replace(line, `properties="`, `properties="scripted`, 1)
+			} else if strings.Contains(line, `properties="`) {
+				if !strings.Contains(line, `scripted`) {
+					lines[i] = strings.Replace(line, `properties="`, `properties="scripted `, 1)
 				}
+			} else {
+				lines[i] = strings.Replace(line, `/>`, ` properties="scripted"/>`, 1)
 			}
 
 			break
 		}
 	}
 
-	updatedOpfContents, err := xml.MarshalIndent(opfInfo, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal updated OPF contents: %v", err)
+	updatedManifestContent := strings.Join(lines, "\n")
+	updatedOpfContents := opfContents[:startIndex+len(startTag)] + updatedManifestContent + opfContents[endIndex:]
+
+	return updatedOpfContents, nil
+}
+
+func getManifestContents(opfContents string) (int, int, string, error) {
+	startIndex := strings.Index(opfContents, startTag)
+	endIndex := strings.Index(opfContents, endTag)
+
+	if startIndex == -1 || endIndex == -1 {
+		return 0, 0, "", fmt.Errorf("manifest tag not found in OPF contents")
 	}
 
-	return string(updatedOpfContents), nil
+	return startIndex, endIndex, opfContents[startIndex+len(startTag) : endIndex], nil
 }

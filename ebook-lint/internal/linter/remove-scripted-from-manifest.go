@@ -1,40 +1,43 @@
 package linter
 
 import (
-	"encoding/xml"
 	"fmt"
-	"path/filepath"
 	"strings"
-
-	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 )
 
-func RemoveScriptedFromManifest(opfContents string, zipPath string) (string, error) {
-	opfInfo, err := epubhandler.GetOpfXml(opfContents)
+func RemoveScriptedFromManifest(opfContents string, fileName string) (string, error) {
+	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
 		return "", err
 	}
 
-	var fileName = filepath.Base(zipPath)
-	for _, item := range opfInfo.Manifest.Items {
-		if strings.HasSuffix(item.Href, fileName) {
-			if item.Properties != nil && strings.Contains(*item.Properties, "scripted") {
-				updatedVal := strings.TrimSpace(strings.Replace(*item.Properties, "scripted", "", 1))
-				if updatedVal != "" {
-					*item.Properties = updatedVal
-				} else {
-					item.Properties = nil
+	lines := strings.Split(manifestContent, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, fmt.Sprintf(`href="%s"`, fileName)) {
+			propStart := strings.Index(line, `properties="`)
+			if propStart != -1 {
+				valStart := propStart + len(`properties="`)
+				propEnd := strings.Index(line[valStart:], `"`) + valStart
+				properties := line[valStart:propEnd]
+
+				if strings.Contains(properties, "scripted") {
+					updatedProperties := strings.Replace(properties, "scripted", "", 1)
+					updatedProperties = strings.TrimSpace(updatedProperties)
+
+					if updatedProperties == "" {
+						// Remove the properties attribute if it's empty plus the space right before it
+						lines[i] = line[:propStart-1] + line[propEnd+1:]
+					} else {
+						lines[i] = line[:propStart] + `properties="` + updatedProperties + line[propEnd:]
+					}
 				}
 			}
-
 			break
 		}
 	}
 
-	updatedOpfContents, err := xml.MarshalIndent(opfInfo, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal updated OPF contents: %v", err)
-	}
+	updatedManifestContent := strings.Join(lines, "\n")
+	updatedOpfContents := opfContents[:startIndex+len(startTag)] + updatedManifestContent + opfContents[endIndex:]
 
-	return string(updatedOpfContents), nil
+	return updatedOpfContents, nil
 }

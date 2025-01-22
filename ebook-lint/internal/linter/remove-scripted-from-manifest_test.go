@@ -19,15 +19,16 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 	"Remove properties attribute if attribute is already present for item matching path file name and only has scripted present": {
 		inputText: `
 <package version="3.0">
-  <manifest>
-    <item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
-  </manifest>
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
+</manifest>
 </package>`,
 		inputPath: "OEBPS/chapter1.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"></item>
-  </manifest>
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
+</manifest>
 </package>`,
 	},
 	"Remove scripted from properties attribute if the attribute is already present for item matching path file name and is not the only value": {
@@ -38,24 +39,11 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 </manifest>
 </package>`,
 		inputPath: "OEBPS/nav.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"></item>
-  </manifest>
-</package>`,
-	},
-	"Remove properties attribute from manifest item if properties tag exists even if the paths for the href and input path are different": {
-		inputText: `
+		expectedOutput: `
 <package version="3.0">
 <manifest>
-<item href="chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
+<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 </manifest>
-</package>`,
-		inputPath: "OEBPS/chapter1.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="chapter1.xhtml" media-type="application/xhtml+xml"></item>
-  </manifest>
 </package>`,
 	},
 }

@@ -19,15 +19,16 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 	"Add properties attribute if no attribute is already present for item matching path file name": {
 		inputText: `
 <package version="3.0">
-  <manifest>
-    <item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
-  </manifest>
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
+</manifest>
 </package>`,
 		inputPath: "OEBPS/chapter1.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"></item>
-  </manifest>
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
+</manifest>
 </package>`,
 	},
 	"Add scripted to properties attribute if the attribute is already present for item matching path file name": {
@@ -37,11 +38,13 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 <item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 </manifest>
 </package>`,
+
 		inputPath: "OEBPS/nav.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav scripted"></item>
-  </manifest>
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="scripted nav"/>
+</manifest>
 </package>`,
 	},
 	"Add scripted to properties attribute if it is empty for the path file name": {
@@ -51,25 +54,13 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 <item href="OEBPS/chapter2.xhtml" media-type="application/xhtml+xml" properties=""/>
 </manifest>
 </package>`,
+
 		inputPath: "OEBPS/chapter2.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="OEBPS/chapter2.xhtml" media-type="application/xhtml+xml" properties="scripted"></item>
-  </manifest>
-</package>`,
-	},
-	"Add properties attribute to manifest item if no properties tag exists even if the paths for the href and input path are different": {
-		inputText: `
+		expectedOutput: `
 <package version="3.0">
 <manifest>
-<item href="chapter1.xhtml" media-type="application/xhtml+xml"/>
+<item href="OEBPS/chapter2.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
 </manifest>
-</package>`,
-		inputPath: "OEBPS/chapter1.xhtml",
-		expectedOutput: `<package version="3.0">
-  <manifest>
-    <item href="chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"></item>
-  </manifest>
 </package>`,
 	},
 }

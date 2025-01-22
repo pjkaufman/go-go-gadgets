@@ -2,6 +2,8 @@ package epub
 
 import (
 	"archive/zip"
+	"encoding/json"
+	"errors"
 	"strings"
 	"time"
 
@@ -12,11 +14,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// var (
-// 	extraReplacesFilePath         string
-// 	ErrExtraStringReplaceArgNonMd = errors.New("extra-replace-file must be a Markdown file")
-// 	ErrExtraStringReplaceArgEmpty = errors.New("extra-replace-file must have a non-whitespace value")
-// )
+var (
+	validationIssuesFilePath string
+	ErrIssueFileArgNonJson   = errors.New("issue-file must be a JSON file")
+	ErrIssueFileArgEmpty     = errors.New("issue-file must have a non-whitespace value")
+)
 
 // autoFixValidationCmd represents the auto fix validation command
 var autoFixValidationCmd = &cobra.Command{
@@ -37,7 +39,7 @@ var autoFixValidationCmd = &cobra.Command{
 	// 	| I am another issue to correct | the correction |
 	// `),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateReplaceStringsFlags(epubFile, extraReplacesFilePath)
+		err := ValidateAutoFixValidationFlags(epubFile, validationIssuesFilePath)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -47,31 +49,32 @@ var autoFixValidationCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileArgExists(extraReplacesFilePath, "extra-replace-file")
+		err = filehandler.FileArgExists(validationIssuesFilePath, "issue-file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		// TODO: update all of this logic to actually handle the proper information pjk
+		logger.WriteInfo("Starting epub validation fixes..\n")
+
+		validationBytes, err := filehandler.ReadInBinaryFileContents(validationIssuesFilePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
 		var validationIssues EpubCheckInfo
-
-		logger.WriteInfo("Starting epub string replacement...\n")
-
-		// var numHits = make(map[string]int)
-		// extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
-		// if err != nil {
-		// 	logger.WriteError(err.Error())
-		// }
+		err = json.Unmarshal(validationBytes, &validationIssues)
+		if err != nil {
+			logger.WriteErrorf("failed to unmarshal validation issues: %s", err)
+		}
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
-			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
-			if err != nil {
-				return nil, err
-			}
-
-			var opfFile *zip.File
+			var (
+				opfFilename string
+				opfFile     *zip.File
+			)
 			for filename, file := range zipFiles {
 				if strings.HasSuffix(filename, "opf") {
+					opfFilename = filename
 					opfFile = file
 					break
 				}
@@ -86,7 +89,13 @@ var autoFixValidationCmd = &cobra.Command{
 			for _, message := range validationIssues.Messages {
 				switch message.ID {
 				case "OPF-014":
-					opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, message.Locations[0].Path)
+					opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, strings.TrimLeft(message.Locations[0].Path, opfFolder+"/"))
+
+					if err != nil {
+						return nil, err
+					}
+				case "OPF-015":
+					opfFileContents, err = linter.RemoveScriptedFromManifest(opfFileContents, strings.TrimLeft(message.Locations[0].Path, opfFolder+"/"))
 
 					if err != nil {
 						return nil, err
@@ -94,32 +103,39 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 			}
 
+			err = filehandler.WriteZipCompressedString(w, opfFilename, opfFileContents)
+			if err != nil {
+				return nil, err
+			}
+
+			handledFiles = append(handledFiles, opfFilename)
+
 			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteErrorf("failed to replace strings in %q: %s", epubFile, err)
+			logger.WriteErrorf("failed to fix validation issues in %q: %s", epubFile, err)
 		}
 
-		logger.WriteInfo("\nFinished epub string replacement...")
+		logger.WriteInfo("\nFinished fixing epub validation issues...")
 	},
 }
 
 func init() {
 	EpubCmd.AddCommand(autoFixValidationCmd)
 
-	// autoFixValidationCmd.Flags().StringVarP(&extraReplacesFilePath, "extra-replace-file", "e", "", "the path to the file with extra strings to replace")
-	// err := autoFixValidationCmd.MarkFlagRequired("extra-replace-file")
-	// if err != nil {
-	// 	logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as required on validation fix command: %v\n", err)
-	// }
+	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "e", "", "the path to the file with the validation issues")
+	err := autoFixValidationCmd.MarkFlagRequired("issue-file")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"issue-file\" as required on validation fix command: %v\n", err)
+	}
 
-	// err = autoFixValidationCmd.MarkFlagFilename("extra-replace-file", "md")
-	// if err != nil {
-	// 	logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as looking for specific file types on validation fix command: %v\n", err)
-	// }
+	err = autoFixValidationCmd.MarkFlagFilename("issue-file", "json")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"issue-file\" as looking for specific file types on validation fix command: %v\n", err)
+	}
 
-	autoFixValidationCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in in")
-	err := autoFixValidationCmd.MarkFlagRequired("file")
+	autoFixValidationCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in")
+	err = autoFixValidationCmd.MarkFlagRequired("file")
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"file\" as required on validation fix command: %v\n", err)
 	}
@@ -130,22 +146,22 @@ func init() {
 	}
 }
 
-// func ValidateReplaceStringsFlags(epubPath, extraReplaceStringsPath string) error {
-// 	err := validateCommonEpubFlags(epubPath)
-// 	if err != nil {
-// 		return err
-// 	}
+func ValidateAutoFixValidationFlags(epubPath, validationIssuesPath string) error {
+	err := validateCommonEpubFlags(epubPath)
+	if err != nil {
+		return err
+	}
 
-// 	if strings.TrimSpace(extraReplaceStringsPath) == "" {
-// 		return ErrExtraStringReplaceArgEmpty
-// 	}
+	if strings.TrimSpace(validationIssuesPath) == "" {
+		return ErrIssueFileArgEmpty
+	}
 
-// 	if !strings.HasSuffix(extraReplaceStringsPath, ".md") {
-// 		return ErrExtraStringReplaceArgNonMd
-// 	}
+	if !strings.HasSuffix(validationIssuesPath, ".json") {
+		return ErrIssueFileArgNonJson
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 type EpubCheckInfo struct {
 	Messages []struct {
