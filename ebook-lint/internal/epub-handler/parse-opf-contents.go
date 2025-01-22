@@ -1,7 +1,6 @@
 package epubhandler
 
 import (
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/url"
@@ -20,38 +19,6 @@ type EpubInfo struct {
 	Version     int
 }
 
-type Package struct {
-	XMLName  xml.Name  `xml:"package"`
-	Version  string    `xml:"version,attr"`
-	Manifest *Manifest `xml:"manifest"`
-	Guide    *Guide    `xml:"guide"`
-}
-
-type Manifest struct {
-	XMLName xml.Name        `xml:"manifest"`
-	Items   []*ManifestItem `xml:"item"`
-}
-
-type ManifestItem struct {
-	XMLName    xml.Name `xml:"item"`
-	Href       string   `xml:"href,attr"`
-	MediaType  string   `xml:"media-type,attr"`
-	Properties string   `xml:"properties,attr"`
-}
-
-type Guide struct {
-	XMLName    xml.Name          `xml:"guide"`
-	References []*GuideReference `xml:"reference"`
-}
-
-type GuideReference struct {
-	XMLName xml.Name `xml:"reference"`
-	Href    string   `xml:"href,attr"`
-	Type    string   `xml:"type,attr"`
-}
-
-const ErrorParsingXmlMessageStart = "error parsing xml: "
-
 var (
 	ErrNoPackageInfo   = errors.New("no package info found for the epub - please verify that the opf has a version in it")
 	ErrNoItemEls       = errors.New("no manifest items found for the epub - please verify that the opf has items in it")
@@ -67,10 +34,9 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 		CssFiles:    make(map[string]struct{}),
 	}
 
-	var opfInfo Package
-	err := xml.Unmarshal([]byte(text), &opfInfo)
+	opfInfo, err := GetOpfXml(text)
 	if err != nil {
-		return epubInfo, fmt.Errorf(ErrorParsingXmlMessageStart+"%v", err)
+		return epubInfo, err
 	}
 
 	epubInfo.Version, err = versionTextToInt(opfInfo.Version)
@@ -89,7 +55,7 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 			return epubInfo, fmt.Errorf("failed to convert manifest href %q to file path: %w", manifestItem.Href, err)
 		}
 
-		if epubInfo.Version == 3 && strings.Contains(manifestItem.Properties, "nav") {
+		if epubInfo.Version == 3 && manifestItem.Properties != nil && strings.Contains(*manifestItem.Properties, "nav") {
 			epubInfo.NavFile = filePath
 		}
 

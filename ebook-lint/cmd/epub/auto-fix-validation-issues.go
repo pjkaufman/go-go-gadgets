@@ -2,7 +2,7 @@ package epub
 
 import (
 	"archive/zip"
-	"fmt"
+	"strings"
 	"time"
 
 	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
@@ -52,18 +52,16 @@ var autoFixValidationCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
+		// TODO: update all of this logic to actually handle the proper information pjk
+		var validationIssues EpubCheckInfo
+
 		logger.WriteInfo("Starting epub string replacement...\n")
 
-		var numHits = make(map[string]int)
-		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
+		// var numHits = make(map[string]int)
+		// extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
+		// if err != nil {
+		// 	logger.WriteError(err.Error())
+		// }
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
@@ -71,55 +69,29 @@ var autoFixValidationCmd = &cobra.Command{
 				return nil, err
 			}
 
+			var opfFile *zip.File
+			for filename, file := range zipFiles {
+				if strings.HasSuffix(filename, "opf") {
+					opfFile = file
+					break
+				}
+			}
+
+			opfFileContents, err := filehandler.ReadInZipFileContents(opfFile)
+			if err != nil {
+				return nil, err
+			}
+
 			var handledFiles []string
+			for _, message := range validationIssues.Messages {
+				switch message.ID {
+				case "OPF-014":
+					opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, message.Locations[0].Path)
 
-			for file := range epubInfo.HtmlFiles {
-				var filePath = getFilePath(opfFolder, file)
-				zipFile := zipFiles[filePath]
-
-				fileText, err := filehandler.ReadInZipFileContents(zipFile)
-				if err != nil {
-					return nil, err
-				}
-
-				var newText = linter.CommonStringReplace(fileText)
-				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
-
-				err = filehandler.WriteZipCompressedString(w, filePath, newText)
-				if err != nil {
-					return nil, err
-				}
-
-				handledFiles = append(handledFiles, filePath)
-			}
-
-			var successfulReplaces []string
-			var failedReplaces []string
-			for searchText, hits := range numHits {
-				if hits == 0 {
-					failedReplaces = append(failedReplaces, searchText)
-				} else {
-					var timeText = "time"
-					if hits > 1 {
-						timeText += "s"
+					if err != nil {
+						return nil, err
 					}
-
-					successfulReplaces = append(successfulReplaces, fmt.Sprintf("`%s` was replaced %d %s", searchText, hits, timeText))
 				}
-			}
-
-			logger.WriteInfo("Successful Replaces:")
-			for _, successfulReplace := range successfulReplaces {
-				logger.WriteInfo(successfulReplace)
-			}
-
-			if len(failedReplaces) == 0 {
-				return handledFiles, nil
-			}
-
-			logger.WriteWarn("\nFailed Replaces:")
-			for i, failedReplace := range failedReplaces {
-				logger.WriteWarnf("%d. %s\n", i+1, failedReplace)
 			}
 
 			return handledFiles, nil
