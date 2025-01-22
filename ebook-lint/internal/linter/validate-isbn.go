@@ -1,7 +1,6 @@
 package linter
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -58,7 +57,6 @@ func IsValidISBN(isbn string) bool {
 
 	isbn13Submatches := isbn13Regex.FindStringSubmatch(isbn)
 	if len(isbn13Submatches) != 0 {
-		fmt.Println(strings.Join(isbn13Submatches, ", "), isbn13DigitChecksRegex.MatchString(isbn13Submatches[3]), isbn13SeparatorCheckRegex.MatchString(isbn13Submatches[4]))
 		if isbn13DigitChecksRegex.MatchString(isbn13Submatches[3]) && (isbn13Submatches[4] == "" || isbn13SeparatorCheckRegex.MatchString(isbn13Submatches[4])) {
 			var (
 				sum     int
@@ -79,8 +77,6 @@ func IsValidISBN(isbn string) bool {
 			} else {
 				check = strconv.Itoa(checkDigit)
 			}
-
-			fmt.Println(sum, checkDigit, check)
 
 			if check == last {
 				return true

@@ -3,6 +3,8 @@ package linter
 import (
 	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
@@ -54,9 +56,11 @@ func getNcxIdentifier(ncxContents string) (string, string, error) {
 	identifier := ncxContents[startIndex : startIndex+endIndex]
 
 	// Determine the scheme based on the identifier format
-	scheme := "UUID"
-	if strings.HasPrefix(identifier, "978") || strings.HasPrefix(identifier, "979") {
+	scheme := ""
+	if IsValidISBN(identifier) {
 		scheme = "ISBN"
+	} else if _, err := uuid.Parse(identifier); err == nil {
+		scheme = "UUID"
 	}
 
 	return identifier, scheme, nil
@@ -105,7 +109,13 @@ func getOpfIdentifier(opfContents string) (string, string, string, error) {
 
 // addOpfIdentifier adds a unique identifier to the OPF content.
 func addOpfIdentifier(opfContents, identifier, scheme string) string {
-	identifierTag := fmt.Sprintf(`<dc:identifier id="pub-id" opf:scheme="%s">%s</dc:identifier>`, scheme, identifier)
+	var identifierTag string
+	if scheme == "" {
+		identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id">%s</dc:identifier>`, identifier)
+	} else {
+		identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id" opf:scheme="%s">%s</dc:identifier>`, scheme, identifier)
+	}
+
 	metadataEndTag := `</metadata>`
 	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+metadataEndTag, 1)
 }
