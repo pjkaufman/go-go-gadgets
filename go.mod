@@ -12,7 +12,6 @@ require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.2.4
 	github.com/charmbracelet/lipgloss v1.0.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
@@ -37,6 +36,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.6.0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsoprea/go-iptc v0.0.0-20200610044640-bc9ca208b413 // indirect
 	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
 	github.com/dsoprea/go-photoshop-info-format v0.0.0-20200610045659-121dd752914d // indirect

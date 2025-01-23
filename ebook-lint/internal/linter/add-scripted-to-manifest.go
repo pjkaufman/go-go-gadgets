@@ -10,6 +10,8 @@ const (
 	endTag   = "</manifest>"
 )
 
+var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
+
 func AddScriptedToManifest(opfContents string, fileName string) (string, error) {
 	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
@@ -45,7 +47,7 @@ func getManifestContents(opfContents string) (int, int, string, error) {
 	endIndex := strings.Index(opfContents, endTag)
 
 	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", fmt.Errorf("manifest tag not found in OPF contents")
+		return 0, 0, "", ErrNoManifest
 	}
 
 	return startIndex, endIndex, opfContents[startIndex+len(startTag) : endIndex], nil
