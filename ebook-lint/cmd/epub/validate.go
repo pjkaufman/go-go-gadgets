@@ -2,6 +2,7 @@ package epub
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	outputJsonFile        string
+	ErrJsonFileArgNonJson = errors.New("json-file must be a JSON file")
+)
+
 var validateCmd = &cobra.Command{
 	Use:   "validate",
 	Short: "Validate an EPUB file using EPUBCheck",
@@ -24,7 +30,7 @@ var validateCmd = &cobra.Command{
 	will run EPUBCheck against the file specified.
 `),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := validateCommonEpubFlags(epubFile)
+		err := validateValidateFlags(epubFile, outputJsonFile)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -43,7 +49,12 @@ var validateCmd = &cobra.Command{
 		}
 
 		jarPath := filehandler.JoinPath(epubcheckDir, "epubcheck.jar")
-		output := commandhandler.MustGetCommandOutputEvenIfExitError("java", "failed to run EPUBCheck", "-jar", jarPath, epubFile)
+		extraInputs := []string{"-jar", jarPath, epubFile}
+		if outputJsonFile != "" {
+			extraInputs = append(extraInputs, "--json", outputJsonFile)
+		}
+
+		output := commandhandler.MustGetCommandOutputEvenIfExitError("java", "failed to run EPUBCheck", extraInputs...)
 
 		logger.WriteInfo(output)
 	},
@@ -62,6 +73,8 @@ func init() {
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validate command: %v\n", err)
 	}
+
+	validateCmd.Flags().StringVarP(&outputJsonFile, "json-file", "", "", "specifies that the validation output should be in JSON and in the specified file")
 }
 
 func downloadEPUBCheck(epubcheckDir string) error {
@@ -156,6 +169,19 @@ func downloadEPUBCheck(epubcheckDir string) error {
 	}
 
 	logger.WriteInfo("EPUBCheck installed successfully!")
+
+	return nil
+}
+
+func validateValidateFlags(epubFile, jsonFile string) error {
+	err := validateCommonEpubFlags(epubFile)
+	if err != nil {
+		return err
+	}
+
+	if jsonFile != "" && !strings.HasSuffix(jsonFile, ".json") {
+		return ErrJsonFileArgNonJson
+	}
 
 	return nil
 }

@@ -20,6 +20,7 @@ This is a program that helps lint and make updates to ebooks.
   - [compress](#compress)
 - [epub](#epub)
   - [compress-and-lint](#compress-and-lint)
+  - [fix-validation](#fix-validation)
   - [fixable](#fixable)
   - [replace-strings](#replace-strings)
   - [validate](#validate)
@@ -108,6 +109,29 @@ ebook-lint epub compress-and-lint -i
 
 # To just make general modifications to all epubs in the current directory:
 ebook-lint epub compress-and-lint
+```
+
+#### fix-validation
+
+Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
+- OPF-014: add scripted to the list of values in the properties attribute on the manifest item
+- OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
+- NCX-001: fix discrepancy in identifier between the OPF and NCX files
+
+
+##### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| f | file | the epub file to replace strings in | string |  | true | Should be a file with one of the following extensions: epub |
+|  | issue-file | the path to the file with the validation issues | string |  | true | Should be a file with one of the following extensions: json |
+
+##### Usage
+
+``` bash
+ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json
+will read in the contents of the JSON file and try to fix any of the fixable
+validation issues
 ```
 
 #### fixable
@@ -211,6 +235,7 @@ If EPUBCheck is not installed, it will automatically download and install the la
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | f | file | the epub file to validate | string |  | true | Should be a file with one of the following extensions: epub |
+|  | json-file | specifies that the validation output should be in JSON and in the specified file | string |  | false |  |
 
 ##### Usage
 
