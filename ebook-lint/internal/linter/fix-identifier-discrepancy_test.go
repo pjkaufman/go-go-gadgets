@@ -20,7 +20,7 @@ type identifierTestCase struct {
 func TestFixIdentifiers(t *testing.T) {
 	testCases := []identifierTestCase{
 		{
-			name: "When no unique identifier is in the OPF, but it is present in the NCX, the unique identifier should be added even if there is no scheme",
+			name: "When no unique identifier is in the OPF, but it is present in the NCX, the unique identifier should be added",
 			opfContents: `
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id">
   <metadata>
@@ -65,7 +65,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id">
   <metadata>
     <dc:title>Example Book</dc:title>
-  <dc:identifier id="pub-id" opf:scheme="UUID">9aedca49-923e-4a61-abca-8c1c88d6f868</dc:identifier>
+  <dc:identifier id="pub-id">9aedca49-923e-4a61-abca-8c1c88d6f868</dc:identifier>
 </metadata>
   <manifest></manifest>
   <spine></spine>
@@ -91,7 +91,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id">
   <metadata>
     <dc:title>Example Book</dc:title>
-  <dc:identifier id="pub-id" opf:scheme="ISBN">9781975392543</dc:identifier>
+  <dc:identifier id="pub-id">9781975392543</dc:identifier>
 </metadata>
   <manifest></manifest>
   <spine></spine>
@@ -119,7 +119,7 @@ func TestFixIdentifiers(t *testing.T) {
   <metadata>
     <dc:title>Example Book</dc:title>
     <dc:identifier>67890</dc:identifier>
-    <dc:identifier id="pub-id" opf:scheme="UUID">9aedca49-923e-4a61-abca-8c1c88d6f868</dc:identifier>
+    <dc:identifier id="pub-id">9aedca49-923e-4a61-abca-8c1c88d6f868</dc:identifier>
   </metadata>
   <manifest></manifest>
   <spine></spine>
@@ -131,7 +131,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
   <metadata>
     <dc:title>Example Book</dc:title>
-    <dc:identifier id="MainId" opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier id="MainId">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
     <dc:identifier>12345</dc:identifier>
   </metadata>
   <manifest></manifest>
@@ -147,7 +147,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
   <metadata>
     <dc:title>Example Book</dc:title>
-    <dc:identifier opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier>ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
     <dc:identifier id="MainId">12345</dc:identifier>
   </metadata>
   <manifest></manifest>
@@ -160,7 +160,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
   <metadata>
     <dc:title>Example Book</dc:title>
-    <dc:identifier id="MainId" opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier id="MainId">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
     <dc:identifier id="secondaryId">12345</dc:identifier>
   </metadata>
   <manifest></manifest>
@@ -176,7 +176,7 @@ func TestFixIdentifiers(t *testing.T) {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
   <metadata>
     <dc:title>Example Book</dc:title>
-    <dc:identifier opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier>ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
     <dc:identifier id="MainId">12345</dc:identifier>
   </metadata>
   <manifest></manifest>

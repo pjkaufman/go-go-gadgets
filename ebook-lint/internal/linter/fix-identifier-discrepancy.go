@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
-
-	"github.com/google/uuid"
 )
 
 func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the NCX
-	ncxIdentifier, ncxScheme, err := getNcxIdentifier(ncxContents)
+	ncxIdentifier, err := getNcxIdentifier(ncxContents)
 	if err != nil {
 		return "", err
 	}
@@ -20,18 +18,18 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 
 	// Scenario 1: No unique identifier in OPF, but present in NCX
 	if opfIdentifier == "" && ncxIdentifier != "" {
-		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, ncxScheme)
+		opfContents = addOpfIdentifier(opfContents, ncxIdentifier)
 		return opfContents, nil
 	}
 
 	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ncxIdentifier) {
-		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier, ncxScheme)
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ">"+ncxIdentifier) {
+		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
 		return opfContents, nil
 	}
 
 	// Scenario 3: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ncxIdentifier) {
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ">"+ncxIdentifier) {
 		opfContents = moveOpfIdentifierID(opfContents, opfIdentifier, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
 		return opfContents, nil
 	}
@@ -39,73 +37,24 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	return opfContents, nil
 }
 
-// getNcxIdentifier extracts the unique identifier and scheme from the NCX content.
-func getNcxIdentifier(ncxContents string) (string, string, error) {
+// getNcxIdentifier extracts the unique identifier from the NCX content.
+func getNcxIdentifier(ncxContents string) (string, error) {
 	startTag := `<meta name="dtb:uid" content="`
 	startIndex := strings.Index(ncxContents, startTag)
 	if startIndex == -1 {
-		return "", "", fmt.Errorf("unique identifier not found in NCX")
+		return "", fmt.Errorf("unique identifier not found in NCX")
 	}
 	startIndex += len(startTag)
 	endIndex := strings.Index(ncxContents[startIndex:], `"`)
 	if endIndex == -1 {
-		return "", "", fmt.Errorf("unique identifier not found in NCX")
+		return "", fmt.Errorf("unique identifier not found in NCX")
 	}
 	identifier := ncxContents[startIndex : startIndex+endIndex]
 
-	// Determine the scheme based on the identifier format
-	scheme := ""
-	if IsValidISBN(identifier) {
-		scheme = "ISBN"
-	} else if _, err := uuid.Parse(identifier); err == nil {
-		scheme = "UUID"
-	}
-
-	return identifier, scheme, nil
+	return identifier, nil
 }
 
-// getOpfIdentifier extracts the unique identifier and scheme from the OPF content.
-// func getOpfIdentifier(opfContents string) (string, string, string, error) {
-// 	startTag := `<dc:identifier id="`
-// 	startIndex := strings.Index(opfContents, startTag)
-// 	if startIndex == -1 {
-// 		return "", "", "", nil // Return nil error if unique identifier is not found in OPF
-// 	}
-// 	startIndex += len(startTag)
-// 	endIndex := strings.Index(opfContents[startIndex:], `"`)
-// 	if endIndex == -1 {
-// 		return "", "", "", fmt.Errorf("unique identifier not found in OPF")
-// 	}
-// 	id := opfContents[startIndex : startIndex+endIndex]
-
-// 	contentTag := `opf:scheme="`
-// 	contentStartIndex := strings.Index(opfContents, contentTag)
-// 	if contentStartIndex == -1 {
-// 		return "", "", "", fmt.Errorf("unique identifier content not found in OPF")
-// 	}
-// 	contentStartIndex += len(contentTag)
-// 	contentEndIndex := strings.Index(opfContents[contentStartIndex:], `"`)
-// 	if contentEndIndex == -1 {
-// 		return "", "", "", fmt.Errorf("unique identifier content not found in OPF")
-// 	}
-// 	scheme := opfContents[contentStartIndex : contentStartIndex+contentEndIndex]
-
-// 	identifierTag := fmt.Sprintf(`opf:scheme="%s">`, scheme)
-// 	identifierStartIndex := strings.Index(opfContents, identifierTag)
-// 	if identifierStartIndex == -1 {
-// 		return "", "", "", fmt.Errorf("unique identifier content not found in OPF")
-// 	}
-// 	identifierStartIndex += len(identifierTag)
-// 	identifierEndIndex := strings.Index(opfContents[identifierStartIndex:], `<`)
-// 	if identifierEndIndex == -1 {
-// 		return "", "", "", fmt.Errorf("unique identifier content not found in OPF")
-// 	}
-// 	identifier := opfContents[identifierStartIndex : identifierStartIndex+identifierEndIndex]
-
-// 	return identifier, id, scheme, nil
-// }
-
-// getOpfIdentifier extracts the unique identifier and scheme from the OPF content.
+// getOpfIdentifier extracts the unique identifier from the OPF content.
 func getOpfIdentifier(opfContents string) (string, string, string) {
 	// Attempt to find the unique-identifier attribute value
 	uniqueIdAttr := `unique-identifier="`
@@ -174,20 +123,15 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 }
 
 // addOpfIdentifier adds a unique identifier to the OPF content.
-func addOpfIdentifier(opfContents, identifier, scheme string) string {
-	var identifierTag string
-	if scheme == "" {
-		identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id">%s</dc:identifier>`, identifier)
-	} else {
-		identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id" opf:scheme="%s">%s</dc:identifier>`, scheme, identifier)
-	}
+func addOpfIdentifier(opfContents, identifier string) string {
+	var identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id">%s</dc:identifier>`, identifier)
 
 	metadataEndTag := `</metadata>`
 	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+metadataEndTag, 1)
 }
 
 // addOpfIdentifierAndUpdateExistingOne replaces the unique identifier in the OPF content.
-func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier, scheme string) string {
+func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) string {
 	var (
 		idAttribute            = fmt.Sprintf(` id="%s"`, identifierID)
 		updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
@@ -198,10 +142,6 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	format.WriteString("<dc:identifier")
 	if identifierID != "" {
 		format.WriteString(idAttribute)
-	}
-
-	if scheme != "" {
-		format.WriteString(" opf:scheme=\"" + scheme + "\"")
 	}
 
 	format.WriteString(">")

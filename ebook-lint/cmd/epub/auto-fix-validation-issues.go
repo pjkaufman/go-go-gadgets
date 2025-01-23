@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -96,6 +97,17 @@ var autoFixValidationCmd = &cobra.Command{
 					}
 				case "OPF-015":
 					opfFileContents, err = linter.RemoveScriptedFromManifest(opfFileContents, strings.TrimLeft(message.Locations[0].Path, opfFolder+"/"))
+
+					if err != nil {
+						return nil, err
+					}
+				case "NCX-001":
+					ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[filepath.Join(opfFolder, epubInfo.NcxFile)])
+					if err != nil {
+						return nil, err
+					}
+
+					opfFileContents, err = linter.FixIdentifierDiscrepancy(opfFileContents, ncxFileContents)
 
 					if err != nil {
 						return nil, err
