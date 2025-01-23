@@ -26,7 +26,6 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 
 	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ncxIdentifier) {
-		fmt.Println("bazinga", opfIdentifierEl, opfIdentifierID, ncxIdentifier, ncxScheme)
 		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier, ncxScheme)
 		return opfContents, nil
 	}
