@@ -36,7 +36,7 @@ type ManifestItem struct {
 	XMLName    xml.Name `xml:"item"`
 	Href       string   `xml:"href,attr"`
 	MediaType  string   `xml:"media-type,attr"`
-	Properties *string  `xml:"properties,attr"`
+	Properties string   `xml:"properties,attr"`
 }
 
 type Guide struct {
@@ -89,7 +89,7 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 			return epubInfo, fmt.Errorf("failed to convert manifest href %q to file path: %w", manifestItem.Href, err)
 		}
 
-		if epubInfo.Version == 3 && manifestItem.Properties != nil && strings.Contains(*manifestItem.Properties, "nav") {
+		if epubInfo.Version == 3 && strings.Contains(manifestItem.Properties, "nav") {
 			epubInfo.NavFile = filePath
 		}
 
