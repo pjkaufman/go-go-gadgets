@@ -125,35 +125,64 @@ func TestFixIdentifiers(t *testing.T) {
   <spine></spine>
 </package>`,
 		},
-		// 		{
-		// 			name: "Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF",
-		// 			opfContents: `
-		// <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
-		//   <metadata>
-		//     <dc:title>Example Book</dc:title>
-		//     <dc:identifier id="MainId" opf:scheme="UUID">67890</dc:identifier>
-		//     <dc:identifier id="pub-id" opf:scheme="UUID">12345</dc:identifier>
-		//   </metadata>
-		//   <manifest></manifest>
-		//   <spine></spine>
-		// </package>`,
-		// 			ncxContents: `
-		// <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/">
-		//   <head>
-		//     <meta name="dtb:uid" content="12345" />
-		//   </head>
-		// </ncx>`,
-		// 			expectedOutput: `
-		// <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id">
-		//   <metadata>
-		//     <dc:title>Example Book</dc:title>
-		//     <dc:identifier id="MainId" opf:scheme="UUID">67890</dc:identifier>
-		//     <dc:identifier id="pub-id" opf:scheme="UUID">12345</dc:identifier>
-		//   </metadata>
-		//   <manifest></manifest>
-		//   <spine></spine>
-		// </package>`,
-		// 		},
+		{
+			name: "Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF and there is no id already gets the unique identifier moved to the one that is in the NCX",
+			opfContents: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+  <metadata>
+    <dc:title>Example Book</dc:title>
+    <dc:identifier id="MainId" opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier>12345</dc:identifier>
+  </metadata>
+  <manifest></manifest>
+  <spine></spine>
+</package>`,
+			ncxContents: `
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/">
+  <head>
+    <meta name="dtb:uid" content="12345" />
+  </head>
+</ncx>`,
+			expectedOutput: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+  <metadata>
+    <dc:title>Example Book</dc:title>
+    <dc:identifier opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier id="MainId">12345</dc:identifier>
+  </metadata>
+  <manifest></manifest>
+  <spine></spine>
+</package>`,
+		},
+		{
+			name: "Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF and there is an id already gets the unique identifier as the replacement for the one that is in the NCX",
+			opfContents: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+  <metadata>
+    <dc:title>Example Book</dc:title>
+    <dc:identifier id="MainId" opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier id="secondaryId">12345</dc:identifier>
+  </metadata>
+  <manifest></manifest>
+  <spine></spine>
+</package>`,
+			ncxContents: `
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/">
+  <head>
+    <meta name="dtb:uid" content="12345" />
+  </head>
+</ncx>`,
+			expectedOutput: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+  <metadata>
+    <dc:title>Example Book</dc:title>
+    <dc:identifier opf:scheme="UUID">ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+    <dc:identifier id="MainId">12345</dc:identifier>
+  </metadata>
+  <manifest></manifest>
+  <spine></spine>
+</package>`,
+		},
 	}
 
 	for _, args := range testCases {

@@ -24,16 +24,16 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 		return opfContents, nil
 	}
 
-	// Scenario 2: Different unique identifier in OPF and NCX
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier {
+	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ncxIdentifier) {
 		fmt.Println("bazinga", opfIdentifierEl, opfIdentifierID, ncxIdentifier, ncxScheme)
 		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier, ncxScheme)
 		return opfContents, nil
 	}
 
 	// Scenario 3: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifierID != ncxIdentifier {
-		opfContents = moveOpfIdentifierID(opfContents, opfIdentifierID, ncxIdentifier)
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ncxIdentifier) {
+		opfContents = moveOpfIdentifierID(opfContents, opfIdentifier, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
 		return opfContents, nil
 	}
 
@@ -213,10 +213,46 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 }
 
 // moveOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX.
-func moveOpfIdentifierID(opfContents, oldIdentifierID, newIdentifierID string) string {
-	oldIdentifierTag := fmt.Sprintf(` id="%s"`, oldIdentifierID)
-	newIdentifierTag := fmt.Sprintf(` id="%s"`, newIdentifierID)
-	return strings.Replace(opfContents, oldIdentifierTag, newIdentifierTag, 1)
+// moveOpfIdentifierID updates the identifier line, adding or replacing the id attribute,
+// and removes the id attribute from the old identifier element.
+func moveOpfIdentifierID(opfContents, opfIdentifier, ncxIdentifier, uniqueId, oldIdentifierEl string) string {
+	// Find the line containing the ncxIdentifier
+	ncxIdentifierLineStart := strings.Index(opfContents, ncxIdentifier)
+	if ncxIdentifierLineStart == -1 {
+		return opfContents // ncxIdentifier not found, return the content unchanged
+	}
+
+	lineStart := strings.LastIndex(opfContents[:ncxIdentifierLineStart], "\n") + 1
+	lineEnd := strings.Index(opfContents[ncxIdentifierLineStart:], "\n")
+	if lineEnd == -1 {
+		lineEnd = len(opfContents)
+	} else {
+		lineEnd += ncxIdentifierLineStart
+	}
+
+	var (
+		line                   = opfContents[lineStart:lineEnd]
+		idAttribute            = fmt.Sprintf(` id="%s"`, uniqueId)
+		updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
+	)
+
+	opfContents = strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl, 1)
+
+	// Check if the line already has an id attribute
+	idAttr := ` id="`
+	idStart := strings.Index(line, idAttr)
+	if idStart == -1 {
+		// No id attribute, add it
+		newLine := strings.Replace(line, ">"+ncxIdentifier, fmt.Sprintf(` id="%s">%s`, uniqueId, ncxIdentifier), 1)
+		opfContents = strings.Replace(opfContents, line, newLine, 1)
+	} else {
+		// Replace the existing id attribute value with the uniqueId
+		idEnd := strings.Index(line[idStart+len(idAttr):], `"`) + idStart + len(idAttr)
+		newLine := line[:idStart+len(idAttr)] + uniqueId + line[idEnd:]
+		opfContents = strings.Replace(opfContents, line, newLine, 1)
+	}
+
+	return opfContents
 }
 
 // getLeadingWhitespace returns the leading whitespace from the input string.
