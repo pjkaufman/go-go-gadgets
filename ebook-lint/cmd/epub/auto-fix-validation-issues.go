@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MakeNowJust/heredoc"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -24,21 +25,17 @@ var (
 // autoFixValidationCmd represents the auto fix validation command
 var autoFixValidationCmd = &cobra.Command{
 	Use:   "fix-validation",
-	Short: "Reads in the output of EpubCheck and fixes as many issues as are able to be fixed without the user making any changes.",
-	// Long: heredoc.Doc(`Uses the provided epub and extra replace Markdown file to replace a common set of strings and any extra instances specified in the extra file replace. After all replacements are made, the original epub will be moved to a .original file and the new file will take the place of the old file. It will also print out the successful extra replacements with the number of replacements made followed by warnings for any extra strings that it tried to find and replace values for, but did not find any instances to replace.
-	// 	Note: it only replaces strings in content/xhtml files listed in the opf file.`),
-	// Example: heredoc.Doc(`
-	// 	ebook-lint epub replace-strings -f test.epub -e replacements.md
-	// 	will replace the common strings and extra strings parsed out of replacements.md in content/xhtml files located in test.epub.
-	// 	The original test.epub will be moved to test.epub.original and test.epub will have the updated files.
-
-	// 	replacements.md is expected to be in the following format:
-	// 	| Text to replace | Text to replace with |
-	// 	| --------------- | -------------------- |
-	// 	| I am typo | I the correct value |
-	// 	...
-	// 	| I am another issue to correct | the correction |
-	// `),
+	Short: "Reads in the output of EPUBCheck and fixes as many issues as are able to be fixed without the user making any changes.",
+	Long: heredoc.Doc(`Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
+	- OPF-014: add scripted to the list of values in the properties attribute on the manifest item
+	- OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
+	- NCX-001: fix discrepancy in identifier between the OPF and NCX files
+	`),
+	Example: heredoc.Doc(`
+		ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json
+		will read in the contents of the JSON file and try to fix any of the fixable
+		validation issues
+	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateAutoFixValidationFlags(epubFile, validationIssuesFilePath)
 		if err != nil {
@@ -135,7 +132,7 @@ var autoFixValidationCmd = &cobra.Command{
 func init() {
 	EpubCmd.AddCommand(autoFixValidationCmd)
 
-	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "e", "", "the path to the file with the validation issues")
+	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "", "", "the path to the file with the validation issues")
 	err := autoFixValidationCmd.MarkFlagRequired("issue-file")
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"issue-file\" as required on validation fix command: %v\n", err)
