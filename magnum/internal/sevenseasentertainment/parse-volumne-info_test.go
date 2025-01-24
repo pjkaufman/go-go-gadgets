@@ -19,11 +19,53 @@ type ParseVolumeInfoTestCase struct {
 }
 
 const (
-	mushokuTenseiVolume1    = `<div class="series-volume"> <a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/"><img width="135" height="190" src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" srcset="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg 135w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-213x300.jpg 213w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg 320w" sizes="(max-width: 135px) 100vw, 135px"></a><h3><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/"></a><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/">Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1</a></h3> <b>Release Date</b>: 2019/05/21<br> <b>Early Digital:</b> 2019/04/04<br> <b>Price:</b> $15.99<br> <b>Format:</b> Light Novel<br> <b>ISBN:</b> 978-1-64275-138-3</div>`
-	mushokuTenseiAudiobook1 = `<div class="series-volume" style="min-height: 200px;"> <a href="https://sevenseasentertainment.com/audio/mushoku-tensei-jobless-reincarnation-audiobook-vol-1/"><img width="135" height="135" src="https://sevenseasentertainment.com/wp-content/uploads/2023/07/MushokuTensei1_audiobook_cover-site-135x135.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" loading="lazy" srcset="https://sevenseasentertainment.com/wp-content/uploads/2023/07/MushokuTensei1_audiobook_cover-site-135x135.jpg 135w, https://sevenseasentertainment.com/wp-content/uploads/2023/07/MushokuTensei1_audiobook_cover-site.jpg 450w" sizes="(max-width: 135px) 100vw, 135px"></a><h3><a href="https://sevenseasentertainment.com/audio/mushoku-tensei-jobless-reincarnation-audiobook-vol-1/"></a><a href="https://sevenseasentertainment.com/audio/mushoku-tensei-jobless-reincarnation-audiobook-vol-1/">Mushoku Tensei: Jobless Reincarnation (Audiobook) Vol. 1</a></h3> <b>Release Date</b>: 2023/09/28<br> <b>Length:</b> 7 hrs 18 min</div>`
-	noTitle                 = `<div class="series-volume"> <a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/"><img width="135" height="190" src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" srcset="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg 135w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-213x300.jpg 213w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg 320w" sizes="(max-width: 135px) 100vw, 135px"></a><h3></h3> <b>Release Date</b>: 2019/05/21<br> <b>Early Digital:</b> 2019/04/04<br> <b>Price:</b> $15.99<br> <b>Format:</b> Light Novel<br> <b>ISBN:</b> 978-1-64275-138-3</div>`
-	noRelease               = `<div class="series-volume"> <a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/"><img width="135" height="190" src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" srcset="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-135x190.jpg 135w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT-213x300.jpg 213w, https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg 320w" sizes="(max-width: 135px) 100vw, 135px"></a><h3><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/"></a><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-1/">Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1</a></h3> <b>Price:</b> $15.99<br> <b>Format:</b> Light Novel<br> <b>ISBN:</b> 978-1-64275-138-3</div>`
-	mushokuTenseiVolume14   = `<div class="series-volume"> <a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-14/"><img width="135" height="190" src="https://sevenseasentertainment.com/wp-content/uploads/2022/01/mushokuLN14_site-resize-135x190.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" loading="lazy" srcset="https://sevenseasentertainment.com/wp-content/uploads/2022/01/mushokuLN14_site-resize-135x190.jpg 135w, https://sevenseasentertainment.com/wp-content/uploads/2022/01/mushokuLN14_site-resize.jpg 320w" sizes="(max-width: 135px) 100vw, 135px"></a><h3><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-14/"></a><a href="https://sevenseasentertainment.com/books/mushoku-tensei-jobless-reincarnation-light-novel-vol-14/">Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 14</a></h3> <b>Release Date</b>: 2022/01/18<br> <b>Price:</b> $15.99<br> <b>Format:</b> Light Novel<br> <b>ISBN:</b> 978-1-64827-360-5</div>`
+	mushokuTenseiVolume1 = `                        
+            <img src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg" alt="">
+            
+            <h3>Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1</h3>
+
+            <b>Release Date</b>: May 21, 2019<br>
+
+                        <b>Early Digital:</b> Apr 04, 2019<br>
+            
+            <b>Price:</b> $15.99<br>
+            <b>Format:</b> Light Novel<br>
+            <b>ISBN:</b> 978-1-64275-138-3`
+	mushokuTenseiAudiobook1 = `                          <img src="https://sevenseasentertainment.com/wp-content/uploads/2023/07/MushokuTensei1_audiobook_cover-site.jpg" alt="">
+                <h3>Mushoku Tensei: Jobless Reincarnation (Audiobook) Vol. 1</h3>
+                <b>Release Date</b>: 2023-09-28<br>
+                <b>Length:</b> 7 hrs 18 min            `
+	noTitle = `                        
+            <img src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg" alt="">
+            
+            <h3></h3>
+
+            <b>Release Date</b>: May 21, 2019<br>
+
+                        <b>Early Digital:</b> Apr 04, 2019<br>
+            
+            <b>Price:</b> $15.99<br>
+            <b>Format:</b> Light Novel<br>
+            <b>ISBN:</b> 978-1-64275-138-3`
+	noRelease = `                        
+            <img src="https://sevenseasentertainment.com/wp-content/uploads/2018/11/MUSHOKU-TENSEI-LN-1-cover-FRONT.jpg" alt="">
+            
+            <h3>Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1</h3>
+
+            
+            <b>Price:</b> $15.99<br>
+            <b>Format:</b> Light Novel<br>
+            <b>ISBN:</b> 978-1-64275-138-3`
+	mushokuTenseiVolume14 = `                      
+            <img src="https://sevenseasentertainment.com/wp-content/uploads/2022/01/mushokuLN14_site-resize.jpg" alt="">
+            
+            <h3>Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 14</h3>
+
+            <b>Release Date</b>: Jan 18, 2022<br>
+            
+            <b>Price:</b> $15.99<br>
+            <b>Format:</b> Light Novel<br>
+            <b>ISBN:</b> 978-1-64827-360-5`
 )
 
 var ParseVolumeInfoTestCases = map[string]ParseVolumeInfoTestCase{

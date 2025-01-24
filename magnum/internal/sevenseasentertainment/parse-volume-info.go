@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-var volumeNameRegex = regexp.MustCompile(`<a[^>]*>([^<]+)</a>`)
-var earlyDigitalAccessRegex = regexp.MustCompile(`<b>Early Digital:</b> (\d{4}/\d{2}/\d{2})`)
-var releaseDateRegex = regexp.MustCompile(`<b>Release Date</b>: (\d{4}/\d{2}/\d{2})`)
+var volumeNameRegex = regexp.MustCompile(`<h3>([^<]+)</h3>`)
+var earlyDigitalAccessRegex = regexp.MustCompile(`<b>Early Digital:</b> ([a-zA-Z]+ \d{2}, \d{4})`)
+var releaseDateRegex = regexp.MustCompile(`<b>Release Date</b>: ([a-zA-Z]+ \d{2}, \d{4})`)
 
 func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error) {
 	// get name from the anchor in the h3

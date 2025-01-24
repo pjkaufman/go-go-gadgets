@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gocolly/colly/v2"
-	googlecache "github.com/pjkaufman/go-go-gadgets/magnum/internal/google-cache"
+	internetarchive "github.com/pjkaufman/go-go-gadgets/magnum/internal/internet-archive"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
 	"github.com/pjkaufman/go-go-gadgets/pkg/crawler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -38,10 +38,15 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 		volumeContent = append(volumeContent, contentHtml)
 	})
 
-	var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
+	// var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
+	url, err := internetarchive.GetLatestPageSnapshot(baseURL+seriesPath+seriesSlug, verbose)
+	if err != nil {
+		logger.WriteErrorf("failed call to internet archive to get latest page snapshot for for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
+	}
+
 	err = c.Visit(url)
 	if err != nil {
-		logger.WriteErrorf("failed call to google cache for %q: %s\n", url, err)
+		logger.WriteErrorf("failed call to internet archive for %q: %s\n", url, err)
 	}
 
 	var volumeInfo = []VolumeInfo{}
