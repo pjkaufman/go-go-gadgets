@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
+
+const invalidIdPrefix = "Error while parsing file: value of attribute \""
 
 var (
 	validationIssuesFilePath string
@@ -52,7 +55,7 @@ var autoFixValidationCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		logger.WriteInfo("Starting epub validation fixes..\n")
+		logger.WriteInfo("Starting epub validation fixes...")
 
 		validationBytes, err := filehandler.ReadInBinaryFileContents(validationIssuesFilePath)
 		if err != nil {
@@ -64,6 +67,22 @@ var autoFixValidationCmd = &cobra.Command{
 		if err != nil {
 			logger.WriteErrorf("failed to unmarshal validation issues: %s", err)
 		}
+
+		sort.Slice(validationIssues.Messages, func(i, j int) bool {
+			msgI := validationIssues.Messages[i]
+			msgJ := validationIssues.Messages[j]
+
+			// Compare by path ascending
+			if msgI.Locations[0].Path != msgJ.Locations[0].Path {
+				return msgI.Locations[0].Path < msgJ.Locations[0].Path
+			}
+			// If paths are the same, compare by line descending
+			if msgI.Locations[0].Line != msgJ.Locations[0].Line {
+				return msgI.Locations[0].Line > msgJ.Locations[0].Line
+			}
+			// If lines are the same, compare by column descending
+			return msgI.Locations[0].Column > msgJ.Locations[0].Column
+		})
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			var (
@@ -79,6 +98,12 @@ var autoFixValidationCmd = &cobra.Command{
 			}
 
 			opfFileContents, err := filehandler.ReadInZipFileContents(opfFile)
+			if err != nil {
+				return nil, err
+			}
+
+			var ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
+			ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
 			if err != nil {
 				return nil, err
 			}
@@ -99,15 +124,32 @@ var autoFixValidationCmd = &cobra.Command{
 						return nil, err
 					}
 				case "NCX-001":
-					ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[filepath.Join(opfFolder, epubInfo.NcxFile)])
-					if err != nil {
-						return nil, err
-					}
-
 					opfFileContents, err = linter.FixIdentifierDiscrepancy(opfFileContents, ncxFileContents)
 
 					if err != nil {
 						return nil, err
+					}
+				case "RSC-005":
+					if strings.HasPrefix(message.Message, invalidIdPrefix) {
+						startIndex := strings.Index(message.Message, invalidIdPrefix)
+						if startIndex == -1 {
+							continue
+						}
+						startIndex += len(invalidIdPrefix)
+						endIndex := strings.Index(message.Message[startIndex:], `"`)
+						if endIndex == -1 {
+							continue
+						}
+
+						attribute := message.Message[startIndex : startIndex+endIndex]
+						// for now we will just fix the values in the opf and ncx files and we will handle the other cases separately
+						// when that is encountered since it requires keeping track of which files have already been modified
+						// and which ones have not been modified yet
+						if strings.HasSuffix(message.Locations[0].Path, ".opf") {
+							opfFileContents = linter.FixXmlIdValue(opfFileContents, message.Locations[0].Line, attribute)
+						} else if strings.HasSuffix(message.Locations[0].Path, ".ncx") {
+							ncxFileContents = linter.FixXmlIdValue(ncxFileContents, message.Locations[0].Line, attribute)
+						}
 					}
 				}
 			}
@@ -119,13 +161,20 @@ var autoFixValidationCmd = &cobra.Command{
 
 			handledFiles = append(handledFiles, opfFilename)
 
+			err = filehandler.WriteZipCompressedString(w, ncxFilename, ncxFileContents)
+			if err != nil {
+				return nil, err
+			}
+
+			handledFiles = append(handledFiles, ncxFilename)
+
 			return handledFiles, nil
 		})
 		if err != nil {
 			logger.WriteErrorf("failed to fix validation issues in %q: %s", epubFile, err)
 		}
 
-		logger.WriteInfo("\nFinished fixing epub validation issues...")
+		logger.WriteInfo("Finished fixing epub validation issues.")
 	},
 }
 

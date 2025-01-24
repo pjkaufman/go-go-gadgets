@@ -16,12 +16,12 @@ bench:
 
 install:
 	@echo "Building go tools"
-	@go build -o "${HOME}/.local/bin/ebook-lint" ./ebook-lint/main.go
-	@go build -o "${HOME}/.local/bin/git-helper" ./git-helper/main.go
-	@go build -o "${HOME}/.local/bin/song-converter" ./song-converter/main.go
-	@go build -o "${HOME}/.local/bin/cat-ascii" ./cat-ascii/main.go
-	@go build -o "${HOME}/.local/bin/magnum" ./magnum/main.go
-	@go build -o "${HOME}/.local/bin/jp-proc" ./jp-proc/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/ebook-lint" ./ebook-lint/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/git-helper" ./git-helper/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/song-converter" ./song-converter/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/cat-ascii" ./cat-ascii/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/magnum" ./magnum/main.go
+	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/jp-proc" ./jp-proc/main.go
 	
 	@mkdir -p ${BASH_COMPLETION_USER_DIR}
 
