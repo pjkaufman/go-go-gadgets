@@ -39,19 +39,36 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 
 // getNcxIdentifier extracts the unique identifier from the NCX content.
 func getNcxIdentifier(ncxContents string) (string, error) {
-	startTag := `<meta name="dtb:uid" content="`
+	startTag := `name="dtb:uid"`
 	startIndex := strings.Index(ncxContents, startTag)
 	if startIndex == -1 {
 		return "", fmt.Errorf("unique identifier not found in NCX")
 	}
-	startIndex += len(startTag)
-	endIndex := strings.Index(ncxContents[startIndex:], `"`)
-	if endIndex == -1 {
-		return "", fmt.Errorf("unique identifier not found in NCX")
-	}
-	identifier := ncxContents[startIndex : startIndex+endIndex]
 
-	return identifier, nil
+	// Find the line containing the startTag
+	lineStart := strings.LastIndex(ncxContents[:startIndex], "\n") + 1
+	lineEnd := strings.Index(ncxContents[startIndex:], "\n")
+	if lineEnd == -1 {
+		lineEnd = len(ncxContents)
+	} else {
+		lineEnd += startIndex
+	}
+	line := ncxContents[lineStart:lineEnd]
+
+	// Extract the content attribute value
+	contentAttr := `content="`
+	contentStart := strings.Index(line, contentAttr)
+	if contentStart == -1 {
+		return "", fmt.Errorf("content attribute not found in the line")
+	}
+	contentStart += len(contentAttr)
+	contentEnd := strings.Index(line[contentStart:], `"`)
+	if contentEnd == -1 {
+		return "", fmt.Errorf("content attribute value not found in the line")
+	}
+	content := line[contentStart : contentStart+contentEnd]
+
+	return content, nil
 }
 
 // getOpfIdentifier extracts the unique identifier from the OPF content.
