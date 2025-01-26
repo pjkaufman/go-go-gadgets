@@ -11,9 +11,12 @@ func RemoveScriptedFromManifest(opfContents string, fileName string) (string, er
 		return "", err
 	}
 
-	lines := strings.Split(manifestContent, "\n")
+	var (
+		lines    = strings.Split(manifestContent, "\n")
+		fileHref = fmt.Sprintf(`href="%s"`, fileName)
+	)
 	for i, line := range lines {
-		if strings.Contains(line, fmt.Sprintf(`href="%s"`, fileName)) {
+		if strings.Contains(line, fileHref) {
 			propStart := strings.Index(line, `properties="`)
 			if propStart != -1 {
 				valStart := propStart + len(`properties="`)

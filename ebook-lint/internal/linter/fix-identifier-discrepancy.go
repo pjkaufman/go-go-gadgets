@@ -6,6 +6,8 @@ import (
 	"unicode"
 )
 
+const closingMetadataTag = "</metadata>"
+
 func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the NCX
 	ncxIdentifier, err := getNcxIdentifier(ncxContents)
@@ -143,7 +145,7 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 func addOpfIdentifier(opfContents, identifier string) string {
 	var identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id">%s</dc:identifier>`, identifier)
 
-	metadataEndTag := `</metadata>`
+	metadataEndTag := closingMetadataTag
 	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+metadataEndTag, 1)
 }
 
@@ -164,6 +166,13 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	format.WriteString(">")
 	format.WriteString(newIdentifier)
 	format.WriteString("</dc:identifier>")
+
+	if strings.Contains(updatedOldIdentifierEl, closingMetadataTag) {
+		updatedOldIdentifierEl = strings.Replace(updatedOldIdentifierEl, closingMetadataTag, "", 1)
+
+		format.WriteString("\n")
+		format.WriteString(closingMetadataTag)
+	}
 
 	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1)
 }
