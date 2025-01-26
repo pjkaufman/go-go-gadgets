@@ -17,7 +17,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const invalidIdPrefix = "Error while parsing file: value of attribute \""
+const (
+	invalidIdPrefix  = "Error while parsing file: value of attribute \""
+	invalidAttribute = "Error while parsing file: attribute \""
+)
 
 var (
 	validationIssuesFilePath string
@@ -84,6 +87,22 @@ var autoFixValidationCmd = &cobra.Command{
 			return msgI.Locations[0].Column > msgJ.Locations[0].Column
 		})
 
+		for index := range validationIssues.Messages {
+			if len(validationIssues.Messages[index].Locations) > 1 {
+				sort.Slice(validationIssues.Messages[index].Locations, func(i, j int) bool {
+					// Compare by line descending
+					if validationIssues.Messages[index].Locations[i].Line != validationIssues.Messages[index].Locations[j].Line {
+						return validationIssues.Messages[index].Locations[i].Line > validationIssues.Messages[index].Locations[j].Line
+					}
+
+					// If lines are the same, compare by column descending
+					return validationIssues.Messages[index].Locations[i].Column > validationIssues.Messages[index].Locations[j].Column
+				})
+			}
+		}
+
+		var elementNameToNumber = make(map[string]int)
+
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			var (
 				opfFilename string
@@ -109,7 +128,9 @@ var autoFixValidationCmd = &cobra.Command{
 			}
 
 			var handledFiles []string
-			for _, message := range validationIssues.Messages {
+			for i := range validationIssues.Messages {
+				message := validationIssues.Messages[i]
+
 				switch message.ID {
 				case "OPF-014":
 					for _, location := range message.Locations {
@@ -146,13 +167,44 @@ var autoFixValidationCmd = &cobra.Command{
 						}
 
 						attribute := message.Message[startIndex : startIndex+endIndex]
-						// for now we will just fix the values in the opf and ncx files and we will handle the other cases separately
-						// when that is encountered since it requires keeping track of which files have already been modified
-						// and which ones have not been modified yet
-						if strings.HasSuffix(message.Locations[0].Path, ".opf") {
-							opfFileContents = linter.FixXmlIdValue(opfFileContents, message.Locations[0].Line, attribute)
-						} else if strings.HasSuffix(message.Locations[0].Path, ".ncx") {
-							ncxFileContents = linter.FixXmlIdValue(ncxFileContents, message.Locations[0].Line, attribute)
+
+						for _, location := range message.Locations {
+							// for now we will just fix the values in the opf and ncx files and we will handle the other cases separately
+							// when that is encountered since it requires keeping track of which files have already been modified
+							// and which ones have not been modified yet
+							if strings.HasSuffix(location.Path, ".opf") {
+								opfFileContents = linter.FixXmlIdValue(opfFileContents, location.Line, attribute)
+							} else if strings.HasSuffix(location.Path, ".ncx") {
+								ncxFileContents = linter.FixXmlIdValue(ncxFileContents, location.Line, attribute)
+							}
+						}
+					} else if strings.HasPrefix(message.Message, invalidAttribute) {
+						startIndex := strings.Index(message.Message, invalidAttribute)
+						if startIndex == -1 {
+							continue
+						}
+						startIndex += len(invalidAttribute)
+						endIndex := strings.Index(message.Message[startIndex:], `"`)
+						if endIndex == -1 {
+							continue
+						}
+
+						attribute := message.Message[startIndex : startIndex+endIndex]
+
+						for i := range message.Locations {
+							location := message.Locations[i]
+							// for now we will just fix the values in the opf file and we will handle the other cases separately
+							// when that is encountered since it requires keeping track of which files have already been modified
+							// and which ones have not been modified yet
+							if strings.HasSuffix(location.Path, ".opf") {
+								opfFileContents, err = linter.FixManifestAttribute(opfFileContents, attribute, location.Line-1, elementNameToNumber)
+
+								if err != nil {
+									return nil, err
+								}
+
+								incrementLineNumbers(location.Line, location.Path, &validationIssues)
+							}
 						}
 					}
 				}
@@ -223,6 +275,18 @@ func ValidateAutoFixValidationFlags(epubPath, validationIssuesPath string) error
 	}
 
 	return nil
+}
+
+func incrementLineNumbers(lineNum int, path string, validationIssues *EpubCheckInfo) {
+	for i := range validationIssues.Messages {
+		if len(validationIssues.Messages[i].Locations) != 0 {
+			for j := range validationIssues.Messages[i].Locations {
+				if validationIssues.Messages[i].Locations[j].Path == path && validationIssues.Messages[i].Locations[j].Line > lineNum {
+					validationIssues.Messages[i].Locations[j].Line++
+				}
+			}
+		}
+	}
 }
 
 type EpubCheckInfo struct {
