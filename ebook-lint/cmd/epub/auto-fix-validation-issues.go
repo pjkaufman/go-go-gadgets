@@ -112,16 +112,20 @@ var autoFixValidationCmd = &cobra.Command{
 			for _, message := range validationIssues.Messages {
 				switch message.ID {
 				case "OPF-014":
-					opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, strings.TrimLeft(message.Locations[0].Path, opfFolder+"/"))
+					for _, location := range message.Locations {
+						opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, strings.TrimLeft(location.Path, opfFolder+"/"))
 
-					if err != nil {
-						return nil, err
+						if err != nil {
+							return nil, err
+						}
 					}
 				case "OPF-015":
-					opfFileContents, err = linter.RemoveScriptedFromManifest(opfFileContents, strings.TrimLeft(message.Locations[0].Path, opfFolder+"/"))
+					for _, location := range message.Locations {
+						opfFileContents, err = linter.RemoveScriptedFromManifest(opfFileContents, strings.TrimLeft(location.Path, opfFolder+"/"))
 
-					if err != nil {
-						return nil, err
+						if err != nil {
+							return nil, err
+						}
 					}
 				case "NCX-001":
 					opfFileContents, err = linter.FixIdentifierDiscrepancy(opfFileContents, ncxFileContents)
