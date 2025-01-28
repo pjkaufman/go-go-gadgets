@@ -21,6 +21,7 @@ const (
 	invalidIdPrefix         = "Error while parsing file: value of attribute \""
 	invalidAttribute        = "Error while parsing file: attribute \""
 	missingUniqueIdentifier = "The unique-identifier \""
+	emptyMetadataProperty   = "Error while parsing file: character content of element \""
 )
 
 var (
@@ -75,6 +76,15 @@ var autoFixValidationCmd = &cobra.Command{
 		sort.Slice(validationIssues.Messages, func(i, j int) bool {
 			msgI := validationIssues.Messages[i]
 			msgJ := validationIssues.Messages[j]
+
+			// Prioritize delete-required messages
+			if strings.HasPrefix(msgI.Message, emptyMetadataProperty) && !strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
+				return true
+			}
+
+			if !strings.HasPrefix(msgI.Message, emptyMetadataProperty) && strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
+				return false
+			}
 
 			// Compare by path ascending
 			if msgI.Locations[0].Path != msgJ.Locations[0].Path {
