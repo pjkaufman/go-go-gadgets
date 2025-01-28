@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	invalidIdPrefix  = "Error while parsing file: value of attribute \""
-	invalidAttribute = "Error while parsing file: attribute \""
+	invalidIdPrefix         = "Error while parsing file: value of attribute \""
+	invalidAttribute        = "Error while parsing file: attribute \""
+	missingUniqueIdentifier = "The unique-identifier \""
 )
 
 var (
@@ -206,6 +207,21 @@ var autoFixValidationCmd = &cobra.Command{
 								incrementLineNumbers(location.Line, location.Path, &validationIssues)
 							}
 						}
+					}
+				case "OPF-030":
+					startIndex := strings.Index(message.Message, missingUniqueIdentifier)
+					if startIndex == -1 {
+						continue
+					}
+					startIndex += len(missingUniqueIdentifier)
+					endIndex := strings.Index(message.Message[startIndex:], `"`)
+					if endIndex == -1 {
+						continue
+					}
+
+					opfFileContents, err = linter.FixMissingUniqueIdentifierId(opfFileContents, ncxFileContents)
+					if err != nil {
+						return nil, err
 					}
 				}
 			}
