@@ -117,6 +117,12 @@ Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto f
 - OPF-014: add scripted to the list of values in the properties attribute on the manifest item
 - OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
 - NCX-001: fix discrepancy in identifier between the OPF and NCX files
+- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
+- RSC-005: seems to be a catch all error id, but the following are handled around it
+  - Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
+    and starting the value with an underscore instead of a number if it currently is started by a number
+  - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
+  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 
 
 ##### Flags
