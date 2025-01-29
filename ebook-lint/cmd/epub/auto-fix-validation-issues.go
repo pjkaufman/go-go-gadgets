@@ -217,6 +217,37 @@ var autoFixValidationCmd = &cobra.Command{
 								incrementLineNumbers(location.Line, location.Path, &validationIssues)
 							}
 						}
+					} else if strings.HasPrefix(message.Message, emptyMetadataProperty) {
+
+						startIndex := strings.Index(message.Message, invalidIdPrefix)
+						if startIndex == -1 {
+							continue
+						}
+						startIndex += len(invalidIdPrefix)
+						endIndex := strings.Index(message.Message[startIndex:], `"`)
+						if endIndex == -1 {
+							continue
+						}
+
+						elementName := message.Message[startIndex : startIndex+endIndex]
+
+						var deletedLine bool
+						for _, location := range message.Locations {
+							// for now we will just fix the values in the opf file and we will handle the other cases separately
+							// when that is encountered since it requires keeping track of which files have already been modified
+							// and which ones have not been modified yet
+							if strings.HasSuffix(location.Path, ".opf") {
+
+								opfFileContents, deletedLine, err = linter.RemoveEmptyOpfElements(elementName, location.Line-1, opfFileContents)
+								if err != nil {
+									return nil, err
+								}
+
+								if deletedLine {
+									decrementLineNumbersAndRemoveLineReferences(location.Line, location.Path, &validationIssues)
+								}
+							}
+						}
 					}
 				case "OPF-030":
 					startIndex := strings.Index(message.Message, missingUniqueIdentifier)
@@ -301,6 +332,28 @@ func ValidateAutoFixValidationFlags(epubPath, validationIssuesPath string) error
 	}
 
 	return nil
+}
+
+func decrementLineNumbersAndRemoveLineReferences(lineNum int, path string, validationIssues *EpubCheckInfo) {
+	for i := 0; i < len(validationIssues.Messages); i++ {
+		if len(validationIssues.Messages[i].Locations) != 0 {
+			for j := 0; j < len(validationIssues.Messages[i].Locations); j++ {
+				if validationIssues.Messages[i].Locations[j].Path == path && validationIssues.Messages[i].Locations[j].Line == lineNum {
+					validationIssues.Messages[i].Locations = append(validationIssues.Messages[i].Locations[:j], validationIssues.Messages[i].Locations[j+1:]...)
+
+					j--
+				} else if validationIssues.Messages[i].Locations[j].Path == path && validationIssues.Messages[i].Locations[j].Line > lineNum {
+					validationIssues.Messages[i].Locations[j].Line--
+				}
+			}
+
+			if len(validationIssues.Messages[i].Locations) == 0 {
+				validationIssues.Messages = append(validationIssues.Messages[:i], validationIssues.Messages[i+1:]...)
+
+				i--
+			}
+		}
+	}
 }
 
 func incrementLineNumbers(lineNum int, path string, validationIssues *EpubCheckInfo) {
