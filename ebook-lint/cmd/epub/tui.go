@@ -200,6 +200,8 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						return m, tea.Quit
 					}
+
+					return m, m.setSuggestionDisplay()
 				case "ctrl+e":
 					m.potentiallyFixableIssuesInfo.isEditing = false
 
