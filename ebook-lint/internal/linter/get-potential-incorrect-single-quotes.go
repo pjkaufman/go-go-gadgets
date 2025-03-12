@@ -52,8 +52,8 @@ func convertQuotes(input string) (string, bool, error) {
 			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
 			isContraction := isPrevLetter && isNextLetter
 
-			isPrevS := i > 0 && runes[i-1] == 's'
-			isNextS := i < len(runes)-1 && runes[i+1] == 's'
+			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
+			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
 			isPrevWord := i > 0 && unicode.IsLetter(runes[i-1])
 			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
 			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
@@ -62,6 +62,7 @@ func convertQuotes(input string) (string, bool, error) {
 				singleQuoteCount++
 			}
 
+			// TODO: does not work for 'Cause
 			// If it's not a contraction, not a possessive, and not inside double quotes, convert to double quote
 			if !isContraction && !isPossessive && !insideDoubleQuotes {
 				runes[i] = '"'

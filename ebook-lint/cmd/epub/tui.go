@@ -188,7 +188,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 					return m, tea.Quit
 				case "esc":
-					return m, tea.Quit
+					return m, m.exitOrMoveToCssSelection()
 				case "ctrl+s":
 					m.potentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.potentiallyFixableIssuesInfo.currentSuggestionState.original, m.potentiallyFixableIssuesInfo.suggestionEdit.Value())
 					m.potentiallyFixableIssuesInfo.isEditing = false
@@ -222,7 +222,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 					return m, tea.Quit
 				case "esc":
-					return m, tea.Quit
+					return m, m.exitOrMoveToCssSelection()
 				case "right":
 					cmd, err := m.moveToNextSuggestion()
 					if err != nil {
@@ -295,8 +295,6 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "ctrl+c":
 				m.Err = errUserKilledProgram
 
-				return m, tea.Quit
-			case "esc":
 				return m, tea.Quit
 			case "up":
 				if m.cssSelectionInfo.currentCssIndex > 0 {
@@ -453,7 +451,6 @@ func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 		controls = []string{
 			"↑ / ↓ : Previous/Next Suggestion",
 			"Enter: Accept",
-			"Esc: Quit",
 			"Ctrl+C: Exit without saving",
 		}
 	}
@@ -588,6 +585,16 @@ func (m *fixableIssuesModel) setSuggestionDisplay() tea.Cmd {
 	m.potentiallyFixableIssuesInfo.scrollbar, cmd = m.potentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.potentiallyFixableIssuesInfo.suggestionDisplay.Height))
 
 	return cmd
+}
+
+func (m *fixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
+	if m.potentiallyFixableIssuesInfo.cssUpdateRequired {
+		m.currentStage = stageCssSelection
+	} else {
+		return tea.Quit
+	}
+
+	return nil
 }
 
 func getStringDiff(original, new string) (string, error) {
