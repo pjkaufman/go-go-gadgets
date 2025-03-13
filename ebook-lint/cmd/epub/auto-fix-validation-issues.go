@@ -26,6 +26,7 @@ const (
 
 var (
 	validationIssuesFilePath string
+	removeJNovelInfo         bool
 	ErrIssueFileArgNonJson   = errors.New("issue-file must be a JSON file")
 	ErrIssueFileArgEmpty     = errors.New("issue-file must have a non-whitespace value")
 )
@@ -273,6 +274,26 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 			}
 
+			if removeJNovelInfo {
+				// remove the jnovels file and the png associated with it
+				for file := range zipFiles {
+					if strings.HasSuffix(file, "jnovels.xhtml") || strings.HasSuffix(file, "1.png") {
+						handledFiles = append(handledFiles, file)
+					}
+				}
+
+				// remove the associated files from the opf manifest and spine
+				opfFileContents, err = linter.RemoveFileFromOpf(opfFileContents, "jnovels.xhtml")
+				if err != nil {
+					return nil, err
+				}
+
+				opfFileContents, err = linter.RemoveFileFromOpf(opfFileContents, "1.png")
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			err = filehandler.WriteZipCompressedString(w, opfFilename, opfFileContents)
 			if err != nil {
 				return nil, err
@@ -300,6 +321,7 @@ var autoFixValidationCmd = &cobra.Command{
 func init() {
 	EpubCmd.AddCommand(autoFixValidationCmd)
 
+	autoFixValidationCmd.Flags().BoolVarP(&removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present")
 	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "", "", "the path to the file with the validation issues")
 	err := autoFixValidationCmd.MarkFlagRequired("issue-file")
 	if err != nil {

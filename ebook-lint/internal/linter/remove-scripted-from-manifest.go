@@ -40,7 +40,7 @@ func RemoveScriptedFromManifest(opfContents string, fileName string) (string, er
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(startTag)] + updatedManifestContent + opfContents[endIndex:]
+	updatedOpfContents := opfContents[:startIndex+len(manifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
 
 	return updatedOpfContents, nil
 }

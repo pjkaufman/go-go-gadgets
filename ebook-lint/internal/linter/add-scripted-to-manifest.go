@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	startTag = "<manifest>"
-	endTag   = "</manifest>"
+	manifestStartTag = "<manifest>"
+	manifestEndTag   = "</manifest>"
 )
 
 var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
@@ -37,18 +37,18 @@ func AddScriptedToManifest(opfContents string, fileName string) (string, error) 
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(startTag)] + updatedManifestContent + opfContents[endIndex:]
+	updatedOpfContents := opfContents[:startIndex+len(manifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
 
 	return updatedOpfContents, nil
 }
 
 func getManifestContents(opfContents string) (int, int, string, error) {
-	startIndex := strings.Index(opfContents, startTag)
-	endIndex := strings.Index(opfContents, endTag)
+	startIndex := strings.Index(opfContents, manifestStartTag)
+	endIndex := strings.Index(opfContents, manifestEndTag)
 
 	if startIndex == -1 || endIndex == -1 {
 		return 0, 0, "", ErrNoManifest
 	}
 
-	return startIndex, endIndex, opfContents[startIndex+len(startTag) : endIndex], nil
+	return startIndex, endIndex, opfContents[startIndex+len(manifestStartTag) : endIndex], nil
 }
