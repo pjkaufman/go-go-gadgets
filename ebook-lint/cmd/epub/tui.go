@@ -3,6 +3,7 @@ package epub
 import (
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"unicode"
 
@@ -50,6 +51,7 @@ type fixableIssuesModel struct {
 	currentStage                 stage
 	runAll                       bool
 	height, width                int
+	logFile                      io.Writer
 	Err                          error
 }
 
@@ -83,7 +85,7 @@ type suggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyFixableIssue, cssFiles []string) fixableIssuesModel {
+func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyFixableIssue, cssFiles []string, logFile io.Writer) fixableIssuesModel {
 	ti := textinput.New()
 	ti.Width = 20
 	ti.CharLimit = 200
@@ -123,6 +125,7 @@ func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potential
 		},
 		runAll:       runAll,
 		currentStage: currentStage,
+		logFile:      logFile,
 	}
 }
 
@@ -481,12 +484,27 @@ func (m fixableIssuesModel) displayControls(s *strings.Builder) {
 }
 
 func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
-	for m.potentiallyFixableIssuesInfo.currentFileIndex+1 < len(m.potentiallyFixableIssuesInfo.filePaths) {
-		m.potentiallyFixableIssuesInfo.currentFile = m.potentiallyFixableIssuesInfo.filePaths[m.potentiallyFixableIssuesInfo.currentFileIndex]
+	if m.logFile != nil {
+		fmt.Fprintln(m.logFile, "Getting next suggestions")
+	}
 
-		for m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex+1 < len(m.potentiallyFixableIssuesInfo.suggestions) {
+	for m.potentiallyFixableIssuesInfo.currentFileIndex < len(m.potentiallyFixableIssuesInfo.filePaths) {
+		m.potentiallyFixableIssuesInfo.currentFile = m.potentiallyFixableIssuesInfo.filePaths[m.potentiallyFixableIssuesInfo.currentFileIndex]
+		if m.logFile != nil {
+			fmt.Fprintf(m.logFile, "Current file is %q is %d of %d\n", m.potentiallyFixableIssuesInfo.currentFile, m.potentiallyFixableIssuesInfo.currentFileIndex+1, len(m.potentiallyFixableIssuesInfo.filePaths))
+		}
+
+		for m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex < len(m.potentiallyFixableIssuesInfo.suggestions) {
 			var potentialFixableIssue = m.potentiallyFixableIssuesInfo.suggestions[m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex]
+			if m.logFile != nil {
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q is %d of %d issues.\n", potentialFixableIssue.name, m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.potentiallyFixableIssuesInfo.suggestions))
+			}
+
 			if !m.runAll && (potentialFixableIssue.isEnabled == nil || *potentialFixableIssue.isEnabled) {
+				if m.logFile != nil {
+					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q with isEnabled set to %v\n", potentialFixableIssue.name, potentialFixableIssue.isEnabled)
+				}
+
 				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 				continue
 			}
@@ -494,6 +512,10 @@ func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 			var (
 				suggestions = potentialFixableIssue.getSuggestions(m.potentiallyFixableIssuesInfo.fileTexts[m.potentiallyFixableIssuesInfo.currentFile])
 			)
+
+			if m.logFile != nil {
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.name, len(suggestions))
+			}
 
 			if len(suggestions) != 0 {
 				m.potentiallyFixableIssuesInfo.currentSuggestion = &potentialFixableIssue

@@ -41,6 +41,7 @@ var (
 	runNecessaryWords        bool
 	runSingleQuotes          bool
 	useTui                   bool
+	logFile                  string
 	potentiallyFixableIssues = []potentiallyFixableIssue{
 		{
 			name:           "Potential Conversation Instances",
@@ -185,6 +186,7 @@ func init() {
 	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
 	fixableCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
 	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
+	fixableCmd.Flags().StringVarP(&logFile, "log-file", "", "", "the place to write debug logs to when using the TUI")
 	fixableCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
 	err := fixableCmd.MarkFlagRequired("file")
 	if err != nil {
@@ -331,8 +333,18 @@ func runTuiEpubFixable() error {
 			return nil, ErrNoCssFiles
 		}
 
+		var file *os.File
+		if strings.TrimSpace(logFile) != "" {
+			file, err = tea.LogToFile(logFile, "debug")
+			if err != nil {
+				return nil, fmt.Errorf("failed to create TUI log file %q: %w", logFile, err)
+			}
+
+			defer file.Close()
+		}
+
 		var (
-			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles)
+			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
 			i            = 0
 		)
 		initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
