@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -22,6 +23,8 @@ const (
 	invalidAttribute        = "Error while parsing file: attribute \""
 	missingUniqueIdentifier = "The unique-identifier \""
 	emptyMetadataProperty   = "Error while parsing file: character content of element \""
+	jnovelsFile             = "jnovels.xhtml"
+	jnovelsImage            = "1.png"
 )
 
 var (
@@ -284,11 +287,18 @@ var autoFixValidationCmd = &cobra.Command{
 							if fileContents, ok := nameToUpdatedContents[location.Path]; ok {
 								nameToUpdatedContents[location.Path] = linter.RemoveLinkId(fileContents, location.Line-1, location.Column-1)
 							} else {
-								// nameToUpdatedContents[location.Path] = linter.RemoveLinkId(, location.Line-1, location.Column-1)
+								zipFile, ok := zipFiles[location.Path]
+								if !ok {
+									return nil, fmt.Errorf("failed to find %q in the epub", location.Path)
+								}
+
+								fileContents, err := filehandler.ReadInZipFileContents(zipFile)
+								if err != nil {
+									return nil, err
+								}
+
+								nameToUpdatedContents[location.Path] = linter.RemoveLinkId(fileContents, location.Line-1, location.Column-1)
 							}
-							// does it exst?
-							// if not, get the data
-							// TODO: is the path the full path? If so, how does that need to be mutated to make this work?
 						}
 					}
 				}
@@ -297,36 +307,35 @@ var autoFixValidationCmd = &cobra.Command{
 			if removeJNovelInfo {
 				// remove the jnovels file and the png associated with it
 				for file := range zipFiles {
-					if strings.HasSuffix(file, "jnovels.xhtml") || strings.HasSuffix(file, "1.png") {
+					if strings.HasSuffix(file, jnovelsFile) || strings.HasSuffix(file, jnovelsImage) {
 						handledFiles = append(handledFiles, file)
 					}
 				}
 
 				// remove the associated files from the opf manifest and spine
-				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], "jnovels.xhtml")
+				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
 				if err != nil {
 					return nil, err
 				}
 
-				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], "1.png")
+				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
 				if err != nil {
 					return nil, err
 				}
 			}
 
-			err = filehandler.WriteZipCompressedString(w, opfFilename, nameToUpdatedContents[opfFilename])
-			if err != nil {
-				return nil, err
+			for filename, updatedContents := range nameToUpdatedContents {
+				if removeJNovelInfo && (strings.HasSuffix(filename, jnovelsFile) || strings.HasSuffix(filename, jnovelsImage)) {
+					continue
+				}
+
+				err = filehandler.WriteZipCompressedString(w, filename, updatedContents)
+				if err != nil {
+					return nil, err
+				}
+
+				handledFiles = append(handledFiles, filename)
 			}
-
-			handledFiles = append(handledFiles, opfFilename)
-
-			err = filehandler.WriteZipCompressedString(w, ncxFilename, nameToUpdatedContents[ncxFilename])
-			if err != nil {
-				return nil, err
-			}
-
-			handledFiles = append(handledFiles, ncxFilename)
 
 			return handledFiles, nil
 		})
