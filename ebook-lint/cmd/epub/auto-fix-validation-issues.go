@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -22,6 +23,8 @@ const (
 	invalidAttribute        = "Error while parsing file: attribute \""
 	missingUniqueIdentifier = "The unique-identifier \""
 	emptyMetadataProperty   = "Error while parsing file: character content of element \""
+	jnovelsFile             = "jnovels.xhtml"
+	jnovelsImage            = "1.png"
 )
 
 var (
@@ -145,14 +148,20 @@ var autoFixValidationCmd = &cobra.Command{
 				return nil, err
 			}
 
-			var handledFiles []string
+			var (
+				nameToUpdatedContents = map[string]string{
+					ncxFilename: ncxFileContents,
+					opfFilename: opfFileContents,
+				}
+				handledFiles []string
+			)
 			for i := range validationIssues.Messages {
 				message := validationIssues.Messages[i]
 
 				switch message.ID {
 				case "OPF-014":
 					for _, location := range message.Locations {
-						opfFileContents, err = linter.AddScriptedToManifest(opfFileContents, strings.TrimLeft(location.Path, opfFolder+"/"))
+						nameToUpdatedContents[opfFilename], err = linter.AddScriptedToManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(location.Path, opfFolder+"/"))
 
 						if err != nil {
 							return nil, err
@@ -160,14 +169,14 @@ var autoFixValidationCmd = &cobra.Command{
 					}
 				case "OPF-015":
 					for _, location := range message.Locations {
-						opfFileContents, err = linter.RemoveScriptedFromManifest(opfFileContents, strings.TrimLeft(location.Path, opfFolder+"/"))
+						nameToUpdatedContents[opfFilename], err = linter.RemoveScriptedFromManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(location.Path, opfFolder+"/"))
 
 						if err != nil {
 							return nil, err
 						}
 					}
 				case "NCX-001":
-					opfFileContents, err = linter.FixIdentifierDiscrepancy(opfFileContents, ncxFileContents)
+					nameToUpdatedContents[opfFilename], err = linter.FixIdentifierDiscrepancy(nameToUpdatedContents[opfFilename], nameToUpdatedContents[ncxFilename])
 
 					if err != nil {
 						return nil, err
@@ -191,9 +200,9 @@ var autoFixValidationCmd = &cobra.Command{
 							// when that is encountered since it requires keeping track of which files have already been modified
 							// and which ones have not been modified yet
 							if strings.HasSuffix(location.Path, ".opf") {
-								opfFileContents = linter.FixXmlIdValue(opfFileContents, location.Line, attribute)
+								nameToUpdatedContents[opfFilename] = linter.FixXmlIdValue(nameToUpdatedContents[opfFilename], location.Line, attribute)
 							} else if strings.HasSuffix(location.Path, ".ncx") {
-								ncxFileContents = linter.FixXmlIdValue(ncxFileContents, location.Line, attribute)
+								nameToUpdatedContents[ncxFilename] = linter.FixXmlIdValue(nameToUpdatedContents[ncxFilename], location.Line, attribute)
 							}
 						}
 					} else if strings.HasPrefix(message.Message, invalidAttribute) {
@@ -215,8 +224,7 @@ var autoFixValidationCmd = &cobra.Command{
 							// when that is encountered since it requires keeping track of which files have already been modified
 							// and which ones have not been modified yet
 							if strings.HasSuffix(location.Path, ".opf") {
-								opfFileContents, err = linter.FixManifestAttribute(opfFileContents, attribute, location.Line-1, elementNameToNumber)
-
+								nameToUpdatedContents[opfFilename], err = linter.FixManifestAttribute(nameToUpdatedContents[opfFilename], attribute, location.Line-1, elementNameToNumber)
 								if err != nil {
 									return nil, err
 								}
@@ -225,7 +233,6 @@ var autoFixValidationCmd = &cobra.Command{
 							}
 						}
 					} else if strings.HasPrefix(message.Message, emptyMetadataProperty) {
-
 						startIndex := strings.Index(message.Message, invalidIdPrefix)
 						if startIndex == -1 {
 							continue
@@ -244,8 +251,7 @@ var autoFixValidationCmd = &cobra.Command{
 							// when that is encountered since it requires keeping track of which files have already been modified
 							// and which ones have not been modified yet
 							if strings.HasSuffix(location.Path, ".opf") {
-
-								opfFileContents, deletedLine, err = linter.RemoveEmptyOpfElements(elementName, location.Line-1, opfFileContents)
+								nameToUpdatedContents[opfFilename], deletedLine, err = linter.RemoveEmptyOpfElements(elementName, location.Line-1, nameToUpdatedContents[opfFilename])
 								if err != nil {
 									return nil, err
 								}
@@ -267,9 +273,33 @@ var autoFixValidationCmd = &cobra.Command{
 						continue
 					}
 
-					opfFileContents, err = linter.FixMissingUniqueIdentifierId(opfFileContents, ncxFileContents)
+					nameToUpdatedContents[opfFilename], err = linter.FixMissingUniqueIdentifierId(nameToUpdatedContents[opfFilename], message.Message[startIndex:startIndex+endIndex])
 					if err != nil {
 						return nil, err
+					}
+				case "RSC-012":
+					for _, location := range message.Locations {
+						if strings.HasSuffix(location.Path, ".opf") {
+							nameToUpdatedContents[opfFilename] = linter.RemoveLinkId(nameToUpdatedContents[opfFilename], location.Line-1, location.Column-1)
+						} else if strings.HasSuffix(location.Path, ".ncx") {
+							nameToUpdatedContents[ncxFilename] = linter.RemoveLinkId(nameToUpdatedContents[ncxFilename], location.Line-1, location.Column-1)
+						} else {
+							if fileContents, ok := nameToUpdatedContents[location.Path]; ok {
+								nameToUpdatedContents[location.Path] = linter.RemoveLinkId(fileContents, location.Line-1, location.Column-1)
+							} else {
+								zipFile, ok := zipFiles[location.Path]
+								if !ok {
+									return nil, fmt.Errorf("failed to find %q in the epub", location.Path)
+								}
+
+								fileContents, err := filehandler.ReadInZipFileContents(zipFile)
+								if err != nil {
+									return nil, err
+								}
+
+								nameToUpdatedContents[location.Path] = linter.RemoveLinkId(fileContents, location.Line-1, location.Column-1)
+							}
+						}
 					}
 				}
 			}
@@ -277,36 +307,35 @@ var autoFixValidationCmd = &cobra.Command{
 			if removeJNovelInfo {
 				// remove the jnovels file and the png associated with it
 				for file := range zipFiles {
-					if strings.HasSuffix(file, "jnovels.xhtml") || strings.HasSuffix(file, "1.png") {
+					if strings.HasSuffix(file, jnovelsFile) || strings.HasSuffix(file, jnovelsImage) {
 						handledFiles = append(handledFiles, file)
 					}
 				}
 
 				// remove the associated files from the opf manifest and spine
-				opfFileContents, err = linter.RemoveFileFromOpf(opfFileContents, "jnovels.xhtml")
+				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
 				if err != nil {
 					return nil, err
 				}
 
-				opfFileContents, err = linter.RemoveFileFromOpf(opfFileContents, "1.png")
+				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
 				if err != nil {
 					return nil, err
 				}
 			}
 
-			err = filehandler.WriteZipCompressedString(w, opfFilename, opfFileContents)
-			if err != nil {
-				return nil, err
+			for filename, updatedContents := range nameToUpdatedContents {
+				if removeJNovelInfo && (strings.HasSuffix(filename, jnovelsFile) || strings.HasSuffix(filename, jnovelsImage)) {
+					continue
+				}
+
+				err = filehandler.WriteZipCompressedString(w, filename, updatedContents)
+				if err != nil {
+					return nil, err
+				}
+
+				handledFiles = append(handledFiles, filename)
 			}
-
-			handledFiles = append(handledFiles, opfFilename)
-
-			err = filehandler.WriteZipCompressedString(w, ncxFilename, ncxFileContents)
-			if err != nil {
-				return nil, err
-			}
-
-			handledFiles = append(handledFiles, ncxFilename)
 
 			return handledFiles, nil
 		})

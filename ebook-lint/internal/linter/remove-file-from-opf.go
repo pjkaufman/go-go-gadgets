@@ -2,11 +2,12 @@ package linter
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
 const (
-	spineStartTag = "<spine>"
+	spineStartTag = "<spine"
 	spineEndTag   = "</spine>"
 )
 
@@ -19,11 +20,15 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	}
 
 	lines := strings.Split(manifestContent, "\n")
-	var fileID string
+	var (
+		fileID    string
+		endOfHref = fmt.Sprintf(`%s"`, fileName)
+	)
+
 	for i, line := range lines {
-		if strings.Contains(line, fmt.Sprintf(`href="%s"`, fileName)) {
+		if strings.Contains(line, endOfHref) {
 			fileID = extractID(line)
-			lines = append(lines[:i], lines[i+1:]...)
+			lines = slices.Delete(lines, i, i+1)
 			break
 		}
 	}
