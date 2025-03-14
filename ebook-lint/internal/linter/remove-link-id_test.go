@@ -37,7 +37,7 @@ func TestRemoveLinkId(t *testing.T) {
 <a href="link#id">link</a>
 line3`,
 			lineToUpdate:    1,
-			startOfFragment: 9,
+			startOfFragment: 15,
 			expected: `line1
 <a href="link">link</a>
 line3`,
@@ -48,9 +48,31 @@ line3`,
 <a href="link">link</a>
 line3`,
 			lineToUpdate:    1,
-			startOfFragment: 9,
+			startOfFragment: 15,
 			expected: `line1
 <a href="link">link</a>
+line3`,
+		},
+		{
+			name: "Line has src without # in the link",
+			fileContents: `line1
+<content src="link"/>
+line3`,
+			lineToUpdate:    1,
+			startOfFragment: 20,
+			expected: `line1
+<content src="link"/>
+line3`,
+		},
+		{
+			name: "Line has src with # in the link",
+			fileContents: `line1
+<content src="link#id"/>
+line3`,
+			lineToUpdate:    1,
+			startOfFragment: 23,
+			expected: `line1
+<content src="link"/>
 line3`,
 		},
 	}

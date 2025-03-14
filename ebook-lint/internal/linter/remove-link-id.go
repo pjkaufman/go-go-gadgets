@@ -1,36 +1,49 @@
 package linter
 
 import (
-	"fmt"
 	"strings"
 )
 
 func RemoveLinkId(fileContents string, lineToUpdate, startOfFragment int) string {
 	var lines = strings.Split(fileContents, "\n")
 	if len(lines) <= lineToUpdate {
-		fmt.Println("Bail on lines")
 		return fileContents
 	}
 
 	var indicatedLine = lines[lineToUpdate]
 	if len(indicatedLine) <= startOfFragment {
-		fmt.Println("Bail on chars")
 		return fileContents
 	}
 
-	// get the fragment
-	// TODO: make it tolerate single quotes as well
+	// Work backwards from startOfFragment to find href or src attribute
 	var (
-		endOfFragment    = startOfFragment + 1 + strings.Index(indicatedLine[startOfFragment+1:], "\"")
-		fragment         = indicatedLine[startOfFragment:endOfFragment]
-		idIndicatorStart = strings.Index(fragment, "#")
+		hrefAttributeIndicator = "href="
+		srcAttributeIndicator  = "src="
+		fragmentStart          = strings.LastIndex(indicatedLine[:startOfFragment], hrefAttributeIndicator)
+		srcStart               = strings.LastIndex(indicatedLine[:startOfFragment], srcAttributeIndicator)
+		startAttr              int
 	)
-	fmt.Println(endOfFragment, fragment, idIndicatorStart)
+	if fragmentStart == -1 && srcStart == -1 {
+		return fileContents
+	} else if fragmentStart > srcStart {
+		startAttr = fragmentStart + len(hrefAttributeIndicator)
+	} else {
+		startAttr = srcStart + len(srcAttributeIndicator)
+	}
+
+	var endingQuote = string(indicatedLine[startAttr])
+	endOfFragment := startAttr + 1 + strings.Index(indicatedLine[startAttr+1:], endingQuote)
+	if endOfFragment == -1 {
+		return fileContents
+	}
+
+	fragment := indicatedLine[startAttr+1 : endOfFragment]
+	idIndicatorStart := strings.Index(fragment, "#")
 	if idIndicatorStart == -1 {
 		return fileContents
 	}
 
-	lines[lineToUpdate] = indicatedLine[:startOfFragment] + fragment[:idIndicatorStart] + indicatedLine[endOfFragment:]
+	lines[lineToUpdate] = indicatedLine[:startAttr+1] + fragment[:idIndicatorStart] + indicatedLine[endOfFragment:]
 
 	return strings.Join(lines, "\n")
 }
