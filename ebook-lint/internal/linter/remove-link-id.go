@@ -6,12 +6,12 @@ import (
 
 func RemoveLinkId(fileContents string, lineToUpdate, startOfFragment int) string {
 	var lines = strings.Split(fileContents, "\n")
-	if len(lines) <= lineToUpdate {
+	if len(lines) < lineToUpdate {
 		return fileContents
 	}
 
 	var indicatedLine = lines[lineToUpdate]
-	if len(indicatedLine) <= startOfFragment {
+	if len(indicatedLine) < startOfFragment {
 		return fileContents
 	}
 

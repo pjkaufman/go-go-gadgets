@@ -273,7 +273,7 @@ var autoFixValidationCmd = &cobra.Command{
 						continue
 					}
 
-					nameToUpdatedContents[opfFilename], err = linter.FixMissingUniqueIdentifierId(nameToUpdatedContents[opfFilename], nameToUpdatedContents[ncxFilename])
+					nameToUpdatedContents[opfFilename], err = linter.FixMissingUniqueIdentifierId(nameToUpdatedContents[opfFilename], message.Message[startIndex:startIndex+endIndex])
 					if err != nil {
 						return nil, err
 					}
@@ -282,7 +282,7 @@ var autoFixValidationCmd = &cobra.Command{
 						if strings.HasSuffix(location.Path, ".opf") {
 							nameToUpdatedContents[opfFilename] = linter.RemoveLinkId(nameToUpdatedContents[opfFilename], location.Line-1, location.Column-1)
 						} else if strings.HasSuffix(location.Path, ".ncx") {
-							nameToUpdatedContents[ncxFileContents] = linter.RemoveLinkId(nameToUpdatedContents[ncxFileContents], location.Line-1, location.Column-1)
+							nameToUpdatedContents[ncxFilename] = linter.RemoveLinkId(nameToUpdatedContents[ncxFilename], location.Line-1, location.Column-1)
 						} else {
 							if fileContents, ok := nameToUpdatedContents[location.Path]; ok {
 								nameToUpdatedContents[location.Path] = linter.RemoveLinkId(fileContents, location.Line-1, location.Column-1)
