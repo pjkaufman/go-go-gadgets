@@ -20,9 +20,13 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	}
 
 	lines := strings.Split(manifestContent, "\n")
-	var fileID string
+	var (
+		fileID    string
+		endOfHref = fmt.Sprintf(`%s"`, fileName)
+	)
+
 	for i, line := range lines {
-		if strings.Contains(line, fmt.Sprintf(`%s"`, fileName)) {
+		if strings.Contains(line, endOfHref) {
 			fileID = extractID(line)
 			lines = slices.Delete(lines, i, i+1)
 			break
