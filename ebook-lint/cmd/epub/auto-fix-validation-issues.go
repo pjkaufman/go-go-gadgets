@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/MakeNowJust/heredoc"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/ebook-lint/internal/linter"
@@ -155,7 +157,7 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 				handledFiles []string
 			)
-			for i := range validationIssues.Messages {
+			for i := 0; i < len(validationIssues.Messages); i++ {
 				message := validationIssues.Messages[i]
 
 				switch message.ID {
@@ -233,11 +235,11 @@ var autoFixValidationCmd = &cobra.Command{
 							}
 						}
 					} else if strings.HasPrefix(message.Message, emptyMetadataProperty) {
-						startIndex := strings.Index(message.Message, invalidIdPrefix)
+						startIndex := strings.Index(message.Message, emptyMetadataProperty)
 						if startIndex == -1 {
 							continue
 						}
-						startIndex += len(invalidIdPrefix)
+						startIndex += len(emptyMetadataProperty)
 						endIndex := strings.Index(message.Message[startIndex:], `"`)
 						if endIndex == -1 {
 							continue
@@ -245,7 +247,7 @@ var autoFixValidationCmd = &cobra.Command{
 
 						elementName := message.Message[startIndex : startIndex+endIndex]
 
-						var deletedLine bool
+						var deletedLine, oneDeleted bool
 						for _, location := range message.Locations {
 							// for now we will just fix the values in the opf file and we will handle the other cases separately
 							// when that is encountered since it requires keeping track of which files have already been modified
@@ -258,8 +260,13 @@ var autoFixValidationCmd = &cobra.Command{
 
 								if deletedLine {
 									decrementLineNumbersAndRemoveLineReferences(location.Line, location.Path, &validationIssues)
+									oneDeleted = true
 								}
 							}
+						}
+
+						if oneDeleted {
+							i--
 						}
 					}
 				case "OPF-030":
@@ -405,7 +412,7 @@ func decrementLineNumbersAndRemoveLineReferences(lineNum int, path string, valid
 			}
 
 			if len(validationIssues.Messages[i].Locations) == 0 {
-				validationIssues.Messages = append(validationIssues.Messages[:i], validationIssues.Messages[i+1:]...)
+				validationIssues.Messages = slices.Delete(validationIssues.Messages, i, i+1)
 
 				i--
 			}
