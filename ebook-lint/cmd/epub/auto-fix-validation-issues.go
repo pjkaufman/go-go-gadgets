@@ -25,6 +25,7 @@ const (
 	invalidAttribute        = "Error while parsing file: attribute \""
 	missingUniqueIdentifier = "The unique-identifier \""
 	emptyMetadataProperty   = "Error while parsing file: character content of element \""
+	invalidPlayOrder        = "Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target"
 	jnovelsFile             = "jnovels.xhtml"
 	jnovelsImage            = "1.png"
 )
@@ -268,6 +269,8 @@ var autoFixValidationCmd = &cobra.Command{
 						if oneDeleted {
 							i--
 						}
+					} else if message.Message == invalidPlayOrder {
+						nameToUpdatedContents[ncxFilename] = linter.FixPlayOrder(nameToUpdatedContents[ncxFilename])
 					}
 				case "OPF-030":
 					startIndex := strings.Index(message.Message, missingUniqueIdentifier)
