@@ -20,7 +20,7 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 	c := crawler.CreateNewCollyCrawler(verbose)
 
 	var releaseDate string
-	c.OnHTML("body > div > div:nth-child(5) > div.books-page.series-page > section.book-details.wrapper-1410.prel.fade-in-container > div.detail.active > div.detail-info.fade-el > div:nth-child(3) > div:nth-child(1) > p", func(e *colly.HTMLElement) {
+	c.OnHTML("div.books-page.series-page > section.book-details.wrapper-1410.prel.fade-in-container > div.detail.active > div.detail-info.fade-el > div:nth-child(3) > div:nth-child(1) > p", func(e *colly.HTMLElement) {
 		releaseDate = e.Text
 	})
 
