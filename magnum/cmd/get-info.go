@@ -80,8 +80,12 @@ func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
 func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
 	volumes, numVolumes := yenpress.GetVolumes(seriesInfo.Name, seriesInfo.SlugOverride, verbose)
 
+	if len(volumes) == -1 {
+		logger.WriteErrorf("The Yen Press light novels were not found for %q. The HTML for the site or page may have changed.", seriesInfo.Name)
+	}
+
 	if len(volumes) == 0 {
-		logger.WriteInfo("The yen press light novels do not exist for this series.")
+		logger.WriteInfo("The Yen Press light novels do not exist for this series.")
 
 		return seriesInfo
 	}

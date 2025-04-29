@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gocolly/colly/v2"
-	internetarchive "github.com/pjkaufman/go-go-gadgets/magnum/internal/internet-archive"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
 	"github.com/pjkaufman/go-go-gadgets/pkg/crawler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -38,12 +37,13 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 		volumeContent = append(volumeContent, contentHtml)
 	})
 
+	// These are old versions of how this was handled. I am going to just use the site info directly.
 	// var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
-	url, err := internetarchive.GetLatestPageSnapshot(baseURL+seriesPath+seriesSlug, verbose)
-	if err != nil {
-		logger.WriteErrorf("failed call to internet archive to get latest page snapshot for for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
-	}
-
+	// url, err := internetarchive.GetLatestPageSnapshot(baseURL+seriesPath+seriesSlug, verbose)
+	// if err != nil {
+	// 	logger.WriteErrorf("failed call to internet archive to get latest page snapshot for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
+	// }
+	var url = baseURL + seriesPath + seriesSlug + "/"
 	err = c.Visit(url)
 	if err != nil {
 		logger.WriteErrorf("failed call to internet archive for %q: %s\n", url, err)

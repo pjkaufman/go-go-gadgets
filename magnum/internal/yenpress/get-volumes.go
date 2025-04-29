@@ -37,8 +37,7 @@ func GetVolumes(seriesName string, slugOverride *string, verbose bool) ([]*Volum
 		}
 	})
 
-	var numVolumes int
-	// body > div > div:nth-child(4) > div > section.series-heading.prel.ov-hidden.fade-in-container > div.wrapper-1595 > div > h1 > sup
+	var numVolumes int = -1
 	c.OnHTML("body > div > div:nth-child(4) > div > section.content-heading.fade-in-container > div > h1 > sup", func(e *colly.HTMLElement) {
 		if strings.TrimSpace(e.Text) != "" {
 			val, err := strconv.Atoi(e.Text)
