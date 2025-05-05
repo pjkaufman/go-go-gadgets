@@ -35,6 +35,14 @@ var validationSeries = []config.SeriesInfo{
 		Status:       config.Completed,
 		Type:         config.LightNovel,
 	},
+	{ // Viz Media
+		Name:         "Nausicaa of the Valley of the Wind",
+		TotalVolumes: 11,
+		LatestVolume: "Nausicaä of the Valley of the Wind Picture Book",
+		Publisher:    config.VizMedia,
+		Status:       config.Completed,
+		Type:         config.Manga,
+	},
 }
 
 // ValidateScraperCmd represents the validate scraper command
