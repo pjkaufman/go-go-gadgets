@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-func GetAllProcesses(minKb int64) ([]Process, int, error) {
+func GetAllProcesses(minKb int64) ([]*Process, int, error) {
 	var (
-		processes           []Process
+		processes           []*Process
 		numIgnoredProcesses int
-		// processMap          = make(map[int]*Process)
+		processMap          = make(map[int]*Process)
 	)
 
 	// Read /proc directory
@@ -50,11 +50,11 @@ func GetAllProcesses(minKb int64) ([]Process, int, error) {
 			continue
 		}
 
-		processes = append(processes, proc)
-		// processMap[proc.PID] = &proc
+		processes = append(processes, &proc)
+		processMap[proc.PID] = &proc
 	}
 
-	// addChildrenToProcesses(processes, processMap)
+	addChildrenToProcesses(processes, processMap)
 
 	return processes, numIgnoredProcesses, nil
 }
@@ -97,58 +97,60 @@ func getProcessInfo(pid int) (Process, error) {
 	return proc, nil
 }
 
-// func addChildrenToProcesses(processes []*Process, processMap map[int]*Process) {
-// 	// Group processes by name for orphaned processes
-// 	nameToProcess := make(map[string][]*Process)
-// 	for i := range processes {
-// 		nameToProcess[processes[i].Name] = append(nameToProcess[processes[i].Name], processes[i])
-// 	}
+func addChildrenToProcesses(processes []*Process, processMap map[int]*Process) {
+	// Group processes by name for orphaned processes
+	nameToProcess := make(map[string][]*Process)
+	for i := range processes {
+		nameToProcess[processes[i].Name] = append(nameToProcess[processes[i].Name], processes[i])
+	}
 
-// 	processedPIDs := make(map[int]bool)
+	processedPIDs := make(map[int]bool)
 
-// 	// First, build the parent-child relationships
-// 	for i := range processes {
-// 		proc := processes[i]
-// 		parent, exists := processMap[proc.PPID]
+	// First, build the tree based on parent-child relationships
+	for i := range processes {
+		proc := processes[i]
+		parent, exists := processMap[proc.PPID]
 
-// 		if exists && proc.PPID != proc.PID { // Avoid self-references
-// 			parent.Children = append(parent.Children, proc)
-// 			processedPIDs[proc.PID] = true
-// 		}
-// 	}
+		if exists && proc.PPID != proc.PID { // Avoid self-references
+			parent.Children = append(parent.Children, proc)
+			processedPIDs[proc.PID] = true
+		}
+	}
 
-// 	// Now add orphaned processes (those without parents in our list)
-// 	// or those that have themselves as parent
-// 	for i := range processes {
-// 		proc := processes[i]
-// 		if !processedPIDs[proc.PID] || proc.PPID == proc.PID {
-// 			// Group by name if possible
-// 			if len(nameToProcess[proc.Name]) > 1 {
-// 				// If this is the first occurrence of this name we're processing
-// 				isFirst := true
-// 				for _, p := range nameToProcess[proc.Name] {
-// 					if p.PID < proc.PID && !processedPIDs[p.PID] {
-// 						isFirst = false
-// 						break
-// 					}
-// 				}
+	// Now add orphaned processes (those without parents in our list)
+	// or those that have themselves as parent
+	for i := range processes {
+		proc := processes[i]
+		if !processedPIDs[proc.PID] || proc.PPID == proc.PID {
+			// Group by name if possible
+			if len(nameToProcess[proc.Name]) > 1 {
+				// If this is the first occurrence of this name we're processing
+				isFirst := true
+				for _, p := range nameToProcess[proc.Name] {
+					if p.PID < proc.PID && !processedPIDs[p.PID] {
+						isFirst = false
+						break
+					}
+				}
 
-// 				if isFirst {
-// 					processedPIDs[proc.PID] = true
+				if isFirst {
+					proc.IsRoot = true
+					processedPIDs[proc.PID] = true
 
-// 					// Add other processes with the same name as children
-// 					for _, p := range nameToProcess[proc.Name] {
-// 						if p.PID != proc.PID && !processedPIDs[p.PID] {
-// 							proc.Children = append(proc.Children, p)
-// 							processedPIDs[p.PID] = true
-// 						}
-// 					}
-// 				} else {
-// 					proc.IsChild = true
-// 				}
-// 			} else {
-// 				processedPIDs[proc.PID] = true
-// 			}
-// 		}
-// 	}
-// }
+					// Add other processes with the same name as children
+					for _, p := range nameToProcess[proc.Name] {
+						if p.PID != proc.PID && !processedPIDs[p.PID] {
+							proc.Children = append(proc.Children, p)
+							processedPIDs[p.PID] = true
+						}
+					}
+				}
+			} else {
+				// No other process with the same name
+				proc.IsRoot = true
+				processedPIDs[proc.PID] = true
+			}
+		}
+	}
+
+}

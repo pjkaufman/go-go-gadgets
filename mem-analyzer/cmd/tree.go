@@ -29,17 +29,16 @@ var TreeCmd = &cobra.Command{
 		// // Create a map for easy lookup
 		processMap := make(map[int]*proc.Process)
 		for i := range processes {
-			processMap[processes[i].PID] = &processes[i]
+			processMap[processes[i].PID] = processes[i]
 		}
 
 		// Build process tree
-		// var rootProcesses []*proc.Process
-		// for _, process := range processes {
-		// 	if !process.IsChild {
-		// 		rootProcesses = append(rootProcesses, process)
-		// 	}
-		// }
-		rootProcesses := buildProcessTree(processes, processMap)
+		var rootProcesses []*proc.Process
+		for _, process := range processes {
+			if process.IsRoot {
+				rootProcesses = append(rootProcesses, process)
+			}
+		}
 
 		// Calculate memory usage including children
 		for _, proc := range rootProcesses {
@@ -64,72 +63,6 @@ func init() {
 	// TreeCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "show series with the specified publisher")
 	// TreeCmd.Flags().StringVarP(&seriesType, "type", "t", "", "show series with the specified type")
 	// TreeCmd.Flags().StringVarP(&seriesStatus, "status", "r", "", "show series with the specified status")
-}
-
-func buildProcessTree(processes []proc.Process, processMap map[int]*proc.Process) []*proc.Process {
-	// Group processes by name for orphaned processes
-	nameToProcess := make(map[string][]*proc.Process)
-	for i := range processes {
-		nameToProcess[processes[i].Name] = append(nameToProcess[processes[i].Name], &processes[i])
-	}
-
-	// Create a set of root processes
-	var rootProcesses []*proc.Process
-	processedPIDs := make(map[int]bool)
-
-	// First, build the tree based on parent-child relationships
-	for i := range processes {
-		proc := &processes[i]
-		parent, exists := processMap[proc.PPID]
-
-		if exists && proc.PPID != proc.PID { // Avoid self-references
-			parent.Children = append(parent.Children, proc)
-			processedPIDs[proc.PID] = true
-		}
-	}
-
-	// Now add orphaned processes (those without parents in our list)
-	// or those that have themselves as parent
-	for i := range processes {
-		proc := &processes[i]
-		if !processedPIDs[proc.PID] || proc.PPID == proc.PID {
-			// Group by name if possible
-			if len(nameToProcess[proc.Name]) > 1 {
-				// If this is the first occurrence of this name we're processing
-				isFirst := true
-				for _, p := range nameToProcess[proc.Name] {
-					if p.PID < proc.PID && !processedPIDs[p.PID] {
-						isFirst = false
-						break
-					}
-				}
-
-				if isFirst {
-					rootProcesses = append(rootProcesses, proc)
-					processedPIDs[proc.PID] = true
-
-					// Add other processes with the same name as children
-					for _, p := range nameToProcess[proc.Name] {
-						if p.PID != proc.PID && !processedPIDs[p.PID] {
-							proc.Children = append(proc.Children, p)
-							processedPIDs[p.PID] = true
-						}
-					}
-				}
-			} else {
-				// No other process with the same name
-				rootProcesses = append(rootProcesses, proc)
-				processedPIDs[proc.PID] = true
-			}
-		}
-	}
-
-	// Sort root processes by memory usage (descending)
-	sort.Slice(rootProcesses, func(i, j int) bool {
-		return rootProcesses[i].MemoryUsage > rootProcesses[j].MemoryUsage
-	})
-
-	return rootProcesses
 }
 
 func calculateTotalMemory(proc *proc.Process) int64 {
