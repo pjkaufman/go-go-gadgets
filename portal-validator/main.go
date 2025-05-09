@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/godbus/dbus/v5"
-	// "gocv.io/x/gocv"
 )
 
 const (
@@ -50,10 +51,74 @@ func main() {
 	fmt.Printf("File chooser dialog opened successfully. Response object path: %s\n", response)
 
 	// Wait for user input to keep the program running
-	fmt.Println("Press Enter to exit...")
+	fmt.Println("Press Enter to move on to validate that cameras can be found...")
 	_, _ = os.Stdin.Read(make([]byte, 1))
 
-	// accessCamera()
+	findCameras()
+}
+
+func findCameras() {
+	// Path where video devices are typically located
+	devicePath := "/dev/video*"
+
+	// Use filepath.Glob to find all matching video devices
+	devices, err := filepath.Glob(devicePath)
+	if err != nil {
+		fmt.Println("Error searching for video devices:", err)
+		return
+	}
+
+	if len(devices) == 0 {
+		fmt.Println("No cameras found.")
+		return
+	}
+
+	fmt.Println("Cameras found:")
+	for _, device := range devices {
+		// Get device information
+		info, err := os.Stat(device)
+		if err != nil {
+			fmt.Printf("Error getting info for %s: %v\n", device, err)
+			continue
+		}
+
+		// Check if it's a character device (cameras are usually character devices)
+		if info.Mode()&os.ModeCharDevice != 0 {
+			fmt.Println(device)
+
+			// Optionally, try to get more information about the device
+			deviceInfo, err := getDeviceInfo(device)
+			if err == nil {
+				fmt.Printf("  Info: %s\n", deviceInfo)
+			}
+		}
+	}
+}
+
+func getDeviceInfo(devicePath string) (string, error) {
+	// Read the first few bytes of the device file
+	// This might contain some identifying information
+	file, err := os.Open(devicePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	buffer := make([]byte, 256)
+	n, err := file.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert to string and remove non-printable characters
+	info := strings.Map(func(r rune) rune {
+		if r >= 32 && r < 127 {
+			return r
+		}
+		return -1
+	}, string(buffer[:n]))
+
+	return strings.TrimSpace(info), nil
 }
 
 // func accessCamera() {
