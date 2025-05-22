@@ -123,12 +123,14 @@ Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto f
     and starting the value with an underscore instead of a number if it currently is started by a number
   - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
   - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
+- RSC-012: try to fix broken links by removing the id link in the href attribute
 
 
 ##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+|  | cleanup-jnovels | whether or not to remove JNovels info if it is present |  | false | false |  |
 | f | file | the epub file to replace strings in | string |  | true | Should be a file with one of the following extensions: epub |
 |  | issue-file | the path to the file with the validation issues | string |  | true | Should be a file with one of the following extensions: json |
 
@@ -138,6 +140,10 @@ Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto f
 ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json
 will read in the contents of the JSON file and try to fix any of the fixable
 validation issues
+
+ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json --cleanup-jnovels
+will read in the contents of the JSON file and try to fix any of the fixable
+validation issues as well as remove any jnovels specific files
 ```
 
 #### fixable
@@ -165,6 +171,7 @@ Potential things that can be fixed:
 |  | conversation | whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation) |  | false | false |  |
 | f | file | the epub file to find manually fixable issues in | string |  | true | Should be a file with one of the following extensions: epub |
 |  | lacking-subordinate-clause | whether to run the logic for getting potentially lacking subordinate clause suggestions |  | false | false |  |
+|  | log-file | the place to write debug logs to when using the TUI | string |  | false |  |
 |  | necessary-words | whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence) |  | false | false |  |
 |  | oxford-commas | whether to run the logic for getting oxford comma suggestions |  | false | false |  |
 |  | page-breaks | whether to run the logic for getting page break suggestions (must be used with an epub with a css file) |  | false | false |  |

@@ -51,11 +51,16 @@ var autoFixValidationCmd = &cobra.Command{
 	    and starting the value with an underscore instead of a number if it currently is started by a number
 	  - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
 	  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
+	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`
 		ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json
 		will read in the contents of the JSON file and try to fix any of the fixable
 		validation issues
+
+		ebook-lint epub fix-validation -f test.epub --issue-file epubCheckOutput.json --cleanup-jnovels
+		will read in the contents of the JSON file and try to fix any of the fixable
+		validation issues as well as remove any jnovels specific files
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateAutoFixValidationFlags(epubFile, validationIssuesFilePath)

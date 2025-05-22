@@ -27,6 +27,7 @@ Magnum is a program that checks if the list of specified light novels has any up
 - [remove](#remove)
 - [set-status](#set-status)
 - [show-info](#show-info)
+- [validate](#validate)
 
 ### add
 
@@ -154,6 +155,23 @@ Shows each series that has upcoming releases along with when the releases are in
 ``` bash
 # To show upcoming releases in order of when they are releasing:
 magnum show-info
+```
+
+### validate
+
+Runs the web scraper logic for a single series on each scraper with an already known result to determine if the scraper is still functioning or if it needs an update.
+
+#### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| v | verbose | show more info about what is going on |  | false | false |  |
+
+#### Usage
+
+``` bash
+# To test all of the scrapers used:
+magnum validate
 ```
 
 
