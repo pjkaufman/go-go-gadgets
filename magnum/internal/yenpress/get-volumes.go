@@ -20,20 +20,19 @@ func GetVolumes(seriesName string, slugOverride *string, verbose bool) ([]*Volum
 
 	var volumes = []*VolumeInfo{}
 
-	c.OnHTML("#volumes-list > div > div > div > a", func(e *colly.HTMLElement) {
-		var link = e.Attr("href")
-		if strings.TrimSpace(link) != "" {
-			volumes = append(volumes, &VolumeInfo{
-				RelativeLink: link,
-			})
+	c.OnHTML("#volumes-list > div > div > div.inline_block", func(e *colly.HTMLElement) {
+		contentHtml, err := e.DOM.Html()
+		if err != nil {
+			logger.WriteErrorf("failed to get content body: %s\n", err)
 		}
-	})
 
-	var index = 0
-	c.OnHTML("#volumes-list > div > div > div > a > p > span", func(e *colly.HTMLElement) {
-		if strings.TrimSpace(e.Text) != "" {
-			volumes[index].Name = e.Text
-			index++
+		volumeInfo, err := ParseVolumeInfo(seriesName, contentHtml)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		if volumeInfo != nil {
+			volumes = append(volumes, volumeInfo)
 		}
 	})
 

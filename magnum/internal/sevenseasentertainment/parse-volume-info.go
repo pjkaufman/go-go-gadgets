@@ -19,7 +19,8 @@ func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error
 	}
 
 	var heading = firstHeading[1]
-	if strings.Contains(strings.ToLower(heading), "(audiobook)") {
+	var lowercaseHeading = strings.ToLower(heading)
+	if strings.Contains(lowercaseHeading, "(audiobook)") || strings.Contains(lowercaseHeading, "hardcover") || strings.Contains(lowercaseHeading, "hardback") {
 		return nil, nil
 	}
 
