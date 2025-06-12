@@ -31,11 +31,16 @@ const (
             <a href="/titles/9781975393403-is-it-wrong-to-try-to-pick-up-girls-in-a-dungeon-vol-19-light-novel" class="hovered-shadow">
             <img class="four-swiper-img img-box-shadow b-lazy b-error" src="https://images.yenpress.com/imgs/9781975393403.jpg?w=285&amp;h=422&amp;type=books&amp;s=17a153d45d9271596cda3e94cc70342a" alt="Is It Wrong to Try to Pick Up Girls in a Dungeon?, Vol. 19 (light novel)">
 			</a>`
-	noRelativeLink = `<p class="paragraph"><span>Is It Wrong to Try to Pick Up Girls in a Dungeon?, Vol. 19 (light novel)</span></p>`
+	noRelativeLink                     = `<p class="paragraph"><span>Is It Wrong to Try to Pick Up Girls in a Dungeon?, Vol. 19 (light novel)</span></p>`
+	aCertainMagicalIndexOmnibusEdition = `
+        <a href="/titles/9781975351588-a-certain-magical-index-the-old-testament-omnibus-edition" class="hovered-shadow">
+            <img class="four-swiper-img img-box-shadow b-lazy b-error" src="https://images.yenpress.com/imgs/9781975351588.jpg?w=285&amp;h=422&amp;type=books&amp;s=f15dea06671803ef8922897ea2d41857" alt="A Certain Magical Index: The Old Testament Omnibus Edition">
+            <p class="paragraph"><span>A Certain Magical Index: The Old Testament Omnibus Edition</span></p>
+        </a>`
 )
 
 var parseVolumeInfoTestCases = map[string]parseVolumeInfoTestCase{
-	"a volume that has collector's edition in the name should be ignored": {
+	"a volume that has \"collector's edition\" in the name should be ignored": {
 		InputHtml:          danmachiColectorsEdition,
 		InputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
 		ExpectedVolumeInfo: nil,
@@ -59,6 +64,11 @@ var parseVolumeInfoTestCases = map[string]parseVolumeInfoTestCase{
 		InputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
 		ExpectedVolumeInfo: nil,
 		ExpectError:        true,
+	},
+	"a volume that has \"omnibus edition\" in the name should be ignored": {
+		InputHtml:          aCertainMagicalIndexOmnibusEdition,
+		InputSeriesName:    "A Certain Magical Index (light novel)",
+		ExpectedVolumeInfo: nil,
 	},
 }
 

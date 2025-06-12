@@ -22,7 +22,7 @@ func ParseVolumeInfo(series, contentHtml string) (*VolumeInfo, error) {
 	var name = contentHtml[nameStart : nameStart+nameEnd]
 
 	var lowercaseName = strings.ToLower(name)
-	if strings.Contains(lowercaseName, "collector&#39;s edition") {
+	if strings.Contains(lowercaseName, "collector&#39;s edition") || strings.Contains(lowercaseName, "omnibus edition") {
 		return nil, nil
 	}
 
