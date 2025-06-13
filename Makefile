@@ -1,4 +1,18 @@
-.PHONY: test install cover lint bench generate install-termux
+.PHONY: test install cover lint bench generate install-termux clean
+
+# Tool definitions
+TOOLS := ebook-lint git-helper song-converter cat-ascii magnum jp-proc
+GENERATE_TOOLS := ebook-lint jp-proc magnum song-converter
+
+# Enhanced LDFLAGS for size reduction
+LDFLAGS := -ldflags="-s -w"
+BUILDFLAGS := -trimpath
+GCFLAGS := -gcflags="-l=4"
+
+BUILD_CMD = CGO_ENABLED=0 GOOS=linux go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS)
+
+# Bash completion directory with fallback
+BASH_COMPLETION_DIR := $(or $(BASH_COMPLETION_USER_DIR),$(HOME)/.bash_completion.d)
 
 test:
 	go test ./... -tags "unit"
@@ -15,33 +29,58 @@ bench:
 	go test ./... -bench=. -tags="unit" -count=20 -run=^$
 
 install:
-	@echo "Building go tools"
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/ebook-lint" ./ebook-lint/main.go
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/git-helper" ./git-helper/main.go
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/song-converter" ./song-converter/main.go
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/cat-ascii" ./cat-ascii/main.go
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/magnum" ./magnum/main.go
-	@go build -ldflags="-s -w" -o "${HOME}/.local/bin/jp-proc" ./jp-proc/main.go
-	
-	@mkdir -p ${BASH_COMPLETION_USER_DIR}
+	@echo "Building go tools and generating bash completion"
+	@echo "Using bash completion directory: $(BASH_COMPLETION_DIR)"
+	@mkdir -p "$(BASH_COMPLETION_DIR)"
+	@for tool in $(TOOLS); do \
+		echo "Building $$tool..."; \
+		$(BUILD_CMD) -o "$(HOME)/.local/bin/$$tool" ./$$tool/main.go || { \
+			echo "Error: Failed to build $$tool"; \
+			exit 1; \
+		}; \
+		echo "Generating completion for $$tool..."; \
+		"$$tool" > "$(BASH_COMPLETION_DIR)/$$tool-completion" || { \
+			echo "Warning: Failed to generate completion for $$tool"; \
+		}; \
+	done
 
-	@echo "Generating the bash completion for the tools"
-	@ebook-lint completion bash > "${BASH_COMPLETION_USER_DIR}/ebook-lint-completion"
-	@git-helper completion bash > "${BASH_COMPLETION_USER_DIR}/git-helper-completion"
-	@song-converter completion bash > "${BASH_COMPLETION_USER_DIR}/song-converter-completion"
-	@cat-ascii completion bash > "${BASH_COMPLETION_USER_DIR}/cat-ascii-completion"
-	@magnum completion bash > "${BASH_COMPLETION_USER_DIR}/magnum-completion"
-	@jp-proc completion bash > "${BASH_COMPLETION_USER_DIR}/jp-proc-completion"
+	@echo ""
+	@echo "Tools installed successfully"
 
 generate:
-	@go run --tags="generate_doc" ./ebook-lint/main.go generate -g ./ebook-lint/
-	@go run --tags="generate_doc" ./jp-proc/main.go generate -g ./jp-proc/
-	@go run --tags="generate_doc" ./magnum/main.go generate -g ./magnum/
-	@go run --tags="generate_doc" ./song-converter/main.go generate -g ./song-converter/
+	@echo "Generating documentation..."
+	@for tool in $(GENERATE_TOOLS); do \
+		echo "Generating docs for $$tool..."; \
+		go run --tags="generate_doc" ./$$tool/main.go generate -g ./$$tool/ || { \
+			echo "Error: Failed to generate docs for $$tool"; \
+			exit 1; \
+		}; \
+	done
 
 install-termux:
 	@echo "Building ebook-lint for Termux"
-	@go build -o "${PREFIX}/bin/ebook-lint" ./ebook-lint/main.go
+	@CGO_ENABLED=0 go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS) -o "${PREFIX}/bin/ebook-lint" ./ebook-lint/main.go
 	@mkdir -p ${PREFIX}/share/bash-completion/completions
 	@echo "Generating bash completion for ebook-lint"
 	@ebook-lint completion bash > "${PREFIX}/share/bash-completion/completions/ebook-lint"
+
+clean:
+	@echo "Cleaning built binaries..."
+	@for tool in $(TOOLS); do \
+		if [ -f "$(HOME)/.local/bin/$$tool" ]; then \
+			echo "Removing $(HOME)/.local/bin/$$tool"; \
+			rm -f "$(HOME)/.local/bin/$$tool"; \
+		fi; \
+	done
+	@echo "Cleaning bash completions..."
+	@for tool in $(TOOLS); do \
+		if [ -f "$(BASH_COMPLETION_DIR)/$$tool-completion" ]; then \
+			echo "Removing $(BASH_COMPLETION_DIR)/$$tool-completion"; \
+			rm -f "$(BASH_COMPLETION_DIR)/$$tool-completion"; \
+		fi; \
+	donew
+	@if [ -f "$$PREFIX/bin/ebook-lint" ]; then \
+		echo "Removing $$PREFIX/bin/ebook-lint"; \
+		rm -f "$$PREFIX/bin/ebook-lint"; \
+	fi
+	@echo "Cleanup complete"
