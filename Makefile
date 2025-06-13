@@ -84,3 +84,9 @@ clean:
 		rm -f "$$PREFIX/bin/ebook-lint"; \
 	fi
 	@echo "Cleanup complete"
+
+update-deps:
+	@echo "Installing all dependency updates"
+	@go get -u ./...
+	@go mod tidy
+	@ echo "Update complete"
