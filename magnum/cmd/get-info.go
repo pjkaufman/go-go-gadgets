@@ -107,9 +107,9 @@ func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo
 		return seriesInfo
 	}
 
-	// TODO: there seems to be a possibility that the release gets pushed back and magnum is run after the original release date
-	// this causes an issue where the code does not update the series info even though the release is now in the future
-	if numVolumes == seriesInfo.TotalVolumes {
+	// We cannot really trust that Yen Press release data is 100% accurate as they could have delayed the book release,
+	// so we need to double check volumes any time we have an upcoming release
+	if numVolumes == seriesInfo.TotalVolumes && len(seriesInfo.UnreleasedVolumes) == 0 {
 		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
 	}
 
