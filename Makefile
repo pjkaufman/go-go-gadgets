@@ -1,4 +1,4 @@
-.PHONY: test install cover lint bench generate install-termux clean
+.PHONY: test install cover lint bench generate install-termux clean update-deps
 
 # Tool definitions
 TOOLS := ebook-lint git-helper song-converter cat-ascii magnum jp-proc
