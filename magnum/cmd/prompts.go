@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -16,6 +17,8 @@ func selectBookName(series []config.SeriesInfo, includeCompleted bool) string {
 			seriesNames = append(seriesNames, series.Name)
 		}
 	}
+
+	sort.Strings(seriesNames)
 
 	prompt := promptui.Select{
 		Label: "Select Book Name",

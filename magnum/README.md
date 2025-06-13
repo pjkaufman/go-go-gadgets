@@ -7,7 +7,7 @@ Magnum is a program that checks if the list of specified light novels has any up
 ## Supported Publishers
 - Yen Press
 - JNovel Club
-- Seven Seas Entertainment (uses Google Cache)
+- Seven Seas Entertainment
 - One Peace Books (uses Wikipedia)
 - Viz Media
 - Hanashi Media (uses Wikipedia)
@@ -67,6 +67,7 @@ Gets the book release info for books that have been added to the list of series 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | include-completed | get info for completed series |  | false | false |  |
+| p | prompt-name | get info for a series that you will select from a prompt |  | false | false |  |
 | s | series | get info for just the specified series | string |  | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
 
@@ -75,6 +76,15 @@ Gets the book release info for books that have been added to the list of series 
 ``` bash
 # To get all of the release data for non-completed series:
 magnum get-info
+
+# To get release data including completed series:
+magnum get-info -c
+
+# To get release data for a specific series:
+magnum get-info -s "Series Name"
+
+# To interactively select a series from a prompt:
+magnum get-info -p
 ```
 
 ### list

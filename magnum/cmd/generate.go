@@ -29,9 +29,7 @@ func getCustomValues(generationDir string) (map[string]any, error) {
 	for i, publisherType := range publisherTypes {
 		supportedPublishers[i] = config.PublisherToDisplayString(publisherType)
 
-		if publisherType == config.SevenSeasEntertainment {
-			supportedPublishers[i] += " (uses Google Cache)"
-		} else if publisherType == config.OnePeaceBooks || publisherType == config.HanashiMedia {
+		if publisherType == config.OnePeaceBooks || publisherType == config.HanashiMedia {
 			supportedPublishers[i] += " (uses Wikipedia)"
 		}
 	}

@@ -15,14 +15,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var promptForSeries bool
+
 // GetInfoCmd represents the get book info command
 var GetInfoCmd = &cobra.Command{
 	Use:   "get-info",
 	Short: "Gets the book release info for books that have been added to the list of series to track",
 	Example: heredoc.Doc(`To get all of the release data for non-completed series:
-	magnum get-info`),
+	magnum get-info
+
+	To get release data including completed series:
+	magnum get-info -c
+
+	To get release data for a specific series:
+	magnum get-info -s "Series Name"
+
+	To interactively select a series from a prompt:
+	magnum get-info -p
+	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
+
+		if promptForSeries {
+			seriesName = selectBookName(seriesInfo.Series, includeCompleted)
+		}
 
 		if seriesName != "" {
 			if !seriesInfo.HasSeries(seriesName) {
@@ -56,6 +72,7 @@ func init() {
 	GetInfoCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
 	GetInfoCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
 	GetInfoCmd.Flags().StringVarP(&seriesName, "series", "s", "", "get info for just the specified series")
+	GetInfoCmd.Flags().BoolVarP(&promptForSeries, "prompt-name", "p", false, "get info for a series that you will select from a prompt")
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
@@ -85,11 +102,13 @@ func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo
 	}
 
 	if len(volumes) == 0 {
-		logger.WriteInfo("The Yen Press light novels do not exist for this series.")
+		logger.WriteInfof("The Yen Press light novels do not exist for series %q.", seriesInfo.Name)
 
 		return seriesInfo
 	}
 
+	// TODO: there seems to be a possibility that the release gets pushed back and magnum is run after the original release date
+	// this causes an issue where the code does not update the series info even though the release is now in the future
 	if numVolumes == seriesInfo.TotalVolumes {
 		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
 	}
