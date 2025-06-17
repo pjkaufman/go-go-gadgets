@@ -146,84 +146,8 @@ var (
 			return jnovelclub.NewJNovelClubHandler(options)
 		},
 	}
-	// robotsFile = `
-	// User-agent: *
-	// Allow: /allowed
-	// Disallow: /disallowed
-	// Disallow: /allowed*q=
-	// `
-	// releaseDateFormat = "January 2, 2006"
 )
 
-// type getVolumeInfoTestCase struct {
-// 	SeriesName      string
-// 	SlugOverride    *string
-// 	ExpectedVolumes []*sitehandler.VolumeInfo
-// 	ExpectedCount   int
-// }
-
-// func createJnovelServerInstance() *httptest.Server {
-// 	mux := http.NewServeMux()
-
-// 	mux.HandleFunc("/arifureta-zero", func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set("Content-Type", "text/html")
-// 		fmt.Fprint(w, arifuretaZeroResponse)
-// 	})
-
-// 	mux.HandleFunc("/how-a-realist-hero-rebuilt-the-kingdom", func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set("Content-Type", "text/html")
-// 		fmt.Fprint(w, howARealisHeroRebuiltTheKingdom)
-// 	})
-
-// 	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-// 		w.WriteHeader(200)
-// 		w.Write([]byte(robotsFile))
-// 	})
-
-// 	return httptest.NewUnstartedServer(mux)
-// }
-
 func TestGetVolumeInfo(t *testing.T) {
-
 	sitehandler.RunTests(t, getVolumeInfoTestSetup)
-
-	// srv := createJnovelServerInstance()
-	// srv.Start()
-
-	// options := sitehandler.SiteHandlerOptions{
-	// 	BaseURL: srv.URL + "/",
-	// 	Verbose: false,
-	// }
-
-	// jnc := jnovelclub.NewJNovelClubHandler(options)
-
-	// for name, args := range getVolumeInfoTestCases {
-	// 	t.Run(name, func(t *testing.T) {
-	// 		scrapingOptions := sitehandler.ScrapingOptions{}
-	// 		if args.SlugOverride != nil {
-	// 			scrapingOptions.SlugOverride = args.SlugOverride
-	// 		}
-
-	// 		actualVolumes, actualCount, err := jnc.GetVolumeInfo(args.SeriesName, scrapingOptions)
-
-	// 		assert.Nil(t, err)
-	// 		assert.Equal(t, args.ExpectedCount, actualCount)
-	// 		assert.Equal(t, len(args.ExpectedVolumes), len(actualVolumes))
-
-	// 		if args.ExpectedVolumes != nil {
-	// 			for i, expectedVolume := range args.ExpectedVolumes {
-	// 				assert.Equal(t, expectedVolume.Name, actualVolumes[i].Name)
-	// 				if expectedVolume.ReleaseDate != nil && actualVolumes[i].ReleaseDate != nil {
-	// 					assert.Equal(t, expectedVolume.ReleaseDate.Format(releaseDateFormat), actualVolumes[i].ReleaseDate.Format(releaseDateFormat))
-	// 				} else {
-	// 					assert.Equal(t, expectedVolume.ReleaseDate, actualVolumes[i].ReleaseDate)
-	// 				}
-	// 			}
-	// 		}
-	// 	})
-	// }
 }
-
-// func sitehandler.TimePtr(t time.Time) *time.Time {
-// 	return &t
-// }
