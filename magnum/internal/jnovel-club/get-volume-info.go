@@ -34,7 +34,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 		}
 	})
 
-	var seriesURL = baseURL + seriesPath + seriesSlug
+	var seriesURL = BaseURL + seriesPath + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
 		logger.WriteErrorf("failed call to JNovel Club for %q: %s\n", seriesURL, err)
