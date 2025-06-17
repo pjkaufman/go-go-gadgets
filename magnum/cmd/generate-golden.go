@@ -40,6 +40,15 @@ var GenerateTestCmd = &cobra.Command{
 				url:      "https://j-novel.club/series/how-a-realist-hero-rebuilt-the-kingdom",
 				filename: "jnovel-club/test/how-a-realist-hero-rebuilt-the-kingdom.golden",
 			},
+			// Seven Seas Entertainment
+			{
+				url:      "https://sevenseasentertainment.com/series/mushoku-tensei-jobless-reincarnation-light-novel/",
+				filename: "sevenseasentertainment/test/mushoku-tensei-jobless-reincarnation-light-novel.golden",
+			},
+			{
+				url:      "https://sevenseasentertainment.com/series/berserk-of-gluttony-light-novel/",
+				filename: "sevenseasentertainment/test/berserk-of-gluttony-light-novel.golden",
+			},
 		}
 
 		for _, test := range goldenList {
