@@ -41,7 +41,6 @@ var GenerateTestCmd = &cobra.Command{
 				filename: "jnovel-club/test/how-a-realist-hero-rebuilt-the-kingdom.golden",
 			},
 			// Seven Seas Entertainment
-			// TODO: fix the forbidden errors
 			{
 				url:      "https://sevenseasentertainment.com/series/mushoku-tensei-jobless-reincarnation-light-novel/",
 				filename: "sevenseasentertainment/test/mushoku-tensei-jobless-reincarnation-light-novel.golden",
@@ -75,6 +74,7 @@ func createGoldenFile(url string, out string) error {
 	}
 
 	req.Header.Set("Accept", "text/html")
+	req.Header.Set("User-Agent", userAgent)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
