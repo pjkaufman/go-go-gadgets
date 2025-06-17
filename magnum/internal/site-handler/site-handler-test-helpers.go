@@ -82,7 +82,7 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 			assert.Equal(t, args.ExpectedCount, actualCount)
 			assert.Equal(t, len(args.ExpectedVolumes), len(actualVolumes))
 
-			if args.ExpectedVolumes != nil {
+			if len(args.ExpectedVolumes) == len(actualVolumes) {
 				for i, expectedVolume := range args.ExpectedVolumes {
 					assert.Equal(t, expectedVolume.Name, actualVolumes[i].Name)
 					if expectedVolume.ReleaseDate != nil && actualVolumes[i].ReleaseDate != nil {
