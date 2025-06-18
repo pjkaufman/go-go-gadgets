@@ -49,6 +49,15 @@ var GenerateTestCmd = &cobra.Command{
 				url:      "https://sevenseasentertainment.com/series/berserk-of-gluttony-light-novel/",
 				filename: "sevenseasentertainment/test/berserk-of-gluttony-light-novel.golden",
 			},
+			// Viz Media
+			{
+				url:      "https://www.viz.com/nausicaa-of-the-valley-of-the-wind",
+				filename: "vizmedia/test/nausicaa-of-the-valley-of-the-wind.golden",
+			},
+			{
+				url:      "https://www.viz.com/manga-books/nausicaa-of-the-valley-of-the-wind/section/115444/more",
+				filename: "vizmedia/test/manga-books-nausicaa-of-the-valley-of-the-wind-section-115444-more.golden",
+			},
 		}
 
 		for _, test := range goldenList {

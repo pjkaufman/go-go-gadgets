@@ -64,7 +64,7 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 
 	options := SiteHandlerOptions{
 		BaseURL: srv.URL + "/",
-		Verbose: false,
+		Verbose: true,
 	}
 
 	handler := cases.CreateSiteHandler(options)
@@ -98,4 +98,8 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 
 func TimePtr(t time.Time) *time.Time {
 	return &t
+}
+
+func StringPtr(s string) *string {
+	return &s
 }
