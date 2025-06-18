@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
@@ -47,7 +48,6 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 	return volumes, len(volumes), nil
 }
 
-// TODO: see about converting this into something attached to the VizMedia struct
 func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string) ([]*sitehandler.VolumeInfo, error) {
 	var volumes = []*sitehandler.VolumeInfo{}
 
@@ -76,12 +76,9 @@ func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string)
 			return
 		}
 
-		// TODO: swap this to be on VizMedia
-		releaseDate := getVolumeReleaseDate(v.scrapper.Clone(), volumeReleasePage)
-
 		volumes = append(volumes, &sitehandler.VolumeInfo{
 			Name:        name,
-			ReleaseDate: &releaseDate,
+			ReleaseDate: v.getVolumeReleaseDateV2(volumeReleasePage),
 		})
 	})
 
@@ -94,4 +91,27 @@ func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string)
 	slices.Reverse(volumes)
 
 	return volumes, nil
+}
+
+func (v *VizMedia) getVolumeReleaseDateV2(volumeReleasePage string) *time.Time {
+	var releaseDate time.Time
+	v.scrapper.OnHTML("#product_row > div.row.pad-b-xl > div.g-6--lg.type-sm.type-rg--md.line-caption > div:nth-child(1) > div.o_release-date.mar-b-md", func(e *colly.HTMLElement) {
+		var text = e.DOM.Text()
+
+		text = strings.TrimSpace(strings.Replace(text, "Release", "", 1))
+		tempDate, err := time.Parse(releaseDateFormat, text)
+		if err != nil {
+			logger.WriteErrorf("failed to parse %q to a date time value: %v\n", text, err)
+		}
+
+		releaseDate = tempDate
+	})
+
+	var mangaVolumesLink = v.options.BaseURL + volumeReleasePage
+	err := v.scrapper.Visit(mangaVolumesLink)
+	if err != nil {
+		logger.WriteErrorf("failed call to viz media volume release page: %s\n", err)
+	}
+
+	return &releaseDate
 }

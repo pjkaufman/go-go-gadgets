@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -28,6 +29,10 @@ var GenerateTestCmd = &cobra.Command{
 		type goldenTestInfo struct {
 			url      string
 			filename string
+			// this value indicates that the html pulled at the time of generation should be the source of truth
+			// if the page changes with regards to how the parsing needs to happen, then it needs to be updated
+			// manually to reflect the change in html structure
+			frozen bool
 		}
 
 		var goldenList = []goldenTestInfo{
@@ -58,10 +63,28 @@ var GenerateTestCmd = &cobra.Command{
 				url:      "https://www.viz.com/manga-books/nausicaa-of-the-valley-of-the-wind/section/115444/more",
 				filename: "vizmedia/test/manga-books-nausicaa-of-the-valley-of-the-wind-section-115444-more.golden",
 			},
+			// Yen Press
+			{
+				url:      "https://yenpress.com/series/the-asterisk-war",
+				filename: "yenpress/test/the-asterisk-war.golden",
+			},
+			{
+				url:      "https://yenpress.com/titles/9781975369095-the-asterisk-war-vol-17-light-novel",
+				filename: "yenpress/test/titles-9781975369095-the-asterisk-war-vol-17-light-novel.golden",
+			},
+			{
+				url:      "https://yenpress.com/series/a-certain-magical-index-light-novel",
+				filename: "yenpress/test/a-certain-magical-index-light-novel.golden",
+				frozen:   true, // meant to test the omnibus ignore logic
+			},
+			{
+				url:      "https://yenpress.com/titles/9781975317997-a-certain-magical-index-ss-vol-2-light-novel",
+				filename: "yenpress/test/titles-9781975317997-a-certain-magical-index-ss-vol-2-light-novel.golden",
+			},
 		}
 
 		for _, test := range goldenList {
-			err := createGoldenFile(test.url, filepath.Join(goldenFilePath, test.filename))
+			err := createGoldenFile(test.url, filepath.Join(goldenFilePath, test.filename), test.frozen)
 
 			if err != nil {
 				logger.WriteErrorf("failed to create golden file for %s: %v", test.url, err)
@@ -76,7 +99,18 @@ func init() {
 	GenerateTestCmd.Flags().StringVarP(&goldenFilePath, "out", "o", "", "the output path for where to store the resulting golden files for the tests which should point to magnum's internal folder")
 }
 
-func createGoldenFile(url string, out string) error {
+func createGoldenFile(url, out string, frozen bool) error {
+	if frozen {
+		exists, err := filehandler.FileExists(out)
+		if err != nil {
+			return err
+		}
+
+		if exists {
+			return nil
+		}
+	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %w", err)
@@ -92,6 +126,7 @@ func createGoldenFile(url string, out string) error {
 	}
 	defer resp.Body.Close()
 
+	// TODO: make sure to create the folder if it does not already exist
 	file, err := os.Create(out)
 	if err != nil {
 		return fmt.Errorf("error creating file %q: %w", out, err)
