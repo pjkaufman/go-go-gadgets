@@ -48,7 +48,7 @@ func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
-	var seriesURL = y.options.BaseURL + seriesSlug
+	var seriesURL = y.options.BaseURL + seriesPath + seriesSlug
 	err := y.scrapper.Visit(seriesURL)
 	if err != nil {
 		return nil, -1, fmt.Errorf("failed call to Yen Press: %w", err)

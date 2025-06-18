@@ -178,11 +178,11 @@ var (
 		},
 		Endpoints: []sitehandler.MockedEndpoint{
 			{
-				Slug:     "berserk-of-gluttony-light-novel/",
+				Slug:     "series/berserk-of-gluttony-light-novel/",
 				Response: berserkOfGluttonyResponse,
 			},
 			{
-				Slug:     "mushoku-tensei-jobless-reincarnation-light-novel/",
+				Slug:     "series/mushoku-tensei-jobless-reincarnation-light-novel/",
 				Response: mushokuTenseiResponse,
 			},
 		},

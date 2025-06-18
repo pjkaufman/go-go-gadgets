@@ -33,7 +33,7 @@ var (
 		},
 		Endpoints: []sitehandler.MockedEndpoint{
 			{
-				Slug:     "the-asterisk-war",
+				Slug:     "series/the-asterisk-war",
 				Response: theAsteriskWarMainPage,
 			},
 			{
@@ -41,7 +41,7 @@ var (
 				Response: theAsteriskWarVolume17Page,
 			},
 			{
-				Slug:     "a-certain-magical-index-light-novel",
+				Slug:     "series/a-certain-magical-index-light-novel",
 				Response: aCertainMagicalMainPage,
 			},
 			{

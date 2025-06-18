@@ -1,6 +1,6 @@
 package jnovelclub
 
 const (
-	BaseURL    = "https://j-novel.club/series/"
+	BaseURL    = "https://j-novel.club/"
 	seriesPath = "series/"
 )

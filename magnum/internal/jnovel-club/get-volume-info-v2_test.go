@@ -134,11 +134,11 @@ var (
 		},
 		Endpoints: []sitehandler.MockedEndpoint{
 			{
-				Slug:     "arifureta-zero",
+				Slug:     "series/arifureta-zero",
 				Response: arifuretaZeroResponse,
 			},
 			{
-				Slug:     "how-a-realist-hero-rebuilt-the-kingdom",
+				Slug:     "series/how-a-realist-hero-rebuilt-the-kingdom",
 				Response: howARealisHeroRebuiltTheKingdom,
 			},
 		},

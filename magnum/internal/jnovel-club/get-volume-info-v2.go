@@ -28,10 +28,10 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 		}
 	})
 
-	var seriesURL = j.options.BaseURL + seriesSlug
+	var seriesURL = j.options.BaseURL + seriesPath + seriesSlug
 	err := j.scrapper.Visit(seriesURL)
 	if err != nil {
-		return nil, -1, fmt.Errorf("failed call to JNovel Club for %q: %w\n", seriesURL, err)
+		return nil, -1, fmt.Errorf("failed call to JNovel Club for %q: %w", seriesURL, err)
 	}
 
 	var numVolumes = len(jsonVolumeInfo.Props.PageProps.Aggregate.Volumes)
@@ -39,12 +39,12 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 	for i, volume := range jsonVolumeInfo.Props.PageProps.Aggregate.Volumes {
 		// no release data is present, but this should not happen
 		if volume.Volume.Publishing.Seconds == "" {
-			return nil, -1, fmt.Errorf("failed to get volume info properly for series %q as there is no publishing data\n", seriesName)
+			return nil, -1, fmt.Errorf("failed to get volume info properly for series %q as there is no publishing data", seriesName)
 		}
 
 		secondsFromEpoch, err := strconv.Atoi(volume.Volume.Publishing.Seconds)
 		if err != nil {
-			return nil, -1, fmt.Errorf("failed to parse out seconds for volume %q: %w\n", volume.Volume.Title, err)
+			return nil, -1, fmt.Errorf("failed to parse out seconds for volume %q: %w", volume.Volume.Title, err)
 		}
 
 		var releaseDate = time.Unix(int64(secondsFromEpoch), int64(volume.Volume.Publishing.Nanos))

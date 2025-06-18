@@ -35,10 +35,10 @@ func (s *SevenSeasEntertainment) GetVolumeInfo(seriesName string, options siteha
 	// 	logger.WriteErrorf("failed call to internet archive to get latest page snapshot for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
 	// }
 
-	var url = s.options.BaseURL + seriesSlug + "/"
+	var url = s.options.BaseURL + seriesPath + seriesSlug + "/"
 	err := s.scrapper.Visit(url)
 	if err != nil {
-		return nil, -1, fmt.Errorf("failed call to Seven Seas Entertainment for %q: %w\n", url, err)
+		return nil, -1, fmt.Errorf("failed call to Seven Seas Entertainment for %q: %w", url, err)
 	}
 
 	var volumeInfo = []*sitehandler.VolumeInfo{}
