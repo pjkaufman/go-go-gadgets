@@ -39,7 +39,7 @@ install:
 			exit 1; \
 		}; \
 		echo "Generating completion for $$tool..."; \
-		"$$tool" > "$(BASH_COMPLETION_DIR)/$$tool-completion" || { \
+		"$$tool" completion bash > "$(BASH_COMPLETION_DIR)/$$tool-completion" || { \
 			echo "Warning: Failed to generate completion for $$tool"; \
 		}; \
 	done
@@ -78,7 +78,7 @@ clean:
 			echo "Removing $(BASH_COMPLETION_DIR)/$$tool-completion"; \
 			rm -f "$(BASH_COMPLETION_DIR)/$$tool-completion"; \
 		fi; \
-	donew
+	done
 	@if [ -f "$$PREFIX/bin/ebook-lint" ]; then \
 		echo "Removing $$PREFIX/bin/ebook-lint"; \
 		rm -f "$$PREFIX/bin/ebook-lint"; \
