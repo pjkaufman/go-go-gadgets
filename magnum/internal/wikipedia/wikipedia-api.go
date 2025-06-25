@@ -32,7 +32,7 @@ type SectionInfo struct {
 }
 
 func getSectionInfo(userAgent, pageTitle string) *WikipediaSectionInfo {
-	var url = fmt.Sprintf("%s%s?action=parse&prop=sections&page=%s&format=json", baseURL, apiPath, pageTitle)
+	var url = fmt.Sprintf("%s%s?action=parse&prop=sections&page=%s&format=json", BaseURL, apiPath, pageTitle)
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

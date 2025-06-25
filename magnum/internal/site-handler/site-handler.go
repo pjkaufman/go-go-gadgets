@@ -7,16 +7,19 @@ type VolumeInfo struct {
 	ReleaseDate *time.Time
 }
 
+type ApiPathBuilder func(string, string, string) string
+
 type SiteHandlerOptions struct {
 	BaseURL           string
 	ReleaseDateFormat string
 	Verbose           bool
+	UserAgent         string
+	BuildApiPath      ApiPathBuilder // for Wikipedia
 }
 
 type ScrapingOptions struct {
-	SlugOverride  *string
-	TablesToParse *int   // for Wikipedia
-	UserAgent     string // for Wikipedia
+	SlugOverride          *string
+	TablesToParseOverride *int // for Wikipedia
 }
 
 type SiteHandler interface {

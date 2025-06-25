@@ -23,15 +23,17 @@ const (
 )
 
 type GetVolumeInfoTestCase struct {
-	SeriesName      string
-	SlugOverride    *string
-	ExpectedVolumes []*VolumeInfo
-	ExpectedCount   int
+	SeriesName            string
+	SlugOverride          *string
+	TablesToParseOverride *int // for Wikipedia
+	ExpectedVolumes       []*VolumeInfo
+	ExpectedCount         int
 }
 
 type MockedEndpoint struct {
 	Slug     string
 	Response string
+	IsJson   bool
 }
 
 type GetVolumeInfoTestCases struct {
@@ -50,7 +52,13 @@ func createMockServerInstance(endpoints []MockedEndpoint) *httptest.Server {
 
 	for _, endpoint := range endpoints {
 		mux.HandleFunc(fmt.Sprintf("/%s", endpoint.Slug), func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/html")
+			var contentType = "text/html"
+			if endpoint.IsJson {
+				contentType = "application/json"
+			}
+
+			w.Header().Set("Content-Type", contentType)
+
 			fmt.Fprint(w, endpoint.Response)
 		})
 	}
@@ -71,9 +79,9 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 
 	for name, args := range cases.Tests {
 		t.Run(name, func(t *testing.T) {
-			scrapingOptions := ScrapingOptions{}
-			if args.SlugOverride != nil {
-				scrapingOptions.SlugOverride = args.SlugOverride
+			scrapingOptions := ScrapingOptions{
+				SlugOverride:          args.SlugOverride,
+				TablesToParseOverride: args.TablesToParseOverride,
 			}
 
 			actualVolumes, actualCount, err := handler.GetVolumeInfo(args.SeriesName, scrapingOptions)
@@ -102,4 +110,8 @@ func TimePtr(t time.Time) *time.Time {
 
 func StringPtr(s string) *string {
 	return &s
+}
+
+func IntPtr(i int) *int {
+	return &i
 }

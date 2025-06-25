@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -33,6 +34,7 @@ var GenerateTestCmd = &cobra.Command{
 			// if the page changes with regards to how the parsing needs to happen, then it needs to be updated
 			// manually to reflect the change in html structure
 			frozen bool
+			isJson bool
 		}
 
 		var goldenList = []goldenTestInfo{
@@ -81,10 +83,27 @@ var GenerateTestCmd = &cobra.Command{
 				url:      "https://yenpress.com/titles/9781975317997-a-certain-magical-index-ss-vol-2-light-novel",
 				filename: "yenpress/test/titles-9781975317997-a-certain-magical-index-ss-vol-2-light-novel.golden",
 			},
+			// Wikipedia
+			{
+				url:      "https://en.wikipedia.org/wiki/Rokka:_Braves_of_the_Six_Flowers",
+				filename: "wikipedia/test/wiki-rokka-braves-of-the-six-flowers.golden",
+			},
+			{
+				url:      wikipedia.GetWikipediaAPIUrl("https://en.wikipedia.org/", "w/api.php", "Rokka:_Braves_of_the_Six_Flowers"),
+				filename: "wikipedia/test/api-rokka-braves-of-the-six-flowers.golden",
+			},
+			{
+				url:      "https://en.wikipedia.org/wiki/List_of_The_Rising_of_the_Shield_Hero_volumes",
+				filename: "wikipedia/test/wiki-list-of-the-rising-of-the-shield-hero-volumes.golden",
+			},
+			{
+				url:      wikipedia.GetWikipediaAPIUrl("https://en.wikipedia.org/", "w/api.php", "List_of_The_Rising_of_the_Shield_Hero_volumes"),
+				filename: "wikipedia/test/api-list-of-the-rising-of-the-shield-hero-volumes.golden",
+			},
 		}
 
 		for _, test := range goldenList {
-			err := createGoldenFile(test.url, filepath.Join(goldenFilePath, test.filename), test.frozen)
+			err := createGoldenFile(test.url, filepath.Join(goldenFilePath, test.filename), test.frozen, test.isJson)
 
 			if err != nil {
 				logger.WriteErrorf("failed to create golden file for %s: %v", test.url, err)
@@ -99,7 +118,7 @@ func init() {
 	GenerateTestCmd.Flags().StringVarP(&goldenFilePath, "out", "o", "", "the output path for where to store the resulting golden files for the tests which should point to magnum's internal folder")
 }
 
-func createGoldenFile(url, out string, frozen bool) error {
+func createGoldenFile(url, out string, frozen, isJson bool) error {
 	if frozen {
 		exists, err := filehandler.FileExists(out)
 		if err != nil {
@@ -116,7 +135,11 @@ func createGoldenFile(url, out string, frozen bool) error {
 		return fmt.Errorf("error creating request: %w", err)
 	}
 
-	req.Header.Set("Accept", "text/html")
+	var accept = "text/html"
+	if isJson {
+		accept = "application/json"
+	}
+	req.Header.Set("Accept", accept)
 	req.Header.Set("User-Agent", userAgent)
 
 	client := &http.Client{}
