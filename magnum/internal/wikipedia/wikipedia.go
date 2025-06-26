@@ -15,7 +15,7 @@ type Wikipedia struct {
 func NewWikipediaHandler(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
 	return &Wikipedia{
 		options:  options,
-		scrapper: crawler.CreateNewCollyCrawler(options.Verbose),
+		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
 		api:      NewWikipediaApi(options.BaseURL, options.UserAgent, options.Verbose, options.BuildApiPath),
 	}
 }

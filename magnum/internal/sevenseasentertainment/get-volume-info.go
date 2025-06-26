@@ -28,13 +28,6 @@ func (s *SevenSeasEntertainment) GetVolumeInfo(seriesName string, options siteha
 		volumeContent = append(volumeContent, contentHtml)
 	})
 
-	// These are old versions of how this was handled. I am going to just use the site info directly.
-	// var url = googlecache.BuildCacheURL(baseURL + seriesPath + seriesSlug + "/")
-	// url, err := internetarchive.GetLatestPageSnapshot(baseURL+seriesPath+seriesSlug, verbose)
-	// if err != nil {
-	// 	logger.WriteErrorf("failed call to internet archive to get latest page snapshot for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
-	// }
-
 	var url = s.options.BaseURL + seriesPath + seriesSlug + "/"
 	err := s.scrapper.Visit(url)
 	if err != nil {

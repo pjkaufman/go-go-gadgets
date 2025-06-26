@@ -14,6 +14,6 @@ type YenPress struct {
 func NewYenPressHandler(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
 	return &YenPress{
 		options:  options,
-		scrapper: crawler.CreateNewCollyCrawler(options.Verbose),
+		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
 	}
 }

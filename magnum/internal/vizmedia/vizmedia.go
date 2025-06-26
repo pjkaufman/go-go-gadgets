@@ -14,6 +14,6 @@ type VizMedia struct {
 func NewVizMediaHandler(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
 	return &VizMedia{
 		options:  options,
-		scrapper: crawler.CreateNewCollyCrawler(options.Verbose),
+		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
 	}
 }

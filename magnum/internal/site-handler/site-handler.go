@@ -15,6 +15,7 @@ type SiteHandlerOptions struct {
 	Verbose           bool
 	UserAgent         string
 	BuildApiPath      ApiPathBuilder // for Wikipedia
+	AllowedDomains    []string
 }
 
 type ScrapingOptions struct {

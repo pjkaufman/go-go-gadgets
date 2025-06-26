@@ -71,8 +71,9 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 	srv.Start()
 
 	options := SiteHandlerOptions{
-		BaseURL: srv.URL + "/",
-		Verbose: true,
+		BaseURL:        srv.URL + "/",
+		Verbose:        true,
+		AllowedDomains: []string{"127.0.0.1"}, // the server should run on localhost
 	}
 
 	handler := cases.CreateSiteHandler(options)

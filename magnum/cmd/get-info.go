@@ -118,34 +118,39 @@ func setupHandlers() {
 	}
 
 	jNovelClubHandler = jnovelclub.NewJNovelClubHandler(sitehandler.SiteHandlerOptions{
-		BaseURL:   jnovelclub.BaseURL,
-		Verbose:   verbose,
-		UserAgent: userAgent,
+		BaseURL:        jnovelclub.BaseURL,
+		Verbose:        verbose,
+		UserAgent:      userAgent,
+		AllowedDomains: jnovelclub.AllowedDomains,
 	})
 
 	yenPressHandler = yenpress.NewYenPressHandler(sitehandler.SiteHandlerOptions{
-		BaseURL:   yenpress.BaseURL,
-		Verbose:   verbose,
-		UserAgent: userAgent,
+		BaseURL:        yenpress.BaseURL,
+		Verbose:        verbose,
+		UserAgent:      userAgent,
+		AllowedDomains: yenpress.AllowedDomains,
 	})
 
 	sevenSeasEntertainmentHandler = sevenseasentertainment.NewSevenSeasEntertainmentHandler(sitehandler.SiteHandlerOptions{
-		BaseURL:   sevenseasentertainment.BaseURL,
-		Verbose:   verbose,
-		UserAgent: userAgent,
+		BaseURL:        sevenseasentertainment.BaseURL,
+		Verbose:        verbose,
+		UserAgent:      userAgent,
+		AllowedDomains: sevenseasentertainment.AllowedDomains,
 	})
 
 	vizMediaHandler = vizmedia.NewVizMediaHandler(sitehandler.SiteHandlerOptions{
-		BaseURL:   vizmedia.BaseURL,
-		Verbose:   verbose,
-		UserAgent: userAgent,
+		BaseURL:        vizmedia.BaseURL,
+		Verbose:        verbose,
+		UserAgent:      userAgent,
+		AllowedDomains: vizmedia.AllowedDomains,
 	})
 
 	wikipediaHandler = wikipedia.NewWikipediaHandler(sitehandler.SiteHandlerOptions{
-		BaseURL:      wikipedia.BaseURL,
-		Verbose:      verbose,
-		UserAgent:    userAgent,
-		BuildApiPath: wikipedia.GetWikipediaAPIUrl,
+		BaseURL:        wikipedia.BaseURL,
+		Verbose:        verbose,
+		UserAgent:      userAgent,
+		BuildApiPath:   wikipedia.GetWikipediaAPIUrl,
+		AllowedDomains: wikipedia.AllowedDomains,
 	})
 
 	handlersInitialized = true

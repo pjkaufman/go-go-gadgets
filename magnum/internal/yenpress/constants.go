@@ -5,3 +5,5 @@ const (
 	seriesPath        = "series/"
 	releaseDateFormat = "Jan 02, 2006"
 )
+
+var AllowedDomains = []string{"yenpress.com"}

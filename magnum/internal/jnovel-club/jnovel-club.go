@@ -14,6 +14,6 @@ type JNovelClub struct {
 func NewJNovelClubHandler(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
 	return &JNovelClub{
 		options:  options,
-		scrapper: crawler.CreateNewCollyCrawler(options.Verbose),
+		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
 	}
 }

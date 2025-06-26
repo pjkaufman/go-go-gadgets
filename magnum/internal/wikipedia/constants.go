@@ -6,3 +6,5 @@ const (
 	wikiPath          = "wiki/"
 	releaseDateFormat = "January 2, 2006"
 )
+
+var AllowedDomains = []string{"en.wikipedia.org"}

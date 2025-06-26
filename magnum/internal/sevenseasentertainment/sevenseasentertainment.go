@@ -14,6 +14,6 @@ type SevenSeasEntertainment struct {
 func NewSevenSeasEntertainmentHandler(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
 	return &SevenSeasEntertainment{
 		options:  options,
-		scrapper: crawler.CreateNewCollyCrawler(options.Verbose),
+		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
 	}
 }
