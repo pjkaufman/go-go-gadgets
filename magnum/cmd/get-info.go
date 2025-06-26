@@ -207,45 +207,6 @@ func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler siteha
 	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, numVolumes, volumes[0].Name)
 }
 
-func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	volumes, numVolumes := yenpress.GetVolumes(seriesInfo.Name, seriesInfo.SlugOverride, verbose)
-
-	if len(volumes) == -1 {
-		logger.WriteErrorf("The Yen Press light novels were not found for %q. The HTML for the site or page may have changed.", seriesInfo.Name)
-	}
-
-	if len(volumes) == 0 {
-		logger.WriteInfof("The Yen Press light novels do not exist for series %q.", seriesInfo.Name)
-
-		return seriesInfo
-	}
-
-	// We cannot really trust that Yen Press release data is 100% accurate as they could have delayed the book release,
-	// so we need to double check volumes any time we have an upcoming release
-	if numVolumes == seriesInfo.TotalVolumes && len(seriesInfo.UnreleasedVolumes) == 0 {
-		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
-	}
-
-	var today = time.Now()
-	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
-	var unreleasedVolumes = []string{}
-	var releaseDateInfo = []string{}
-	for _, info := range volumes {
-		releaseDate := yenpress.GetReleaseDateInfo(info, verbose)
-
-		if releaseDate != nil {
-			if releaseDate.Before(today) {
-				break
-			} else {
-				releaseDateInfo = append(releaseDateInfo, releaseDate.Format("January 2, 2006"))
-				unreleasedVolumes = append(unreleasedVolumes, info.Name)
-			}
-		}
-	}
-
-	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, numVolumes, volumes[0].Name)
-}
-
 func printReleaseInfoAndUpdateSeriesInfo(seriesInfo config.SeriesInfo, unreleasedVolumes, releaseDateInfo []string, totalVolumes int, latestVolumeName string) config.SeriesInfo {
 	var releaseInfo = []config.ReleaseInfo{}
 	for i, unreleasedVol := range unreleasedVolumes {
