@@ -24,7 +24,7 @@ func GetReleaseDateInfo(info *VolumeInfo, verbose bool) *time.Time {
 		releaseDate = e.Text
 	})
 
-	var volumeURL = baseURL + info.RelativeLink
+	var volumeURL = BaseURL + info.RelativeLink
 	err := c.Visit(volumeURL)
 	if err != nil {
 		logger.WriteErrorf("failed call to Yen Press: %s\n", err)

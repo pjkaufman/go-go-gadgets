@@ -8,6 +8,7 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
 	jnovelclub "github.com/pjkaufman/go-go-gadgets/magnum/internal/jnovel-club"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/sevenseasentertainment"
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/vizmedia"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/yenpress"
@@ -16,6 +17,15 @@ import (
 )
 
 var promptForSeries bool
+
+var (
+	handlersInitialized           = false
+	jNovelClubHandler             sitehandler.SiteHandler
+	sevenSeasEntertainmentHandler sitehandler.SiteHandler
+	wikipediaHandler              sitehandler.SiteHandler
+	yenPressHandler               sitehandler.SiteHandler
+	vizMediaHandler               sitehandler.SiteHandler
+)
 
 // GetInfoCmd represents the get book info command
 var GetInfoCmd = &cobra.Command{
@@ -46,6 +56,7 @@ var GetInfoCmd = &cobra.Command{
 				return
 			}
 
+			setupHandlers()
 			for i, series := range seriesInfo.Series {
 				if strings.EqualFold(seriesName, series.Name) {
 					seriesInfo.Series[i] = getSeriesVolumeInfo(series)
@@ -56,6 +67,7 @@ var GetInfoCmd = &cobra.Command{
 			return // on the off chance that we somehow have it, but then don't find it
 		}
 
+		setupHandlers()
 		for i, series := range seriesInfo.Series {
 			if series.Status != config.Completed || includeCompleted {
 				seriesInfo.Series[i] = getSeriesVolumeInfo(series)
@@ -78,20 +90,121 @@ func init() {
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
 	logger.WriteInfof("Checking for volume info for %q\n", seriesInfo.Name)
 
+	var handler sitehandler.SiteHandler
 	switch seriesInfo.Publisher {
 	case config.YenPress:
-		return yenPressGetSeriesVolumeInfo(seriesInfo)
+		handler = yenPressHandler
+
 	case config.JNovelClub:
-		return jNovelClubGetSeriesVolumeInfo(seriesInfo)
+		handler = jNovelClubHandler
 	case config.SevenSeasEntertainment:
-		return sevenSeasEntertainmentGetSeriesVolumeInfo(seriesInfo)
+		handler = sevenSeasEntertainmentHandler
 	case config.OnePeaceBooks, config.HanashiMedia:
-		return wikipediaGetSeriesVolumeInfo(seriesInfo)
+		handler = wikipediaHandler
 	case config.VizMedia:
-		return vizMediaGetSeriesVolumeInfo(seriesInfo)
-	default:
+		handler = vizMediaHandler
+	}
+
+	if handler == nil {
 		return seriesInfo
 	}
+
+	return sitehandlerGetSeriesVolumeInfo(seriesInfo, handler)
+}
+
+func setupHandlers() {
+	if handlersInitialized {
+		return
+	}
+
+	jNovelClubHandler = jnovelclub.NewJNovelClubHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:   jnovelclub.BaseURL,
+		Verbose:   verbose,
+		UserAgent: userAgent,
+	})
+
+	yenPressHandler = yenpress.NewYenPressHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:   yenpress.BaseURL,
+		Verbose:   verbose,
+		UserAgent: userAgent,
+	})
+
+	sevenSeasEntertainmentHandler = sevenseasentertainment.NewSevenSeasEntertainmentHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:   sevenseasentertainment.BaseURL,
+		Verbose:   verbose,
+		UserAgent: userAgent,
+	})
+
+	vizMediaHandler = vizmedia.NewVizMediaHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:   vizmedia.BaseURL,
+		Verbose:   verbose,
+		UserAgent: userAgent,
+	})
+
+	wikipediaHandler = wikipedia.NewWikipediaHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:      wikipedia.BaseURL,
+		Verbose:      verbose,
+		UserAgent:    userAgent,
+		BuildApiPath: wikipedia.GetWikipediaAPIUrl,
+	})
+
+	handlersInitialized = true
+}
+
+func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler sitehandler.SiteHandler) config.SeriesInfo {
+	volumes, numVolumes, err := handler.GetVolumeInfo(seriesInfo.Name, sitehandler.ScrapingOptions{
+		SlugOverride:          seriesInfo.SlugOverride,
+		TablesToParseOverride: seriesInfo.WikipediaTablesToParseOverride,
+	})
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	if len(volumes) == -1 {
+		logger.WriteErrorf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+	}
+
+	if numVolumes == 0 {
+		logger.WriteInfof("The %s light novels do not exist for series %q.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+
+		return seriesInfo
+	}
+
+	var shouldSkipGettingVolumesAndHandleExistingData bool
+	switch seriesInfo.Publisher {
+	case config.YenPress:
+		// We cannot really trust that Yen Press release data is 100% accurate as they could have delayed the book release,
+		// so we need to double check volumes any time we have an upcoming release
+		shouldSkipGettingVolumesAndHandleExistingData = numVolumes == seriesInfo.TotalVolumes && len(seriesInfo.UnreleasedVolumes) == 0
+	case config.JNovelClub:
+		shouldSkipGettingVolumesAndHandleExistingData = len(volumes) == seriesInfo.TotalVolumes
+	default:
+		shouldSkipGettingVolumesAndHandleExistingData = len(volumes) == seriesInfo.TotalVolumes && (len(seriesInfo.UnreleasedVolumes) == 0 || seriesInfo.UnreleasedVolumes[0].ReleaseDate != defaultReleaseDate)
+	}
+
+	if shouldSkipGettingVolumesAndHandleExistingData {
+		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
+	}
+
+	var today = time.Now()
+	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+	var unreleasedVolumes = []string{}
+	var releaseDateInfo = []string{}
+	for _, info := range volumes {
+		if info.ReleaseDate != nil && info.ReleaseDate.Before(today) {
+			break
+		} else {
+			var releaseDate = defaultReleaseDate
+			if info.ReleaseDate != nil {
+				releaseDate = info.ReleaseDate.Format(releaseDateFormat)
+			}
+
+			releaseDateInfo = append(releaseDateInfo, releaseDate)
+			unreleasedVolumes = append(unreleasedVolumes, info.Name)
+		}
+	}
+
+	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, numVolumes, volumes[0].Name)
 }
 
 func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
@@ -131,137 +244,6 @@ func yenPressGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo
 	}
 
 	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, numVolumes, volumes[0].Name)
-}
-
-func jNovelClubGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	volumeInfo := jnovelclub.GetVolumeInfo(seriesInfo.Name, seriesInfo.SlugOverride, verbose)
-
-	if len(volumeInfo) == 0 {
-		logger.WriteInfo("The jnovel club light novels do not exist for this series.")
-
-		return seriesInfo
-	}
-
-	if len(volumeInfo) == seriesInfo.TotalVolumes {
-		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
-	}
-
-	var today = time.Now()
-	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
-	var unreleasedVolumes = []string{}
-	var releaseDateInfo = []string{}
-	for _, info := range volumeInfo {
-		if info.ReleaseDate.Before(today) {
-			break
-		} else {
-			releaseDateInfo = append(releaseDateInfo, info.ReleaseDate.Format(releaseDateFormat))
-			unreleasedVolumes = append(unreleasedVolumes, info.Name)
-		}
-
-	}
-
-	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, len(volumeInfo), volumeInfo[0].Name)
-}
-
-func wikipediaGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	volumeInfo := wikipedia.GetVolumeInfo(userAgent, seriesInfo.Name, seriesInfo.SlugOverride, seriesInfo.WikipediaTablesToParseOverride, verbose)
-
-	if len(volumeInfo) == 0 {
-		logger.WriteInfo("The wikipedia light novels do not exist for this series.")
-
-		return seriesInfo
-	}
-
-	if len(volumeInfo) == seriesInfo.TotalVolumes && (len(seriesInfo.UnreleasedVolumes) == 0 || seriesInfo.UnreleasedVolumes[0].ReleaseDate != defaultReleaseDate) {
-		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
-	}
-
-	var today = time.Now()
-	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
-	var unreleasedVolumes = []string{}
-	var releaseDateInfo = []string{}
-	for _, info := range volumeInfo {
-		if info.ReleaseDate != nil && info.ReleaseDate.Before(today) {
-			break
-		} else {
-			var releaseDate = defaultReleaseDate
-			if info.ReleaseDate != nil {
-				releaseDate = info.ReleaseDate.Format("January 2, 2006")
-			}
-
-			releaseDateInfo = append(releaseDateInfo, releaseDate)
-			unreleasedVolumes = append(unreleasedVolumes, info.Name)
-		}
-
-	}
-
-	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, len(volumeInfo), volumeInfo[0].Name)
-}
-
-func sevenSeasEntertainmentGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	volumeInfo := sevenseasentertainment.GetVolumeInfo(seriesInfo.Name, seriesInfo.SlugOverride, verbose)
-
-	if len(volumeInfo) == 0 {
-		logger.WriteInfo("The seven seas entertainment light novels do not exist for this series.")
-
-		return seriesInfo
-	}
-
-	if len(volumeInfo) == seriesInfo.TotalVolumes && (len(seriesInfo.UnreleasedVolumes) == 0 || seriesInfo.UnreleasedVolumes[0].ReleaseDate != defaultReleaseDate) {
-		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
-	}
-
-	var today = time.Now()
-	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
-	var unreleasedVolumes = []string{}
-	var releaseDateInfo = []string{}
-	for _, info := range volumeInfo {
-		if info.ReleaseDate != nil && info.ReleaseDate.Before(today) {
-			break
-		} else {
-			var releaseDate = defaultReleaseDate
-			if info.ReleaseDate != nil {
-				releaseDate = info.ReleaseDate.Format("January 2, 2006")
-			}
-
-			releaseDateInfo = append(releaseDateInfo, releaseDate)
-			unreleasedVolumes = append(unreleasedVolumes, info.Name)
-		}
-
-	}
-
-	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, len(volumeInfo), volumeInfo[0].Name)
-}
-
-func vizMediaGetSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
-	volumeInfo := vizmedia.GetVolumeInfo(seriesInfo.Name, seriesInfo.SlugOverride, verbose)
-
-	if len(volumeInfo) == 0 {
-		logger.WriteInfo("The viz media series does not exist.")
-
-		return seriesInfo
-	}
-
-	if len(volumeInfo) == seriesInfo.TotalVolumes && (len(seriesInfo.UnreleasedVolumes) == 0 || seriesInfo.UnreleasedVolumes[0].ReleaseDate != defaultReleaseDate) {
-		return handleNoChangeDisplayAndSeriesInfoUpdates(seriesInfo)
-	}
-
-	var today = time.Now()
-	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
-	var unreleasedVolumes = []string{}
-	var releaseDateInfo = []string{}
-	for _, info := range volumeInfo {
-		if info.ReleaseDate.Before(today) {
-			break
-		} else {
-			var releaseDate = info.ReleaseDate.Format("January 2, 2006")
-
-			releaseDateInfo = append(releaseDateInfo, releaseDate)
-			unreleasedVolumes = append(unreleasedVolumes, info.Name)
-		}
-	}
-
-	return printReleaseInfoAndUpdateSeriesInfo(seriesInfo, unreleasedVolumes, releaseDateInfo, len(volumeInfo), volumeInfo[0].Name)
 }
 
 func printReleaseInfoAndUpdateSeriesInfo(seriesInfo config.SeriesInfo, unreleasedVolumes, releaseDateInfo []string, totalVolumes int, latestVolumeName string) config.SeriesInfo {

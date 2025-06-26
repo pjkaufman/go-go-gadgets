@@ -38,6 +38,10 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 		return nil, -1, fmt.Errorf("failed to get the list of volumes link for %q", seriesName)
 	}
 
+	// reset colly before moving to the next page to avoid the potential blowback of having
+	// the OnHtml logic and other logic running again
+	v.scrapper = v.scrapper.Clone()
+
 	volumes, err := v.getListOfVolumesWithInfoV2(fullVolumeLink, seriesName)
 	if err != nil {
 		return nil, -1, err
@@ -50,7 +54,7 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 
 func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string) ([]*sitehandler.VolumeInfo, error) {
 	var volumes = []*sitehandler.VolumeInfo{}
-
+	// fmt.Println("I am groot...")
 	var volumeNum = 1
 	v.scrapper.OnHTML("body > div.bg-off-white.overflow-hide > section > section.row.mar-t-lg.mar-t-xl--lg.mar-last-row > div > article", func(e *colly.HTMLElement) {
 		var html, err = e.DOM.Html()
@@ -66,6 +70,7 @@ func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string)
 
 		volumeNum++
 
+		fmt.Println(volumeReleasePage)
 		// to minimize the amount of API calls we need to make, we will only get the actual release dates for unreleased
 		if isReleased {
 			volumes = append(volumes, &sitehandler.VolumeInfo{

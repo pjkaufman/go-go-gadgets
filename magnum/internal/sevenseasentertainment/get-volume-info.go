@@ -43,7 +43,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []Volu
 	// if err != nil {
 	// 	logger.WriteErrorf("failed call to internet archive to get latest page snapshot for %q: %s\n", baseURL+seriesPath+seriesSlug, err)
 	// }
-	var url = baseURL + seriesPath + seriesSlug + "/"
+	var url = BaseURL + seriesPath + seriesSlug + "/"
 	err = c.Visit(url)
 	if err != nil {
 		logger.WriteErrorf("failed call to internet archive for %q: %s\n", url, err)

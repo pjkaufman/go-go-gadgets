@@ -58,6 +58,10 @@ func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
 	var volumeData []*sitehandler.VolumeInfo
 	for _, info := range volumes {
+		// reset colly before moving to the next page to avoid the potential blowback of having
+		// the OnHtml logic and other logic running again
+		y.scrapper = y.scrapper.Clone()
+
 		releaseDate, err := y.getReleaseDateInfo(info)
 		if err != nil {
 			return nil, -1, err
@@ -65,6 +69,11 @@ func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 
 		if releaseDate != nil {
 			if releaseDate.Before(today) {
+				// we need at least one record to avoid getting an error when printing out names
+				volumeData = append(volumeData, &sitehandler.VolumeInfo{
+					Name:        info.Name,
+					ReleaseDate: releaseDate,
+				})
 				break
 			} else {
 				volumeData = append(volumeData, &sitehandler.VolumeInfo{

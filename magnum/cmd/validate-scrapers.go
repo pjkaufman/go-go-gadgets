@@ -59,6 +59,7 @@ var ValidateScraperCmd = &cobra.Command{
 			scraperName      string
 		)
 		validationResult.WriteString("Validation Results:\n")
+		setupHandlers()
 		for _, series := range validationSeries {
 			output := getSeriesVolumeInfo(series)
 

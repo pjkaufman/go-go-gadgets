@@ -36,7 +36,7 @@ func GetVolumeInfo(seriesName string, slugOverride *string, verbose bool) []*Vol
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
-	var seriesURL = baseURL + seriesSlug
+	var seriesURL = BaseURL + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
 		logger.WriteErrorf("failed call to viz media series page: %s\n", err)
@@ -85,7 +85,7 @@ func getListOfVolumesWithInfo(c *colly.Collector, fullVolumeLink, seriesName str
 		})
 	})
 
-	var mangaVolumesLink = baseURL + fullVolumeLink
+	var mangaVolumesLink = BaseURL + fullVolumeLink
 	err := c.Visit(mangaVolumesLink)
 	if err != nil {
 		logger.WriteErrorf("failed call to viz media volumes page: %s\n", err)
@@ -110,7 +110,7 @@ func getVolumeReleaseDate(c *colly.Collector, volumeReleasePage string) time.Tim
 		releaseDate = tempDate
 	})
 
-	var mangaVolumesLink = baseURL + volumeReleasePage
+	var mangaVolumesLink = BaseURL + volumeReleasePage
 	err := c.Visit(mangaVolumesLink)
 	if err != nil {
 		logger.WriteErrorf("failed call to viz media volume release page: %s\n", err)

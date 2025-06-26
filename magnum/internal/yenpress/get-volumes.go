@@ -53,7 +53,7 @@ func GetVolumes(seriesName string, slugOverride *string, verbose bool) ([]*Volum
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
-	var seriesURL = baseURL + seriesPath + seriesSlug
+	var seriesURL = BaseURL + seriesPath + seriesSlug
 	err := c.Visit(seriesURL)
 	if err != nil {
 		logger.WriteErrorf("failed call to yen press: %s\n", err)
