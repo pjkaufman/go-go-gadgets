@@ -9,7 +9,7 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
-func ParseWikipediaTableToVolumeInfoV2(namePrefix, tableHtml string) ([]*sitehandler.VolumeInfo, error) {
+func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) ([]*sitehandler.VolumeInfo, error) {
 	var rows = volumeRowHeaderRegex.FindAllStringSubmatch(tableHtml, -1)
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("failed to find table row info for: %s", namePrefix)
@@ -54,4 +54,23 @@ func ParseWikipediaTableToVolumeInfoV2(namePrefix, tableHtml string) ([]*sitehan
 	}
 
 	return volumeInfo, nil
+}
+
+func getEnglishReleaseDateFromRow(rowHtml string) (string, bool, error) {
+	numTds, actualColumns, err := GetColumnCountFromTr(rowHtml)
+	if err != nil {
+		return "", false, err
+	}
+
+	expectedDateColumn, ok := columnAmountToExpectedColumn[actualColumns]
+	if !ok || expectedDateColumn > numTds {
+		return "", false, nil
+	}
+
+	var releaseDateColumn = rowHtml
+	for i := 0; i < expectedDateColumn; i++ {
+		releaseDateColumn = releaseDateColumn[strings.Index(releaseDateColumn, tableDataStartingElIndicator)+4:]
+	}
+
+	return ParseDateFromTd(releaseDateColumn), true, nil
 }

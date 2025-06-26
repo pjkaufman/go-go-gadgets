@@ -12,6 +12,8 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
+var alreadyReleasedDate = time.Now().Add(-1 * 24 * time.Hour)
+
 func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
 	var fullVolumeLink string
 	v.scrapper.OnHTML("#section1 > div > div.clearfix.mar-t-md.mar-b-lg > div > a", func(e *colly.HTMLElement) {
@@ -42,7 +44,7 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 	// the OnHtml logic and other logic running again
 	v.scrapper = v.scrapper.Clone()
 
-	volumes, err := v.getListOfVolumesWithInfoV2(fullVolumeLink, seriesName)
+	volumes, err := v.getListOfVolumesWithInfo(fullVolumeLink, seriesName)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -52,7 +54,7 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 	return volumes, len(volumes), nil
 }
 
-func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string) ([]*sitehandler.VolumeInfo, error) {
+func (v *VizMedia) getListOfVolumesWithInfo(fullVolumeLink, seriesName string) ([]*sitehandler.VolumeInfo, error) {
 	var volumes = []*sitehandler.VolumeInfo{}
 
 	var volumeNum = 1
@@ -82,7 +84,7 @@ func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string)
 
 		volumes = append(volumes, &sitehandler.VolumeInfo{
 			Name:        name,
-			ReleaseDate: v.getVolumeReleaseDateV2(volumeReleasePage),
+			ReleaseDate: v.getVolumeReleaseDate(volumeReleasePage),
 		})
 	})
 
@@ -97,7 +99,7 @@ func (v *VizMedia) getListOfVolumesWithInfoV2(fullVolumeLink, seriesName string)
 	return volumes, nil
 }
 
-func (v *VizMedia) getVolumeReleaseDateV2(volumeReleasePage string) *time.Time {
+func (v *VizMedia) getVolumeReleaseDate(volumeReleasePage string) *time.Time {
 	var releaseDate time.Time
 	v.scrapper.OnHTML("#product_row > div.row.pad-b-xl > div.g-6--lg.type-sm.type-rg--md.line-caption > div:nth-child(1) > div.o_release-date.mar-b-md", func(e *colly.HTMLElement) {
 		var text = e.DOM.Text()

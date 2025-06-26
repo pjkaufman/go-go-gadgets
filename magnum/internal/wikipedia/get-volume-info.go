@@ -1,20 +1,15 @@
 package wikipedia
 
 import (
+	"fmt"
 	"regexp"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/gocolly/colly/v2"
-	"github.com/pjkaufman/go-go-gadgets/pkg/crawler"
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
-
-type VolumeInfo struct {
-	Name        string
-	ReleaseDate *time.Time
-}
 
 var wikiTableRegex = regexp.MustCompile(`<table[^>]*class="wikitable"[^>]*>`)
 var volumeRowHeaderRegex = regexp.MustCompile(`<th[^>]*scope="row"[^>]*>([^<]*)</th>`)
@@ -32,15 +27,23 @@ const (
 	tableDataEndingElIndicator   = "</td"
 )
 
-func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseOverride *int, verbose bool) []VolumeInfo {
+func convertTitleToSlug(title string) string {
+	return strings.ReplaceAll(title, " ", "_")
+}
+
+func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
 	var seriesSlug string
-	if slugOverride != nil {
-		seriesSlug = *slugOverride
+	if options.SlugOverride != nil {
+		seriesSlug = *options.SlugOverride
 	} else {
-		seriesSlug = convertTitleToSlug(title)
+		seriesSlug = convertTitleToSlug(seriesName)
 	}
 
-	sections := getSectionInfo(userAgent, seriesSlug)
+	sections, err := w.api.GetSectionInfo(seriesSlug)
+	if err != nil {
+		return nil, -1, err
+	}
+
 	var lnSection SectionInfo
 	var sectionAfterLn SectionInfo
 	var subSectionTiles []string
@@ -69,15 +72,11 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	}
 
 	if lnSection.Heading == "" {
-		logger.WriteError("failed to get light novel section")
+		return nil, -1, fmt.Errorf("failed to get light novel section")
 	}
 
-	c := crawler.CreateNewCollyCrawler(verbose)
-
-	var err error
-
 	var contentHtml string
-	c.OnHTML("#content > div.vector-page-toolbar", func(e *colly.HTMLElement) {
+	w.scrapper.OnHTML("#content > div.vector-page-toolbar", func(e *colly.HTMLElement) {
 		var content = e.DOM.Parent()
 		contentHtml, err = content.Html()
 
@@ -88,7 +87,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 
 	var lnHeadingHtml string
 	var startIndexOfLnSection int
-	c.OnHTML("#"+lnSection.Anchor, func(e *colly.HTMLElement) {
+	w.scrapper.OnHTML("#"+lnSection.Anchor, func(e *colly.HTMLElement) {
 		var parents = e.DOM.Parent()
 		lnHeadingHtml, err = parents.Html()
 		if err != nil {
@@ -104,7 +103,7 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	var lnSectionAfterLnHtml string
 	var endIndexOfLnSection int = -1
 	if sectionAfterLn.Heading != "" {
-		c.OnHTML("#"+sectionAfterLn.Anchor, func(e *colly.HTMLElement) {
+		w.scrapper.OnHTML("#"+sectionAfterLn.Anchor, func(e *colly.HTMLElement) {
 			var parents = e.DOM.Parent()
 			lnSectionAfterLnHtml, err = parents.Html()
 			if err != nil {
@@ -118,10 +117,10 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 		})
 	}
 
-	var url = BaseURL + wikiPath + seriesSlug
-	err = c.Visit(url)
+	var url = w.options.BaseURL + wikiPath + seriesSlug
+	err = w.scrapper.Visit(url)
 	if err != nil {
-		logger.WriteErrorf("failed call to wikipedia for %q: %s\n", url, err)
+		return nil, -1, fmt.Errorf("failed call to wikipedia for %q: %w", url, err)
 	}
 
 	var lnSectionHtml string
@@ -132,34 +131,35 @@ func GetVolumeInfo(userAgent, title string, slugOverride *string, tablesToParseO
 	}
 
 	if len(subSectionTiles) == 0 {
-		subSectionTiles = []string{title}
+		subSectionTiles = []string{seriesName}
 	}
 
 	var numTables = strings.Count(lnSectionHtml, "wikitable")
 	if numTables == 0 {
-		logger.WriteErrorf("could not find tables for light novel section: %s\n", err)
+		return nil, -1, fmt.Errorf("could not find tables for light novel section: %w", err)
 	} else if len(subSectionTiles)+1 == numTables {
-		subSectionTiles = append([]string{title}, subSectionTiles...)
+		subSectionTiles = append([]string{seriesName}, subSectionTiles...)
 	} else if len(subSectionTiles) != numTables {
-		logger.WriteErrorf("number of tables does not match number of table title prefixes for %q: %d vs. %d\n", title, len(subSectionTiles), numTables)
+		return nil, -1, fmt.Errorf("number of tables does not match number of table title prefixes for %q: %d vs. %d", seriesName, len(subSectionTiles), numTables)
 	}
 
-	var volumeInfo = []VolumeInfo{}
+	var volumeInfo = []*sitehandler.VolumeInfo{}
 	for i, subSectionTitle := range subSectionTiles {
-		if tablesToParseOverride != nil && *tablesToParseOverride < i+1 {
+		if options.TablesToParseOverride != nil && *options.TablesToParseOverride < i+1 {
 			break
 		}
 
 		tableHtml, stop := GetNextTableAndItsEndPosition(lnSectionHtml)
-		volumeInfo = append(volumeInfo, ParseWikipediaTableToVolumeInfo(subSectionTitle, tableHtml)...)
+		volumes, err := ParseWikipediaTableToVolumeInfo(subSectionTitle, tableHtml)
+		if err != nil {
+			return nil, -1, err
+		}
+
+		volumeInfo = append(volumeInfo, volumes...)
 		lnSectionHtml = lnSectionHtml[stop:]
 	}
 
 	slices.Reverse(volumeInfo)
 
-	return volumeInfo
-}
-
-func convertTitleToSlug(title string) string {
-	return strings.ReplaceAll(title, " ", "_")
+	return volumeInfo, len(volumeInfo), nil
 }

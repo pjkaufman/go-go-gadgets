@@ -12,6 +12,11 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
+type VolumeInfo struct {
+	Name         string
+	RelativeLink string
+}
+
 func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
 	var volumes = []*VolumeInfo{}
 
