@@ -1,4 +1,4 @@
-/*go:build generate_test*/
+//go:build generate_golden
 
 package cmd
 

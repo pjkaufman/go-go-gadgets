@@ -89,4 +89,9 @@ update-deps:
 	@echo "Installing all dependency updates"
 	@go get -u ./...
 	@go mod tidy
-	@ echo "Update complete"
+	@echo "Update complete"
+
+golden:
+	@echo "Generating golden files"
+	@go run -tags "generate_golden" ./magnum/ golden -o ./magnum/internal
+	@echo "Golden files generated"
