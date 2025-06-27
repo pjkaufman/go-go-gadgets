@@ -9,7 +9,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 var alreadyReleasedDate = time.Now().Add(-1 * 24 * time.Hour)
@@ -70,10 +69,17 @@ func (v *VizMedia) getListOfVolumesWithInfo(fullVolumeLink, seriesName string) (
 			return
 		}
 
-		// TODO: update this to only care about Manga (see UT/validator for a sample of one with non-manga)
 		name, volumeReleasePage, isReleased, err := ParseVolumeHtml(html, seriesName, volumeNum)
 		if err != nil {
-			logger.WriteError(err.Error())
+			firstErr = err
+			e.Request.Abort()
+
+			return
+		}
+
+		// We did not have a name or more likely we encountered a non-Manga value
+		if name == "" {
+			return
 		}
 
 		volumeNum++

@@ -37,7 +37,7 @@ var validationSeries = []config.SeriesInfo{
 	},
 	{ // Viz Media
 		Name:         "Nausicaa of the Valley of the Wind",
-		TotalVolumes: 11,
+		TotalVolumes: 7,
 		LatestVolume: "Nausicaä of the Valley of the Wind Picture Book",
 		Publisher:    config.VizMedia,
 		Status:       config.Completed,

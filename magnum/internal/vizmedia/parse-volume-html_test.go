@@ -132,6 +132,10 @@ func TestParseVolumeHtml(t *testing.T) {
 			actualName, actualRedirectLink, actualIsReleased, err := vizmedia.ParseVolumeHtml(args.InputHtml, args.InputSeriesName, 0)
 
 			assert.Equal(t, err != nil, args.ExpectError)
+			if err != nil && !args.ExpectError {
+				assert.Fail(t, "An error should not have been thrown: "+err.Error())
+			}
+
 			assert.Equal(t, args.ExpectedName, actualName)
 			assert.Equal(t, args.ExpectedRedirectLink, actualRedirectLink)
 			assert.Equal(t, args.ExpectedIsReleased, actualIsReleased)

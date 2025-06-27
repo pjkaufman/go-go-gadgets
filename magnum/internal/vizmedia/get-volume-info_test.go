@@ -25,22 +25,6 @@ var (
 				SlugOverride: sitehandler.StringPtr("nausicaa-of-the-valley-of-the-wind"),
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
-						Name:        "Nausicaä of the Valley of the Wind Picture Book",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
-					},
-					{
-						Name:        "The Art of Nausicaä of the Valley of the Wind",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
-					},
-					{
-						Name:        "Nausicaä of the Valley of the Wind Box Set",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
-					},
-					{
-						Name:        "Nausicaä of the Valley of the Wind: Watercolor Impressions",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
-					},
-					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 7",
 						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
 					},
@@ -69,7 +53,7 @@ var (
 						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
 					},
 				},
-				ExpectedCount: 11,
+				ExpectedCount: 7,
 			},
 		},
 		Endpoints: []sitehandler.MockedEndpoint{
