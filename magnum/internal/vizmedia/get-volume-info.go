@@ -55,13 +55,19 @@ func (v *VizMedia) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 }
 
 func (v *VizMedia) getListOfVolumesWithInfo(fullVolumeLink, seriesName string) ([]*sitehandler.VolumeInfo, error) {
-	var volumes = []*sitehandler.VolumeInfo{}
+	var (
+		volumes   = []*sitehandler.VolumeInfo{}
+		firstErr  error
+		volumeNum = 1
+	)
 
-	var volumeNum = 1
 	v.scrapper.OnHTML("body > div.bg-off-white.overflow-hide > section > section.row.mar-t-lg.mar-t-xl--lg.mar-last-row > div > article", func(e *colly.HTMLElement) {
 		var html, err = e.DOM.Html()
 		if err != nil {
-			logger.WriteErrorf("failed to get the html for the volume info for %q\n", fullVolumeLink)
+			firstErr = fmt.Errorf("failed to get the html for the volume info for %q: %w", fullVolumeLink, err)
+			e.Request.Abort()
+
+			return
 		}
 
 		// TODO: update this to only care about Manga (see UT/validator for a sample of one with non-manga)
@@ -82,9 +88,17 @@ func (v *VizMedia) getListOfVolumesWithInfo(fullVolumeLink, seriesName string) (
 			return
 		}
 
+		releaseDate, err := v.getVolumeReleaseDate(volumeReleasePage)
+		if err != nil {
+			firstErr = err
+			e.Request.Abort()
+
+			return
+		}
+
 		volumes = append(volumes, &sitehandler.VolumeInfo{
 			Name:        name,
-			ReleaseDate: v.getVolumeReleaseDate(volumeReleasePage),
+			ReleaseDate: releaseDate,
 		})
 	})
 
@@ -94,20 +108,30 @@ func (v *VizMedia) getListOfVolumesWithInfo(fullVolumeLink, seriesName string) (
 		return nil, fmt.Errorf("failed call to viz media volumes page: %w", err)
 	}
 
+	if firstErr != nil {
+		return nil, firstErr
+	}
+
 	slices.Reverse(volumes)
 
 	return volumes, nil
 }
 
-func (v *VizMedia) getVolumeReleaseDate(volumeReleasePage string) *time.Time {
-	var releaseDate time.Time
+func (v *VizMedia) getVolumeReleaseDate(volumeReleasePage string) (*time.Time, error) {
+	var (
+		releaseDate time.Time
+		firstErr    error
+	)
 	v.scrapper.OnHTML("#product_row > div.row.pad-b-xl > div.g-6--lg.type-sm.type-rg--md.line-caption > div:nth-child(1) > div.o_release-date.mar-b-md", func(e *colly.HTMLElement) {
 		var text = e.DOM.Text()
 
 		text = strings.TrimSpace(strings.Replace(text, "Release", "", 1))
 		tempDate, err := time.Parse(releaseDateFormat, text)
 		if err != nil {
-			logger.WriteErrorf("failed to parse %q to a date time value: %v\n", text, err)
+			firstErr = fmt.Errorf("failed to parse %q to a date time value: %w", text, err)
+			e.Request.Abort()
+
+			return
 		}
 
 		releaseDate = tempDate
@@ -116,8 +140,12 @@ func (v *VizMedia) getVolumeReleaseDate(volumeReleasePage string) *time.Time {
 	var mangaVolumesLink = v.options.BaseURL + volumeReleasePage
 	err := v.scrapper.Visit(mangaVolumesLink)
 	if err != nil {
-		logger.WriteErrorf("failed call to viz media volume release page: %s\n", err)
+		return nil, fmt.Errorf("failed call to viz media volume release page %q: %w", mangaVolumesLink, err)
 	}
 
-	return &releaseDate
+	if firstErr != nil {
+		return nil, firstErr
+	}
+
+	return &releaseDate, nil
 }

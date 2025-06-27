@@ -7,7 +7,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 func (s *SevenSeasEntertainment) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
@@ -18,11 +17,17 @@ func (s *SevenSeasEntertainment) GetVolumeInfo(seriesName string, options siteha
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
-	var volumeContent = []string{}
+	var (
+		volumeContent = []string{}
+		firstErr      error
+	)
 	s.scrapper.OnHTML(".series-volume", func(e *colly.HTMLElement) {
 		contentHtml, err := e.DOM.Html()
 		if err != nil {
-			logger.WriteErrorf("failed to get content body: %s\n", err)
+			firstErr = fmt.Errorf("failed to get content body: %w", err)
+			e.Request.Abort()
+
+			return
 		}
 
 		volumeContent = append(volumeContent, contentHtml)
@@ -32,6 +37,10 @@ func (s *SevenSeasEntertainment) GetVolumeInfo(seriesName string, options siteha
 	err := s.scrapper.Visit(url)
 	if err != nil {
 		return nil, -1, fmt.Errorf("failed call to Seven Seas Entertainment for %q: %w", url, err)
+	}
+
+	if firstErr != nil {
+		return nil, -1, firstErr
 	}
 
 	var volumeInfo = []*sitehandler.VolumeInfo{}

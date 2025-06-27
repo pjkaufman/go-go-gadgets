@@ -8,7 +8,6 @@ import (
 
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 var wikiTableRegex = regexp.MustCompile(`<table[^>]*class="wikitable"[^>]*>`)
@@ -75,13 +74,19 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 		return nil, -1, fmt.Errorf("failed to get light novel section")
 	}
 
-	var contentHtml string
+	var (
+		contentHtml string
+		firstErr    error
+	)
 	w.scrapper.OnHTML("#content > div.vector-page-toolbar", func(e *colly.HTMLElement) {
 		var content = e.DOM.Parent()
 		contentHtml, err = content.Html()
 
 		if err != nil {
-			logger.WriteErrorf("failed to get content body: %s\n", err)
+			firstErr = fmt.Errorf("failed to get content body: %w", err)
+			e.Request.Abort()
+
+			return
 		}
 	})
 
@@ -91,12 +96,18 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 		var parents = e.DOM.Parent()
 		lnHeadingHtml, err = parents.Html()
 		if err != nil {
-			logger.WriteErrorf("failed to get content body: %s\n", err)
+			firstErr = fmt.Errorf("failed to get light novel content: %w", err)
+			e.Request.Abort()
+
+			return
 		}
 
 		startIndexOfLnSection = strings.Index(contentHtml, lnHeadingHtml)
 		if startIndexOfLnSection == -1 {
-			logger.WriteErrorf("failed to find light novel section: %s\n", err)
+			firstErr = fmt.Errorf("failed to find light novel section")
+			e.Request.Abort()
+
+			return
 		}
 	})
 
@@ -106,13 +117,18 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 		w.scrapper.OnHTML("#"+sectionAfterLn.Anchor, func(e *colly.HTMLElement) {
 			var parents = e.DOM.Parent()
 			lnSectionAfterLnHtml, err = parents.Html()
+
 			if err != nil {
-				logger.WriteErrorf("failed to get section after light novel section: %s\n", err)
+				firstErr = fmt.Errorf("failed to get section after light novel section: %w", err)
+				e.Request.Abort()
+
+				return
 			}
 
 			endIndexOfLnSection = strings.Index(contentHtml, lnSectionAfterLnHtml)
 			if endIndexOfLnSection == -1 {
-				logger.WriteErrorf("failed to find section after light novel section: %s\n", err)
+				firstErr = fmt.Errorf("failed to find section after light novel section")
+				e.Request.Abort()
 			}
 		})
 	}
@@ -121,6 +137,10 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 	err = w.scrapper.Visit(url)
 	if err != nil {
 		return nil, -1, fmt.Errorf("failed call to wikipedia for %q: %w", url, err)
+	}
+
+	if firstErr != nil {
+		return nil, -1, firstErr
 	}
 
 	var lnSectionHtml string

@@ -9,7 +9,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
@@ -20,11 +19,15 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 		seriesSlug = slug.GetSeriesSlugFromName(seriesName)
 	}
 
+	var firstErr error
 	var jsonVolumeInfo JSONVolumeInfo
 	j.scrapper.OnHTML("#__NEXT_DATA__", func(e *colly.HTMLElement) {
 		err := json.Unmarshal([]byte(e.Text), &jsonVolumeInfo)
 		if err != nil {
-			logger.WriteErrorf("failed to deserialize json to volume info: %s\n", err)
+			firstErr = fmt.Errorf("failed to deserialize json %q to volume info: %w", e.Text, err)
+			e.Request.Abort()
+
+			return
 		}
 	})
 
@@ -32,6 +35,10 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 	err := j.scrapper.Visit(seriesURL)
 	if err != nil {
 		return nil, -1, fmt.Errorf("failed call to JNovel Club for %q: %w", seriesURL, err)
+	}
+
+	if firstErr != nil {
+		return nil, -1, firstErr
 	}
 
 	var numVolumes = len(jsonVolumeInfo.Props.PageProps.Aggregate.Volumes)

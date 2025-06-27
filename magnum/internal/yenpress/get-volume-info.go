@@ -18,17 +18,26 @@ type VolumeInfo struct {
 }
 
 func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.ScrapingOptions) ([]*sitehandler.VolumeInfo, int, error) {
-	var volumes = []*VolumeInfo{}
+	var (
+		volumes  = []*VolumeInfo{}
+		firstErr error
+	)
 
 	y.scrapper.OnHTML("#volumes-list > div > div > div.inline_block", func(e *colly.HTMLElement) {
 		contentHtml, err := e.DOM.Html()
 		if err != nil {
-			logger.WriteErrorf("failed to get content body: %s\n", err)
+			firstErr = fmt.Errorf("failed to get content body: %w", err)
+			e.Request.Abort()
+
+			return
 		}
 
 		volumeInfo, err := ParseVolumeInfo(seriesName, contentHtml)
 		if err != nil {
-			logger.WriteError(err.Error())
+			firstErr = err
+			e.Request.Abort()
+
+			return
 		}
 
 		if volumeInfo != nil {
@@ -57,6 +66,10 @@ func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 	err := y.scrapper.Visit(seriesURL)
 	if err != nil {
 		return nil, -1, fmt.Errorf("failed call to Yen Press: %w", err)
+	}
+
+	if firstErr != nil {
+		return nil, -1, firstErr
 	}
 
 	var today = time.Now()
