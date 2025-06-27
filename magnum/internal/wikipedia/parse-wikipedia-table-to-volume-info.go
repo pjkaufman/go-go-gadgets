@@ -5,16 +5,17 @@ import (
 	"strings"
 	"time"
 
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
-func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) []VolumeInfo {
+func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) ([]*sitehandler.VolumeInfo, error) {
 	var rows = volumeRowHeaderRegex.FindAllStringSubmatch(tableHtml, -1)
 	if len(rows) == 0 {
-		logger.WriteError("failed to find table row info for: " + namePrefix)
+		return nil, fmt.Errorf("failed to find table row info for: %s", namePrefix)
 	}
 
-	var volumeInfo = []VolumeInfo{}
+	var volumeInfo = []*sitehandler.VolumeInfo{}
 	var rowHtml = tableHtml
 	var startOfRow, endOfRow int
 	var releaseDateString string
@@ -27,24 +28,24 @@ func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) []VolumeInfo 
 
 		releaseDateString, hasValidAmountOfColumns, err = getEnglishReleaseDateFromRow(rowHtml[:endOfRow])
 		if err != nil {
-			logger.WriteErrorf("failed to parse rows for %q: %s\n", namePrefix, err)
+			return nil, fmt.Errorf("failed to parse rows for %q: %w", namePrefix, err)
 		}
 
 		if !hasValidAmountOfColumns {
-			logger.WriteWarnf("skipped rows for %q since it did not have the expected amount of rows\n", namePrefix)
-			return volumeInfo
+			logger.WriteWarnf("skipped rows for %q since it did not have the expected amount of rows", namePrefix)
+			return volumeInfo, nil
 		}
 		var date *time.Time
 		if releaseDateString != "" {
 			tempDate, err := time.Parse(releaseDateFormat, releaseDateString)
 			if err != nil {
-				logger.WriteErrorf("failed to parse %q to a date time value: %v\n", releaseDateString, err)
+				return nil, fmt.Errorf("failed to parse %q to a date time value: %w", releaseDateString, err)
 			}
 
 			date = &tempDate
 		}
 
-		volumeInfo = append(volumeInfo, VolumeInfo{
+		volumeInfo = append(volumeInfo, &sitehandler.VolumeInfo{
 			Name:        fmt.Sprintf("%s Vol. %s", namePrefix, strings.TrimSpace(rowSubmatches[1])),
 			ReleaseDate: date,
 		})
@@ -52,7 +53,7 @@ func ParseWikipediaTableToVolumeInfo(namePrefix, tableHtml string) []VolumeInfo 
 		rowHtml = rowHtml[endOfRow:]
 	}
 
-	return volumeInfo
+	return volumeInfo, nil
 }
 
 func getEnglishReleaseDateFromRow(rowHtml string) (string, bool, error) {

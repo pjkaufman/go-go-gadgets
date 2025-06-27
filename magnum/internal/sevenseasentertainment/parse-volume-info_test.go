@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/sevenseasentertainment"
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +15,7 @@ type ParseVolumeInfoTestCase struct {
 	InputHtml          string
 	InputSeriesName    string
 	InputVolumeNum     int
-	ExpectedVolumeInfo *sevenseasentertainment.VolumeInfo
+	ExpectedVolumeInfo *sitehandler.VolumeInfo
 	ExpectError        bool
 }
 
@@ -72,7 +73,7 @@ var ParseVolumeInfoTestCases = map[string]ParseVolumeInfoTestCase{
 	"a simple volume with a release date and early digital date should properly parse the early digital date as the release date and pull the proper name": {
 		InputHtml:       mushokuTenseiVolume1,
 		InputSeriesName: "Mushoku Tensei",
-		ExpectedVolumeInfo: &sevenseasentertainment.VolumeInfo{
+		ExpectedVolumeInfo: &sitehandler.VolumeInfo{
 			Name:        "Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1",
 			ReleaseDate: getDatePointer(2019, 4, time.April),
 		},
@@ -80,7 +81,7 @@ var ParseVolumeInfoTestCases = map[string]ParseVolumeInfoTestCase{
 	"if a volume is missing the early digital release date info the release date should be used instead, the release date is left as nil": {
 		InputHtml:       mushokuTenseiVolume14,
 		InputSeriesName: "Mushoku Tensei",
-		ExpectedVolumeInfo: &sevenseasentertainment.VolumeInfo{
+		ExpectedVolumeInfo: &sitehandler.VolumeInfo{
 			Name:        "Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 14",
 			ReleaseDate: getDatePointer(2022, 18, time.January),
 		},
@@ -88,7 +89,7 @@ var ParseVolumeInfoTestCases = map[string]ParseVolumeInfoTestCase{
 	"if a volume is missing the release date info (both early digital and regular release), the release date is left as nil": {
 		InputHtml:       noRelease,
 		InputSeriesName: "Mushoku Tensei",
-		ExpectedVolumeInfo: &sevenseasentertainment.VolumeInfo{
+		ExpectedVolumeInfo: &sitehandler.VolumeInfo{
 			Name: "Mushoku Tensei: Jobless Reincarnation (Light Novel) Vol. 1",
 		},
 	},

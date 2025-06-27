@@ -5,13 +5,15 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 )
 
 var volumeNameRegex = regexp.MustCompile(`<h3>([^<]+)</h3>`)
 var earlyDigitalAccessRegex = regexp.MustCompile(`<b>Early Digital:</b> ([a-zA-Z]+ \d{2}, \d{4})`)
 var releaseDateRegex = regexp.MustCompile(`<b>Release Date</b>: ([a-zA-Z]+ \d{2}, \d{4})`)
 
-func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error) {
+func ParseVolumeInfo(series, contentHtml string, volume int) (*sitehandler.VolumeInfo, error) {
 	// get name from the anchor in the h3
 	var firstHeading = volumeNameRegex.FindStringSubmatch(contentHtml)
 	if len(firstHeading) < 2 {
@@ -49,7 +51,7 @@ func ParseVolumeInfo(series, contentHtml string, volume int) (*VolumeInfo, error
 		releaseDate = &tempDate
 	}
 
-	return &VolumeInfo{
+	return &sitehandler.VolumeInfo{
 		Name:        heading,
 		ReleaseDate: releaseDate,
 	}, nil

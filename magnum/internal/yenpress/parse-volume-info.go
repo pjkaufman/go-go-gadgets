@@ -2,6 +2,7 @@ package yenpress
 
 import (
 	"fmt"
+	"html"
 	"strings"
 )
 
@@ -19,10 +20,10 @@ func ParseVolumeInfo(series, contentHtml string) (*VolumeInfo, error) {
 		return nil, fmt.Errorf("failed to find the end of a volume name for a volume in series %q with html content %q", series, contentHtml)
 	}
 
-	var name = contentHtml[nameStart : nameStart+nameEnd]
+	var name = html.UnescapeString(contentHtml[nameStart : nameStart+nameEnd])
 
 	var lowercaseName = strings.ToLower(name)
-	if strings.Contains(lowercaseName, "collector&#39;s edition") || strings.Contains(lowercaseName, "omnibus edition") {
+	if strings.Contains(lowercaseName, "collector's edition") || strings.Contains(lowercaseName, "omnibus edition") {
 		return nil, nil
 	}
 

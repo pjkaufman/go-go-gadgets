@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ import (
 type ParseWikipediaTableToVolumeInfoTestCase struct {
 	InputTableHtml     string
 	InputNamePrefix    string
-	ExpectedVolumeInfo []wikipedia.VolumeInfo
+	ExpectedVolumeInfo []sitehandler.VolumeInfo
 }
 
 const (
@@ -255,7 +256,7 @@ var ParseWikipediaTableToVolumeInfoTestCases = map[string]ParseWikipediaTableToV
 	"a simple file with 6 columns and an unreleased volume with no announced date is handled correctly": {
 		InputTableHtml:  mushokuTensieTable,
 		InputNamePrefix: "Mushoku Tensei",
-		ExpectedVolumeInfo: []wikipedia.VolumeInfo{
+		ExpectedVolumeInfo: []sitehandler.VolumeInfo{
 			{
 				Name:        "Mushoku Tensei Vol. 1",
 				ReleaseDate: getDatePointer(2019, 4, time.April),
@@ -273,7 +274,7 @@ var ParseWikipediaTableToVolumeInfoTestCases = map[string]ParseWikipediaTableToV
 	"a simple table with 4 rows gets properly handled": {
 		InputTableHtml:  asteriskWarTable,
 		InputNamePrefix: "Asterisk War",
-		ExpectedVolumeInfo: []wikipedia.VolumeInfo{
+		ExpectedVolumeInfo: []sitehandler.VolumeInfo{
 			{
 				Name:        "Asterisk War Vol. 1",
 				ReleaseDate: getDatePointer(2016, 30, time.August),
@@ -295,7 +296,7 @@ var ParseWikipediaTableToVolumeInfoTestCases = map[string]ParseWikipediaTableToV
 	"a table with 5 columns should be properly parsed": {
 		InputTableHtml:  wrongWayToHealTable,
 		InputNamePrefix: "The Wrong Way to Use Healing Magic",
-		ExpectedVolumeInfo: []wikipedia.VolumeInfo{
+		ExpectedVolumeInfo: []sitehandler.VolumeInfo{
 			{
 				Name:        "The Wrong Way to Use Healing Magic Vol. 1",
 				ReleaseDate: getDatePointer(2022, 23, time.August),
@@ -340,7 +341,7 @@ var ParseWikipediaTableToVolumeInfoTestCases = map[string]ParseWikipediaTableToV
 	"a table with 5 columns and some rows with less full columns should be properly parsed": {
 		InputTableHtml:  risingOfTheShieldHeroTable,
 		InputNamePrefix: "The Rising of the Shield Hero",
-		ExpectedVolumeInfo: []wikipedia.VolumeInfo{
+		ExpectedVolumeInfo: []sitehandler.VolumeInfo{
 			{
 				Name:        "The Rising of the Shield Hero Vol. 1",
 				ReleaseDate: getDatePointer(2015, 15, time.September),
@@ -364,7 +365,8 @@ var ParseWikipediaTableToVolumeInfoTestCases = map[string]ParseWikipediaTableToV
 func TestParseWikipediaTableToVolumeInfo(t *testing.T) {
 	for name, args := range ParseWikipediaTableToVolumeInfoTestCases {
 		t.Run(name, func(t *testing.T) {
-			actualVolumeInfo := wikipedia.ParseWikipediaTableToVolumeInfo(args.InputNamePrefix, args.InputTableHtml)
+			actualVolumeInfo, err := wikipedia.ParseWikipediaTableToVolumeInfo(args.InputNamePrefix, args.InputTableHtml)
+			assert.Nil(t, err)
 			assert.Equal(t, len(args.ExpectedVolumeInfo), len(actualVolumeInfo))
 
 			for i, volume := range args.ExpectedVolumeInfo {

@@ -1,6 +1,8 @@
 package jnovelclub
 
 const (
-	baseURL    = "https://j-novel.club/"
+	BaseURL    = "https://j-novel.club/"
 	seriesPath = "series/"
 )
+
+var AllowedDomains = []string{"j-novel.club"}
