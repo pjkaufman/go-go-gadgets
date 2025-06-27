@@ -149,7 +149,12 @@ func createGoldenFile(url, out string, frozen, isJson bool) error {
 	}
 	defer resp.Body.Close()
 
-	// TODO: make sure to create the folder if it does not already exist
+	var fileFolder = filehandler.GetFileFolder(out)
+	err = filehandler.CreateFolderIfNotExists(fileFolder)
+	if err != nil {
+		return err
+	}
+
 	file, err := os.Create(out)
 	if err != nil {
 		return fmt.Errorf("error creating file %q: %w", out, err)
