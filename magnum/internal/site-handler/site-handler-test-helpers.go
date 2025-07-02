@@ -31,9 +31,10 @@ type GetVolumeInfoTestCase struct {
 }
 
 type MockedEndpoint struct {
-	Slug     string
-	Response string
-	IsJson   bool
+	Slug          string
+	Response      string
+	IsJson        bool
+	CustomHandler func(w http.ResponseWriter, r *http.Request)
 }
 
 type GetVolumeInfoTestCases struct {
@@ -51,16 +52,23 @@ func createMockServerInstance(endpoints []MockedEndpoint) *httptest.Server {
 	})
 
 	for _, endpoint := range endpoints {
-		mux.HandleFunc(fmt.Sprintf("/%s", endpoint.Slug), func(w http.ResponseWriter, r *http.Request) {
-			var contentType = "text/html"
-			if endpoint.IsJson {
-				contentType = "application/json"
+		var handler func(w http.ResponseWriter, r *http.Request)
+		if endpoint.CustomHandler != nil {
+			handler = endpoint.CustomHandler
+		} else {
+			handler = func(w http.ResponseWriter, r *http.Request) {
+				var contentType = "text/html"
+				if endpoint.IsJson {
+					contentType = "application/json"
+				}
+
+				w.Header().Set("Content-Type", contentType)
+
+				fmt.Fprint(w, endpoint.Response)
 			}
+		}
 
-			w.Header().Set("Content-Type", contentType)
-
-			fmt.Fprint(w, endpoint.Response)
-		})
+		mux.HandleFunc(fmt.Sprintf("/%s", endpoint.Slug), handler)
 	}
 
 	return httptest.NewUnstartedServer(mux)

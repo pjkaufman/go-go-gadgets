@@ -7,14 +7,12 @@ type VolumeInfo struct {
 	ReleaseDate *time.Time
 }
 
-type ApiPathBuilder func(string, string, string) string
-
 type SiteHandlerOptions struct {
 	BaseURL           string
 	ReleaseDateFormat string
 	Verbose           bool
 	UserAgent         string
-	BuildApiPath      ApiPathBuilder // for Wikipedia
+	ApiPath           string // for Wikipedia
 	AllowedDomains    []string
 }
 

@@ -16,6 +16,6 @@ func NewWikipediaHandler(options sitehandler.SiteHandlerOptions) sitehandler.Sit
 	return &Wikipedia{
 		options:  options,
 		scrapper: crawler.CreateNewCollyCrawler(options.UserAgent, options.Verbose, options.AllowedDomains),
-		api:      NewWikipediaApi(options.BaseURL, options.UserAgent, options.Verbose, options.BuildApiPath),
+		api:      NewWikipediaApi(options.BaseURL, options.UserAgent, options.Verbose, options.ApiPath),
 	}
 }

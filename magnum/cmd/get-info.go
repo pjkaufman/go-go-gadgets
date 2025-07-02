@@ -149,7 +149,7 @@ func setupHandlers() {
 		BaseURL:        wikipedia.BaseURL,
 		Verbose:        verbose,
 		UserAgent:      userAgent,
-		BuildApiPath:   wikipedia.GetWikipediaAPIUrl,
+		ApiPath:        wikipedia.ApiPath,
 		AllowedDomains: wikipedia.AllowedDomains,
 	})
 

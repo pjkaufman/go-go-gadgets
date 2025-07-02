@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
@@ -33,23 +32,24 @@ type SectionInfo struct {
 }
 
 type WikipediaApi struct {
-	BaseURL      string
-	UserAgent    string
-	Verbose      bool
-	BuildApiPath sitehandler.ApiPathBuilder
+	BaseURL   string
+	UserAgent string
+	Verbose   bool
+	ApiPath   string
 }
 
-func NewWikipediaApi(baseURL, userAgent string, verbose bool, buildApiPath sitehandler.ApiPathBuilder) *WikipediaApi {
+func NewWikipediaApi(baseURL, userAgent string, verbose bool, apiPath string) *WikipediaApi {
 	return &WikipediaApi{
-		BaseURL:      baseURL,
-		UserAgent:    userAgent,
-		Verbose:      verbose,
-		BuildApiPath: buildApiPath,
+		BaseURL:   baseURL,
+		UserAgent: userAgent,
+		Verbose:   verbose,
+		ApiPath:   apiPath,
 	}
 }
 
 func (wa *WikipediaApi) GetSectionInfo(pageTitle string) (*WikipediaSectionInfo, error) {
-	url := wa.BuildApiPath(wa.BaseURL, apiPath, pageTitle)
+	url := GetWikipediaAPIUrl(wa.BaseURL, wa.ApiPath, pageTitle)
+
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

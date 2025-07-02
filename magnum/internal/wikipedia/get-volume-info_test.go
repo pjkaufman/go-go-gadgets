@@ -4,13 +4,15 @@ package wikipedia_test
 
 import (
 	_ "embed"
-	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 )
+
+const testApiPath = "w/json"
 
 var (
 	//go:embed test/wiki-list-of-the-rising-of-the-shield-hero-volumes.golden
@@ -162,20 +164,27 @@ var (
 				Response: risingOfTheShieldHeroResponse,
 			},
 			{
-				Slug:     getWikipediaAPIUrlTest("", "", "List_of_The_Rising_of_the_Shield_Hero_volumes"),
-				Response: risingOfTheShieldHeroApiResponse,
-			},
-			{
 				Slug:     "wiki/Rokka:_Braves_of_the_Six_Flowers",
 				Response: rokkaBravesOfTheSixFlowersResponse,
 			},
 			{
-				Slug:     getWikipediaAPIUrlTest("", "", "Rokka:_Braves_of_the_Six_Flowers"),
-				Response: rokkaBravesOfTheSixFlowersApiResponse,
+				Slug: testApiPath,
+				CustomHandler: func(w http.ResponseWriter, r *http.Request) {
+					pageTitle := r.URL.Query().Get("page")
+
+					switch pageTitle {
+					case "List_of_The_Rising_of_the_Shield_Hero_volumes":
+						w.Write([]byte(risingOfTheShieldHeroApiResponse))
+					case "Rokka:_Braves_of_the_Six_Flowers":
+						w.Write([]byte(rokkaBravesOfTheSixFlowersApiResponse))
+					default:
+						http.Error(w, "Not found", 404)
+					}
+				},
 			},
 		},
 		CreateSiteHandler: func(options sitehandler.SiteHandlerOptions) sitehandler.SiteHandler {
-			options.BuildApiPath = getWikipediaAPIUrlTest
+			options.ApiPath = testApiPath
 
 			return wikipedia.NewWikipediaHandler(options)
 		},
@@ -184,10 +193,4 @@ var (
 
 func TestGetVolumeInfo(t *testing.T) {
 	sitehandler.RunTests(t, getVolumeInfoTestSetup)
-}
-
-// getWikipediaAPIUrlTest allows us to essentially mock how we build the API URL for testing purposes
-// I do not like that I have to use a function for this, but unfortunately I could not come up with a simpler option
-func getWikipediaAPIUrlTest(baseURL, _, pageTitle string) string {
-	return fmt.Sprintf("%sapi/%s.json", baseURL, pageTitle)
 }
