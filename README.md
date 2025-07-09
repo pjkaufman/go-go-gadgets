@@ -25,7 +25,7 @@ As of right now, that just installs `ebook-lint`.
 
 ## Available Gadgets
 
-### [Ebook Linter](./ebook-lint/README.md)
+### [Ebook Linter](./epub-lint/README.md)
 
 A versatile ebook management tool that helps maintain and improve your digital library.
 
