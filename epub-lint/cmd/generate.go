@@ -25,7 +25,7 @@ func getListOfAvailableTypes(generationDir string) (map[string]any, error) {
 }
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, []string{
+	cmdhandler.AddGenerateCmd(EpubCmd, title, description, []string{
 		"See about removing unused files and images when running epub linting",
 	}, getListOfAvailableTypes)
 }
