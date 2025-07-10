@@ -32,13 +32,13 @@ var compressAndLintCmd = &cobra.Command{
 	Use:   "compress-and-lint",
 	Short: "Compresses and lints all of the epub files in the specified directory even compressing images using imgp if that option is specified.",
 	Example: heredoc.Doc(`To compress images and make general modifications to all epubs in a folder:
-	epub-lint epub compress-and-lint -d folder -i
+	epub-lint compress-and-lint -d folder -i
 	
 	To compress images and make general modifications to all epubs in the current directory:
-	epub-lint epub compress-and-lint -i
+	epub-lint compress-and-lint -i
 
 	To just make general modifications to all epubs in the current directory:
-	epub-lint epub compress-and-lint
+	epub-lint compress-and-lint
 	`),
 	Long: heredoc.Doc(`Gets all of the .epub files in the specified directory.
 	Then it lints each epub separately making sure to compress the images if specified.

@@ -27,7 +27,7 @@ var validateCmd = &cobra.Command{
 	Long: heredoc.Doc(`Validates an EPUB file using W3C EPUBCheck tool.
 	If EPUBCheck is not installed, it will automatically download and install the latest version.`),
 	Example: heredoc.Doc(`
-	epub-lint epub validate -f test.epub
+	epub-lint validate -f test.epub
 	will run EPUBCheck against the file specified.
 `),
 	Run: func(cmd *cobra.Command, args []string) {

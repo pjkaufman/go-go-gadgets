@@ -10,7 +10,7 @@ import (
 // EpubCmd represents the base command when called without any subcommands
 var EpubCmd = &cobra.Command{
 	Use:   "epub-lint",
-	Short: "A set of functions that are helpful for linting ebooks",
+	Short: "A set of functions that are helpful for linting epubs",
 }
 
 func Execute() {

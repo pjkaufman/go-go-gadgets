@@ -28,7 +28,7 @@ var replaceStringsCmd = &cobra.Command{
 	Long: heredoc.Doc(`Uses the provided epub and extra replace Markdown file to replace a common set of strings and any extra instances specified in the extra file replace. After all replacements are made, the original epub will be moved to a .original file and the new file will take the place of the old file. It will also print out the successful extra replacements with the number of replacements made followed by warnings for any extra strings that it tried to find and replace values for, but did not find any instances to replace.
 		Note: it only replaces strings in content/xhtml files listed in the opf file.`),
 	Example: heredoc.Doc(`
-		epub-lint epub replace-strings -f test.epub -e replacements.md
+		epub-lint replace-strings -f test.epub -e replacements.md
 		will replace the common strings and extra strings parsed out of replacements.md in content/xhtml files located in test.epub.
 		The original test.epub will be moved to test.epub.original and test.epub will have the updated files.
 

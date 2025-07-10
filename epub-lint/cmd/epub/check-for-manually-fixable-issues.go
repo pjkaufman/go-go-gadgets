@@ -107,31 +107,31 @@ var fixableCmd = &cobra.Command{
 	Use:   "fixable",
 	Short: "Runs the specified fixable actions that require manual input to determine what to do.",
 	Example: heredoc.Doc(`To run all of the possible potential fixes:
-	epub-lint epub fixable -f test.epub -a
+	epub-lint fixable -f test.epub -a
 	Note: this will require a css file to already exist in the epub
 	
 	To just fix broken paragraph endings:
-	epub-lint epub fixable -f test.epub --broken-lines
+	epub-lint fixable -f test.epub --broken-lines
 
 	To just update section breaks:
-	epub-lint epub fixable -f test.epub --section-breaks
+	epub-lint fixable -f test.epub --section-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just update page breaks:
-	epub-lint epub fixable -f test.epub --page-breaks
+	epub-lint fixable -f test.epub --page-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just fix missing oxford commas:
-	epub-lint epub fixable -f test.epub --oxford-commas
+	epub-lint fixable -f test.epub --oxford-commas
 
 	To just fix potentially lacking subordinate clause instances:
-	epub-lint epub fixable -f test.epub --lacking-subordinate-clause
+	epub-lint fixable -f test.epub --lacking-subordinate-clause
 
 	To just fix instances of thoughts in parentheses:
-	epub-lint epub fixable -f test.epub --thoughts
+	epub-lint fixable -f test.epub --thoughts
 
 	To run a combination of options:
-	epub-lint epub fixable -f test.epub -oxford-commas --thoughts --necessary-words
+	epub-lint fixable -f test.epub -oxford-commas --thoughts --necessary-words
 	`),
 	Long: heredoc.Doc(`Goes through all of the content files and runs the specified fixable actions on them asking
 	for user input on each value found that matches the potential fix criteria.
