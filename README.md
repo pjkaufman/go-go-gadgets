@@ -25,18 +25,16 @@ As of right now, that just installs `ebook-lint`.
 
 ## Available Gadgets
 
-### [Ebook Linter](./epub-lint/README.md)
+### [Epub Linter](./epub-lint/README.md)
 
-A versatile ebook management tool that helps maintain and improve your digital library.
+A versatile ebook management tool that helps maintain and improve your epubs.
 
 #### Key Features
 
-- Supports CBR, CBZ, and EPUB formats
-- Converts CBR to CBZ files
-- Compresses images in CBZ and EPUB files
+- Compresses images in EPUB files
 - Comprehensive EPUB linting and formatting
 - String replacement and content fixes
-- EPUB validation via W3C's Epubcheck program
+- EPUB validation via W3C's EpubCheck program
 
 #### Use Cases
 
