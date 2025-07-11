@@ -1,8 +1,8 @@
 .PHONY: test install cover lint bench generate install-termux clean update-deps
 
 # Tool definitions
-TOOLS := ebook-lint git-helper song-converter cat-ascii magnum jp-proc
-GENERATE_TOOLS := ebook-lint jp-proc magnum song-converter
+TOOLS := epub-lint git-helper song-converter cat-ascii magnum jp-proc
+GENERATE_TOOLS := epub-lint jp-proc magnum song-converter
 
 # Enhanced LDFLAGS for size reduction
 LDFLAGS := -ldflags="-s -w"
@@ -58,11 +58,11 @@ generate:
 	done
 
 install-termux:
-	@echo "Building ebook-lint for Termux"
-	@CGO_ENABLED=0 go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS) -o "${PREFIX}/bin/ebook-lint" ./ebook-lint/main.go
+	@echo "Building epub-lint for Termux"
+	@CGO_ENABLED=0 go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS) -o "${PREFIX}/bin/epub-lint" ./epub-lint/main.go
 	@mkdir -p ${PREFIX}/share/bash-completion/completions
-	@echo "Generating bash completion for ebook-lint"
-	@ebook-lint completion bash > "${PREFIX}/share/bash-completion/completions/ebook-lint"
+	@echo "Generating bash completion for epub-lint"
+	@epub-lint completion bash > "${PREFIX}/share/bash-completion/completions/epub-lint"
 
 clean:
 	@echo "Cleaning built binaries..."
@@ -79,9 +79,9 @@ clean:
 			rm -f "$(BASH_COMPLETION_DIR)/$$tool-completion"; \
 		fi; \
 	done
-	@if [ -f "$$PREFIX/bin/ebook-lint" ]; then \
-		echo "Removing $$PREFIX/bin/ebook-lint"; \
-		rm -f "$$PREFIX/bin/ebook-lint"; \
+	@if [ -f "$$PREFIX/bin/epub-lint" ]; then \
+		echo "Removing $$PREFIX/bin/epub-lint"; \
+		rm -f "$$PREFIX/bin/epub-lint"; \
 	fi
 	@echo "Cleanup complete"
 
