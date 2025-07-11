@@ -21,7 +21,7 @@ To install on mobile in Termux run the following command:
 make install-termux
 ```
 
-As of right now, that just installs `ebook-lint`.
+As of right now, that just installs `epub-lint`.
 
 ## Available Gadgets
 
