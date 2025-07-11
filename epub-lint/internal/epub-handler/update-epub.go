@@ -1,4 +1,4 @@
-package epubhandler
+package cmdhandler
 
 import (
 	"archive/zip"

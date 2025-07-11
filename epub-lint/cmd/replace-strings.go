@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"archive/zip"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -136,7 +135,7 @@ var replaceStringsCmd = &cobra.Command{
 }
 
 func init() {
-	cmd.EpubCmd.AddCommand(replaceStringsCmd)
+	rootCmd.AddCommand(replaceStringsCmd)
 
 	replaceStringsCmd.Flags().StringVarP(&extraReplacesFilePath, "extra-replace-file", "e", "", "the path to the file with extra strings to replace")
 	err := replaceStringsCmd.MarkFlagRequired("extra-replace-file")

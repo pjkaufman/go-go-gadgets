@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"archive/zip"

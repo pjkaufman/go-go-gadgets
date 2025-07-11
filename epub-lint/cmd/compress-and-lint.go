@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"archive/zip"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	filesize "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/file-size"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/images"
@@ -97,7 +96,7 @@ var compressAndLintCmd = &cobra.Command{
 }
 
 func init() {
-	cmd.EpubCmd.AddCommand(compressAndLintCmd)
+	rootCmd.AddCommand(compressAndLintCmd)
 
 	compressAndLintCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
 	compressAndLintCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")

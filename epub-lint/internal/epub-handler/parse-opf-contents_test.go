@@ -1,6 +1,6 @@
 //go:build unit
 
-package epubhandler_test
+package cmdhandler_test
 
 import (
 	"errors"

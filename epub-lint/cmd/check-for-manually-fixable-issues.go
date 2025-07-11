@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"archive/zip"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -174,7 +173,7 @@ var fixableCmd = &cobra.Command{
 }
 
 func init() {
-	cmd.EpubCmd.AddCommand(fixableCmd)
+	rootCmd.AddCommand(fixableCmd)
 
 	fixableCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
 	fixableCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")

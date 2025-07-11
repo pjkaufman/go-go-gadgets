@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/epub/tui"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/tui"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 

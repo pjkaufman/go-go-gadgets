@@ -1,13 +1,13 @@
 //go:build unit
 
-package epub_test
+package cmd_test
 
 import (
 	"log"
 	"os"
 	"testing"
 
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/epub"
+	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/stretchr/testify/assert"
 )

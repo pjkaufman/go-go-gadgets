@@ -7,14 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EpubCmd represents the base command when called without any subcommands
-var EpubCmd = &cobra.Command{
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command{
 	Use:   "epub-lint",
 	Short: "A set of functions that are helpful for linting epubs",
 }
 
 func Execute() {
-	if err := EpubCmd.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		logger.WriteErrorf("Error: %v\n", err)
 		os.Exit(1)
 	}

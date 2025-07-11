@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"archive/zip"
@@ -13,7 +13,6 @@ import (
 	"slices"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -364,7 +363,7 @@ var autoFixValidationCmd = &cobra.Command{
 }
 
 func init() {
-	cmd.EpubCmd.AddCommand(autoFixValidationCmd)
+	rootCmd.AddCommand(autoFixValidationCmd)
 
 	autoFixValidationCmd.Flags().BoolVarP(&removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present")
 	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "", "", "the path to the file with the validation issues")

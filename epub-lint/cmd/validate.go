@@ -1,4 +1,4 @@
-package epub
+package cmd
 
 import (
 	"encoding/json"
@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -62,7 +61,7 @@ var validateCmd = &cobra.Command{
 }
 
 func init() {
-	cmd.EpubCmd.AddCommand(validateCmd)
+	rootCmd.AddCommand(validateCmd)
 
 	validateCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to validate")
 	err := validateCmd.MarkFlagRequired("file")
