@@ -113,7 +113,6 @@ A tool to display nice little cat ASCII art.
 - [promptui](https://github.com/manifoldco/promptui) - Interactive prompt UI
 
 ### File Processing
-- [archiver](https://github.com/mholt/archiver) - Archive file handling
 - [markdown](https://github.com/gomarkdown/markdown) - Markdown processing
 - [frontmatter](https://github.com/adrg/frontmatter) - YAML frontmatter parsing
 - [go-exif](https://github.com/dsoprea/go-exif) - EXIF data manipulation
