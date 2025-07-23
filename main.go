@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -17,11 +19,21 @@ func main() {
 	}
 }
 
+// custom messages/commands
+type advanceStage struct{}
+
+func nextStage() tea.Msg {
+	return advanceStage{}
+}
+
+// model
 type model struct {
 	title                       string
 	currentStage, width, height int
 	stages                      []string
+	bodyContent                 []tea.Model
 	ready                       bool
+	body                        viewport.Model
 	help                        help.Model
 }
 
@@ -29,7 +41,12 @@ func newModel() model {
 	return model{
 		title: "Epub Linter Manually Fixable Issues",
 		// title: "EL MFI",
+		bodyContent: []tea.Model{
+			newSectionBreak(true),
+			newSuggestions(),
+		},
 		help: help.New(),
+		body: viewport.New(0, 0),
 		stages: []string{
 			"Section Break",
 			"Suggestions",
@@ -47,10 +64,14 @@ func (m model) View() string {
 		var (
 			header = m.headerView() + "\n"
 			footer = m.footerView()
-			body   = strings.Repeat("\n", max(0, m.height-(lipgloss.Height(header)+lipgloss.Height(footer))+1))
 		)
 
-		return header + body + footer
+		m.body.SetYOffset(lipgloss.Height(header))
+		m.body.Width = m.width
+		m.body.Height = max(0, m.height-(lipgloss.Height(header)+lipgloss.Height(footer))+1)
+		m.body.SetContent(m.bodyContent[m.currentStage].View())
+
+		return header + m.body.View() + footer
 	}
 
 	return ""
@@ -60,16 +81,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		case "esc":
+			return m, tea.Quit
+		case "ctrl+c":
+			// TODO: make sure this is an error once ready
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		m.ready = true
+	case advanceStage:
+		// TODO: add more in depth logic
+		m.currentStage++
 	}
 
-	return m, nil
+	var cmd tea.Cmd
+	m.bodyContent[m.currentStage], cmd = m.bodyContent[m.currentStage].Update(msg)
+
+	return m, cmd
 }
 
 func max(a, b int) int {
@@ -191,4 +221,75 @@ func fillLine(currentValue string, width int) string {
 	}
 
 	return currentValue + strings.Repeat(" ", amountToFill)
+}
+
+// Section Break
+type sectionBreak struct {
+	input        textinput.Model
+	contextBreak string
+}
+
+func newSectionBreak(focus bool) sectionBreak {
+	ti := textinput.New()
+	ti.Width = 20
+	ti.CharLimit = 200
+	ti.Placeholder = "Section break"
+
+	if focus {
+		ti.Focus()
+	}
+
+	return sectionBreak{
+		input: ti,
+	}
+}
+
+func (m sectionBreak) Init() tea.Cmd {
+	return nil
+}
+
+func (m sectionBreak) View() string {
+	return m.input.View()
+}
+
+func (m sectionBreak) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		cmds []tea.Cmd
+		cmd  tea.Cmd
+	)
+	m.input, cmd = m.input.Update(msg)
+	cmds = append(cmds, cmd)
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			m.contextBreak = strings.TrimSpace(m.input.Value())
+			if m.contextBreak != "" {
+				cmds = append(cmds, nextStage)
+			}
+		}
+	}
+
+	return m, tea.Batch(cmds...)
+}
+
+// Suggestions
+type suggestions struct {
+}
+
+func newSuggestions() suggestions {
+	return suggestions{}
+}
+
+func (m suggestions) Init() tea.Cmd {
+	return nil
+}
+
+func (m suggestions) View() string {
+	return "Suggestions"
+}
+
+func (m suggestions) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return m, nil
 }
