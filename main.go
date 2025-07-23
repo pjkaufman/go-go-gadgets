@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -25,6 +26,12 @@ type advanceStage struct{}
 func nextStage() tea.Msg {
 	return advanceStage{}
 }
+
+// icons
+var (
+	documentIcon   = string([]byte{0xF0, 0x9F, 0x97, 0x8E}) // UTF-8 encoding for "🗎"
+	suggestionIcon = string([]byte{0xE2, 0x91, 0x82})       // UTF-8 encoding for "⑂"
+)
 
 // model
 type model struct {
@@ -62,16 +69,17 @@ func (m model) Init() tea.Cmd {
 func (m model) View() string {
 	if m.ready {
 		var (
-			header = m.headerView() + "\n"
-			footer = m.footerView()
+			header       = m.headerView()
+			footer       = "\n" + m.footerView()
+			headerHeight = lipgloss.Height(header) + headerBorderStyle.GetBorderBottomSize()
+			footerHeight = lipgloss.Height(footer) + footerBorderStyle.GetBorderTopSize()
 		)
 
-		m.body.SetYOffset(lipgloss.Height(header))
 		m.body.Width = m.width
-		m.body.Height = max(0, m.height-(lipgloss.Height(header)+lipgloss.Height(footer))+1)
+		m.body.Height = max(0, m.height-(headerHeight+footerHeight)+2)
 		m.body.SetContent(m.bodyContent[m.currentStage].View())
 
-		return header + m.body.View() + footer
+		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
 	}
 
 	return ""
@@ -112,16 +120,19 @@ func max(a, b int) int {
 
 // styles
 var (
-	titleStyle         = lipgloss.NewStyle().Bold(true)
-	inactiveStyle      = lipgloss.NewStyle().Faint(true)
-	activeStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
-	titleBorder        = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderBottom(true)
-	controlsStyle      = lipgloss.NewStyle().Faint(true).Bold(true)
-	controlBorderStyle = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderTop(true)
+	titleStyle            = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#CBACF7"))
+	inactiveStyle         = lipgloss.NewStyle().Faint(true)
+	activeStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#fab387"))
+	headerBorderStyle     = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
+	controlsStyle         = lipgloss.NewStyle().Faint(true).Bold(true)
+	footerBorderStyle     = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
+	fileNameStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("#a6e3a1"))
+	suggestionNameStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#f5e0dc"))
+	leftStatusBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
 )
 
 func (m model) headerView() string {
-	return titleBorder.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width)) + "\n"
+	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetBorderRightSize()*2))
 }
 
 func (m model) getStageHeaders() string {
@@ -143,7 +154,7 @@ func (m model) getStageHeaders() string {
 
 func (m model) footerView() string {
 	var s strings.Builder
-	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width) + "\n")
+	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetBorderRightSize()*3) + "\n")
 
 	var controls []string
 	switch m.currentStage {
@@ -163,21 +174,21 @@ func (m model) footerView() string {
 		// 		"Ctrl+C: Exit without saving",
 		// 	}
 		// } else if m.potentiallyFixableIssuesInfo.currentSuggestionState != nil && m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
+		// controls = []string{
+		// 	"← / → : Previous/Next Suggestion",
+		// 	"C: Copy",
+		// 	"Esc: Quit",
+		// 	"Ctrl+C: Exit without saving",
+		// }
+		// } else {
 		controls = []string{
 			"← / → : Previous/Next Suggestion",
+			"E: Edit",
 			"C: Copy",
+			"Enter: Accept",
 			"Esc: Quit",
 			"Ctrl+C: Exit without saving",
 		}
-		// } else {
-		// 	controls = []string{
-		// 		"← / → : Previous/Next Suggestion",
-		// 		"E: Edit",
-		// 		"C: Copy",
-		// 		"Enter: Accept",
-		// 		"Esc: Quit",
-		// 		"Ctrl+C: Exit without saving",
-		// 	}
 		// }
 	case 2:
 		controls = []string{
@@ -211,7 +222,7 @@ func (m model) footerView() string {
 		s.WriteString("\n")
 	}
 
-	return controlBorderStyle.Render(s.String())
+	return footerBorderStyle.Render(s.String())
 }
 
 func fillLine(currentValue string, width int) string {
@@ -276,10 +287,35 @@ func (m sectionBreak) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Suggestions
 type suggestions struct {
+	currentFile, currentSuggestionName string
+	// suggestionData                     []fileSuggestionInfo
+
+	// currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex int
+	// potentialIssues []potentiallyFixableIssue
+	// currentIssue                                                                  *potentiallyFixableIssue
+	// cssUpdateRequired, addCssSectionBreakIfMissing, addCssPageBreakIfMissing, isEditing bool
+	// currentSuggestionState *suggestionState
+	// suggestionEdit         textarea.Model
+	// suggestionDisplay      viewport.Model
+	// scrollbar              tea.Model
 }
 
+// type fileSuggestionInfo struct {
+// 	fileName    string
+// 	fileText    string
+// 	suggestions []suggestionState
+// }
+
+// type suggestionState struct {
+// 	isAccepted                                               bool
+// 	original, originalSuggestion, currentSuggestion, display string
+// }
+
 func newSuggestions() suggestions {
-	return suggestions{}
+	return suggestions{
+		currentFile:           "OEBS/Text/file.html",
+		currentSuggestionName: "Suggestion Name",
+	}
 }
 
 func (m suggestions) Init() tea.Cmd {
@@ -287,9 +323,13 @@ func (m suggestions) Init() tea.Cmd {
 }
 
 func (m suggestions) View() string {
-	return "Suggestions"
+	return m.LeftStatusView()
 }
 
 func (m suggestions) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
+}
+
+func (m suggestions) LeftStatusView() string {
+	return leftStatusBorderStyle.Render(fmt.Sprintf("%s %s\n%s %s\n", documentIcon, fileNameStyle.Render(m.currentFile), suggestionIcon, suggestionNameStyle.Render(m.currentSuggestionName)))
 }
