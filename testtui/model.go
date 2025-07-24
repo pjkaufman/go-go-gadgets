@@ -194,9 +194,9 @@ func (m model) footerView() string {
 		}
 	}
 
-	if line.Len() != 0 {
-		s.WriteString("\n")
-	}
+	// if line.Len() != 0 {
+	// 	s.WriteString("\n")
+	// }
 
 	return footerBorderStyle.Render(s.String())
 }

@@ -12,6 +12,7 @@ import (
 type suggestions struct {
 	height, width                      *int
 	currentFile, currentSuggestionName string
+	isEditing                          bool
 	// suggestionData                     []fileSuggestionInfo
 
 	// currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex int
@@ -87,5 +88,9 @@ func (m suggestions) leftStatusView() string {
 }
 
 func (m suggestions) suggestionView() string {
+	if !m.isEditing {
+		m.suggestionDisplay.SetContent("Hello I am the suggestion....")
+	}
+
 	return suggestionBorderStyle.Render(m.suggestionDisplay.View())
 }
