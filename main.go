@@ -37,6 +37,7 @@ var (
 type model struct {
 	title                       string
 	currentStage, width, height int
+	bodyHeight                  *int
 	stages                      []string
 	bodyContent                 []tea.Model
 	ready                       bool
@@ -45,15 +46,17 @@ type model struct {
 }
 
 func newModel() model {
+	var height int
 	return model{
 		title: "Epub Linter Manually Fixable Issues",
 		// title: "EL MFI",
 		bodyContent: []tea.Model{
 			newSectionBreak(true),
-			newSuggestions(),
+			newSuggestions(&height),
 		},
-		help: help.New(),
-		body: viewport.New(0, 0),
+		help:       help.New(),
+		body:       viewport.New(0, 0),
+		bodyHeight: &height,
 		stages: []string{
 			"Section Break",
 			"Suggestions",
@@ -70,13 +73,16 @@ func (m model) View() string {
 	if m.ready {
 		var (
 			header       = m.headerView()
-			footer       = "\n" + m.footerView()
+			footer       = m.footerView()
 			headerHeight = lipgloss.Height(header) + headerBorderStyle.GetBorderBottomSize()
 			footerHeight = lipgloss.Height(footer) + footerBorderStyle.GetBorderTopSize()
 		)
 
 		m.body.Width = m.width
 		m.body.Height = max(0, m.height-(headerHeight+footerHeight)+2)
+		// preserve pointer value to allow for proper seinding of the value to any views that need it
+		// using a new pointer would break the references in the body views
+		(*m.bodyHeight) = m.body.Height
 		m.body.SetContent(m.bodyContent[m.currentStage].View())
 
 		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
@@ -132,7 +138,7 @@ var (
 )
 
 func (m model) headerView() string {
-	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetBorderRightSize()*2))
+	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetHorizontalBorderSize()))
 }
 
 func (m model) getStageHeaders() string {
@@ -154,7 +160,7 @@ func (m model) getStageHeaders() string {
 
 func (m model) footerView() string {
 	var s strings.Builder
-	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetBorderRightSize()*3) + "\n")
+	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetHorizontalBorderSize()) + "\n")
 
 	var controls []string
 	switch m.currentStage {
@@ -287,6 +293,7 @@ func (m sectionBreak) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Suggestions
 type suggestions struct {
+	height                             *int
 	currentFile, currentSuggestionName string
 	// suggestionData                     []fileSuggestionInfo
 
@@ -311,8 +318,9 @@ type suggestions struct {
 // 	original, originalSuggestion, currentSuggestion, display string
 // }
 
-func newSuggestions() suggestions {
+func newSuggestions(height *int) suggestions {
 	return suggestions{
+		height:                height,
 		currentFile:           "OEBS/Text/file.html",
 		currentSuggestionName: "Suggestion Name",
 	}
@@ -331,5 +339,19 @@ func (m suggestions) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m suggestions) LeftStatusView() string {
-	return leftStatusBorderStyle.Render(fmt.Sprintf("%s %s\n%s %s\n", documentIcon, fileNameStyle.Render(m.currentFile), suggestionIcon, suggestionNameStyle.Render(m.currentSuggestionName)))
+	var (
+		statusView      = fmt.Sprintf("%s %s\n%s %s\n", documentIcon, fileNameStyle.Render(m.currentFile), suggestionIcon, suggestionNameStyle.Render(m.currentSuggestionName))
+		remainingHeight int
+		statusPadding   string
+	)
+
+	if m.height != nil {
+		remainingHeight = *m.height - (lipgloss.Height(statusView) + leftStatusBorderStyle.GetVerticalBorderSize())
+	}
+
+	if remainingHeight > 0 {
+		statusPadding = strings.Repeat("\n", remainingHeight)
+	}
+
+	return leftStatusBorderStyle.Render(statusView + statusPadding)
 }
