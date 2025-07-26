@@ -14,6 +14,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/tui"
+	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
@@ -24,6 +25,8 @@ var (
 	fileStatusStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("190"))
 	acceptedChangeTitleStyle = lipgloss.NewStyle().Bold(true)
 	displayStyle             = lipgloss.NewStyle()
+	suggestionBorderStyle    = lipgloss.NewStyle().Border(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("201"))
+	// var style = lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("201"))
 
 	maxDisplayHeight = 20
 )
@@ -64,8 +67,8 @@ type potentiallyFixableStageInfo struct {
 	fileTexts                                                                           map[string]string
 	currentFile, currentSuggestionName                                                  string
 	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
-	suggestions                                                                         []potentiallyFixableIssue
-	currentSuggestion                                                                   *potentiallyFixableIssue
+	suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
+	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
 	cssUpdateRequired, addCssSectionBreakIfMissing, addCssPageBreakIfMissing, isEditing bool
 	sectionSuggestionStates                                                             []suggestionState
 	currentSuggestionState                                                              *suggestionState
@@ -85,7 +88,7 @@ type suggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyFixableIssue, cssFiles []string, logFile io.Writer) fixableIssuesModel {
+func newModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer) fixableIssuesModel {
 	ti := textinput.New()
 	ti.Width = 20
 	ti.CharLimit = 200
@@ -258,7 +261,7 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "enter":
 					if !m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted && m.potentiallyFixableIssuesInfo.currentSuggestion != nil {
 						var replaceCount = 1
-						if m.potentiallyFixableIssuesInfo.currentSuggestion.updateAllInstances {
+						if m.potentiallyFixableIssuesInfo.currentSuggestion.UpdateAllInstances {
 							replaceCount = -1
 						}
 
@@ -266,10 +269,10 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 						m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted = true
 
-						if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssSectionBreakIfMissing {
+						if m.potentiallyFixableIssuesInfo.currentSuggestion.AddCssSectionBreakIfMissing {
 							m.potentiallyFixableIssuesInfo.addCssSectionBreakIfMissing = true
 							m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
-						} else if m.potentiallyFixableIssuesInfo.currentSuggestion.addCssPageBreakIfMissing {
+						} else if m.potentiallyFixableIssuesInfo.currentSuggestion.AddCssPageBreakIfMissing {
 							m.potentiallyFixableIssuesInfo.addCssPageBreakIfMissing = true
 							m.potentiallyFixableIssuesInfo.cssUpdateRequired = true
 						}
@@ -354,14 +357,13 @@ func (m fixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m fixableIssuesModel) View() string {
 	var s strings.Builder
-	s.WriteString(appNameStyle.Render("Ebook Linter Manually Fixable Issues") + "\n")
+	s.WriteString(appNameStyle.Render("Epub Linter Manually Fixable Issues") + "\n")
 
 	switch m.currentStage {
 	case sectionBreak:
 		s.WriteString("\n" + m.sectionBreakInfo.input.View() + "\n\n")
 	case suggestionsProcessing:
-		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File: %s", m.potentiallyFixableIssuesInfo.currentFile)) + "\n")
-		s.WriteString(fileStatusStyle.Render(fmt.Sprintf("File %d of %d", m.potentiallyFixableIssuesInfo.currentFileIndex+1, len(m.potentiallyFixableIssuesInfo.filePaths))) + "\n")
+		s.WriteString(titleStyle.Render(fmt.Sprintf("Current File (%d/%d): %s ", m.potentiallyFixableIssuesInfo.currentFileIndex+1, len(m.potentiallyFixableIssuesInfo.filePaths), m.potentiallyFixableIssuesInfo.currentFile)) + "\n")
 		s.WriteString(groupStyle.Render(fmt.Sprintf("Issue Group: %s", m.potentiallyFixableIssuesInfo.currentSuggestionName) + "\n"))
 
 		if m.potentiallyFixableIssuesInfo.currentSuggestionState == nil {
@@ -380,15 +382,15 @@ func (m fixableIssuesModel) View() string {
 			}
 
 			if m.potentiallyFixableIssuesInfo.isEditing {
-				s.WriteString(m.potentiallyFixableIssuesInfo.suggestionEdit.View() + "\n\n")
+				s.WriteString(suggestionBorderStyle.Render(m.potentiallyFixableIssuesInfo.suggestionEdit.View()) + "\n\n")
 			} else {
 				if m.potentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.potentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
-					s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top,
+					s.WriteString(suggestionBorderStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top,
 						m.potentiallyFixableIssuesInfo.suggestionDisplay.View(),
 						m.potentiallyFixableIssuesInfo.scrollbar.View(),
-					))
+					)))
 				} else {
-					s.WriteString(m.potentiallyFixableIssuesInfo.suggestionDisplay.View())
+					s.WriteString(suggestionBorderStyle.Render(m.potentiallyFixableIssuesInfo.suggestionDisplay.View()))
 				}
 
 				s.WriteString(fmt.Sprintf("\033[0m\n\nSuggestion %d of %d.\n\n", m.potentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.potentiallyFixableIssuesInfo.sectionSuggestionStates)))
@@ -497,12 +499,12 @@ func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 		for m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex < len(m.potentiallyFixableIssuesInfo.suggestions) {
 			var potentialFixableIssue = m.potentiallyFixableIssuesInfo.suggestions[m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex]
 			if m.logFile != nil {
-				fmt.Fprintf(m.logFile, "Possible fixable issue %q is %d of %d issues.\n", potentialFixableIssue.name, m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.potentiallyFixableIssuesInfo.suggestions))
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q is %d of %d issues.\n", potentialFixableIssue.Name, m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.potentiallyFixableIssuesInfo.suggestions))
 			}
 
-			if !m.runAll && (potentialFixableIssue.isEnabled == nil || *potentialFixableIssue.isEnabled) {
+			if !m.runAll && (potentialFixableIssue.IsEnabled == nil || *potentialFixableIssue.IsEnabled) {
 				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q with isEnabled set to %v\n", potentialFixableIssue.name, potentialFixableIssue.isEnabled)
+					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q with isEnabled set to %v\n", potentialFixableIssue.Name, potentialFixableIssue.IsEnabled)
 				}
 
 				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
@@ -510,11 +512,11 @@ func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 			}
 
 			var (
-				suggestions = potentialFixableIssue.getSuggestions(m.potentiallyFixableIssuesInfo.fileTexts[m.potentiallyFixableIssuesInfo.currentFile])
+				suggestions = potentialFixableIssue.GetSuggestions(m.potentiallyFixableIssuesInfo.fileTexts[m.potentiallyFixableIssuesInfo.currentFile])
 			)
 
 			if m.logFile != nil {
-				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.name, len(suggestions))
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.Name, len(suggestions))
 			}
 
 			if len(suggestions) != 0 {
@@ -541,7 +543,7 @@ func (m *fixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 				m.potentiallyFixableIssuesInfo.currentSuggestionIndex = 0
 				m.potentiallyFixableIssuesInfo.currentSuggestionState = &m.potentiallyFixableIssuesInfo.sectionSuggestionStates[0]
 				cmd := m.setSuggestionDisplay()
-				m.potentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.name
+				m.potentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
 
 				m.potentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 

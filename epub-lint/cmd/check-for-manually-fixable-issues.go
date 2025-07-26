@@ -5,26 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	tea "github.com/charmbracelet/bubbletea"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
+	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/ui"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 	"github.com/spf13/cobra"
 )
-
-type potentiallyFixableIssue struct {
-	name                        string
-	getSuggestions              func(string) map[string]string
-	isEnabled                   *bool
-	updateAllInstances          bool
-	addCssSectionBreakIfMissing bool
-	addCssPageBreakIfMissing    bool
-}
 
 var (
 	// this is declared globally here just for use in manuallyFixableIssue to make sure that the struct definition
@@ -42,58 +36,58 @@ var (
 	runSingleQuotes          bool
 	useTui                   bool
 	logFile                  string
-	potentiallyFixableIssues = []potentiallyFixableIssue{
+	potentiallyFixableIssues = []potentiallyfixableissue.PotentiallyFixableIssue{
 		{
-			name:           "Potential Conversation Instances",
-			getSuggestions: linter.GetPotentialSquareBracketConversationInstances,
-			isEnabled:      &runConversation,
+			Name:           "Potential Conversation Instances",
+			GetSuggestions: linter.GetPotentialSquareBracketConversationInstances,
+			IsEnabled:      &runConversation,
 		},
 		{
-			name:           "Potential Necessary Word Omission Instances",
-			getSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
-			isEnabled:      &runNecessaryWords,
+			Name:           "Potential Necessary Word Omission Instances",
+			GetSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
+			IsEnabled:      &runNecessaryWords,
 		},
 		{
-			name:           "Potential Broken Lines",
-			getSuggestions: linter.GetPotentiallyBrokenLines,
-			isEnabled:      &runBrokenLines,
+			Name:           "Potential Broken Lines",
+			GetSuggestions: linter.GetPotentiallyBrokenLines,
+			IsEnabled:      &runBrokenLines,
 		},
 		{
-			name:           "Potential Incorrect Single Quotes",
-			getSuggestions: linter.GetPotentialIncorrectSingleQuotes,
-			isEnabled:      &runSingleQuotes,
+			Name:           "Potential Incorrect Single Quotes",
+			GetSuggestions: linter.GetPotentialIncorrectSingleQuotes,
+			IsEnabled:      &runSingleQuotes,
 		},
 		{
-			name: "Potential Section Breaks",
+			Name: "Potential Section Breaks",
 			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
-			getSuggestions: func(text string) map[string]string {
+			GetSuggestions: func(text string) map[string]string {
 				return linter.GetPotentialSectionBreaks(text, contextBreak)
 			},
-			isEnabled:                   &runSectionBreak,
-			updateAllInstances:          true,
-			addCssSectionBreakIfMissing: true,
+			IsEnabled:                   &runSectionBreak,
+			UpdateAllInstances:          true,
+			AddCssSectionBreakIfMissing: true,
 		},
 		{
-			name:                     "Potential Page Breaks",
-			getSuggestions:           linter.GetPotentialPageBreaks,
-			isEnabled:                &runPageBreak,
-			updateAllInstances:       true,
-			addCssPageBreakIfMissing: true,
+			Name:                     "Potential Page Breaks",
+			GetSuggestions:           linter.GetPotentialPageBreaks,
+			IsEnabled:                &runPageBreak,
+			UpdateAllInstances:       true,
+			AddCssPageBreakIfMissing: true,
 		},
 		{
-			name:           "Potential Missing Oxford Commas",
-			getSuggestions: linter.GetPotentialMissingOxfordCommas,
-			isEnabled:      &runOxfordCommas,
+			Name:           "Potential Missing Oxford Commas",
+			GetSuggestions: linter.GetPotentialMissingOxfordCommas,
+			IsEnabled:      &runOxfordCommas,
 		},
 		{
-			name:           "Potentially Lacking Subordinate Clause Instances",
-			getSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
-			isEnabled:      &runLackingClause,
+			Name:           "Potentially Lacking Subordinate Clause Instances",
+			GetSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
+			IsEnabled:      &runLackingClause,
 		},
 		{
-			name:           "Potential Thought Instances",
-			getSuggestions: linter.GetPotentialThoughtInstances,
-			isEnabled:      &runThoughts,
+			Name:           "Potential Thought Instances",
+			GetSuggestions: linter.GetPotentialThoughtInstances,
+			IsEnabled:      &runThoughts,
 		},
 	}
 	// errors
@@ -344,14 +338,26 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
-			i            = 0
+			initialModel = ui.NewFixableIssuesModel(&ui.State{
+				FilePaths: make([]string, len(epubInfo.HtmlFiles)),
+				FileTexts: make([]string, len(epubInfo.HtmlFiles)),
+			})
+			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
+			i = 0
 		)
-		initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
+		// initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
 
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
+			initialModel.State.FilePaths[i] = filePath
+			i++
+		}
+
+		slices.Sort(initialModel.State.FilePaths)
+		i = 0
+
+		for _, filePath := range initialModel.State.FilePaths {
 			zipFile := zipFiles[filePath]
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
@@ -359,8 +365,7 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.potentiallyFixableIssuesInfo.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
-			initialModel.potentiallyFixableIssuesInfo.filePaths[i] = filePath
+			initialModel.State.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
 			i++
 		}
 
@@ -372,10 +377,11 @@ func runTuiEpubFixable() error {
 
 		model := finalModel.(fixableIssuesModel)
 		if model.Err != nil {
-			if errors.Is(model.Err, errUserKilledProgram) {
-				logger.WriteInfo("Quitting. User exited the program...")
-				os.Exit(0)
-			}
+			// if errors.Is(model.Err, errUserKilledProgram) {
+			logger.WriteInfo("Quitting. User exited the program...")
+			logger.WriteInfo(model.Err.Error())
+			os.Exit(0)
+			// }
 
 			return nil, model.Err
 		}
@@ -470,21 +476,21 @@ func runCliEpubFixable() error {
 					break
 				}
 
-				if potentiallyFixableIssue.isEnabled == nil {
-					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
+				if potentiallyFixableIssue.IsEnabled == nil {
+					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.Name)
 				}
 
-				if runAll || *potentiallyFixableIssue.isEnabled {
-					suggestions := potentiallyFixableIssue.getSuggestions(newText)
+				if runAll || *potentiallyFixableIssue.IsEnabled {
+					suggestions := potentiallyFixableIssue.GetSuggestions(newText)
 
 					var updateMade bool
-					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
+					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
 
-					if potentiallyFixableIssue.addCssSectionBreakIfMissing && updateMade {
+					if potentiallyFixableIssue.AddCssSectionBreakIfMissing && updateMade {
 						addCssSectionIfMissing = addCssSectionIfMissing || updateMade
 					}
 
-					if potentiallyFixableIssue.addCssPageBreakIfMissing && updateMade {
+					if potentiallyFixableIssue.AddCssPageBreakIfMissing && updateMade {
 						addCssPageIfMissing = addCssPageIfMissing || updateMade
 					}
 				}

@@ -10,10 +10,12 @@ import (
 )
 
 type suggestions struct {
-	height, width                      *int
-	currentFile, currentSuggestionName string
-	isEditing                          bool
-	// suggestionData                     []fileSuggestionInfo
+	height, width                            *int
+	currentFile, currentSuggestionName       string
+	isEditing                                bool
+	suggestionData                           []fileSuggestionInfo
+	currentSuggestion                        *suggestionState
+	currentSuggestionIndex, currentFileIndex int
 
 	// currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex int
 	// potentialIssues []potentiallyFixableIssue
@@ -25,16 +27,16 @@ type suggestions struct {
 	// scrollbar              tea.Model
 }
 
-// type fileSuggestionInfo struct {
-// 	fileName    string
-// 	fileText    string
-// 	suggestions []suggestionState
-// }
+type fileSuggestionInfo struct {
+	fileName    string
+	fileText    string
+	suggestions [][]suggestionState
+}
 
-// type suggestionState struct {
-// 	isAccepted                                               bool
-// 	original, originalSuggestion, currentSuggestion, display string
-// }
+type suggestionState struct {
+	isAccepted                                               bool
+	original, originalSuggestion, currentSuggestion, display string
+}
 
 func newSuggestions(height, width *int) suggestions {
 	v := viewport.New(0, 0)
@@ -45,6 +47,27 @@ func newSuggestions(height, width *int) suggestions {
 		currentFile:           "OEBS/Text/file.html",
 		currentSuggestionName: "Suggestion Name",
 		suggestionDisplay:     v,
+		suggestionData: []fileSuggestionInfo{
+			{
+				fileName: "OEBS/Text/file.html",
+				suggestions: [][]suggestionState{
+					{
+						{
+							original:           "This is the original",
+							originalSuggestion: "This is the new display value. How do you like them apples?",
+							currentSuggestion:  "This is the new display value. How do you like them apples?",
+							display:            "This is the new display value. How do you like them apples?",
+						},
+						{
+							original:           "Suggestion 2 is even longer than original. How does this play?",
+							originalSuggestion: "New suggestion is here to stay and play. How are things going to look?",
+							currentSuggestion:  "New suggestion is here to stay and play. How are things going to look?",
+							display:            "New suggestion is here to stay and play. How are things going to look?",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -66,6 +89,42 @@ func (m suggestions) View() string {
 }
 
 func (m suggestions) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc":
+			return m, tea.Quit
+		case "ctrl+c":
+			// TODO: make sure this is an error once ready
+			return m, tea.Quit
+		}
+	}
+
+	// if m.potentiallyFixableIssuesInfo.isEditing {
+	// 	controls = []string{
+	// "Ctrl+R: Reset",
+	// 	"Ctrl+E: Cancel edit",
+	// 	"Ctrl+S: Accept",
+	// 	"Esc: Quit",
+	// 	"Ctrl+C: Exit without saving",
+	// 	}
+	// } else if m.potentiallyFixableIssuesInfo.currentSuggestionState != nil && m.potentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
+	// controls = []string{
+	// 	"← / → : Previous/Next Suggestion",
+	// 	"C: Copy",
+	// 	"Esc: Quit",
+	// 	"Ctrl+C: Exit without saving",
+	// }
+	// } else {
+	// controls = []string{
+	// 	"← / → : Previous/Next Suggestion",
+	// 	"E: Edit",
+	// 	"C: Copy",
+	// 	"Enter: Accept",
+	// 	"Esc: Quit",
+	// 	"Ctrl+C: Exit without saving",
+	// }
+
 	return m, nil
 }
 

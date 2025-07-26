@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -9,39 +10,29 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// type state struct {
-// 	// general
-// 	currentStage           int
-// 	bodyHeight, bodyWeight int
-// 	ready                  bool
-// 	// body data
-// 	contextBreak string
-// }
+type FixableIssuesModel struct {
+	State         *State
+	title         string
+	width, height int
+	stages        []string
+	bodyContent   []tea.Model
+	ready         bool
+	body          viewport.Model
+	help          help.Model
 
-type model struct {
-	title                       string
-	currentStage, width, height int
-	bodyHeight, bodyWidth       *int
-	stages                      []string
-	bodyContent                 []tea.Model
-	ready                       bool
-	body                        viewport.Model
-	help                        help.Model
+	Err error
 }
 
-func newModel() model {
-	var height, width int
-
-	return model{
+func NewFixableIssuesModel(state *State) FixableIssuesModel {
+	return FixableIssuesModel{
+		State: state,
 		title: "Epub Linter Manually Fixable Issues",
 		bodyContent: []tea.Model{
-			newSectionBreak(true),
-			newSuggestions(&height, &width),
+			newSectionBreak(true, state),
+			newSuggestions(state),
 		},
-		help:       help.New(),
-		body:       viewport.New(0, 0),
-		bodyHeight: &height,
-		bodyWidth:  &width,
+		help: help.New(),
+		body: viewport.New(0, 0),
 		stages: []string{
 			"Section Break",
 			"Suggestions",
@@ -50,11 +41,11 @@ func newModel() model {
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m FixableIssuesModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) View() string {
+func (m FixableIssuesModel) View() string {
 	if m.ready {
 		var (
 			header       = m.headerView()
@@ -65,11 +56,9 @@ func (m model) View() string {
 
 		m.body.Width = m.width
 		m.body.Height = max(0, m.height-(headerHeight+footerHeight)+2)
-		// preserve pointer value to allow for proper seinding of the value to any views that need it
-		// using a new pointer would break the references in the body views
-		(*m.bodyHeight) = m.body.Height
-		(*m.bodyWidth) = m.body.Width
-		m.body.SetContent(m.bodyContent[m.currentStage].View())
+		m.State.BodyHeight = m.body.Height
+		m.State.BodyWidth = m.body.Width
+		m.body.SetContent(m.bodyContent[m.State.CurrentStage].View())
 
 		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
 	}
@@ -77,13 +66,15 @@ func (m model) View() string {
 	return ""
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
+			m.Err = errors.New("must die....")
 			return m, tea.Quit
 		case "ctrl+c":
+			m.Err = errors.New("must die....")
 			// TODO: make sure this is an error once ready
 			return m, tea.Quit
 		}
@@ -93,12 +84,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 	case advanceStage:
 		// TODO: add more in depth logic
-		m.currentStage++
+		m.State.CurrentStage++
 	}
 
 	var cmds []tea.Cmd
-	currentStage, cmd := m.bodyContent[m.currentStage].Update(msg)
-	m.bodyContent[m.currentStage] = currentStage
+	currentStage, cmd := m.bodyContent[m.State.CurrentStage].Update(msg)
+	m.bodyContent[m.State.CurrentStage] = currentStage
 	cmds = append(cmds, cmd)
 
 	m.help, cmd = m.help.Update(msg)
@@ -115,16 +106,16 @@ func max(a, b int) int {
 	return b
 }
 
-func (m model) headerView() string {
+func (m FixableIssuesModel) headerView() string {
 	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetHorizontalBorderSize()))
 }
 
-func (m model) getStageHeaders() string {
+func (m FixableIssuesModel) getStageHeaders() string {
 	var stageHeaders = make([]string, len(m.stages))
 
 	var style lipgloss.Style
 	for i, header := range m.stages {
-		if i == m.currentStage {
+		if i == m.State.CurrentStage {
 			style = activeStyle
 		} else {
 			style = inactiveStyle
@@ -136,13 +127,13 @@ func (m model) getStageHeaders() string {
 	return strings.Join(stageHeaders, inactiveStyle.Render(" > "))
 }
 
-func (m model) footerView() string {
-	// return footerBorderStyle.Render(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetHorizontalBorderSize()) + "\n" + m.help.View(m.bodyContent[m.currentStage].HelpKeys()))
+func (m FixableIssuesModel) footerView() string {
+	// return footerBorderStyle.Render(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetHorizontalBorderSize()) + "\n" + m.help.View(m.bodyContent[m.State.CurrentStage].HelpKeys()))
 	var s strings.Builder
 	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetHorizontalBorderSize()) + "\n")
 
 	var controls []string
-	switch m.currentStage {
+	switch m.State.CurrentStage {
 	case 0:
 		controls = []string{
 			"Enter: Accept",
