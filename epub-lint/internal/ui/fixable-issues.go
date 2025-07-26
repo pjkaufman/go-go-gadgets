@@ -2,42 +2,98 @@ package ui
 
 import (
 	"errors"
+	"io"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
+// type stage int
+
+// const (
+// 	sectionBreak stage = iota
+// 	suggestionsProcessing
+// 	stageCssSelection
+// 	finalStage
+// )
+
 type FixableIssuesModel struct {
-	State         *State
+	// general
+	CurrentStage          int
+	BodyHeight, BodyWidth int
+	Ready                 bool
+	RunAll                bool
+	// file data
+	FilePaths []string
+	FileTexts []string
+	// body data
+	ContextBreak string
+
 	title         string
 	width, height int
 	stages        []string
-	bodyContent   []tea.Model
 	ready         bool
-	body          viewport.Model
-	help          help.Model
+	// components
+	body              viewport.Model
+	help              help.Model
+	sectionBreakInput textinput.Model
+	suggestionDisplay viewport.Model
 
-	Err error
+	// TODO: sort out where this data goes
+	currentFile, currentIssueName                                        string
+	isEditing                                                            bool
+	suggestionData                                                       [][]suggestionState
+	currentSuggestion                                                    *suggestionState
+	currentSuggestionIndex, currentFileIndex, potentialFixableIssueIndex int
+
+	// currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex int
+	potentialIssues []potentiallyfixableissue.PotentiallyFixableIssue
+	currentIssue    *potentiallyfixableissue.PotentiallyFixableIssue
+	// cssUpdateRequired, addCssSectionBreakIfMissing, addCssPageBreakIfMissing, isEditing bool
+	// currentSuggestionState *suggestionState
+	// suggestionEdit         textarea.Model
+	// scrollbar              tea.Model
+
+	logFile io.Writer
+	Err     error
 }
 
-func NewFixableIssuesModel(state *State) FixableIssuesModel {
+func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer) FixableIssuesModel {
+	ti := textinput.New()
+	ti.Width = 20
+	ti.CharLimit = 200
+	ti.Placeholder = "Section break"
+
+	var currentStage = 0
+	if runAll || runSectionBreak {
+		ti.Focus()
+	} else {
+		currentStage = 1
+	}
+
+	suggestionDisplay := viewport.New(0, 0)
+	suggestionDisplay.MouseWheelEnabled = true
+
 	return FixableIssuesModel{
-		State: state,
 		title: "Epub Linter Manually Fixable Issues",
-		bodyContent: []tea.Model{
-			newSectionBreak(true, state),
-			newSuggestions(state),
-		},
-		help: help.New(),
-		body: viewport.New(0, 0),
 		stages: []string{
 			"Section Break",
 			"Suggestions",
 			"CSS File Selection",
 		},
+		CurrentStage: currentStage,
+
+		help:              help.New(),
+		body:              viewport.New(0, 0),
+		suggestionDisplay: suggestionDisplay,
+		sectionBreakInput: ti,
+
+		logFile: logFile,
 	}
 }
 
@@ -56,9 +112,9 @@ func (m FixableIssuesModel) View() string {
 
 		m.body.Width = m.width
 		m.body.Height = max(0, m.height-(headerHeight+footerHeight)+2)
-		m.State.BodyHeight = m.body.Height
-		m.State.BodyWidth = m.body.Width
-		m.body.SetContent(m.bodyContent[m.State.CurrentStage].View())
+		m.BodyHeight = m.body.Height
+		m.BodyWidth = m.body.Width
+		m.body.SetContent(m.bodyView())
 
 		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
 	}
@@ -82,14 +138,15 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.ready = true
-	case advanceStage:
-		// TODO: add more in depth logic
-		m.State.CurrentStage++
 	}
 
 	var cmds []tea.Cmd
-	currentStage, cmd := m.bodyContent[m.State.CurrentStage].Update(msg)
-	m.bodyContent[m.State.CurrentStage] = currentStage
+	var cmd tea.Cmd
+	switch m.CurrentStage {
+	case 0:
+		cmd = m.HandleSectionBreakKeys(msg)
+	}
+
 	cmds = append(cmds, cmd)
 
 	m.help, cmd = m.help.Update(msg)
@@ -115,7 +172,7 @@ func (m FixableIssuesModel) getStageHeaders() string {
 
 	var style lipgloss.Style
 	for i, header := range m.stages {
-		if i == m.State.CurrentStage {
+		if i == m.CurrentStage {
 			style = activeStyle
 		} else {
 			style = inactiveStyle
@@ -133,7 +190,7 @@ func (m FixableIssuesModel) footerView() string {
 	s.WriteString(fillLine(controlsStyle.Render("Controls:"), m.width-footerBorderStyle.GetHorizontalBorderSize()) + "\n")
 
 	var controls []string
-	switch m.State.CurrentStage {
+	switch m.CurrentStage {
 	case 0:
 		controls = []string{
 			"Enter: Accept",
@@ -199,6 +256,17 @@ func (m FixableIssuesModel) footerView() string {
 	// }
 
 	return footerBorderStyle.Render(s.String())
+}
+
+func (m FixableIssuesModel) bodyView() string {
+	switch m.CurrentStage {
+	case 0:
+		return m.SectionBreakView()
+	case 1:
+		return m.SuggestionsView()
+	}
+
+	return ""
 }
 
 // type modelKeyMap struct {

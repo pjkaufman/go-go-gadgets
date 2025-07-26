@@ -338,26 +338,24 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = ui.NewFixableIssuesModel(&ui.State{
-				FilePaths: make([]string, len(epubInfo.HtmlFiles)),
-				FileTexts: make([]string, len(epubInfo.HtmlFiles)),
-			})
+			initialModel = ui.NewFixableIssuesModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
 			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
 			i = 0
 		)
-		// initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.FilePaths = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.FileTexts = make([]string, len(epubInfo.HtmlFiles))
 
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
-			initialModel.State.FilePaths[i] = filePath
+			initialModel.FilePaths[i] = filePath
 			i++
 		}
 
-		slices.Sort(initialModel.State.FilePaths)
+		slices.Sort(initialModel.FilePaths)
 		i = 0
 
-		for _, filePath := range initialModel.State.FilePaths {
+		for _, filePath := range initialModel.FilePaths {
 			zipFile := zipFiles[filePath]
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
@@ -365,7 +363,7 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.State.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
+			initialModel.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
 			i++
 		}
 

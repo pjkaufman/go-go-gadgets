@@ -3,16 +3,8 @@ package ui
 import (
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-// custom messages/commands
-type advanceStage struct{}
-
-func nextStage() tea.Msg {
-	return advanceStage{}
-}
 
 // icons
 var (
