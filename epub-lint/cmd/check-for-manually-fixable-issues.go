@@ -338,24 +338,24 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = ui.NewFixableIssuesModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
+			initialModel = ui.NewFixableIssuesModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file, &contextBreak)
 			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
 			i = 0
 		)
-		initialModel.FilePaths = make([]string, len(epubInfo.HtmlFiles))
-		initialModel.FileTexts = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.PotentiallyFixableIssuesInfo.FilePaths = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.PotentiallyFixableIssuesInfo.FileTexts = make([]string, len(epubInfo.HtmlFiles))
 
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
-			initialModel.FilePaths[i] = filePath
+			initialModel.PotentiallyFixableIssuesInfo.FilePaths[i] = filePath
 			i++
 		}
 
-		slices.Sort(initialModel.FilePaths)
+		slices.Sort(initialModel.PotentiallyFixableIssuesInfo.FilePaths)
 		i = 0
 
-		for _, filePath := range initialModel.FilePaths {
+		for _, filePath := range initialModel.PotentiallyFixableIssuesInfo.FilePaths {
 			zipFile := zipFiles[filePath]
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
@@ -363,7 +363,7 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
+			initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
 			i++
 		}
 

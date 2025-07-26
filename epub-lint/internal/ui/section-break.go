@@ -1,38 +1,31 @@
 package ui
 
-import (
-	"log"
-	"strings"
-
-	tea "github.com/charmbracelet/bubbletea"
-)
-
-func (m FixableIssuesModel) SectionBreakView() string {
-	return m.sectionBreakInput.View()
+func (m FixableIssuesModel) sectionBreakView() string {
+	return m.sectionBreakInfo.input.View()
 }
 
-func (m *FixableIssuesModel) HandleSectionBreakKeys(msg tea.Msg) tea.Cmd {
-	var (
-		cmd tea.Cmd
-	)
-	m.sectionBreakInput, cmd = m.sectionBreakInput.Update(msg)
+// func (m *FixableIssuesModel) HandleSectionBreakKeys(msg tea.Msg) tea.Cmd {
+// 	var (
+// 		cmd tea.Cmd
+// 	)
+// 	m.sectionBreakInput, cmd = m.sectionBreakInput.Update(msg)
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "enter":
-			m.ContextBreak = strings.TrimSpace(m.sectionBreakInput.Value())
-			if m.ContextBreak != "" {
-				m.CurrentStage++
+// 	switch msg := msg.(type) {
+// 	case tea.KeyMsg:
+// 		switch msg.String() {
+// 		case "enter":
+// 			m.ContextBreak = strings.TrimSpace(m.sectionBreakInput.Value())
+// 			if m.ContextBreak != "" {
+// 				m.CurrentStage++
 
-				err := m.setupForNextSuggestions()
-				// TODO: handle better...
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}
+// 				err := m.setupForNextSuggestions()
+// 				// TODO: handle better...
+// 				if err != nil {
+// 					log.Fatal(err)
+// 				}
+// 			}
+// 		}
+// 	}
 
-	return cmd
-}
+// 	return cmd
+// }
