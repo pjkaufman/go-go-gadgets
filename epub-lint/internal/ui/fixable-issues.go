@@ -700,7 +700,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay() tea.Cmd {
 	}
 
 	var (
-		suggestion     = displayStyle.Width(m.width - columnPadding - scrollbarPadding).Render(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display))
+		suggestion     = displayStyle.Width(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - suggestionBorderStyle.GetHorizontalBorderSize() - scrollbarPadding).Render(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display))
 		expectedHeight = strings.Count(suggestion, "\n") + 1
 	)
 
