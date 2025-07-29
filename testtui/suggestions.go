@@ -157,24 +157,15 @@ func (m suggestions) suggestionView() string {
 	currentPos := 3
 	total := 15
 
-	// Create the border config
 	borderConfig := NewBorderConfig(m.suggestionDisplay.Height+2, m.suggestionDisplay.Width+2) // +2 for border width/height
-
-	// Set the info items for the footer
 	modeInfo := fmt.Sprintf("%s %s", modeIcon, modeName)
 	statusInfo := fmt.Sprintf("%d/%d", currentPos, total)
 	borderConfig.SetInfoItems(modeInfo, statusInfo)
 
-	// Get the custom border
 	baseBorder := lipgloss.RoundedBorder()
 	customBorder := borderConfig.GetBorder(baseBorder)
-
-	// Create a style with the custom border
 	customBorderStyle := lipgloss.NewStyle().Border(customBorder)
-
-	// Apply any existing styling from suggestionBorderStyle
 	customBorderStyle = customBorderStyle.BorderForeground(suggestionBorderStyle.GetBorderTopForeground())
 
-	// Render the content with the custom border
 	return customBorderStyle.Render(m.suggestionDisplay.View())
 }
