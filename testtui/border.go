@@ -13,9 +13,8 @@ type BorderConfig struct {
 	// Optional info items at the bottom of the border
 	infoItems []string
 	// Including corners. Both should be >= 2
-	width           int
-	height          int
-	titleLeftMargin int
+	width  int
+	height int
 }
 
 func (b *BorderConfig) SetInfoItems(infoItems ...string) {
@@ -72,8 +71,7 @@ func (b *BorderConfig) GetBorder(borderStrings lipgloss.Border) lipgloss.Border 
 
 func NewBorderConfig(height int, width int) BorderConfig {
 	return BorderConfig{
-		height:          height,
-		width:           width,
-		titleLeftMargin: 1,
+		height: height,
+		width:  width,
 	}
 }
