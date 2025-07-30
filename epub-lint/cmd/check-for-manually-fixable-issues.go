@@ -373,28 +373,27 @@ func runTuiEpubFixable() error {
 			return nil, err
 		}
 
-		model := finalModel.(fixableIssuesModel)
+		model := finalModel.(ui.FixableIssuesModel)
 		if model.Err != nil {
-			// if errors.Is(model.Err, errUserKilledProgram) {
-			logger.WriteInfo("Quitting. User exited the program...")
-			logger.WriteInfo(model.Err.Error())
-			os.Exit(0)
-			// }
+			if errors.Is(model.Err, ui.ErrUserKilledProgram) {
+				logger.WriteInfo("Quitting. User exited the program...")
+				os.Exit(0)
+			}
 
 			return nil, model.Err
 		}
 
 		var handledFiles []string
 		// Process and write updated files
-		for filePath, fileText := range model.potentiallyFixableIssuesInfo.fileTexts {
-			err = filehandler.WriteZipCompressedString(w, filePath, fileText)
+		for i, filePath := range model.PotentiallyFixableIssuesInfo.FilePaths {
+			err = filehandler.WriteZipCompressedString(w, filePath, model.PotentiallyFixableIssuesInfo.FileTexts[i])
 			if err != nil {
 				return nil, err
 			}
 			handledFiles = append(handledFiles, filePath)
 		}
 
-		return handleCssChangesTui(model.potentiallyFixableIssuesInfo.addCssSectionBreakIfMissing, model.potentiallyFixableIssuesInfo.addCssPageBreakIfMissing, opfFolder, model.cssSelectionInfo.selectedCssFile, contextBreak, zipFiles, w, handledFiles)
+		return handleCssChangesTui(model.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing, model.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing, opfFolder, model.CssSelectionInfo.SelectedCssFile, contextBreak, zipFiles, w, handledFiles)
 	})
 }
 

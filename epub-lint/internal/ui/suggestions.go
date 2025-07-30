@@ -3,8 +3,11 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/charmbracelet/lipgloss"
+	rw "github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 )
 
 func (m FixableIssuesModel) suggestionsView() string {
@@ -45,32 +48,123 @@ func (m FixableIssuesModel) suggestionView() string {
 	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
 		s.WriteString("\nNo current file is selected. Something may have gone wrong...\n\n")
 	} else {
-		// var (
-		// 	suggestion = displayStyle.Width(m.width - columnPadding).Render(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display))
-		// 	// expectedHeight = strings.Count(suggestion, "\n") + 1
-		// )
-		// if m.PotentiallyFixableIssuesInfo.isEditing {
-		// 	s.WriteString("\nEditing suggestion:\n\n")
-		// } else if m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
-		// 	s.WriteString("\n" + acceptedChangeTitleStyle.Render("Accepted change:") + "\n")
-		// } else {
-		// 	s.WriteString(fmt.Sprintf("\nSuggested change (%d/%d):\n", expectedHeight, maxDisplayHeight))
-		// }
+		modeIcon := viewIcon
+		modeName := "View"
+		if m.PotentiallyFixableIssuesInfo.isEditing {
+			modeIcon = editIcon
+			modeName = "Edit"
+		}
+
+		borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height+2, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width+2) // +2 for border width/height
+		modeInfo := fmt.Sprintf("%s %s", modeIcon, modeName)
+		statusInfo := fmt.Sprintf("%d/%d", m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.sectionSuggestionStates))
+		borderConfig.SetInfoItems(modeInfo, statusInfo)
+
+		baseBorder := lipgloss.RoundedBorder()
+		customBorder := borderConfig.GetBorder(baseBorder)
+		customBorderStyle := lipgloss.NewStyle().Border(customBorder)
+		customBorderStyle = customBorderStyle.BorderForeground(suggestionBorderStyle.GetBorderTopForeground())
 
 		if m.PotentiallyFixableIssuesInfo.isEditing {
-			s.WriteString(suggestionBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionEdit.View()) + "\n\n")
+			s.WriteString(customBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionEdit.View()) + "\n\n")
 		} else if m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.PotentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
-			s.WriteString(suggestionBorderStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top,
+			s.WriteString(customBorderStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top,
 				m.PotentiallyFixableIssuesInfo.suggestionDisplay.View(),
 				m.PotentiallyFixableIssuesInfo.scrollbar.View(),
 			)))
 		} else {
-			s.WriteString(suggestionBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionDisplay.View()))
+			s.WriteString(customBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionDisplay.View()))
 		}
-
-		// s.WriteString(fmt.Sprintf("\033[0m\n\nSuggestion %d of %d.\n\n", m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.sectionSuggestionStates)))
-		// }
 	}
 
 	return s.String()
+}
+
+func wrapLines(text string, width int) string {
+	var (
+		s             strings.Builder
+		originalLines = strings.Split(text, "\n")
+	)
+
+	for i, line := range originalLines {
+		wrappedLines := wrap([]rune(line), width)
+
+		for j, wrappedLine := range wrappedLines {
+			s.WriteString(string(wrappedLine))
+			if i+1 != len(originalLines) || j+i != len(wrappedLine) {
+				s.WriteString("\n")
+			}
+		}
+	}
+
+	return s.String()
+}
+
+func wrap(runes []rune, width int) [][]rune {
+	var (
+		lines  = [][]rune{{}}
+		word   = []rune{}
+		row    int
+		spaces int
+	)
+
+	// Word wrap the runes
+	for _, r := range runes {
+		if unicode.IsSpace(r) {
+			spaces++
+		} else {
+			word = append(word, r)
+		}
+
+		if spaces > 0 { //nolint:nestif
+			if uniseg.StringWidth(string(lines[row]))+uniseg.StringWidth(string(word))+spaces > width {
+				row++
+				lines = append(lines, []rune{})
+				lines[row] = append(lines[row], word...)
+				lines[row] = append(lines[row], repeatSpaces(spaces)...)
+				spaces = 0
+				word = nil
+			} else {
+				lines[row] = append(lines[row], word...)
+				lines[row] = append(lines[row], repeatSpaces(spaces)...)
+				spaces = 0
+				word = nil
+			}
+		} else {
+			// If the last character is a double-width rune, then we may not be able to add it to this line
+			// as it might cause us to go past the width.
+			lastCharLen := rw.RuneWidth(word[len(word)-1])
+			if uniseg.StringWidth(string(word))+lastCharLen > width {
+				// If the current line has any content, let's move to the next
+				// line because the current word fills up the entire line.
+				if len(lines[row]) > 0 {
+					row++
+					lines = append(lines, []rune{})
+				}
+				lines[row] = append(lines[row], word...)
+				word = nil
+			}
+		}
+	}
+
+	if uniseg.StringWidth(string(lines[row]))+uniseg.StringWidth(string(word))+spaces >= width {
+		lines = append(lines, []rune{})
+		lines[row+1] = append(lines[row+1], word...)
+		// We add an extra space at the end of the line to account for the
+		// trailing space at the end of the previous soft-wrapped lines so that
+		// behaviour when navigating is consistent and so that we don't need to
+		// continually add edges to handle the last line of the wrapped input.
+		spaces++
+		lines[row+1] = append(lines[row+1], repeatSpaces(spaces)...)
+	} else {
+		lines[row] = append(lines[row], word...)
+		spaces++
+		lines[row] = append(lines[row], repeatSpaces(spaces)...)
+	}
+
+	return lines
+}
+
+func repeatSpaces(n int) []rune {
+	return []rune(strings.Repeat(string(' '), n))
 }

@@ -41,7 +41,7 @@ const (
 type FixableIssuesModel struct {
 	sectionBreakInfo             sectionBreakStageInfo
 	PotentiallyFixableIssuesInfo PotentiallyFixableStageInfo
-	cssSelectionInfo             cssSelectionStageInfo
+	CssSelectionInfo             CssSelectionStageInfo
 	currentStage                 stage
 	body                         viewport.Model
 	title                        string
@@ -64,7 +64,7 @@ type PotentiallyFixableStageInfo struct {
 	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
 	suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
 	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
-	cssUpdateRequired, addCssSectionBreakIfMissing, addCssPageBreakIfMissing, isEditing bool
+	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
 	sectionSuggestionStates                                                             []suggestionState
 	currentSuggestionState                                                              *suggestionState
 	suggestionEdit                                                                      textarea.Model
@@ -72,9 +72,9 @@ type PotentiallyFixableStageInfo struct {
 	scrollbar                                                                           tea.Model
 }
 
-type cssSelectionStageInfo struct {
+type CssSelectionStageInfo struct {
 	cssFiles        []string
-	selectedCssFile string
+	SelectedCssFile string
 	currentCssIndex int
 }
 
@@ -118,7 +118,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 			suggestionDisplay: v,
 			scrollbar:         sb,
 		},
-		cssSelectionInfo: cssSelectionStageInfo{
+		CssSelectionInfo: CssSelectionStageInfo{
 			cssFiles: cssFiles,
 		},
 		runAll:       runAll,
@@ -271,11 +271,11 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted = true
 
 						if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssSectionBreakIfMissing {
-							m.PotentiallyFixableIssuesInfo.addCssSectionBreakIfMissing = true
-							m.PotentiallyFixableIssuesInfo.cssUpdateRequired = true
+							m.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing = true
+							m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
 						} else if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssPageBreakIfMissing {
-							m.PotentiallyFixableIssuesInfo.addCssPageBreakIfMissing = true
-							m.PotentiallyFixableIssuesInfo.cssUpdateRequired = true
+							m.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing = true
+							m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
 						}
 
 						cmd, err := m.moveToNextSuggestion()
@@ -304,14 +304,14 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				return m, tea.Quit
 			case "up":
-				if m.cssSelectionInfo.currentCssIndex > 0 {
-					m.cssSelectionInfo.currentCssIndex--
-					m.cssSelectionInfo.selectedCssFile = m.cssSelectionInfo.cssFiles[m.cssSelectionInfo.currentCssIndex]
+				if m.CssSelectionInfo.currentCssIndex > 0 {
+					m.CssSelectionInfo.currentCssIndex--
+					m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
 				}
 			case "down":
-				if m.cssSelectionInfo.currentCssIndex+1 < len(m.cssSelectionInfo.cssFiles) {
-					m.cssSelectionInfo.currentCssIndex++
-					m.cssSelectionInfo.selectedCssFile = m.cssSelectionInfo.cssFiles[m.cssSelectionInfo.currentCssIndex]
+				if m.CssSelectionInfo.currentCssIndex+1 < len(m.CssSelectionInfo.cssFiles) {
+					m.CssSelectionInfo.currentCssIndex++
+					m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
 				}
 			case "enter":
 				m.currentStage = finalStage
@@ -577,9 +577,9 @@ func (m FixableIssuesModel) bodyView() string {
 		// }
 	case stageCssSelection:
 		s.WriteString("\nSelect the CSS file to modify:\n\n")
-		for i, cssFile := range m.cssSelectionInfo.cssFiles {
+		for i, cssFile := range m.CssSelectionInfo.cssFiles {
 			cursor := " "
-			if m.cssSelectionInfo.currentCssIndex == i {
+			if m.CssSelectionInfo.currentCssIndex == i {
 				cursor = ">"
 			}
 
@@ -664,7 +664,7 @@ func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
 	}
 
-	if m.PotentiallyFixableIssuesInfo.cssUpdateRequired {
+	if m.PotentiallyFixableIssuesInfo.CssUpdateRequired {
 		m.currentStage = stageCssSelection
 	} else {
 		m.currentStage = finalStage
@@ -699,10 +699,27 @@ func (m *FixableIssuesModel) setSuggestionDisplay() tea.Cmd {
 		return nil
 	}
 
+	if m.logFile != nil {
+		fmt.Fprintf(m.logFile, "current width %d; border width: %d; scrollbar padding: %d\n", m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width, suggestionBorderStyle.GetHorizontalBorderSize(), scrollbarPadding)
+	}
+
 	var (
-		suggestion     = displayStyle.Width(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - suggestionBorderStyle.GetHorizontalBorderSize() - scrollbarPadding).Render(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display))
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - suggestionBorderStyle.GetHorizontalBorderSize() - scrollbarPadding - 10
+		// originalLines = strings.Split()
+		// wordWrapper             = wordwrap.NewWriter(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - 5)
+	)
+
+	// fmt.Fprintf(wordWrapper, `"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display)
+	// wordWrapper.Close()
+
+	var (
+		suggestion     = displayStyle.Width(expectedSuggestionWidth).Render(wrapLines(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
 		expectedHeight = strings.Count(suggestion, "\n") + 1
 	)
+
+	if m.logFile != nil {
+		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d a height of %d and a value of %q\n", expectedSuggestionWidth, expectedHeight, suggestion)
+	}
 
 	if expectedHeight < maxDisplayHeight {
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height = expectedHeight
@@ -719,7 +736,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay() tea.Cmd {
 }
 
 func (m *FixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
-	if m.PotentiallyFixableIssuesInfo.cssUpdateRequired {
+	if m.PotentiallyFixableIssuesInfo.CssUpdateRequired {
 		m.currentStage = stageCssSelection
 	} else {
 		return tea.Quit
