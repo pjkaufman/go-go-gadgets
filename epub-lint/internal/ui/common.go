@@ -2,8 +2,11 @@ package ui
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
+	rw "github.com/mattn/go-runewidth"
 )
 
 // icons
@@ -21,4 +24,95 @@ func fillLine(currentValue string, width int) string {
 	}
 
 	return currentValue + strings.Repeat(" ", amountToFill)
+}
+
+func wrapLines(text string, width int) string {
+	var (
+		s             strings.Builder
+		originalLines = strings.Split(text, "\n")
+	)
+
+	for i, line := range originalLines {
+		wrappedLines := wrap([]rune(line), width)
+
+		for j, wrappedLine := range wrappedLines {
+			s.WriteString(string(wrappedLine))
+			if i+1 != len(originalLines) || j+i != len(wrappedLine) {
+				s.WriteString("\n")
+			}
+		}
+	}
+
+	return s.String()
+}
+
+// from https://github.com/charmbracelet/bubbles/blob/d66fddf5e780b2bf30e386dbf4e65b55b258197f/textarea/textarea.go#L1398-L1461
+func wrap(runes []rune, width int) [][]rune {
+	var (
+		lines  = [][]rune{{}}
+		word   = []rune{}
+		row    int
+		spaces int
+	)
+
+	// Word wrap the runes
+	for _, r := range runes {
+		if unicode.IsSpace(r) {
+			spaces++
+		} else {
+			word = append(word, r)
+		}
+
+		if spaces > 0 { //nolint:nestif
+			if lipgloss.Width(string(lines[row]))+lipgloss.Width(string(word))+spaces > width {
+				row++
+				lines = append(lines, []rune{})
+				lines[row] = append(lines[row], word...)
+				lines[row] = append(lines[row], repeatSpaces(spaces)...)
+				spaces = 0
+				word = nil
+			} else {
+				lines[row] = append(lines[row], word...)
+				lines[row] = append(lines[row], repeatSpaces(spaces)...)
+				spaces = 0
+				word = nil
+			}
+		} else {
+			// If the last character is a double-width rune, then we may not be able to add it to this line
+			// as it might cause us to go past the width.
+			lastCharLen := rw.RuneWidth(word[len(word)-1])
+			if ansi.StringWidth(string(word))+lastCharLen > width {
+				// If the current line has any content, let's move to the next
+				// line because the current word fills up the entire line.
+				if len(lines[row]) > 0 {
+					row++
+					lines = append(lines, []rune{})
+				}
+				lines[row] = append(lines[row], word...)
+				word = nil
+			}
+		}
+	}
+
+	if lipgloss.Width(string(lines[row]))+lipgloss.Width(string(word))+spaces >= width {
+		lines = append(lines, []rune{})
+		lines[row+1] = append(lines[row+1], word...)
+		// We add an extra space at the end of the line to account for the
+		// trailing space at the end of the previous soft-wrapped lines so that
+		// behaviour when navigating is consistent and so that we don't need to
+		// continually add edges to handle the last line of the wrapped input.
+		spaces++
+		lines[row+1] = append(lines[row+1], repeatSpaces(spaces)...)
+	} else {
+		lines[row] = append(lines[row], word...)
+		spaces++
+		lines[row] = append(lines[row], repeatSpaces(spaces)...)
+	}
+
+	return lines
+}
+
+// from https://github.com/charmbracelet/bubbles/blob/d66fddf5e780b2bf30e386dbf4e65b55b258197f/textarea/textarea.go#L1463-L1465
+func repeatSpaces(n int) []rune {
+	return []rune(strings.Repeat(string(' '), n))
 }

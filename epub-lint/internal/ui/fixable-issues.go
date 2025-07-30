@@ -70,6 +70,8 @@ type PotentiallyFixableStageInfo struct {
 	suggestionEdit                                                                      textarea.Model
 	suggestionDisplay                                                                   viewport.Model
 	scrollbar                                                                           tea.Model
+
+	// leftStatusWidth int
 }
 
 type CssSelectionStageInfo struct {
@@ -335,6 +337,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// TODO: replace with the logic for finding the body width and height
 		var maxWidth = m.width - columnPadding
+
 		m.PotentiallyFixableIssuesInfo.suggestionEdit.SetWidth(maxWidth)
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width = maxWidth - scrollbarPadding
 		if m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height > maxDisplayHeight {
@@ -704,31 +707,18 @@ func (m *FixableIssuesModel) setSuggestionDisplay() tea.Cmd {
 	}
 
 	var (
-		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - suggestionBorderStyle.GetHorizontalBorderSize() - scrollbarPadding - 10
-		// originalLines = strings.Split()
-		// wordWrapper             = wordwrap.NewWriter(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - 5)
-	)
-
-	// fmt.Fprintf(wordWrapper, `"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display)
-	// wordWrapper.Close()
-
-	var (
-		suggestion     = displayStyle.Width(expectedSuggestionWidth).Render(wrapLines(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
-		expectedHeight = strings.Count(suggestion, "\n") + 1
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width
+		suggestion              = displayStyle.Render(wrapLines(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
 	)
 
 	if m.logFile != nil {
-		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d a height of %d and a value of %q\n", expectedSuggestionWidth, expectedHeight, suggestion)
-	}
-
-	if expectedHeight < maxDisplayHeight {
-		m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height = expectedHeight
-	} else {
-		m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height = maxDisplayHeight
+		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d and a value of %q\n", expectedSuggestionWidth, suggestion)
 	}
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
 
+	// TODO: how do I handle the resizing of the suggestion display
+	// one option would be to
 	var cmd tea.Cmd
 	m.PotentiallyFixableIssuesInfo.scrollbar, cmd = m.PotentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height))
 
