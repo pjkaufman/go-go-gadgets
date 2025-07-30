@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/atotto/clipboard"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/tui"
 )
 
 func (m FixableIssuesModel) suggestionsView() string {
 	var (
 		status         = m.leftStatusView()
 		height         = m.body.Height - leftStatusBorderStyle.GetVerticalBorderSize()
-		remainingWidth = m.body.Width - (lipgloss.Width(status) + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
+		remainingWidth = m.getSuggestionWidth(status)
 	)
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height = height
@@ -22,6 +25,10 @@ func (m FixableIssuesModel) suggestionsView() string {
 	m.setSuggestionDisplay()
 
 	return lipgloss.JoinHorizontal(lipgloss.Left, status, m.suggestionView())
+}
+
+func (m FixableIssuesModel) getSuggestionWidth(status string) int {
+	return m.body.Width - (lipgloss.Width(status) + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
 }
 
 func (m FixableIssuesModel) leftStatusView() string {
@@ -77,4 +84,253 @@ func (m FixableIssuesModel) suggestionView() string {
 	}
 
 	return s.String()
+}
+
+func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+
+	m.PotentiallyFixableIssuesInfo.suggestionEdit, cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.PotentiallyFixableIssuesInfo.suggestionDisplay, cmd = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.PotentiallyFixableIssuesInfo.scrollbar, cmd = m.PotentiallyFixableIssuesInfo.scrollbar.Update(m.PotentiallyFixableIssuesInfo.suggestionDisplay)
+	cmds = append(cmds, cmd)
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if m.PotentiallyFixableIssuesInfo.isEditing {
+			switch msg.String() {
+			case "ctrl+s":
+				m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.suggestionEdit.Value())
+				m.PotentiallyFixableIssuesInfo.isEditing = false
+
+				var err error
+				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+				if err != nil {
+					m.Err = err
+
+					return tea.Quit
+				}
+
+				return m.setSuggestionDisplay()
+			case "ctrl+e":
+				m.PotentiallyFixableIssuesInfo.isEditing = false
+
+				var err error
+				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+				if err != nil {
+					m.Err = err
+
+					return tea.Quit
+				}
+			case "ctrl+r":
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion)
+			}
+		} else {
+			switch msg.String() {
+			case "ctrl+c":
+				m.Err = ErrUserKilledProgram
+
+				return tea.Quit
+			case "esc":
+				return m.exitOrMoveToCssSelection()
+			case "right":
+				cmd, err := m.moveToNextSuggestion()
+				if err != nil {
+					m.Err = err
+
+					return tea.Quit
+				}
+
+				cmds = append(cmds, cmd)
+			case "left":
+				cmd = m.moveToPreviousSuggestion()
+				cmds = append(cmds, cmd)
+			case "c":
+				// Copy original value to the clipboard
+				// original, err := repairUnicode(m.currentFileState.original)
+				// if err != nil {
+				// 	m.Err = err
+
+				// 	return m, tea.Quit
+				// }
+
+				// err = clipboard.WriteAll(original)
+				// TODO: make sure values are utf-8 compliant
+				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
+				if err != nil {
+					m.Err = err
+
+					return tea.Quit
+				}
+			case "enter":
+				if !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted && m.PotentiallyFixableIssuesInfo.currentSuggestion != nil {
+					var replaceCount = 1
+					if m.PotentiallyFixableIssuesInfo.currentSuggestion.UpdateAllInstances {
+						replaceCount = -1
+					}
+
+					m.PotentiallyFixableIssuesInfo.FileTexts[m.PotentiallyFixableIssuesInfo.currentFileIndex] = strings.Replace(m.PotentiallyFixableIssuesInfo.FileTexts[m.PotentiallyFixableIssuesInfo.currentFileIndex], m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion, replaceCount)
+
+					m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted = true
+
+					if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssSectionBreakIfMissing {
+						m.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing = true
+						m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
+					} else if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssPageBreakIfMissing {
+						m.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing = true
+						m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
+					}
+
+					cmd, err := m.moveToNextSuggestion()
+					if err != nil {
+						m.Err = err
+
+						return tea.Quit
+					}
+
+					cmds = append(cmds, cmd)
+				}
+			case "e":
+				if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
+					m.PotentiallyFixableIssuesInfo.isEditing = true
+					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+
+					cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Focus()
+					cmds = append(cmds, cmd)
+				}
+			}
+		}
+	}
+
+	return tea.Batch(cmds...)
+}
+
+func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
+	if m.logFile != nil {
+		fmt.Fprintln(m.logFile, "Getting next suggestions")
+	}
+
+	for m.PotentiallyFixableIssuesInfo.currentFileIndex < len(m.PotentiallyFixableIssuesInfo.FilePaths) {
+		m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FilePaths[m.PotentiallyFixableIssuesInfo.currentFileIndex]
+		if m.logFile != nil {
+			fmt.Fprintf(m.logFile, "Current file is %q is %d of %d\n", m.PotentiallyFixableIssuesInfo.currentFile, m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FilePaths))
+		}
+
+		for m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex < len(m.PotentiallyFixableIssuesInfo.suggestions) {
+			var potentialFixableIssue = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]
+			if m.logFile != nil {
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q is %d of %d issues.\n", potentialFixableIssue.Name, m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions))
+			}
+
+			if !m.runAll && (potentialFixableIssue.IsEnabled == nil || *potentialFixableIssue.IsEnabled) {
+				if m.logFile != nil {
+					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q with isEnabled set to %v\n", potentialFixableIssue.Name, potentialFixableIssue.IsEnabled)
+				}
+
+				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
+				continue
+			}
+
+			var (
+				suggestions = potentialFixableIssue.GetSuggestions(m.PotentiallyFixableIssuesInfo.FileTexts[m.PotentiallyFixableIssuesInfo.currentFileIndex])
+			)
+
+			if m.logFile != nil {
+				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.Name, len(suggestions))
+			}
+
+			if len(suggestions) != 0 {
+				m.PotentiallyFixableIssuesInfo.currentSuggestion = &potentialFixableIssue
+				m.PotentiallyFixableIssuesInfo.sectionSuggestionStates = make([]suggestionState, len(suggestions))
+
+				var i = 0
+				for original, suggestion := range suggestions {
+					var display, err = getStringDiff(original, suggestion)
+					if err != nil {
+						return nil, err
+					}
+
+					m.PotentiallyFixableIssuesInfo.sectionSuggestionStates[i] = suggestionState{
+						original:           original,
+						originalSuggestion: suggestion,
+						currentSuggestion:  suggestion,
+						display:            display,
+					}
+
+					i++
+				}
+
+				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
+				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.sectionSuggestionStates[0]
+				cmd := m.setSuggestionDisplay()
+				m.PotentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
+
+				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
+
+				return cmd, nil
+			}
+
+			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
+		}
+
+		m.PotentiallyFixableIssuesInfo.currentFileIndex++
+		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
+	}
+
+	return m.exitOrMoveToCssSelection(), nil
+}
+
+func (m *FixableIssuesModel) moveToNextSuggestion() (tea.Cmd, error) {
+	if m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1 < len(m.PotentiallyFixableIssuesInfo.sectionSuggestionStates) {
+		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex++
+		m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.sectionSuggestionStates[m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+
+		return m.setSuggestionDisplay(), nil
+	}
+
+	return m.setupForNextSuggestions()
+}
+
+func (m *FixableIssuesModel) moveToPreviousSuggestion() tea.Cmd {
+	if m.PotentiallyFixableIssuesInfo.currentSuggestionIndex > 0 {
+		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex--
+		m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.sectionSuggestionStates[m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+		return m.setSuggestionDisplay()
+	}
+
+	return nil
+}
+
+func (m *FixableIssuesModel) setSuggestionDisplay() tea.Cmd {
+	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
+		return nil
+	}
+
+	if m.logFile != nil {
+		fmt.Fprintf(m.logFile, "current width %d; border width: %d; scrollbar padding: %d\n", m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width, suggestionBorderStyle.GetHorizontalBorderSize(), scrollbarPadding)
+	}
+
+	var (
+		expectedSuggestionWidth = m.getSuggestionWidth(m.leftStatusView())
+		suggestion              = displayStyle.Render(wrapLines(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
+	)
+
+	if m.logFile != nil {
+		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d and a value of %q\n", expectedSuggestionWidth, suggestion)
+	}
+
+	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
+
+	// TODO: how do I handle the resizing of the suggestion display
+	// one option would be to
+	var cmd tea.Cmd
+	m.PotentiallyFixableIssuesInfo.scrollbar, cmd = m.PotentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height))
+
+	return cmd
 }
