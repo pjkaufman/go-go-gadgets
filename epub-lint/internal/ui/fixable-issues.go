@@ -162,6 +162,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 
 		// TODO: this logic needs to be handled, but I am not too sure how to properly handle this without knowing the exact way of determining the height while not necessarily knowing the size of the text
+		// Note: it never returns an actuall command, so I should be able to use this in the view logic if need be and just ignore the cmd returned
 		m.PotentiallyFixableIssuesInfo.scrollbar, cmd = m.PotentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height))
 		cmds = append(cmds, cmd)
 
@@ -178,28 +179,9 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case suggestionsProcessing:
 		cmd = m.handleSuggestionMsgs(msg)
 		cmds = append(cmds, cmd)
-	}
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		key := msg.String()
-		switch m.currentStage {
-		case stageCssSelection:
-			switch key {
-			case "up":
-				if m.CssSelectionInfo.currentCssIndex > 0 {
-					m.CssSelectionInfo.currentCssIndex--
-					m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
-				}
-			case "down":
-				if m.CssSelectionInfo.currentCssIndex+1 < len(m.CssSelectionInfo.cssFiles) {
-					m.CssSelectionInfo.currentCssIndex++
-					m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
-				}
-			case "enter":
-				m.currentStage = finalStage
-			}
-		}
+	case stageCssSelection:
+		cmd = m.handleCssSelectionMsgs(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	if m.currentStage == finalStage {
