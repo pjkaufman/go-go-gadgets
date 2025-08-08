@@ -161,11 +161,6 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.width = msg.Width
 
-		// TODO: this logic needs to be handled, but I am not too sure how to properly handle this without knowing the exact way of determining the height while not necessarily knowing the size of the text
-		// Note: it never returns an actuall command, so I should be able to use this in the view logic if need be and just ignore the cmd returned
-		m.PotentiallyFixableIssuesInfo.scrollbar, cmd = m.PotentiallyFixableIssuesInfo.scrollbar.Update(tui.HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height))
-		cmds = append(cmds, cmd)
-
 		cmds = append(cmds, tea.ClearScreen)
 	case error:
 		m.Err = msg
