@@ -24,7 +24,7 @@ func (m FixableIssuesModel) getLeftStatusWidth() int {
 
 func (m *FixableIssuesModel) leftStatusView() string {
 	var (
-		statusView      = fmt.Sprintf("%s %s (%d/%d)\n%s %s (%d/%d)", documentIcon, fileNameStyle.Render(m.PotentiallyFixableIssuesInfo.currentFile), m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FilePaths), sectionIcon, suggestionNameStyle.Render(m.PotentiallyFixableIssuesInfo.currentSuggestionName), m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions))
+		statusView      = fmt.Sprintf("%s %s (%d/%d)\n%s %s (%d/%d)", documentIcon, fileNameStyle.Render(m.PotentiallyFixableIssuesInfo.currentFile), m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FilePaths), sectionIcon, suggestionNameStyle.Render(m.PotentiallyFixableIssuesInfo.currentSuggestionName), m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions))
 		remainingHeight int
 		statusPadding   string
 	)

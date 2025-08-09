@@ -124,7 +124,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 		stages: []string{
 			"Section Break",
 			"Suggestions",
-			"CSS File Selection",
+			"Select CSS File",
 		},
 		title: "Manually Fixable Issues",
 	}
