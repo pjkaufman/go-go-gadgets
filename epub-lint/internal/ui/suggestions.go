@@ -272,8 +272,8 @@ func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 
 				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.sectionSuggestionStates[0]
-				m.setSuggestionDisplay(true)
 				m.PotentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
+				m.setSuggestionDisplay(true)
 
 				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 
