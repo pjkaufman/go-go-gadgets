@@ -126,7 +126,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 			"Suggestions",
 			"CSS File Selection",
 		},
-		title: "Epub Linter Manually Fixable Issues",
+		title: "Manually Fixable Issues",
 	}
 }
 
@@ -162,7 +162,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 
 		m.body.Width = m.width
-		m.body.Height = max(0, m.height-(m.headerHeight()+m.footerHeight())+1)
+		m.body.Height = max(0, m.height-(m.headerHeight()+m.footerHeight()))
 
 		m.setSuggestionDisplay(false)
 
