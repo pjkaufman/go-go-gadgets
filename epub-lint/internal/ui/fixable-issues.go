@@ -161,6 +161,11 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.width = msg.Width
 
+		m.body.Width = m.width
+		m.body.Height = max(0, m.height-(m.headerHeight()+m.footerHeight())+1)
+
+		m.setSuggestionDisplay(false)
+
 		cmds = append(cmds, tea.ClearScreen)
 	case error:
 		m.Err = msg
@@ -191,14 +196,9 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m FixableIssuesModel) View() string {
 	if m.ready {
 		var (
-			header       = m.headerView()
-			footer       = m.footerView()
-			headerHeight = lipgloss.Height(header) + headerBorderStyle.GetBorderBottomSize()
-			footerHeight = lipgloss.Height(footer) + footerBorderStyle.GetBorderTopSize()
+			header = m.headerView()
+			footer = m.footerView()
 		)
-
-		m.body.Width = m.width
-		m.body.Height = max(0, m.height-(headerHeight+footerHeight)+2)
 		m.body.SetContent(m.bodyView())
 
 		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
@@ -324,4 +324,12 @@ func (m *FixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
 	}
 
 	return nil
+}
+
+func (m FixableIssuesModel) headerHeight() int {
+	return lipgloss.Height(m.headerView()) + headerBorderStyle.GetBorderBottomSize()
+}
+
+func (m FixableIssuesModel) footerHeight() int {
+	return lipgloss.Height(m.footerView()) + footerBorderStyle.GetBorderTopSize()
 }
