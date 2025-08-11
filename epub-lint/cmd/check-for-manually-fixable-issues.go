@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"slices"
+	"sort"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -342,20 +342,11 @@ func runTuiEpubFixable() error {
 			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
 			i = 0
 		)
-		initialModel.PotentiallyFixableIssuesInfo.FilePaths = make([]string, len(epubInfo.HtmlFiles))
-		initialModel.PotentiallyFixableIssuesInfo.FileTexts = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(epubInfo.HtmlFiles))
 
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
-			initialModel.PotentiallyFixableIssuesInfo.FilePaths[i] = filePath
-			i++
-		}
-
-		slices.Sort(initialModel.PotentiallyFixableIssuesInfo.FilePaths)
-		i = 0
-
-		for _, filePath := range initialModel.PotentiallyFixableIssuesInfo.FilePaths {
 			zipFile := zipFiles[filePath]
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
@@ -363,9 +354,19 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] = linter.CleanupHtmlSpacing(fileText)
+			// initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] =
+
+			initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
+				Name: filePath,
+				Text: linter.CleanupHtmlSpacing(fileText),
+			}
+
 			i++
 		}
+
+		sort.Slice(initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData, func(i, j int) bool {
+			return initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i].Name < initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[j].Name
+		})
 
 		p := tea.NewProgram(&initialModel, tea.WithAltScreen())
 		finalModel, err := p.Run()
@@ -385,12 +386,12 @@ func runTuiEpubFixable() error {
 
 		var handledFiles []string
 		// Process and write updated files
-		for i, filePath := range model.PotentiallyFixableIssuesInfo.FilePaths {
-			err = filehandler.WriteZipCompressedString(w, filePath, model.PotentiallyFixableIssuesInfo.FileTexts[i])
+		for _, fileData := range model.PotentiallyFixableIssuesInfo.FileSuggestionData {
+			err = filehandler.WriteZipCompressedString(w, fileData.Name, fileData.Text)
 			if err != nil {
 				return nil, err
 			}
-			handledFiles = append(handledFiles, filePath)
+			handledFiles = append(handledFiles, fileData.Name)
 		}
 
 		return handleCssChangesTui(model.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing, model.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing, opfFolder, model.CssSelectionInfo.SelectedCssFile, contextBreak, zipFiles, w, handledFiles)

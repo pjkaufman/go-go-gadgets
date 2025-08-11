@@ -49,24 +49,24 @@ type sectionBreakStageInfo struct {
 	contextBreak *string
 }
 
-// type block struct {
-// 	text  string
-// 	width int
-// }
-
 type PotentiallyFixableStageInfo struct {
-	FilePaths                                                                           []string
-	FileTexts                                                                           []string
+	FileSuggestionData                                                                  []FileSuggestionInfo
 	currentFile, currentSuggestionName                                                  string
 	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
 	suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
 	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
 	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
-	sectionSuggestionStates                                                             []suggestionState
-	currentSuggestionState                                                              *suggestionState
-	suggestionEdit                                                                      textarea.Model
-	suggestionDisplay                                                                   viewport.Model
-	scrollbar                                                                           tea.Model
+	// sectionSuggestionStates                                                             []suggestionState
+	currentSuggestionState *suggestionState
+	suggestionEdit         textarea.Model
+	suggestionDisplay      viewport.Model
+	scrollbar              tea.Model
+}
+
+type FileSuggestionInfo struct {
+	Name        string
+	Text        string
+	suggestions []suggestionState
 }
 
 type CssSelectionStageInfo struct {
