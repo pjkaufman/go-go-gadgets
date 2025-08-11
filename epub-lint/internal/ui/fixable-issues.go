@@ -57,7 +57,7 @@ type PotentiallyFixableStageInfo struct {
 	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
 	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
 	// sectionSuggestionStates                                                             []suggestionState
-	currentSuggestionState *suggestionState
+	currentSuggestionState *SuggestionState
 	suggestionEdit         textarea.Model
 	suggestionDisplay      viewport.Model
 	scrollbar              tea.Model
@@ -66,7 +66,7 @@ type PotentiallyFixableStageInfo struct {
 type FileSuggestionInfo struct {
 	Name        string
 	Text        string
-	suggestions []suggestionState
+	Suggestions [][]SuggestionState
 }
 
 type CssSelectionStageInfo struct {
@@ -75,7 +75,7 @@ type CssSelectionStageInfo struct {
 	currentCssIndex int
 }
 
-type suggestionState struct {
+type SuggestionState struct {
 	isAccepted                                               bool
 	original, originalSuggestion, currentSuggestion, display string
 }

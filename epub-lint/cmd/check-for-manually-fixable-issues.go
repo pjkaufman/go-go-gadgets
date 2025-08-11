@@ -344,6 +344,7 @@ func runTuiEpubFixable() error {
 		)
 		initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(epubInfo.HtmlFiles))
 
+		var numFixableIssues = len(potentiallyFixableIssues)
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
@@ -357,8 +358,9 @@ func runTuiEpubFixable() error {
 			// initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] =
 
 			initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
-				Name: filePath,
-				Text: linter.CleanupHtmlSpacing(fileText),
+				Name:        filePath,
+				Text:        linter.CleanupHtmlSpacing(fileText),
+				Suggestions: make([][]ui.SuggestionState, numFixableIssues),
 			}
 
 			i++
