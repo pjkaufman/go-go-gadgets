@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/cmd/tui"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
@@ -101,7 +100,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 	v := viewport.New(80, 20)
 	v.MouseWheelEnabled = true
 
-	sb := tui.NewVertical()
+	sb := NewVertical()
 	sb.Style = sb.Style.Border(lipgloss.RoundedBorder(), true)
 
 	return FixableIssuesModel{

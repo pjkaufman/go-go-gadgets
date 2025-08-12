@@ -1,6 +1,6 @@
 // pulled from https://github.com/charmbracelet/bubbles/pull/536
 
-package tui
+package ui
 
 // Msg signals that scrollbar parameters must be updated.
 type Msg struct {

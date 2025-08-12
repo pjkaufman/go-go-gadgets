@@ -72,7 +72,6 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 					return fmt.Errorf("failed to update mimetype to match the default one in zip file: %w", err)
 				}
 			}
-
 		} else {
 			err = filehandler.WriteZipUncompressedString(w, "mimetype", defaultMimetypeContents)
 
