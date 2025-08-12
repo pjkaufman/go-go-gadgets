@@ -1,6 +1,6 @@
 // pulled from https://github.com/charmbracelet/bubbles/pull/536
 
-package tui
+package ui
 
 import (
 	"math"

@@ -12,6 +12,7 @@ require (
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.5
 	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/x/exp/term v0.0.0-20240814160751-e2dc8b53b604
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
@@ -20,6 +21,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/liut/jpegquality v0.0.0-20240710065817-3f50304d6fdd
 	github.com/manifoldco/promptui v0.9.0
+	github.com/muesli/reflow v0.3.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20220204101620-317176b6684d
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0

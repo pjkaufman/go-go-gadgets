@@ -5,26 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	tea "github.com/charmbracelet/bubbletea"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
+	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/ui"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 	"github.com/spf13/cobra"
 )
-
-type potentiallyFixableIssue struct {
-	name                        string
-	getSuggestions              func(string) map[string]string
-	isEnabled                   *bool
-	updateAllInstances          bool
-	addCssSectionBreakIfMissing bool
-	addCssPageBreakIfMissing    bool
-}
 
 var (
 	// this is declared globally here just for use in manuallyFixableIssue to make sure that the struct definition
@@ -42,58 +36,58 @@ var (
 	runSingleQuotes          bool
 	useTui                   bool
 	logFile                  string
-	potentiallyFixableIssues = []potentiallyFixableIssue{
+	potentiallyFixableIssues = []potentiallyfixableissue.PotentiallyFixableIssue{
 		{
-			name:           "Potential Conversation Instances",
-			getSuggestions: linter.GetPotentialSquareBracketConversationInstances,
-			isEnabled:      &runConversation,
+			Name:           "Potential Conversation Instances",
+			GetSuggestions: linter.GetPotentialSquareBracketConversationInstances,
+			IsEnabled:      &runConversation,
 		},
 		{
-			name:           "Potential Necessary Word Omission Instances",
-			getSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
-			isEnabled:      &runNecessaryWords,
+			Name:           "Potential Necessary Word Omission Instances",
+			GetSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
+			IsEnabled:      &runNecessaryWords,
 		},
 		{
-			name:           "Potential Broken Lines",
-			getSuggestions: linter.GetPotentiallyBrokenLines,
-			isEnabled:      &runBrokenLines,
+			Name:           "Potential Broken Lines",
+			GetSuggestions: linter.GetPotentiallyBrokenLines,
+			IsEnabled:      &runBrokenLines,
 		},
 		{
-			name:           "Potential Incorrect Single Quotes",
-			getSuggestions: linter.GetPotentialIncorrectSingleQuotes,
-			isEnabled:      &runSingleQuotes,
+			Name:           "Potential Incorrect Single Quotes",
+			GetSuggestions: linter.GetPotentialIncorrectSingleQuotes,
+			IsEnabled:      &runSingleQuotes,
 		},
 		{
-			name: "Potential Section Breaks",
+			Name: "Potential Section Breaks",
 			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
-			getSuggestions: func(text string) map[string]string {
+			GetSuggestions: func(text string) map[string]string {
 				return linter.GetPotentialSectionBreaks(text, contextBreak)
 			},
-			isEnabled:                   &runSectionBreak,
-			updateAllInstances:          true,
-			addCssSectionBreakIfMissing: true,
+			IsEnabled:                   &runSectionBreak,
+			UpdateAllInstances:          true,
+			AddCssSectionBreakIfMissing: true,
 		},
 		{
-			name:                     "Potential Page Breaks",
-			getSuggestions:           linter.GetPotentialPageBreaks,
-			isEnabled:                &runPageBreak,
-			updateAllInstances:       true,
-			addCssPageBreakIfMissing: true,
+			Name:                     "Potential Page Breaks",
+			GetSuggestions:           linter.GetPotentialPageBreaks,
+			IsEnabled:                &runPageBreak,
+			UpdateAllInstances:       true,
+			AddCssPageBreakIfMissing: true,
 		},
 		{
-			name:           "Potential Missing Oxford Commas",
-			getSuggestions: linter.GetPotentialMissingOxfordCommas,
-			isEnabled:      &runOxfordCommas,
+			Name:           "Potential Missing Oxford Commas",
+			GetSuggestions: linter.GetPotentialMissingOxfordCommas,
+			IsEnabled:      &runOxfordCommas,
 		},
 		{
-			name:           "Potentially Lacking Subordinate Clause Instances",
-			getSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
-			isEnabled:      &runLackingClause,
+			Name:           "Potentially Lacking Subordinate Clause Instances",
+			GetSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
+			IsEnabled:      &runLackingClause,
 		},
 		{
-			name:           "Potential Thought Instances",
-			getSuggestions: linter.GetPotentialThoughtInstances,
-			isEnabled:      &runThoughts,
+			Name:           "Potential Thought Instances",
+			GetSuggestions: linter.GetPotentialThoughtInstances,
+			IsEnabled:      &runThoughts,
 		},
 	}
 	// errors
@@ -344,11 +338,13 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
-			i            = 0
+			initialModel = ui.NewFixableIssuesModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file, &contextBreak)
+			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
+			i = 0
 		)
-		initialModel.potentiallyFixableIssuesInfo.filePaths = make([]string, len(epubInfo.HtmlFiles))
+		initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(epubInfo.HtmlFiles))
 
+		var numFixableIssues = len(potentiallyFixableIssues)
 		// Collect file contents
 		for file := range epubInfo.HtmlFiles {
 			var filePath = getFilePath(opfFolder, file)
@@ -359,10 +355,20 @@ func runTuiEpubFixable() error {
 				return nil, err
 			}
 
-			initialModel.potentiallyFixableIssuesInfo.fileTexts[filePath] = linter.CleanupHtmlSpacing(fileText)
-			initialModel.potentiallyFixableIssuesInfo.filePaths[i] = filePath
+			// initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] =
+
+			initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
+				Name:        filePath,
+				Text:        linter.CleanupHtmlSpacing(fileText),
+				Suggestions: make([][]ui.SuggestionState, numFixableIssues),
+			}
+
 			i++
 		}
+
+		sort.Slice(initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData, func(i, j int) bool {
+			return initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i].Name < initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[j].Name
+		})
 
 		p := tea.NewProgram(&initialModel, tea.WithAltScreen())
 		finalModel, err := p.Run()
@@ -370,9 +376,9 @@ func runTuiEpubFixable() error {
 			return nil, err
 		}
 
-		model := finalModel.(fixableIssuesModel)
+		model := finalModel.(ui.FixableIssuesModel)
 		if model.Err != nil {
-			if errors.Is(model.Err, errUserKilledProgram) {
+			if errors.Is(model.Err, ui.ErrUserKilledProgram) {
 				logger.WriteInfo("Quitting. User exited the program...")
 				os.Exit(0)
 			}
@@ -382,15 +388,15 @@ func runTuiEpubFixable() error {
 
 		var handledFiles []string
 		// Process and write updated files
-		for filePath, fileText := range model.potentiallyFixableIssuesInfo.fileTexts {
-			err = filehandler.WriteZipCompressedString(w, filePath, fileText)
+		for _, fileData := range model.PotentiallyFixableIssuesInfo.FileSuggestionData {
+			err = filehandler.WriteZipCompressedString(w, fileData.Name, fileData.Text)
 			if err != nil {
 				return nil, err
 			}
-			handledFiles = append(handledFiles, filePath)
+			handledFiles = append(handledFiles, fileData.Name)
 		}
 
-		return handleCssChangesTui(model.potentiallyFixableIssuesInfo.addCssSectionBreakIfMissing, model.potentiallyFixableIssuesInfo.addCssPageBreakIfMissing, opfFolder, model.cssSelectionInfo.selectedCssFile, contextBreak, zipFiles, w, handledFiles)
+		return handleCssChangesTui(model.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing, model.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing, opfFolder, model.CssSelectionInfo.SelectedCssFile, contextBreak, zipFiles, w, handledFiles)
 	})
 }
 
@@ -470,21 +476,21 @@ func runCliEpubFixable() error {
 					break
 				}
 
-				if potentiallyFixableIssue.isEnabled == nil {
-					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.name)
+				if potentiallyFixableIssue.IsEnabled == nil {
+					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.Name)
 				}
 
-				if runAll || *potentiallyFixableIssue.isEnabled {
-					suggestions := potentiallyFixableIssue.getSuggestions(newText)
+				if runAll || *potentiallyFixableIssue.IsEnabled {
+					suggestions := potentiallyFixableIssue.GetSuggestions(newText)
 
 					var updateMade bool
-					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.name, suggestions, newText, potentiallyFixableIssue.updateAllInstances)
+					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
 
-					if potentiallyFixableIssue.addCssSectionBreakIfMissing && updateMade {
+					if potentiallyFixableIssue.AddCssSectionBreakIfMissing && updateMade {
 						addCssSectionIfMissing = addCssSectionIfMissing || updateMade
 					}
 
-					if potentiallyFixableIssue.addCssPageBreakIfMissing && updateMade {
+					if potentiallyFixableIssue.AddCssPageBreakIfMissing && updateMade {
 						addCssPageIfMissing = addCssPageIfMissing || updateMade
 					}
 				}
