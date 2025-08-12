@@ -12,8 +12,6 @@ var (
 	fileNameStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("#a6e3a1"))
 	suggestionNameStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#f5e0dc"))
 	leftStatusBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("#74c7ec"))
-	suggestionBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true) //.BorderForeground(lipgloss.Color("#b4befe"))
-
-	acceptedChangeTitleStyle = lipgloss.NewStyle().Bold(true)
-	displayStyle             = lipgloss.NewStyle()
+	suggestionBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true)
+	displayStyle          = lipgloss.NewStyle()
 )
