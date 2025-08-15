@@ -70,7 +70,6 @@ func (m *FixableIssuesModel) leftStatusView() string {
 
 func (m *FixableIssuesModel) suggestionView() string {
 	var s strings.Builder
-	// s.WriteString(titleStyle.Render(fmt.Sprintf("Current File (%d/%d): %s ", m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FilePaths), m.PotentiallyFixableIssuesInfo.currentFile)) + "\n")
 
 	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
 		s.WriteString("\nNo current file is selected. Something may have gone wrong...\n\n")

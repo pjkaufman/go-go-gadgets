@@ -55,11 +55,10 @@ type PotentiallyFixableStageInfo struct {
 	suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
 	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
 	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
-	// sectionSuggestionStates                                                             []suggestionState
-	currentSuggestionState *SuggestionState
-	suggestionEdit         textarea.Model
-	suggestionDisplay      viewport.Model
-	scrollbar              tea.Model
+	currentSuggestionState                                                              *SuggestionState
+	suggestionEdit                                                                      textarea.Model
+	suggestionDisplay                                                                   viewport.Model
+	scrollbar                                                                           tea.Model
 }
 
 type FileSuggestionInfo struct {
@@ -319,6 +318,7 @@ func (m *FixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
 			m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
 		}
 	} else {
+		m.currentStage = finalStage
 		return tea.Quit
 	}
 
