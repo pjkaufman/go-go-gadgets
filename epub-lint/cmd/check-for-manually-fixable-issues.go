@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"sort"
 	"strings"
 
@@ -151,7 +152,17 @@ var fixableCmd = &cobra.Command{
 		}
 
 		if useTui {
+			f, err2 := os.Create("mem.pprof")
+			if err2 != nil {
+				panic(err2)
+			}
+			defer f.Close()
+
 			err = runTuiEpubFixable()
+
+			if err2 = pprof.WriteHeapProfile(f); err2 != nil {
+				panic(err2)
+			}
 		} else {
 			err = runCliEpubFixable()
 
