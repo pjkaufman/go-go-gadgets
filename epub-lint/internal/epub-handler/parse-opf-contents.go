@@ -10,14 +10,15 @@ import (
 )
 
 type EpubInfo struct {
-	HtmlFiles   map[string]struct{}
-	ImagesFiles map[string]struct{}
-	CssFiles    map[string]struct{}
-	OtherFiles  map[string]struct{}
-	NcxFile     string
-	NavFile     string
-	TocFile     string
-	Version     int
+	HtmlFiles             map[string]struct{}
+	ImagesFiles           map[string]struct{}
+	CssFiles              map[string]struct{}
+	OtherFiles            map[string]struct{}
+	NcxFile               string
+	NavFile               string
+	TocFile               string
+	Version               int
+	FilePathsInSpineOrder []string
 }
 
 type Package struct {
@@ -34,6 +35,7 @@ type Manifest struct {
 
 type ManifestItem struct {
 	XMLName    xml.Name `xml:"item"`
+	Id         string   `xml:"id,attr"`
 	Href       string   `xml:"href,attr"`
 	MediaType  string   `xml:"media-type,attr"`
 	Properties string   `xml:"properties,attr"`
