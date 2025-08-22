@@ -134,16 +134,9 @@ var autoFixValidationCmd = &cobra.Command{
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			var (
-				opfFilename string
-				opfFile     *zip.File
+				opfFilename = epubInfo.OpfFile
+				opfFile     = zipFiles[opfFilename]
 			)
-			for filename, file := range zipFiles {
-				if strings.HasSuffix(filename, "opf") {
-					opfFilename = filename
-					opfFile = file
-					break
-				}
-			}
 
 			opfFileContents, err := filehandler.ReadInZipFileContents(opfFile)
 			if err != nil {

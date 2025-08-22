@@ -107,23 +107,32 @@ func moveTranslatorsNotes(epubFile string) error {
 			return nil, err
 		}
 
-		// TODO: update this in order to get the files based on spine order...
 		var (
 			handledFiles            []string
 			translatorNoteListItems []string
 			fileTranslatorNotes     []string
 			startingNumber          int
+			fullFilePath            string
 		)
-		for file := range epubInfo.HtmlFiles {
-			var filePath = getFilePath(opfFolder, file)
-			zipFile := zipFiles[filePath]
+		for _, file := range epubInfo.FilePathsInSpineOrder {
+			if _, ok := epubInfo.HtmlFiles[file]; !ok {
+				continue
+			}
+
+			var (
+				filePath = getFilePath(opfFolder, file)
+				zipFile  = zipFiles[filePath]
+			)
+
+			fullFilePath = filePath
 
 			fileText, err := filehandler.ReadInZipFileContents(zipFile)
 			if err != nil {
 				return nil, err
 			}
 
-			fileText, fileTranslatorNotes, startingNumber = linter.GetTranslatorsNotes(fileText, file, tlNoteFileName, startingNumber)
+			var nameParts = strings.Split(file, "/")
+			fileText, fileTranslatorNotes, startingNumber = linter.GetTranslatorsNotes(fileText, nameParts[len(nameParts)-1], tlNoteFileName, startingNumber)
 
 			translatorNoteListItems = append(translatorNoteListItems, fileTranslatorNotes...)
 
@@ -137,19 +146,64 @@ func moveTranslatorsNotes(epubFile string) error {
 
 		/*TODO:
 		If there are translator's notes:
-		- Add tl_notes.xhtml to the OPF manifest and spine
-		- Add tl_notes.xhtml to the nav and or toc
+		- Add tl_notes.xhtml to the nav
 		*/
 		if len(translatorNoteListItems) > 0 {
-			var tlNotesFilePath = getFilePath(opfFolder, tlNoteFileName)
+			var (
+				pathParts      = strings.Split(fullFilePath, "/")
+				htmlFolderPath = opfFolder
+				relativePath   = tlNoteFileName
+			)
+			if len(pathParts) > 1 {
+				htmlFolderPath = strings.Join(pathParts[0:len(pathParts)-1], "/")
+			}
+
+			if len(pathParts) > 2 {
+				relativePath = strings.Join(pathParts[1:len(pathParts)-1], "/")
+			}
+
+			var tlNotesFilePath = getFilePath(htmlFolderPath, tlNoteFileName)
 			err = filehandler.WriteZipCompressedString(w, tlNotesFilePath, fmt.Sprintf(defaultTLNoteContents, strings.Join(translatorNoteListItems, "				")))
 			if err != nil {
 				return nil, err
 			}
 
 			handledFiles = append(handledFiles, tlNotesFilePath)
+
+			opfFile := zipFiles[epubInfo.OpfFile]
+			opfFileContents, err := filehandler.ReadInZipFileContents(opfFile)
+			if err != nil {
+				return nil, err
+			}
+
+			relativePath = getFilePath(relativePath, tlNoteFileName)
+
+			opfFileContents = epubhandler.AddFileToOpf(opfFileContents, relativePath, "tl_notes", "application/xhtml+xml")
+			err = filehandler.WriteZipCompressedString(w, epubInfo.OpfFile, opfFileContents)
+			if err != nil {
+				return nil, err
+			}
+
+			handledFiles = append(handledFiles, epubInfo.OpfFile)
+
+			if epubInfo.NcxFile != "" {
+				var ncxFilePath = getFilePath(opfFolder, epubInfo.NcxFile)
+				ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[ncxFilePath])
+				if err != nil {
+					return nil, err
+				}
+
+				ncxFileContents = epubhandler.AddFileToNcx(ncxFileContents, relativePath, "Translator's Notes", "tl_notes")
+
+				err = filehandler.WriteZipCompressedString(w, ncxFilePath, ncxFileContents)
+				if err != nil {
+					return nil, err
+				}
+
+				handledFiles = append(handledFiles, ncxFilePath)
+			}
 		}
 
-		panic("not done...")
+		return handledFiles, nil
 	})
 }

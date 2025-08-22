@@ -17,6 +17,7 @@ type EpubInfo struct {
 	NcxFile               string
 	NavFile               string
 	TocFile               string
+	OpfFile               string
 	Version               int
 	FilePathsInSpineOrder []string
 }
@@ -25,6 +26,7 @@ type Package struct {
 	XMLName  xml.Name  `xml:"package"`
 	Version  string    `xml:"version,attr"`
 	Manifest *Manifest `xml:"manifest"`
+	Spine    *Spine    `xml:"spine"`
 	Guide    *Guide    `xml:"guide"`
 }
 
@@ -39,6 +41,16 @@ type ManifestItem struct {
 	Href       string   `xml:"href,attr"`
 	MediaType  string   `xml:"media-type,attr"`
 	Properties string   `xml:"properties,attr"`
+}
+
+type Spine struct {
+	XMLName  xml.Name        `xml:"spine"`
+	Itemrefs []*SpineItemref `xml:"itemref"`
+}
+
+type SpineItemref struct {
+	XMLName xml.Name `xml:"itemref"`
+	Idref   string   `xml:"idref,attr"`
 }
 
 type Guide struct {
@@ -61,12 +73,13 @@ var (
 	ErrNoEndOfManifest = errors.New("manifest is incorrectly formatted since it has no closing manifest element")
 )
 
-func ParseOpfFile(text string) (EpubInfo, error) {
+func ParseOpfFile(text, opfFilename string) (EpubInfo, error) {
 	var epubInfo = EpubInfo{
 		HtmlFiles:   make(map[string]struct{}),
 		ImagesFiles: make(map[string]struct{}),
 		OtherFiles:  make(map[string]struct{}),
 		CssFiles:    make(map[string]struct{}),
+		OpfFile:     opfFilename,
 	}
 
 	var opfInfo Package
@@ -84,12 +97,17 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 		return epubInfo, ErrNoManifest
 	}
 
+	// Build a map of manifest id -> file path for spine resolution
+	manifestIdToHref := make(map[string]string)
+
 	var filePath string
 	for _, manifestItem := range opfInfo.Manifest.Items {
 		filePath, err = hrefToFile(manifestItem.Href)
 		if err != nil {
 			return epubInfo, fmt.Errorf("failed to convert manifest href %q to file path: %w", manifestItem.Href, err)
 		}
+
+		manifestIdToHref[manifestItem.Id] = filePath
 
 		if epubInfo.Version == 3 && strings.Contains(manifestItem.Properties, "nav") {
 			epubInfo.NavFile = filePath
@@ -112,6 +130,15 @@ func ParseOpfFile(text string) (EpubInfo, error) {
 
 	if len(opfInfo.Manifest.Items) == 0 {
 		return epubInfo, ErrNoItemEls
+	}
+
+	// Fill FilePathsInSpineOrder
+	if opfInfo.Spine != nil {
+		for _, itemref := range opfInfo.Spine.Itemrefs {
+			if filePath, ok := manifestIdToHref[itemref.Idref]; ok {
+				epubInfo.FilePathsInSpineOrder = append(epubInfo.FilePathsInSpineOrder, filePath)
+			}
+		}
 	}
 
 	if opfInfo.Guide != nil {
