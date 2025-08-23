@@ -1,11 +1,11 @@
 //go:build unit
 
-package cmdhandler_test
+package epubhandler_test
 
 import (
 	"testing"
 
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -110,7 +110,7 @@ func TestAddFileToNcx(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := cmdhandler.AddFileToNcx(tc.inputText, tc.filePath, tc.title, tc.id)
+			result := epubhandler.AddFileToNcx(tc.inputText, tc.filePath, tc.title, tc.id)
 			assert.Equal(t, tc.expected, result)
 		})
 	}

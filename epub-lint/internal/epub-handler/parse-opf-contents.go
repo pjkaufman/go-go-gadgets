@@ -1,4 +1,4 @@
-package cmdhandler
+package epubhandler
 
 import (
 	"encoding/xml"

@@ -1,11 +1,11 @@
 //go:build unit
 
-package cmdhandler_test
+package epubhandler_test
 
 import (
 	"testing"
 
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -102,7 +102,7 @@ func TestAddFileToOpf(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			result := cmdhandler.AddFileToOpf(tc.inputText, tc.filename, tc.id, tc.mediaType)
+			result := epubhandler.AddFileToOpf(tc.inputText, tc.filename, tc.id, tc.mediaType)
 			assert.Equal(t, tc.expected, result)
 		})
 	}
