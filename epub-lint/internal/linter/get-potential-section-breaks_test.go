@@ -39,8 +39,9 @@ var getPotentialSectionBreaksTestCases = map[string]getPotentialSectionBreaksTes
 func TestGetPotentialSectionBreaks(t *testing.T) {
 	for name, args := range getPotentialSectionBreaksTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialSectionBreaks(args.inputText, args.inputContextBreak)
+			actual, err := linter.GetPotentialSectionBreaks(args.inputText, args.inputContextBreak)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

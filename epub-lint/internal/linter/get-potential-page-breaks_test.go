@@ -43,8 +43,9 @@ var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
 func TestGetPotentialPageBreaks(t *testing.T) {
 	for name, args := range getPotentialPageBreaksTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialPageBreaks(args.inputText)
+			actual, err := linter.GetPotentialPageBreaks(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

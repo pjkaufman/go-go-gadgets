@@ -448,8 +448,9 @@ var getPotentialAlthoughButInstancesTestCases = map[string]getPotentialAlthoughB
 func TestGetPotentialAlthoughButInstances(t *testing.T) {
 	for name, args := range getPotentialAlthoughButInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentiallyLackingSubordinateClauseInstances(args.inputText)
+			actual, err := linter.GetPotentiallyLackingSubordinateClauseInstances(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

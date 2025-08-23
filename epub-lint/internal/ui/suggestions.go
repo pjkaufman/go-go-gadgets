@@ -294,9 +294,10 @@ func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 				return nil, nil
 			}
 
-			var (
-				suggestions = potentialFixableIssue.GetSuggestions(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Text)
-			)
+			suggestions, err := potentialFixableIssue.GetSuggestions(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Text)
+			if err != nil {
+				return nil, err
+			}
 
 			if m.logFile != nil {
 				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.Name, len(suggestions))

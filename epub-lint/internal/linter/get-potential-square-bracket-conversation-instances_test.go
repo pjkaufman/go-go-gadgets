@@ -49,8 +49,9 @@ var getPotentialSquareBracketConversationInstancesTestCases = map[string]getPote
 func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {
 	for name, args := range getPotentialSquareBracketConversationInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialSquareBracketConversationInstances(args.inputText)
+			actual, err := linter.GetPotentialSquareBracketConversationInstances(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

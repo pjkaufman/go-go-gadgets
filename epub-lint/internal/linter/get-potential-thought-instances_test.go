@@ -46,8 +46,9 @@ var getPotentialThoughtInstancesTestCases = map[string]getPotentialThoughtInstan
 func TestGetPotentialThoughtInstances(t *testing.T) {
 	for name, args := range getPotentialThoughtInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialThoughtInstances(args.inputText)
+			actual, err := linter.GetPotentialThoughtInstances(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

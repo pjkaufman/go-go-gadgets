@@ -174,8 +174,9 @@ var getPotentiallyBrokenLinesTestCases = map[string]getPotentiallyBrokenLinesTes
 func TestGetPotentiallyBrokenLines(t *testing.T) {
 	for name, args := range getPotentiallyBrokenLinesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentiallyBrokenLines(args.inputText)
+			actual, err := linter.GetPotentiallyBrokenLines(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

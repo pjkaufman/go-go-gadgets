@@ -8,11 +8,11 @@ import (
 var thoughtParagraphs = regexp.MustCompile(`(<p[^\n>]*?>[^\n(]*?)\(([^\n()]*?)\)([^\n]*?)(</p>)`)
 var parenthesesContent = regexp.MustCompile(`\(([^\n\)]*?)\)`)
 
-func GetPotentialThoughtInstances(fileContent string) map[string]string {
+func GetPotentialThoughtInstances(fileContent string) (map[string]string, error) {
 	var subMatches = thoughtParagraphs.FindAllStringSubmatch(fileContent, -1)
 	var originalToSuggested = make(map[string]string, len(subMatches))
 	if len(subMatches) == 0 {
-		return originalToSuggested
+		return originalToSuggested, nil
 	}
 
 	for _, groups := range subMatches {
@@ -35,5 +35,5 @@ func GetPotentialThoughtInstances(fileContent string) map[string]string {
 		originalToSuggested[groups[0]] = replaceValue
 	}
 
-	return originalToSuggested
+	return originalToSuggested, nil
 }

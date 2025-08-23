@@ -54,8 +54,9 @@ var getPotentialSquareBracketNecessaryWordsTestCases = map[string]getPotentialSq
 func TestGetPotentialSquareBracketNecessaryWords(t *testing.T) {
 	for name, args := range getPotentialSquareBracketNecessaryWordsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialSquareBracketNecessaryWords(args.inputText)
+			actual, err := linter.GetPotentialSquareBracketNecessaryWords(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

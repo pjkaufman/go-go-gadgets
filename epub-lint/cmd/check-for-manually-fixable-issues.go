@@ -60,7 +60,7 @@ var (
 		{
 			Name: "Potential Section Breaks",
 			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
-			GetSuggestions: func(text string) map[string]string {
+			GetSuggestions: func(text string) (map[string]string, error) {
 				return linter.GetPotentialSectionBreaks(text, contextBreak)
 			},
 			IsEnabled:                   &runSectionBreak,
@@ -485,7 +485,10 @@ func runCliEpubFixable() error {
 				}
 
 				if runAll || *potentiallyFixableIssue.IsEnabled {
-					suggestions := potentiallyFixableIssue.GetSuggestions(newText)
+					suggestions, err := potentiallyFixableIssue.GetSuggestions(newText)
+					if err != nil {
+						return nil, err
+					}
 
 					var updateMade bool
 					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
