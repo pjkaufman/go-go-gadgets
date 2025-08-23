@@ -1,4 +1,4 @@
-package cmdhandler
+package epubhandler
 
 import (
 	"archive/zip"
@@ -40,7 +40,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 		return err
 	}
 
-	epubInfo, err := ParseOpfFile(fileContents)
+	epubInfo, err := ParseOpfFile(fileContents, opfFilename)
 	if err != nil {
 		return fmt.Errorf("failed to parse %q for %q: %s", opfFilename, src, err)
 	}

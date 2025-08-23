@@ -1,6 +1,6 @@
 //go:build unit
 
-package cmdhandler_test
+package epubhandler_test
 
 import (
 	"errors"
@@ -19,6 +19,7 @@ type parseOpfContentsTestCase struct {
 }
 
 const (
+	opfFilename      = "content.opf"
 	epub3PackageFile = `<?xml version="1.0" encoding="utf-8"?>
 <package version="3.0" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -415,6 +416,23 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			NavFile: "",
 			NcxFile: "toc.ncx",
 			Version: 2,
+			FilePathsInSpineOrder: []string{
+				"titlepage.xhtml",
+				"images.xhtml",
+				"chapter_1.html",
+				"chapter_2.html",
+				"chapter_3.html",
+				"chapter_4.html",
+				"chapter_5.html",
+				"chapter_6.html",
+				"chapter_7.html",
+				"chapter_8.html",
+				"chapter_9.html",
+				"chapter_10.html",
+				"afterward.html",
+				"translators_notes.xhtml",
+			},
+			OpfFile: opfFilename,
 		},
 	},
 	"make sure that parsing an epub 3 has the proper version info and other package data": {
@@ -473,6 +491,31 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			NavFile: "nav.xhtml",
 			NcxFile: "toc.ncx",
 			Version: 3,
+			FilePathsInSpineOrder: []string{
+				"Text/CoverPage.html",
+				"Text/TableOfContents.html",
+				"Text/jnovels.xhtml",
+				"Text/section-0001.html",
+				"Text/section-0002.html",
+				"Text/section-0003.html",
+				"Text/section-0004.html",
+				"Text/section-0005.html",
+				"Text/section-0006.html",
+				"Text/section-0007.html",
+				"Text/section-0008.html",
+				"Text/section-0009.html",
+				"Text/section-0010.html",
+				"Text/section-0011.html",
+				"Text/section-0012.html",
+				"Text/section-0013.html",
+				"Text/section-0014.html",
+				"Text/section-0015.html",
+				"Text/section-0016.html",
+				"Text/section-0017.html",
+				"Text/section-0018.html",
+				"nav.xhtml",
+			},
+			OpfFile: opfFilename,
 		},
 	},
 	"make sure that parsing package data that is html encoded is properly decoded": {
@@ -553,6 +596,65 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			NavFile: "",
 			NcxFile: "toc.ncx",
 			Version: 2,
+			FilePathsInSpineOrder: []string{
+
+				"Text/titlepage.xhtml",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_000.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_001.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_002.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_003.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_004.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_005.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_007.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_008.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_009.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_010.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_011.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_012.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_013.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_014.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_015.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_016.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_017.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_018.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_019.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_020.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_021.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_022.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_023.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_024.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_025.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_026.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_027.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_028.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_029.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_030.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_031.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_032.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_033.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_034.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_035.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_036.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_037.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_038.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_039.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_040.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_041.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_042.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_043.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_044.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_045.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_046.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_047.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_048.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_049.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_050.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_051.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_052.html",
+				"Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_053.html",
+			},
+			OpfFile: opfFilename,
 		},
 	},
 }
@@ -560,7 +662,7 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 func TestParseOpfContents(t *testing.T) {
 	for name, args := range parseOpfContentsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := epubhandler.ParseOpfFile(args.inputText)
+			actual, err := epubhandler.ParseOpfFile(args.inputText, opfFilename)
 
 			if !args.isSyntaxError {
 				assert.True(t, errors.Is(err, args.expectedErr))
