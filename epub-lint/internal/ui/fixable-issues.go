@@ -144,6 +144,12 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		initialStage = m.currentStage
 	)
 
+	if !m.ready && m.currentStage == suggestionsProcessing {
+		cmd, m.Err = m.setupForNextSuggestions()
+
+		cmds = append(cmds, cmd)
+	}
+
 	// general logic for handling keys here
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
