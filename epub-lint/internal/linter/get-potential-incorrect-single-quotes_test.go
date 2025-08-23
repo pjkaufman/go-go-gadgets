@@ -52,6 +52,12 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 			`<p>He said, "Hello. Can you hear that?". He stalled to get read to use his 'special move'. He called out again, "Are you there?"</p>`: `<p>He said, "Hello. Can you hear that?". He stalled to get read to use his "special move". He called out again, "Are you there?"</p>`,
 		},
 	},
+	"make sure that a file with a pluralized number is not considered to be a single quote and does not cause a suggestion by itself": {
+		inputText: `	<p>Normally, simply drawing a weapon in front of the Emperor in court was a grave offense, to say nothing of actually offering violence to a member of the Imperial family. However, the court was currently paralyzed in the wake of the earthquake. The Praetorians who should have defended the Emperor and his household were missing. Since there was nobody to maintain order, the area before the throne was a sea of chaos.</p>
+  <p>Tomita, watching from the side, flicked his Type 64's fire selector to レ(automatic fire), while Kuribayashi inspected Tyuule and the black-haired girl on the ground.</p>
+  <p>"Are you alright?"</p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
