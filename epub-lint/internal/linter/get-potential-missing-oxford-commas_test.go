@@ -39,8 +39,9 @@ var getPotentialMissingOxfordCommasTestCases = map[string]getPotentialMissingOxf
 func TestGetPotentialMissingOxfordCommas(t *testing.T) {
 	for name, args := range getPotentialMissingOxfordCommasTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialMissingOxfordCommas(args.InputText)
+			actual, err := linter.GetPotentialMissingOxfordCommas(args.InputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.ExpectedSuggestions, actual)
 		})
 	}

@@ -10,11 +10,11 @@ var (
 	squareBracketContentRegex       = regexp.MustCompile(`\[([^\n\]]*?)\]`)
 )
 
-func GetPotentialSquareBracketNecessaryWords(fileContent string) map[string]string {
+func GetPotentialSquareBracketNecessaryWords(fileContent string) (map[string]string, error) {
 	var subMatches = squareBracketNecessaryWordRegex.FindAllStringSubmatch(fileContent, -1)
 	var originalToSuggested = make(map[string]string, len(subMatches))
 	if len(subMatches) == 0 {
-		return originalToSuggested
+		return originalToSuggested, nil
 	}
 
 	for _, groups := range subMatches {
@@ -43,5 +43,5 @@ func GetPotentialSquareBracketNecessaryWords(fileContent string) map[string]stri
 		originalToSuggested[groups[0]] = replaceValue
 	}
 
-	return originalToSuggested
+	return originalToSuggested, nil
 }

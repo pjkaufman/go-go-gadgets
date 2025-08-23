@@ -7,11 +7,11 @@ var (
 	subordinateClausesReplaceRegex = regexp.MustCompile(`(.*?,)\s*?(?:but|thus|therefore|furthermore|however)(.*)`)
 )
 
-func GetPotentiallyLackingSubordinateClauseInstances(fileContent string) map[string]string {
+func GetPotentiallyLackingSubordinateClauseInstances(fileContent string) (map[string]string, error) {
 	matches := subordinateClausesRegex.FindAllString(fileContent, -1)
 	originalToSuggested := make(map[string]string, len(matches))
 	if len(matches) == 0 {
-		return originalToSuggested
+		return originalToSuggested, nil
 	}
 
 	for _, match := range matches {
@@ -19,5 +19,5 @@ func GetPotentiallyLackingSubordinateClauseInstances(fileContent string) map[str
 		originalToSuggested[match] = suggestion
 	}
 
-	return originalToSuggested
+	return originalToSuggested, nil
 }

@@ -15,7 +15,7 @@ var unendedParagraphRegex = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)([^\n]*(Dr
 var paragraphsWithDoubleQuotes = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)([^\n]*)(")([^\n]*)(</p>)`)
 var paragraphsStartingWithLowercaseLetter = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)(\s*[a-z][^\n]*</p>)`)
 
-func GetPotentiallyBrokenLines(fileContent string) map[string]string {
+func GetPotentiallyBrokenLines(fileContent string) (map[string]string, error) {
 	var originalToSuggested = make(map[string]string)
 	var parsedLines = map[string]struct{}{}
 
@@ -23,7 +23,7 @@ func GetPotentiallyBrokenLines(fileContent string) map[string]string {
 	parseUnendedDoubleQuotes(fileContent, parsedLines, originalToSuggested)
 	parseParagraphsStartingWithLowercaseLetters(fileContent, parsedLines, originalToSuggested)
 
-	return originalToSuggested
+	return originalToSuggested, nil
 }
 
 func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{}, originalToSuggested map[string]string) {

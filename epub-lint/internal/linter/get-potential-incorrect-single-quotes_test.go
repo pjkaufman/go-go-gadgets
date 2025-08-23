@@ -57,8 +57,9 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
 	for name, args := range getPotentialIncorrectSingleQuotesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := linter.GetPotentialIncorrectSingleQuotes(args.inputText)
+			actual, err := linter.GetPotentialIncorrectSingleQuotes(args.inputText)
 
+			assert.Nil(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

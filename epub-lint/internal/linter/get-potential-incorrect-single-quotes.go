@@ -4,23 +4,21 @@ import (
 	"fmt"
 	"regexp"
 	"unicode"
-
-	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 var paragraphsWithSingleQuotes = regexp.MustCompile(`(?m)^([\r\t\f\v ]*?<p[^\n>]*?>)([^\n]*?'[^\n]*?)(</p>)`)
 
-func GetPotentialIncorrectSingleQuotes(fileContent string) map[string]string {
+func GetPotentialIncorrectSingleQuotes(fileContent string) (map[string]string, error) {
 	var subMatches = paragraphsWithSingleQuotes.FindAllStringSubmatch(fileContent, -1)
 	var originalToSuggested = make(map[string]string, 0)
 	if len(subMatches) == 0 {
-		return originalToSuggested
+		return originalToSuggested, nil
 	}
 
 	for _, groups := range subMatches {
 		replacedSingleQuoteString, updateMade, err := convertQuotes(groups[2])
 		if err != nil {
-			logger.WriteErrorf("Failed to convert single quotes to double as needed on string %q: %s", groups[0], err)
+			return nil, fmt.Errorf("Failed to convert single quotes to double as needed on string %q: %s", groups[0], err)
 		}
 
 		if updateMade {
@@ -28,7 +26,7 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) map[string]string {
 		}
 	}
 
-	return originalToSuggested
+	return originalToSuggested, nil
 }
 
 func convertQuotes(input string) (string, bool, error) {
