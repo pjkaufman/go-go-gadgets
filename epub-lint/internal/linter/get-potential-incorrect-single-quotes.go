@@ -50,19 +50,22 @@ func convertQuotes(input string) (string, bool, error) {
 			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
 			isContraction := isPrevLetter && isNextLetter
 
+			isPrevDigit := i > 0 && unicode.IsDigit(runes[i-1])
 			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
 			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
 			isPrevWord := i > 0 && unicode.IsLetter(runes[i-1])
+
+			isPluralDigit := isPrevDigit && isNextS
 			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
 			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
 
-			if !isContraction && !isPossessive {
+			if !isContraction && !isPossessive && !isPluralDigit {
 				singleQuoteCount++
 			}
 
-			// TODO: does not work for 'Cause
+			// TODO: does not work for "'Cause" or "'em"
 			// If it's not a contraction, not a possessive, and not inside double quotes, convert to double quote
-			if !isContraction && !isPossessive && !insideDoubleQuotes {
+			if !isContraction && !isPossessive && !insideDoubleQuotes && !isPluralDigit {
 				runes[i] = '"'
 				updateMade = true
 			}
