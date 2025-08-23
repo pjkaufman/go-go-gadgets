@@ -272,6 +272,13 @@ func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 
 				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
 				continue
+			} else if m.skipCss && (potentialFixableIssue.AddCssPageBreakIfMissing || potentialFixableIssue.AddCssSectionBreakIfMissing) {
+				if m.logFile != nil {
+					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q because css related rules are to be skipped\n", potentialFixableIssue.Name)
+				}
+
+				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
+				continue
 			}
 
 			if len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]) != 0 {

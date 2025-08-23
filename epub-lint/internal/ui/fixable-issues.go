@@ -37,7 +37,7 @@ type FixableIssuesModel struct {
 	body                         viewport.Model
 	title                        string
 	stages                       []string
-	runAll, ready                bool
+	runAll, skipCss, ready       bool
 	height, width                int
 	logFile                      io.Writer
 	Err                          error
@@ -78,7 +78,7 @@ type SuggestionState struct {
 	original, originalSuggestion, currentSuggestion, display string
 }
 
-func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string) FixableIssuesModel {
+func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string) FixableIssuesModel {
 	ti := textinput.New()
 	ti.Width = 20
 	ti.CharLimit = 200
@@ -90,7 +90,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 	ta.ShowLineNumbers = false
 
 	var currentStage = sectionBreak
-	if runAll || runSectionBreak {
+	if !skipCss && (runAll || runSectionBreak) {
 		ti.Focus()
 	} else {
 		currentStage = suggestionsProcessing
@@ -117,6 +117,7 @@ func NewFixableIssuesModel(runAll, runSectionBreak bool, potentiallyFixableIssue
 			cssFiles: cssFiles,
 		},
 		runAll:       runAll,
+		skipCss:      skipCss,
 		currentStage: currentStage,
 		logFile:      logFile,
 		stages: []string{
