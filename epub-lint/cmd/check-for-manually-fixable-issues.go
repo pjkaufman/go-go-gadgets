@@ -323,7 +323,8 @@ func runTuiEpubFixable() error {
 			cssFiles = append(cssFiles, cssFile)
 		}
 
-		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+		var skipCss = runAll && len(cssFiles) == 0
+		if (runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
 			return nil, ErrNoCssFiles
 		}
 
@@ -338,9 +339,8 @@ func runTuiEpubFixable() error {
 		}
 
 		var (
-			initialModel = ui.NewFixableIssuesModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file, &contextBreak)
-			// initialModel = newModel(runAll, runSectionBreak, potentiallyFixableIssues, cssFiles, file)
-			i = 0
+			initialModel = ui.NewFixableIssuesModel(runAll, skipCss, runSectionBreak, potentiallyFixableIssues, cssFiles, file, &contextBreak)
+			i            = 0
 		)
 		initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(epubInfo.HtmlFiles))
 
@@ -354,8 +354,6 @@ func runTuiEpubFixable() error {
 			if err != nil {
 				return nil, err
 			}
-
-			// initialModel.PotentiallyFixableIssuesInfo.FileTexts[i] =
 
 			initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
 				Name:        filePath,
@@ -418,7 +416,20 @@ func runCliEpubFixable() error {
 			handledFiles                                []string
 			addCssSectionIfMissing, addCssPageIfMissing bool
 		)
-		if runAll || runSectionBreak {
+
+		var cssFiles = make([]string, len(epubInfo.CssFiles))
+		var i = 0
+		for cssFile := range epubInfo.CssFiles {
+			cssFiles[i] = cssFile
+			i++
+		}
+
+		var skipCss = runAll && len(cssFiles) == 0
+		if (runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+			return nil, ErrNoCssFiles
+		}
+
+		if !skipCss && (runAll || runSectionBreak) {
 			contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 			if strings.TrimSpace(contextBreak) == "" {
@@ -444,17 +455,6 @@ func runCliEpubFixable() error {
 			**/
 		}
 
-		var cssFiles = make([]string, len(epubInfo.CssFiles))
-		var i = 0
-		for cssFile := range epubInfo.CssFiles {
-			cssFiles[i] = cssFile
-			i++
-		}
-
-		if (runAll || runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-			return nil, ErrNoCssFiles
-		}
-
 		var saveAndQuit = false
 		for file := range epubInfo.HtmlFiles {
 			if saveAndQuit {
@@ -474,6 +474,10 @@ func runCliEpubFixable() error {
 			for _, potentiallyFixableIssue := range potentiallyFixableIssues {
 				if saveAndQuit {
 					break
+				}
+
+				if skipCss && (potentiallyFixableIssue.AddCssPageBreakIfMissing || potentiallyFixableIssue.AddCssSectionBreakIfMissing) {
+					continue
 				}
 
 				if potentiallyFixableIssue.IsEnabled == nil {
