@@ -58,6 +58,30 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
   <p>"Are you alright?"</p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a file with the contract \"'Cause\" does not cause a suggestion to be made on its own": {
+		inputText:           `	<p>He said, "'Cause there ain't enough room for the both of us."</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with the contract \"'em\" does not cause a suggestion to be made on its own": {
+		inputText:           `	<p>He said, "Get 'em!"</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with a single quote usage with plural decade (1960's) does not cause a suggestion": {
+		inputText:           `<p>Music from the 1960's is classic.</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with a single quote usage with omitted numerals at start of year ('99) does not cause a suggestion": {
+		inputText:           `<p>I graduated in '99.</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with a single quote usage with a number possessive (90's influence) does not cause a suggestion": {
+		inputText:           `<p>The 90's influence on fashion is unmistakable.</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with a single quote usage with colloquial omission and decade ('80s) does not cause a suggestion": {
+		inputText:           `<p>Rocking in the '80s was the best!</p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
