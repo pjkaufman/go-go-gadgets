@@ -94,7 +94,7 @@ func convertQuotes(input string) (string, bool, error) {
 				}
 			}
 
-			return end + 1
+			return end
 		}
 	)
 

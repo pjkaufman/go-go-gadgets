@@ -82,6 +82,10 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p>Rocking in the '80s was the best!</p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a file with a single quoted word ending with a double quote is handled properly not getting a suggestion": {
+		inputText:           `<p>"First, take this," Giraud said, holding the tool he had assembled over to Dean. It appeared to be something like a thick mask. "That is a make-up tool called a 'facemaker'"</p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
