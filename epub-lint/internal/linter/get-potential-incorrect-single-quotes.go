@@ -3,8 +3,41 @@ package linter
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"unicode"
 )
+
+var contractions = map[string]struct{}{
+	"a'ight": {}, "ain't": {}, "amn't": {}, "aren't": {}, "'bout": {}, "can't": {}, "cap'n": {},
+	"'cause": {}, "'cept": {}, "c'mon": {}, "could've": {}, "couldn't": {}, "couldn't've": {},
+	"daren't": {}, "daresn't": {}, "dasn't": {}, "didn't": {}, "doesn't": {}, "don't": {},
+	"d'ye": {}, "d'ya": {}, "e'en": {}, "e'er": {}, "'em": {}, "everybody's": {}, "everyone's": {},
+	"everything's": {}, "fo'c'sle": {}, "'gainst": {}, "g'day": {}, "giv'n": {}, "gi'z": {},
+	"gon't": {}, "hadn't": {}, "had've": {}, "hasn't": {}, "haven't": {}, "he'd": {}, "he'd'nt've": {},
+	"he'll": {}, "yesn't": {}, "he's": {}, "here's": {}, "how'd": {}, "how'll": {}, "how're": {},
+	"how's": {}, "I'd": {}, "I'd've": {}, "I'd'nt": {}, "I'd'nt've": {}, "If'n": {}, "I'll": {},
+	"I'm": {}, "I'm'onna": {}, "I'm'o": {}, "I'm'na": {}, "I've": {}, "isn't": {}, "it'd": {},
+	"it'll": {}, "it's": {}, "let's": {}, "loven't": {}, "ma'am": {}, "mayn't": {}, "may've": {},
+	"mightn't": {}, "might've": {}, "mine's": {}, "mustn't": {}, "mustn't've": {}, "must've": {},
+	"'neath": {}, "needn't": {}, "ne'er": {}, "nothing's": {}, "o'clock": {}, "o'er": {}, "ol'": {},
+	"ought've": {}, "oughtn't": {}, "oughtn't've": {}, "'round": {}, "'s": {}, "shalln't": {},
+	"shan'": {}, "shan't": {}, "she'd": {}, "she'll": {}, "she's": {}, "she'd'nt've": {}, "should've": {},
+	"shouldn't": {}, "shouldn't've": {}, "somebody's": {}, "someone's": {}, "something's": {},
+	"so're": {}, "so's": {}, "so've": {}, "that'll": {}, "that're": {}, "that's": {}, "that'd": {},
+	"there'd": {}, "there'll": {}, "there're": {}, "there's": {}, "these're": {}, "these've": {},
+	"they'd": {}, "they'd've": {}, "they'll": {}, "they're": {}, "they've": {}, "this's": {},
+	"those're": {}, "those've": {}, "'thout": {}, "'til": {}, "'tis": {}, "to've": {}, "'twas": {},
+	"'tween": {}, "'twere": {}, "w'all": {}, "w'at": {}, "wasn't": {}, "we'd": {}, "we'd've": {},
+	"we'll": {}, "we're": {}, "we've": {}, "weren't": {}, "what'd": {}, "what'll": {}, "what're": {},
+	"what's": {}, "what've": {}, "when'd": {}, "when's": {}, "where'd": {}, "where'll": {},
+	"where're": {}, "where's": {}, "where've": {}, "which'd": {}, "which'll": {}, "which're": {},
+	"which's": {}, "which've": {}, "who'd": {}, "who'd've": {}, "who'll": {}, "who're": {},
+	"who's": {}, "who've": {}, "why'd": {}, "why'dja": {}, "why're": {}, "why's": {}, "willn't": {},
+	"won't": {}, "would've": {}, "wouldn't": {}, "wouldn't've": {}, "y'ain't": {}, "y'all": {},
+	"y'all'd've": {}, "y'all'dn't've": {}, "y'all're": {}, "y'all'ren't": {}, "y'at": {},
+	"yes'm": {}, "y'ever": {}, "y'know": {}, "you'd": {}, "you'dn't've": {}, "you'll": {},
+	"you're": {}, "you've": {},
+}
 
 var paragraphsWithSingleQuotes = regexp.MustCompile(`(?m)^([\r\t\f\v ]*?<p[^\n>]*?>)([^\n]*?'[^\n]*?)(</p>)`)
 
@@ -31,11 +64,38 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) (map[string]string, e
 
 func convertQuotes(input string) (string, bool, error) {
 	var (
-		runes              = []rune(input)
-		insideDoubleQuotes = false
-		doubleQuoteCount   = 0
-		singleQuoteCount   = 0 // Only counts non-possesive and non-contraction single quotes
-		updateMade         = false
+		runes                             = []rune(input)
+		insideDoubleQuotes                = false
+		doubleQuoteCount                  = 0
+		singleQuoteCount                  = 0 // Only counts non-possesive, non-contraction, and non-plural digit single quotes
+		updateMade                        = false
+		checkForContractionAndGetNewStart = func(startIndex int) int {
+			var start = startIndex
+			for start > 0 && (unicode.IsLetter(runes[start-1]) || runes[start-1] == '\'') {
+				start--
+			}
+
+			var end = startIndex
+			for end < len(runes)-1 && (unicode.IsLetter(runes[end+1]) || runes[end+1] == '\'') {
+				end++
+			}
+
+			if _, ok := contractions[strings.ToLower(string(runes[start:end+1]))]; !ok {
+				// for now, we will do this the less performant way
+				for i := start; i <= end; i++ {
+					if runes[i] == '\'' {
+						singleQuoteCount++
+
+						if !insideDoubleQuotes {
+							runes[i] = '"'
+							updateMade = true
+						}
+					}
+				}
+			}
+
+			return end + 1
+		}
 	)
 
 	for i := 0; i < len(runes); i++ {
@@ -45,11 +105,6 @@ func convertQuotes(input string) (string, bool, error) {
 			insideDoubleQuotes = !insideDoubleQuotes
 			doubleQuoteCount++
 		} else if currentRune == '\'' {
-			// Check if it's a contraction (surrounded by letters)
-			isPrevLetter := i > 0 && unicode.IsLetter(runes[i-1])
-			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
-			isContraction := isPrevLetter && isNextLetter
-
 			isPrevDigit := i > 0 && unicode.IsDigit(runes[i-1])
 			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
 			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
@@ -59,16 +114,11 @@ func convertQuotes(input string) (string, bool, error) {
 			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
 			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
 
-			if !isContraction && !isPossessive && !isPluralDigit {
-				singleQuoteCount++
+			if isPossessive || isPluralDigit {
+				continue
 			}
 
-			// TODO: does not work for "'Cause" or "'em"
-			// If it's not a contraction, not a possessive, and not inside double quotes, convert to double quote
-			if !isContraction && !isPossessive && !insideDoubleQuotes && !isPluralDigit {
-				runes[i] = '"'
-				updateMade = true
-			}
+			i = checkForContractionAndGetNewStart(i)
 		}
 	}
 
@@ -77,7 +127,7 @@ func convertQuotes(input string) (string, bool, error) {
 	}
 
 	if singleQuoteCount%2 != 0 {
-		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction single quotes", singleQuoteCount)
+		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural digit single quotes", singleQuoteCount)
 	}
 
 	return string(runes), updateMade, nil

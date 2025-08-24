@@ -58,6 +58,14 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
   <p>"Are you alright?"</p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a file with the contract \"'Cause\" does not cause a suggestion to be made on its own": {
+		inputText:           `	<p>He said, "'Cause there ain't enough room for the both of us."</p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a file with the contract \"'em\" does not cause a suggestion to be made on its own": {
+		inputText:           `	<p>He said, "Get 'em!"</p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
