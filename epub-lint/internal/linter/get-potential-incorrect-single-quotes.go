@@ -67,7 +67,7 @@ func convertQuotes(input string) (string, bool, error) {
 		runes                             = []rune(input)
 		insideDoubleQuotes                = false
 		doubleQuoteCount                  = 0
-		singleQuoteCount                  = 0 // Only counts non-possesive, non-contraction, and non-plural digit single quotes
+		singleQuoteCount                  = 0 // Only counts non-possesive, non-contraction, and non-plural or omission digit single quotes
 		updateMade                        = false
 		checkForContractionAndGetNewStart = func(startIndex int) int {
 			var start = startIndex
@@ -106,15 +106,17 @@ func convertQuotes(input string) (string, bool, error) {
 			doubleQuoteCount++
 		} else if currentRune == '\'' {
 			isPrevDigit := i > 0 && unicode.IsDigit(runes[i-1])
+			isNextDigit := i < len(runes)-1 && unicode.IsDigit(runes[i+1])
 			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
 			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
 			isPrevWord := i > 0 && unicode.IsLetter(runes[i-1])
 
-			isPluralDigit := isPrevDigit && isNextS
+			// is a plural, possesive, or omitted number scenario
+			isDigitScenarios := (isPrevDigit && isNextS) || (!isPrevWord && isNextDigit)
 			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
 			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
 
-			if isPossessive || isPluralDigit {
+			if isPossessive || isDigitScenarios {
 				continue
 			}
 
@@ -122,12 +124,13 @@ func convertQuotes(input string) (string, bool, error) {
 		}
 	}
 
+	// Note: this will fail any time we get into measurements like 6'2" (6 foot and 2 inches)
 	if doubleQuoteCount%2 != 0 {
 		return "", false, fmt.Errorf("unmatched double quotes: found %d double quotes", doubleQuoteCount)
 	}
 
 	if singleQuoteCount%2 != 0 {
-		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural digit single quotes", singleQuoteCount)
+		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural or omission digit single quotes", singleQuoteCount)
 	}
 
 	return string(runes), updateMade, nil
