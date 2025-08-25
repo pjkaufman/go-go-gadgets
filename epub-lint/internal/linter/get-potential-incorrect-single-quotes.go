@@ -7,36 +7,11 @@ import (
 	"unicode"
 )
 
-var contractions = map[string]struct{}{
-	"a'ight": {}, "ain't": {}, "amn't": {}, "aren't": {}, "'bout": {}, "can't": {}, "cap'n": {},
-	"'cause": {}, "'cept": {}, "c'mon": {}, "could've": {}, "couldn't": {}, "couldn't've": {},
-	"daren't": {}, "daresn't": {}, "dasn't": {}, "didn't": {}, "doesn't": {}, "don't": {},
-	"d'ye": {}, "d'ya": {}, "e'en": {}, "e'er": {}, "'em": {}, "everybody's": {}, "everyone's": {},
-	"everything's": {}, "fo'c'sle": {}, "'gainst": {}, "g'day": {}, "giv'n": {}, "gi'z": {},
-	"gon't": {}, "hadn't": {}, "had've": {}, "hasn't": {}, "haven't": {}, "he'd": {}, "he'd'nt've": {},
-	"he'll": {}, "yesn't": {}, "he's": {}, "here's": {}, "how'd": {}, "how'll": {}, "how're": {},
-	"how's": {}, "i'd": {}, "i'd've": {}, "i'd'nt": {}, "i'd'nt've": {}, "if'n": {}, "i'll": {},
-	"i'm": {}, "i'm'onna": {}, "i'm'o": {}, "i'm'na": {}, "i've": {}, "isn't": {}, "it'd": {},
-	"it'll": {}, "it's": {}, "let's": {}, "loven't": {}, "ma'am": {}, "mayn't": {}, "may've": {},
-	"mightn't": {}, "might've": {}, "mine's": {}, "mustn't": {}, "mustn't've": {}, "must've": {},
-	"'neath": {}, "needn't": {}, "ne'er": {}, "nothing's": {}, "o'clock": {}, "o'er": {}, "ol'": {},
-	"ought've": {}, "oughtn't": {}, "oughtn't've": {}, "'round": {}, "'s": {}, "shalln't": {},
-	"shan'": {}, "shan't": {}, "she'd": {}, "she'll": {}, "she's": {}, "she'd'nt've": {}, "should've": {},
-	"shouldn't": {}, "shouldn't've": {}, "somebody's": {}, "someone's": {}, "something's": {},
-	"so're": {}, "so's": {}, "so've": {}, "that'll": {}, "that're": {}, "that's": {}, "that'd": {},
-	"there'd": {}, "there'll": {}, "there're": {}, "there's": {}, "these're": {}, "these've": {},
-	"they'd": {}, "they'd've": {}, "they'll": {}, "they're": {}, "they've": {}, "this's": {},
-	"those're": {}, "those've": {}, "'thout": {}, "'til": {}, "'tis": {}, "to've": {}, "'twas": {},
-	"'tween": {}, "'twere": {}, "w'all": {}, "w'at": {}, "wasn't": {}, "we'd": {}, "we'd've": {},
-	"we'll": {}, "we're": {}, "we've": {}, "weren't": {}, "what'd": {}, "what'll": {}, "what're": {},
-	"what's": {}, "what've": {}, "when'd": {}, "when's": {}, "where'd": {}, "where'll": {},
-	"where're": {}, "where's": {}, "where've": {}, "which'd": {}, "which'll": {}, "which're": {},
-	"which's": {}, "which've": {}, "who'd": {}, "who'd've": {}, "who'll": {}, "who're": {},
-	"who's": {}, "who've": {}, "why'd": {}, "why'dja": {}, "why're": {}, "why's": {}, "willn't": {},
-	"won't": {}, "would've": {}, "wouldn't": {}, "wouldn't've": {}, "y'ain't": {}, "y'all": {},
-	"y'all'd've": {}, "y'all'dn't've": {}, "y'all're": {}, "y'all'ren't": {}, "y'at": {},
-	"yes'm": {}, "y'ever": {}, "y'know": {}, "you'd": {}, "you'dn't've": {}, "you'll": {},
-	"you're": {}, "you've": {},
+// contractions that either start or end with a single quote
+var specialContractions = map[string]struct{}{
+	"'bout": {}, "'cause": {}, "'cept": {}, "'em": {}, "'gainst": {}, "'neath": {}, "ol'": {},
+	"'round": {}, "'s": {}, "shan'": {}, "'thout": {}, "'til": {}, "'tis": {}, "'twas": {},
+	"'tween": {}, "'twere": {},
 }
 
 var paragraphsWithSingleQuotes = regexp.MustCompile(`(?m)^([\r\t\f\v ]*?<p[^\n>]*?>)([^\n]*?'[^\n]*?)(</p>)`)
@@ -64,12 +39,12 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) (map[string]string, e
 
 func convertQuotes(input string) (string, bool, error) {
 	var (
-		runes                             = []rune(input)
-		insideDoubleQuotes                = false
-		doubleQuoteCount                  = 0
-		singleQuoteCount                  = 0 // Only counts non-possesive, non-contraction, and non-plural or omission digit single quotes
-		updateMade                        = false
-		checkForContractionAndGetNewStart = func(startIndex int) int {
+		runes                                     = []rune(input)
+		insideDoubleQuotes                        = false
+		doubleQuoteCount                          = 0
+		singleQuoteCount                          = 0 // Only counts non-possesive, non-contraction, and non-plural or omission digit single quotes
+		updateMade                                = false
+		checkForSpecialContractionsAndGetNewStart = func(startIndex int) int {
 			var start = startIndex
 			for start > 0 && (unicode.IsLetter(runes[start-1]) || runes[start-1] == '\'') {
 				start--
@@ -80,7 +55,7 @@ func convertQuotes(input string) (string, bool, error) {
 				end++
 			}
 
-			if _, ok := contractions[strings.ToLower(string(runes[start:end+1]))]; !ok {
+			if _, ok := specialContractions[strings.ToLower(string(runes[start:end+1]))]; !ok {
 				// for now, we will do this the less performant way
 				for i := start; i <= end; i++ {
 					if runes[i] == '\'' {
@@ -109,18 +84,21 @@ func convertQuotes(input string) (string, bool, error) {
 			isNextDigit := i < len(runes)-1 && unicode.IsDigit(runes[i+1])
 			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
 			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
-			isPrevWord := i > 0 && unicode.IsLetter(runes[i-1])
+			isPrevLetter := i > 0 && unicode.IsLetter(runes[i-1])
+			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
 
 			// is a plural, possesive, or omitted number scenario
-			isDigitScenarios := (isPrevDigit && isNextS) || (!isPrevWord && isNextDigit)
+			isDigitScenarios := (isPrevDigit && isNextS) || (!isPrevLetter && isNextDigit)
 			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
-			isPossessive := (isPrevS || (isPrevWord && isNextS)) && singleQuoteCount%2 == 0
+			isPossessive := (isPrevS || (isPrevLetter && isNextS)) && singleQuoteCount%2 == 0
+			// handles many names that have single quotes in them as well as many contractions
+			isBetweenLetters := isPrevLetter && isNextLetter
 
-			if isPossessive || isDigitScenarios {
+			if isPossessive || isDigitScenarios || isBetweenLetters {
 				continue
 			}
 
-			i = checkForContractionAndGetNewStart(i)
+			i = checkForSpecialContractionsAndGetNewStart(i)
 		}
 	}
 
