@@ -51,6 +51,9 @@ var translatorsNotesCmd = &cobra.Command{
 		}
 
 		err = moveTranslatorsNotes(epubFile)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
 	},
 }
 
