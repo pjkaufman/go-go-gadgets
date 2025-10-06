@@ -26,7 +26,14 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	)
 
 	for i, line := range lines {
-		if strings.Contains(line, endOfHref) {
+		var startOfEndOfHrefIndex = strings.Index(line, endOfHref)
+		if startOfEndOfHrefIndex != -1 {
+			// check for a false positive by checking that previous char is not a slash or a quote
+			var previousChar = line[startOfEndOfHrefIndex-1]
+			if previousChar != '\'' && previousChar != '"' && previousChar != '\\' && previousChar != '/' {
+				continue
+			}
+
 			fileID = extractID(line)
 			lines = slices.Delete(lines, i, i+1)
 			break

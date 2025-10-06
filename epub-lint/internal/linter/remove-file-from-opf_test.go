@@ -97,6 +97,28 @@ var removeFileFromOpfTestCases = map[string]removeFileFromOpfTestCase{
 </package>`,
 		expectedError: nil,
 	},
+	"Remove a file that does not exist in the manifest but has a name that is the suffix of the file and make sure it does not affect the file with the suffix": {
+		inputText: `
+<package version="3.0">
+<manifest>
+<item id="item1" href="1-1.png" media-type="image/png"/>
+</manifest>
+<spine>
+<itemref idref="item1"/>
+</spine>
+</package>`,
+		inputPath: "1.png",
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item id="item1" href="1-1.png" media-type="image/png"/>
+</manifest>
+<spine>
+<itemref idref="item1"/>
+</spine>
+</package>`,
+		expectedError: nil,
+	},
 	"Remove a file that does exist in the manifest, and there is no spine present": {
 		inputText: `
 <package version="3.0">
