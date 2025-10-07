@@ -64,6 +64,7 @@ Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix is
     and starting the value with an underscore instead of a number if it currently is started by a number
   - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
   - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
+	- Update duplicate ids to no longer be duplicates
 - RSC-012: try to fix broken links by removing the id link in the href attribute
 
 

@@ -18,7 +18,7 @@ var parseEPUBCheckTestCases = []parseEPUBCheckTestCase{
 	{
 		name:     "no validation issues returns no values",
 		input:    "Validating using EPUB version 2.0.1 rules.\nCheck finished with errors\nMessages: 0 fatals / 0 errors / 0 warnings / 0 infos\nEPUBCheck completed",
-		expected: []ValidationError{},
+		expected: nil,
 	},
 	{
 		name:  "single validation issue returns correct model",

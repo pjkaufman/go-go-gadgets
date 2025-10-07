@@ -25,6 +25,7 @@ const (
 	missingUniqueIdentifier = "The unique-identifier \""
 	emptyMetadataProperty   = "Error while parsing file: character content of element \""
 	invalidPlayOrder        = "Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target"
+	duplicateIdPrefix       = "Error while parsing file: Duplicate \""
 	jnovelsFile             = "jnovels.xhtml"
 	jnovelsImage            = "1.png"
 )
@@ -49,6 +50,7 @@ var autoFixValidationCmd = &cobra.Command{
 	    and starting the value with an underscore instead of a number if it currently is started by a number
 	  - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
 	  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
+		- Update duplicate ids to no longer be duplicates
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`
@@ -246,6 +248,38 @@ var autoFixValidationCmd = &cobra.Command{
 						}
 					} else if message.Message == invalidPlayOrder {
 						nameToUpdatedContents[ncxFilename] = linter.FixPlayOrder(nameToUpdatedContents[ncxFilename])
+					} else if strings.HasPrefix(message.Message, duplicateIdPrefix) {
+						startIndex := strings.Index(message.Message, duplicateIdPrefix)
+						if startIndex == -1 {
+							continue
+						}
+						startIndex += len(duplicateIdPrefix)
+						endIndex := strings.Index(message.Message[startIndex:], `"`)
+						if endIndex == -1 {
+							continue
+						}
+
+						id := message.Message[startIndex : startIndex+endIndex]
+
+						fileContents, ok := nameToUpdatedContents[message.FilePath]
+						if !ok {
+							zipFile, ok := zipFiles[message.FilePath]
+							if !ok {
+								return nil, fmt.Errorf("failed to find %q in the epub", message.FilePath)
+							}
+
+							fileContents, err = filehandler.ReadInZipFileContents(zipFile)
+							if err != nil {
+								return nil, err
+							}
+						}
+
+						fileContents, charactersAdded := linter.UpdateDuplicateIds(fileContents, id)
+						nameToUpdatedContents[message.FilePath] = fileContents
+
+						if charactersAdded > 0 {
+							updateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath, validationIssues)
+						}
 					}
 				case "OPF-030":
 					startIndex := strings.Index(message.Message, missingUniqueIdentifier)
@@ -387,6 +421,16 @@ func incrementLineNumbers(lineNum int, path string, validationIssues []epubcheck
 		if validationIssues[i].Location != nil {
 			if validationIssues[i].FilePath == path && validationIssues[i].Location.Line > lineNum {
 				validationIssues[i].Location.Line++
+			}
+		}
+	}
+}
+
+func updateLineColumnPosition(lineNum, column, offset int, path string, validationIssues []epubcheck.ValidationError) {
+	for i := range validationIssues {
+		if validationIssues[i].Location != nil {
+			if validationIssues[i].FilePath == path && validationIssues[i].Location.Line == lineNum && validationIssues[i].Location.Column > column {
+				validationIssues[i].Location.Line += offset
 			}
 		}
 	}
