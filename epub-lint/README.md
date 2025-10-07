@@ -6,7 +6,6 @@ This is a program that helps lint and make updates to epubs.
 
 ## Supported File Types
 - testdata
-- tui
 
 ## TODOs
 - See about removing unused files and images when running epub linting
@@ -16,6 +15,7 @@ This is a program that helps lint and make updates to epubs.
 - [compress-and-lint](#compress-and-lint)
 - [fix-validation](#fix-validation)
 - [fixable](#fixable)
+- [notes](#notes)
 - [replace-strings](#replace-strings)
 - [validate](#validate)
 
@@ -54,7 +54,7 @@ epub-lint compress-and-lint
 
 ### fix-validation
 
-Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
+Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
 - OPF-014: add scripted to the list of values in the properties attribute on the manifest item
 - OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
 - NCX-001: fix discrepancy in identifier between the OPF and NCX files
@@ -73,17 +73,17 @@ Uses the provided epub and EPUBCheck JSON output file to fix auto fixable auto f
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 |  | cleanup-jnovels | whether or not to remove JNovels info if it is present |  | false | false |  |
 | f | file | the epub file to replace strings in | string |  | true | Should be a file with one of the following extensions: epub |
-|  | issue-file | the path to the file with the validation issues | string |  | true | Should be a file with one of the following extensions: json |
+|  | issue-file | the path to the file with the validation issues | string |  | true |  |
 
 #### Usage
 
 ``` bash
-epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.json
-will read in the contents of the JSON file and try to fix any of the fixable
+epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.txt
+will read in the contents of the file and try to fix any of the fixable
 validation issues
 
-epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.json --cleanup-jnovels
-will read in the contents of the JSON file and try to fix any of the fixable
+epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.txt --cleanup-jnovels
+will read in the contents of the file and try to fix any of the fixable
 validation issues as well as remove any jnovels specific files
 ```
 
@@ -152,6 +152,26 @@ epub-lint fixable -f test.epub --thoughts
 epub-lint fixable -f test.epub -oxford-commas --thoughts --necessary-words
 ```
 
+### notes
+
+Goes through all of the content files and looks for "TL Note:", "Translator's Note:", or "Note:"
+and moves any matches to their own file with bidirectional linking between the footnote and its reference location.
+It also adds an entry to the TOC and spine of the epub so the "tl_notes.xhtml" file is at the end of the file's contents.
+
+
+#### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| f | file | the epub file to move translator's notes to their own file in | string |  | true | Should be a file with one of the following extensions: epub |
+
+#### Usage
+
+``` bash
+Finds all translator's notes and moves them to their own file if present
+epub-lint notes -f test.epub
+```
+
 ### replace-strings
 
 Uses the provided epub and extra replace Markdown file to replace a common set of strings and any extra instances specified in the extra file replace. After all replacements are made, the original epub will be moved to a .original file and the new file will take the place of the old file. It will also print out the successful extra replacements with the number of replacements made followed by warnings for any extra strings that it tried to find and replace values for, but did not find any instances to replace.
@@ -189,7 +209,7 @@ If EPUBCheck is not installed, it will automatically download and install the la
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | f | file | the epub file to validate | string |  | true | Should be a file with one of the following extensions: epub |
-|  | json-file | specifies that the validation output should be in JSON and in the specified file | string |  | false |  |
+|  | output-file | specifies that the validation output should be in the specified file | string |  | false |  |
 
 #### Usage
 
