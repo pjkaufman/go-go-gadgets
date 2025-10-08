@@ -26,6 +26,7 @@ const (
 	emptyMetadataProperty   = "Error while parsing file: character content of element \""
 	invalidPlayOrder        = "Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target"
 	duplicateIdPrefix       = "Error while parsing file: Duplicate \""
+	invalidBlockquote       = "Error while parsing file: element \"blockquote\" incomplete;"
 	jnovelsFile             = "jnovels.xhtml"
 	jnovelsImage            = "1.png"
 )
@@ -51,6 +52,7 @@ var autoFixValidationCmd = &cobra.Command{
 	  - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
 	  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 		- Update duplicate ids to no longer be duplicates
+		- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`
@@ -275,6 +277,26 @@ var autoFixValidationCmd = &cobra.Command{
 						}
 
 						fileContents, charactersAdded := linter.UpdateDuplicateIds(fileContents, id)
+						nameToUpdatedContents[message.FilePath] = fileContents
+
+						if charactersAdded > 0 {
+							updateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath, validationIssues)
+						}
+					} else if strings.HasPrefix(message.Message, invalidBlockquote) {
+						fileContents, ok := nameToUpdatedContents[message.FilePath]
+						if !ok {
+							zipFile, ok := zipFiles[message.FilePath]
+							if !ok {
+								return nil, fmt.Errorf("failed to find %q in the epub", message.FilePath)
+							}
+
+							fileContents, err = filehandler.ReadInZipFileContents(zipFile)
+							if err != nil {
+								return nil, err
+							}
+						}
+
+						fileContents, charactersAdded := linter.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContents)
 						nameToUpdatedContents[message.FilePath] = fileContents
 
 						if charactersAdded > 0 {
