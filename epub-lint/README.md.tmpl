@@ -4,16 +4,6 @@
 
 {{ .Description }}
 
-{{- if .CustomValues.supportedFileTypes }}
-
-## Supported File Types
-
-{{- range .CustomValues.supportedFileTypes }}
-{{- if . }}
-- {{ . }}
-{{- end}}
-{{- end}}
-{{- end}}
 {{- if .Todos }}
 
 ## TODOs

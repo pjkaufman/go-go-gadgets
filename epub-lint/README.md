@@ -4,9 +4,6 @@
 
 This is a program that helps lint and make updates to epubs.
 
-## Supported File Types
-- testdata
-
 ## TODOs
 - See about removing unused files and images when running epub linting
 
@@ -65,6 +62,7 @@ Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix is
   - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
   - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 	- Update duplicate ids to no longer be duplicates
+	- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
 - RSC-012: try to fix broken links by removing the id link in the href attribute
 
 
