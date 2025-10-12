@@ -26,18 +26,18 @@ var (
 	ErrLangArgEmpty    = errors.New("lang must have a non-whitespace value")
 )
 
-// compressAndLintCmd represents the compressAndLint command
-var compressAndLintCmd = &cobra.Command{
-	Use:   "compress-and-lint",
+// optimizeCmd represents the optimization command
+var optimizeCmd = &cobra.Command{
+	Use:   "optimize",
 	Short: "Compresses and lints all of the epub files in the specified directory even compressing images using imgp if that option is specified.",
 	Example: heredoc.Doc(`To compress images and make general modifications to all epubs in a folder:
-	epub-lint compress-and-lint -d folder -i
+	epub-lint optimize -d folder -i
 	
 	To compress images and make general modifications to all epubs in the current directory:
-	epub-lint compress-and-lint -i
+	epub-lint optimize -i
 
 	To just make general modifications to all epubs in the current directory:
-	epub-lint compress-and-lint
+	epub-lint optimize
 	`),
 	Long: heredoc.Doc(`Gets all of the .epub files in the specified directory.
 	Then it lints each epub separately making sure to compress the images if specified.
@@ -47,7 +47,7 @@ var compressAndLintCmd = &cobra.Command{
 	- Sets encoding on content files to utf-8 to prevent errors in some readers
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateCompressAndLintFlags(lintDir, lang)
+		err := ValidateOptimizeFlags(lintDir, lang)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -96,13 +96,13 @@ var compressAndLintCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(compressAndLintCmd)
+	rootCmd.AddCommand(optimizeCmd)
 
-	compressAndLintCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
-	compressAndLintCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
-	compressAndLintCmd.Flags().StringVarP(&removableFileTypes, "removable-file-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
-	compressAndLintCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
-	compressAndLintCmd.Flags().BoolVarP(&runCompressImages, "compress-images", "i", false, "whether or not to also compress images which requires imgp to be installed")
+	optimizeCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
+	optimizeCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
+	optimizeCmd.Flags().StringVarP(&removableFileTypes, "remove-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
+	optimizeCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
+	optimizeCmd.Flags().BoolVarP(&runCompressImages, "compress", "i", false, "whether or not to also compress images which requires imgp to be installed")
 }
 
 func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFileExts []string) error {
@@ -214,7 +214,7 @@ func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFi
 	return nil
 }
 
-func ValidateCompressAndLintFlags(lintDir, lang string) error {
+func ValidateOptimizeFlags(lintDir, lang string) error {
 	if strings.TrimSpace(lintDir) == "" {
 		return ErrLintDirArgEmpty
 	}

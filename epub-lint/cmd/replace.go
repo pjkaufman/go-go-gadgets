@@ -16,18 +16,18 @@ import (
 
 var (
 	extraReplacesFilePath         string
-	ErrExtraStringReplaceArgNonMd = errors.New("extra-replace-file must be a Markdown file")
-	ErrExtraStringReplaceArgEmpty = errors.New("extra-replace-file must have a non-whitespace value")
+	ErrExtraStringReplaceArgNonMd = errors.New("replacements must be a Markdown file")
+	ErrExtraStringReplaceArgEmpty = errors.New("replacements must have a non-whitespace value")
 )
 
-// replaceStringsCmd represents the replaceStrings command
-var replaceStringsCmd = &cobra.Command{
-	Use:   "replace-strings",
+// replaceCmd represents the replace string command
+var replaceCmd = &cobra.Command{
+	Use:   "replace",
 	Short: "Replaces a list of common strings and the extra strings for all content/xhtml files in the provided epub",
 	Long: heredoc.Doc(`Uses the provided epub and extra replace Markdown file to replace a common set of strings and any extra instances specified in the extra file replace. After all replacements are made, the original epub will be moved to a .original file and the new file will take the place of the old file. It will also print out the successful extra replacements with the number of replacements made followed by warnings for any extra strings that it tried to find and replace values for, but did not find any instances to replace.
 		Note: it only replaces strings in content/xhtml files listed in the opf file.`),
 	Example: heredoc.Doc(`
-		epub-lint replace-strings -f test.epub -e replacements.md
+		epub-lint replace -f test.epub -e replacements.md
 		will replace the common strings and extra strings parsed out of replacements.md in content/xhtml files located in test.epub.
 		The original test.epub will be moved to test.epub.original and test.epub will have the updated files.
 
@@ -39,17 +39,17 @@ var replaceStringsCmd = &cobra.Command{
 		| I am another issue to correct | the correction |
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateReplaceStringsFlags(epubFile, extraReplacesFilePath)
+		err := ValidateReplaceFlags(epubFile, extraReplacesFilePath)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileArgExists(epubFile, "epub-file")
+		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileArgExists(extraReplacesFilePath, "extra-replace-file")
+		err = filehandler.FileArgExists(extraReplacesFilePath, "replacements")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -135,32 +135,32 @@ var replaceStringsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(replaceStringsCmd)
+	rootCmd.AddCommand(replaceCmd)
 
-	replaceStringsCmd.Flags().StringVarP(&extraReplacesFilePath, "extra-replace-file", "e", "", "the path to the file with extra strings to replace")
-	err := replaceStringsCmd.MarkFlagRequired("extra-replace-file")
+	replaceCmd.Flags().StringVarP(&extraReplacesFilePath, "replacements", "e", "", "the path to the file with extra strings to replace")
+	err := replaceCmd.MarkFlagRequired("replacements")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as required on replace strings command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"replacements\" as required on replace strings command: %v\n", err)
 	}
 
-	err = replaceStringsCmd.MarkFlagFilename("extra-replace-file", "md")
+	err = replaceCmd.MarkFlagFilename("replacements", "md")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"extra-replace-file\" as looking for specific file types on replace strings command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"replacements\" as looking for specific file types on replace strings command: %v\n", err)
 	}
 
-	replaceStringsCmd.Flags().StringVarP(&epubFile, "epub-file", "f", "", "the epub file to replace strings in in")
-	err = replaceStringsCmd.MarkFlagRequired("epub-file")
+	replaceCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in in")
+	err = replaceCmd.MarkFlagRequired("file")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"epub-file\" as required on replace strings command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"file\" as required on replace strings command: %v\n", err)
 	}
 
-	err = replaceStringsCmd.MarkFlagFilename("epub-file", "epub")
+	err = replaceCmd.MarkFlagFilename("file", "epub")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"epub-file\" as looking for specific file types on replace strings command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on replace strings command: %v\n", err)
 	}
 }
 
-func ValidateReplaceStringsFlags(epubPath, extraReplaceStringsPath string) error {
+func ValidateReplaceFlags(epubPath, extraReplaceStringsPath string) error {
 	err := validateCommonEpubFlags(epubPath)
 	if err != nil {
 		return err
