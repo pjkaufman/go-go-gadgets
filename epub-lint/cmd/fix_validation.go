@@ -34,12 +34,12 @@ const (
 var (
 	validationIssuesFilePath string
 	removeJNovelInfo         bool
-	ErrIssueFileArgEmpty     = errors.New("issue-file must have a non-whitespace value")
+	ErrIssueFileArgEmpty     = errors.New("issuesmust have a non-whitespace value")
 )
 
 // autoFixValidationCmd represents the auto fix validation command
 var autoFixValidationCmd = &cobra.Command{
-	Use:   "fix-validation",
+	Use:   "validation",
 	Short: "Reads in the output of EPUBCheck and fixes as many issues as are able to be fixed without the user making any changes.",
 	Long: heredoc.Doc(`Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
 	- OPF-014: add scripted to the list of values in the properties attribute on the manifest item
@@ -56,11 +56,11 @@ var autoFixValidationCmd = &cobra.Command{
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`
-		epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.txt
+		epub-lint fix validation -f test.epub --issuesepubCheckOutput.txt
 		will read in the contents of the file and try to fix any of the fixable
 		validation issues
 
-		epub-lint fix-validation -f test.epub --issue-file epubCheckOutput.txt --cleanup-jnovels
+		epub-lint fix validation -f test.epub --issuesepubCheckOutput.txt --cleanup-jnovels
 		will read in the contents of the file and try to fix any of the fixable
 		validation issues as well as remove any jnovels specific files
 	`),
@@ -394,7 +394,7 @@ var autoFixValidationCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(autoFixValidationCmd)
+	fixCmd.AddCommand(autoFixValidationCmd)
 
 	autoFixValidationCmd.Flags().BoolVarP(&removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present")
 	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "", "", "the path to the file with the validation issues")

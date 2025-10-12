@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type validateReplaceStringsFlagsTestCase struct {
+type validateReplaceFlagsTestCase struct {
 	inputEpubFile                string
 	inputExtraReplaceStringsPath string
 	expectedErr                  error
 }
 
-var validateReplaceStringsFlagsTestCases = map[string]validateReplaceStringsFlagsTestCase{
+var validateReplaceFlagsTestCases = map[string]validateReplaceFlagsTestCase{
 	"make sure that an empty epub file paths causes a validation error": {
 		inputEpubFile:                "	",
 		inputExtraReplaceStringsPath: "file.md",
@@ -43,10 +43,10 @@ var validateReplaceStringsFlagsTestCases = map[string]validateReplaceStringsFlag
 	},
 }
 
-func TestValidateReplaceStringsFlags(t *testing.T) {
-	for name, args := range validateReplaceStringsFlagsTestCases {
+func TestValidateReplaceFlags(t *testing.T) {
+	for name, args := range validateReplaceFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := epub.ValidateReplaceStringsFlags(args.inputEpubFile, args.inputExtraReplaceStringsPath)
+			err := epub.ValidateReplaceFlags(args.inputEpubFile, args.inputExtraReplaceStringsPath)
 
 			if err != nil {
 				assert.True(t, errors.Is(err, args.expectedErr))

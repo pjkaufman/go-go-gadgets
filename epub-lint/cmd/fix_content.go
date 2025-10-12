@@ -95,36 +95,36 @@ var (
 	ErrNoCssFiles                 = errors.New("the epub must have at least 1 css file in order to handle section or page breaks")
 )
 
-// fixableCmd represents the fixable command
-var fixableCmd = &cobra.Command{
-	Use:   "fixable",
+// contentCmd represents the fix content command
+var contentCmd = &cobra.Command{
+	Use:   "content",
 	Short: "Runs the specified fixable actions that require manual input to determine what to do.",
 	Example: heredoc.Doc(`To run all of the possible potential fixes:
-	epub-lint fixable -f test.epub -a
+	epub-lint fix content -f test.epub -a
 	Note: this will require a css file to already exist in the epub
 	
 	To just fix broken paragraph endings:
-	epub-lint fixable -f test.epub --broken-lines
+	epub-lint fix content -f test.epub --broken-lines
 
 	To just update section breaks:
-	epub-lint fixable -f test.epub --section-breaks
+	epub-lint fix content -f test.epub --section-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just update page breaks:
-	epub-lint fixable -f test.epub --page-breaks
+	epub-lint fix content -f test.epub --page-breaks
 	Note: this will require a css file to already exist in the epub
 
 	To just fix missing oxford commas:
-	epub-lint fixable -f test.epub --oxford-commas
+	epub-lint fix content -f test.epub --oxford-commas
 
 	To just fix potentially lacking subordinate clause instances:
-	epub-lint fixable -f test.epub --lacking-subordinate-clause
+	epub-lint fix content -f test.epub --lacking-subordinate-clause
 
 	To just fix instances of thoughts in parentheses:
-	epub-lint fixable -f test.epub --thoughts
+	epub-lint fix content -f test.epub --thoughts
 
 	To run a combination of options:
-	epub-lint fixable -f test.epub -oxford-commas --thoughts --necessary-words
+	epub-lint fix content -f test.epub -oxford-commas --thoughts --necessary-words
 	`),
 	Long: heredoc.Doc(`Goes through all of the content files and runs the specified fixable actions on them asking
 	for user input on each value found that matches the potential fix criteria.
@@ -167,27 +167,27 @@ var fixableCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(fixableCmd)
+	fixCmd.AddCommand(contentCmd)
 
-	fixableCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
-	fixableCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")
-	fixableCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with an epub with a css file)")
-	fixableCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with an epub with a css file)")
-	fixableCmd.Flags().BoolVarP(&runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions")
-	fixableCmd.Flags().BoolVarP(&runLackingClause, "lacking-subordinate-clause", "", false, "whether to run the logic for getting potentially lacking subordinate clause suggestions")
-	fixableCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
-	fixableCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
-	fixableCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
-	fixableCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
-	fixableCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
-	fixableCmd.Flags().StringVarP(&logFile, "log-file", "", "", "the place to write debug logs to when using the TUI")
-	fixableCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
-	err := fixableCmd.MarkFlagRequired("file")
+	contentCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
+	contentCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")
+	contentCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with an epub with a css file)")
+	contentCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with an epub with a css file)")
+	contentCmd.Flags().BoolVarP(&runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions")
+	contentCmd.Flags().BoolVarP(&runLackingClause, "lacking-subordinate-clause", "", false, "whether to run the logic for getting potentially lacking subordinate clause suggestions")
+	contentCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
+	contentCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
+	contentCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
+	contentCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
+	contentCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
+	contentCmd.Flags().StringVarP(&logFile, "log-file", "", "", "the place to write debug logs to when using the TUI")
+	contentCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
+	err := contentCmd.MarkFlagRequired("file")
 	if err != nil {
 		logger.WriteErrorf(`failed to mark flag "file" as required on fixable command: %v\n`, err)
 	}
 
-	err = fixableCmd.MarkFlagFilename("file", "epub")
+	err = contentCmd.MarkFlagFilename("file", "epub")
 	if err != nil {
 		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on fixable command: %v\n`, err)
 	}

@@ -77,7 +77,7 @@ func init() {
 		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validate command: %v\n", err)
 	}
 
-	validateCmd.Flags().StringVarP(&outputToFile, "output-file", "", "", "specifies that the validation output should be in the specified file")
+	validateCmd.Flags().StringVarP(&outputToFile, "out", "", "", "specifies that the validation output should be in the specified file")
 }
 
 func downloadEPUBCheck(epubcheckDir string) error {
