@@ -130,6 +130,22 @@ var removeFileFromOpfTestCases = map[string]removeFileFromOpfTestCase{
 		expectedOutput: "",
 		expectedError:  linter.ErrNoSpine,
 	},
+	"Remove a file that does exist in the manifest where it is in a subfolder": {
+		inputText: `<package version="3.0">
+<manifest>
+<item id="x1.png" href="Images/1.png" media-type="image/png"/>
+</manifest>
+<spine>
+</spine>
+</package>`,
+		inputPath: "1.png",
+		expectedOutput: `<package version="3.0">
+<manifest>
+</manifest>
+<spine>
+</spine>
+</package>`,
+	},
 }
 
 func TestRemoveFileFromOpf(t *testing.T) {

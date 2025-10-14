@@ -114,6 +114,12 @@ var autoFixValidationCmd = &cobra.Command{
 				return true
 			}
 
+			if msgI.Location == nil {
+				return false
+			} else if msgJ.Location == nil {
+				return true
+			}
+
 			// If paths are the same, compare by line descending
 			if msgI.Location.Line != msgJ.Location.Line {
 				return msgI.Location.Line > msgJ.Location.Line
@@ -346,6 +352,7 @@ var autoFixValidationCmd = &cobra.Command{
 			if removeJNovelInfo {
 				// remove the jnovels file and the png associated with it
 				for file := range zipFiles {
+					// TODO: do I need to handle this better for 1-1.png as a scenario?
 					if strings.HasSuffix(file, jnovelsFile) || strings.HasSuffix(file, jnovelsImage) {
 						handledFiles = append(handledFiles, file)
 					}

@@ -9,6 +9,7 @@ import (
 const (
 	spineStartTag = "<spine"
 	spineEndTag   = "</spine>"
+	hrefAttribute = "href="
 )
 
 var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
@@ -21,23 +22,46 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 
 	lines := strings.Split(manifestContent, "\n")
 	var (
-		fileID    string
-		endOfHref = fmt.Sprintf(`%s"`, fileName)
+		fileID string
 	)
 
 	for i, line := range lines {
-		var startOfEndOfHrefIndex = strings.Index(line, endOfHref)
-		if startOfEndOfHrefIndex != -1 {
-			// check for a false positive by checking that previous char is not a slash or a quote
-			var previousChar = line[startOfEndOfHrefIndex-1]
-			if previousChar != '\'' && previousChar != '"' && previousChar != '\\' && previousChar != '/' {
-				continue
-			}
-
-			fileID = extractID(line)
-			lines = slices.Delete(lines, i, i+1)
-			break
+		// to make sure we are only operating on the href
+		var startOfHref = strings.Index(line, hrefAttribute)
+		if startOfHref == -1 {
+			continue
 		}
+
+		startOfHref += len(hrefAttribute)
+		var hrefQuote = line[startOfHref : startOfHref+1]
+		startOfHref++
+
+		var endOfHrefIndex = strings.Index(line[startOfHref:], hrefQuote)
+		if endOfHrefIndex == -1 {
+			continue
+		}
+
+		var hrefContent = line[startOfHref : startOfHref+endOfHrefIndex]
+		if !strings.HasSuffix(hrefContent, fileName) {
+			continue
+		}
+
+		hrefContent = strings.TrimSuffix(hrefContent, fileName)
+
+		// check for a false positive by checking that previous char is not a slash or a quote
+		var previousChar rune
+		if len(hrefContent) == 0 {
+			previousChar = rune(hrefQuote[0])
+		} else {
+			previousChar = rune(hrefContent[len(hrefContent)-1])
+		}
+		if previousChar != '\'' && previousChar != '"' && previousChar != '\\' && previousChar != '/' {
+			continue
+		}
+
+		fileID = extractID(line)
+		lines = slices.Delete(lines, i, i+1)
+		break
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
