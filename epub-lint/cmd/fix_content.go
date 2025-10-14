@@ -39,29 +39,29 @@ var (
 	potentiallyFixableIssues = []potentiallyfixableissue.PotentiallyFixableIssue{
 		{
 			Name:           "Potential Conversation Instances",
-			GetSuggestions: linter.GetPotentialSquareBracketConversationInstances,
+			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketConversationInstances,
 			IsEnabled:      &runConversation,
 		},
 		{
 			Name:           "Potential Necessary Word Omission Instances",
-			GetSuggestions: linter.GetPotentialSquareBracketNecessaryWords,
+			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketNecessaryWords,
 			IsEnabled:      &runNecessaryWords,
 		},
 		{
 			Name:           "Potential Broken Lines",
-			GetSuggestions: linter.GetPotentiallyBrokenLines,
+			GetSuggestions: potentiallyfixableissue.GetPotentiallyBrokenLines,
 			IsEnabled:      &runBrokenLines,
 		},
 		{
 			Name:           "Potential Incorrect Single Quotes",
-			GetSuggestions: linter.GetPotentialIncorrectSingleQuotes,
+			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectSingleQuotes,
 			IsEnabled:      &runSingleQuotes,
 		},
 		{
 			Name: "Potential Section Breaks",
 			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
 			GetSuggestions: func(text string) (map[string]string, error) {
-				return linter.GetPotentialSectionBreaks(text, contextBreak)
+				return potentiallyfixableissue.GetPotentialSectionBreaks(text, contextBreak)
 			},
 			IsEnabled:                   &runSectionBreak,
 			UpdateAllInstances:          true,
@@ -69,24 +69,24 @@ var (
 		},
 		{
 			Name:                     "Potential Page Breaks",
-			GetSuggestions:           linter.GetPotentialPageBreaks,
+			GetSuggestions:           potentiallyfixableissue.GetPotentialPageBreaks,
 			IsEnabled:                &runPageBreak,
 			UpdateAllInstances:       true,
 			AddCssPageBreakIfMissing: true,
 		},
 		{
 			Name:           "Potential Missing Oxford Commas",
-			GetSuggestions: linter.GetPotentialMissingOxfordCommas,
+			GetSuggestions: potentiallyfixableissue.GetPotentialMissingOxfordCommas,
 			IsEnabled:      &runOxfordCommas,
 		},
 		{
 			Name:           "Potentially Lacking Subordinate Clause Instances",
-			GetSuggestions: linter.GetPotentiallyLackingSubordinateClauseInstances,
+			GetSuggestions: potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances,
 			IsEnabled:      &runLackingClause,
 		},
 		{
 			Name:           "Potential Thought Instances",
-			GetSuggestions: linter.GetPotentialThoughtInstances,
+			GetSuggestions: potentiallyfixableissue.GetPotentialThoughtInstances,
 			IsEnabled:      &runThoughts,
 		},
 	}
@@ -287,11 +287,11 @@ func updateCssFile(addCssSectionIfMissing, addCssPageIfMissing bool, selectedCss
 
 	var newCssText = css
 	if addCssSectionIfMissing {
-		newCssText = linter.AddCssSectionBreakIfMissing(newCssText, contextBreak)
+		newCssText = potentiallyfixableissue.AddCssSectionBreakIfMissing(newCssText, contextBreak)
 	}
 
 	if addCssPageIfMissing {
-		newCssText = linter.AddCssPageBreakIfMissing(newCssText)
+		newCssText = potentiallyfixableissue.AddCssPageBreakIfMissing(newCssText)
 	}
 
 	if newCssText == css {

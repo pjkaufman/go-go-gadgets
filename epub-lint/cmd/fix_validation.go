@@ -12,8 +12,8 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
+	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -159,19 +159,19 @@ var autoFixValidationCmd = &cobra.Command{
 
 				switch message.Code {
 				case "OPF-014":
-					nameToUpdatedContents[opfFilename], err = linter.AddScriptedToManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(message.FilePath, opfFolder+"/"))
+					nameToUpdatedContents[opfFilename], err = rulefixes.AddScriptedToManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(message.FilePath, opfFolder+"/"))
 
 					if err != nil {
 						return nil, err
 					}
 				case "OPF-015":
-					nameToUpdatedContents[opfFilename], err = linter.RemoveScriptedFromManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(message.FilePath, opfFolder+"/"))
+					nameToUpdatedContents[opfFilename], err = rulefixes.RemoveScriptedFromManifest(nameToUpdatedContents[opfFilename], strings.TrimLeft(message.FilePath, opfFolder+"/"))
 
 					if err != nil {
 						return nil, err
 					}
 				case "NCX-001":
-					nameToUpdatedContents[opfFilename], err = linter.FixIdentifierDiscrepancy(nameToUpdatedContents[opfFilename], nameToUpdatedContents[ncxFilename])
+					nameToUpdatedContents[opfFilename], err = rulefixes.FixIdentifierDiscrepancy(nameToUpdatedContents[opfFilename], nameToUpdatedContents[ncxFilename])
 
 					if err != nil {
 						return nil, err
@@ -194,9 +194,9 @@ var autoFixValidationCmd = &cobra.Command{
 						// when that is encountered since it requires keeping track of which files have already been modified
 						// and which ones have not been modified yet
 						if strings.HasSuffix(message.FilePath, ".opf") {
-							nameToUpdatedContents[opfFilename] = linter.FixXmlIdValue(nameToUpdatedContents[opfFilename], message.Location.Line, attribute)
+							nameToUpdatedContents[opfFilename] = rulefixes.FixXmlIdValue(nameToUpdatedContents[opfFilename], message.Location.Line, attribute)
 						} else if strings.HasSuffix(message.FilePath, ".ncx") {
-							nameToUpdatedContents[ncxFilename] = linter.FixXmlIdValue(nameToUpdatedContents[ncxFilename], message.Location.Line, attribute)
+							nameToUpdatedContents[ncxFilename] = rulefixes.FixXmlIdValue(nameToUpdatedContents[ncxFilename], message.Location.Line, attribute)
 						}
 					} else if strings.HasPrefix(message.Message, invalidAttribute) {
 						startIndex := strings.Index(message.Message, invalidAttribute)
@@ -215,7 +215,7 @@ var autoFixValidationCmd = &cobra.Command{
 						// when that is encountered since it requires keeping track of which files have already been modified
 						// and which ones have not been modified yet
 						if strings.HasSuffix(message.FilePath, ".opf") {
-							nameToUpdatedContents[opfFilename], err = linter.FixManifestAttribute(nameToUpdatedContents[opfFilename], attribute, message.Location.Line-1, elementNameToNumber)
+							nameToUpdatedContents[opfFilename], err = rulefixes.FixManifestAttribute(nameToUpdatedContents[opfFilename], attribute, message.Location.Line-1, elementNameToNumber)
 							if err != nil {
 								return nil, err
 							}
@@ -240,7 +240,7 @@ var autoFixValidationCmd = &cobra.Command{
 						// when that is encountered since it requires keeping track of which files have already been modified
 						// and which ones have not been modified yet
 						if strings.HasSuffix(message.FilePath, ".opf") {
-							nameToUpdatedContents[opfFilename], deletedLine, err = linter.RemoveEmptyOpfElements(elementName, message.Location.Line-1, nameToUpdatedContents[opfFilename])
+							nameToUpdatedContents[opfFilename], deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line-1, nameToUpdatedContents[opfFilename])
 							if err != nil {
 								return nil, err
 							}
@@ -255,7 +255,7 @@ var autoFixValidationCmd = &cobra.Command{
 							i--
 						}
 					} else if message.Message == invalidPlayOrder {
-						nameToUpdatedContents[ncxFilename] = linter.FixPlayOrder(nameToUpdatedContents[ncxFilename])
+						nameToUpdatedContents[ncxFilename] = rulefixes.FixPlayOrder(nameToUpdatedContents[ncxFilename])
 					} else if strings.HasPrefix(message.Message, duplicateIdPrefix) {
 						startIndex := strings.Index(message.Message, duplicateIdPrefix)
 						if startIndex == -1 {
@@ -282,7 +282,7 @@ var autoFixValidationCmd = &cobra.Command{
 							}
 						}
 
-						fileContents, charactersAdded := linter.UpdateDuplicateIds(fileContents, id)
+						fileContents, charactersAdded := rulefixes.UpdateDuplicateIds(fileContents, id)
 						nameToUpdatedContents[message.FilePath] = fileContents
 
 						if charactersAdded > 0 {
@@ -302,7 +302,7 @@ var autoFixValidationCmd = &cobra.Command{
 							}
 						}
 
-						fileContents, charactersAdded := linter.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContents)
+						fileContents, charactersAdded := rulefixes.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContents)
 						nameToUpdatedContents[message.FilePath] = fileContents
 
 						if charactersAdded > 0 {
@@ -320,18 +320,18 @@ var autoFixValidationCmd = &cobra.Command{
 						continue
 					}
 
-					nameToUpdatedContents[opfFilename], err = linter.FixMissingUniqueIdentifierId(nameToUpdatedContents[opfFilename], message.Message[startIndex:startIndex+endIndex])
+					nameToUpdatedContents[opfFilename], err = rulefixes.FixMissingUniqueIdentifierId(nameToUpdatedContents[opfFilename], message.Message[startIndex:startIndex+endIndex])
 					if err != nil {
 						return nil, err
 					}
 				case "RSC-012":
 					if strings.HasSuffix(message.FilePath, ".opf") {
-						nameToUpdatedContents[opfFilename] = linter.RemoveLinkId(nameToUpdatedContents[opfFilename], message.Location.Line-1, message.Location.Column-1)
+						nameToUpdatedContents[opfFilename] = rulefixes.RemoveLinkId(nameToUpdatedContents[opfFilename], message.Location.Line-1, message.Location.Column-1)
 					} else if strings.HasSuffix(message.FilePath, ".ncx") {
-						nameToUpdatedContents[ncxFilename] = linter.RemoveLinkId(nameToUpdatedContents[ncxFilename], message.Location.Line-1, message.Location.Column-1)
+						nameToUpdatedContents[ncxFilename] = rulefixes.RemoveLinkId(nameToUpdatedContents[ncxFilename], message.Location.Line-1, message.Location.Column-1)
 					} else {
 						if fileContents, ok := nameToUpdatedContents[message.FilePath]; ok {
-							nameToUpdatedContents[message.FilePath] = linter.RemoveLinkId(fileContents, message.Location.Line-1, message.Location.Column-1)
+							nameToUpdatedContents[message.FilePath] = rulefixes.RemoveLinkId(fileContents, message.Location.Line-1, message.Location.Column-1)
 						} else {
 							zipFile, ok := zipFiles[message.FilePath]
 							if !ok {
@@ -343,7 +343,7 @@ var autoFixValidationCmd = &cobra.Command{
 								return nil, err
 							}
 
-							nameToUpdatedContents[message.FilePath] = linter.RemoveLinkId(fileContents, message.Location.Line-1, message.Location.Column-1)
+							nameToUpdatedContents[message.FilePath] = rulefixes.RemoveLinkId(fileContents, message.Location.Line-1, message.Location.Column-1)
 						}
 					}
 				}
@@ -359,12 +359,12 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 
 				// remove the associated files from the opf manifest and spine
-				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
+				nameToUpdatedContents[opfFilename], err = rulefixes.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
 				if err != nil {
 					return nil, err
 				}
 
-				nameToUpdatedContents[opfFilename], err = linter.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
+				nameToUpdatedContents[opfFilename], err = rulefixes.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
 				if err != nil {
 					return nil, err
 				}
