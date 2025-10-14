@@ -86,6 +86,10 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p>"First, take this," Giraud said, holding the tool he had assembled over to Dean. It appeared to be something like a thick mask. "That is a make-up tool called a 'facemaker'"</p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a file with a single quoted sentence that has a contraction in it is considered fine": {
+		inputText:           `<p><strong>"Victorique! Are you there? What took you so long? I bet you were reading a thick Latin book again, eating macaroons, saying 'Who's Kujou?'. Hello?"</strong></p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
