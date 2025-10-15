@@ -8,6 +8,4 @@ const (
 	invalidPlayOrder        = "Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target"
 	duplicateIdPrefix       = "Error while parsing file: Duplicate \""
 	invalidBlockquote       = "Error while parsing file: element \"blockquote\" incomplete;"
-	// jnovelsFile             = "jnovels.xhtml"
-	// jnovelsImage            = "1.png"
 )

@@ -60,9 +60,8 @@ func (ve *ValidationErrors) UpdateLineColumnPosition(lineNum, column, offset int
 // Sort sorts the ValidationIssues in the following order:
 // 1. Deleted line fixes
 // 2. Path Ascending
-// 3. Line descending
+// 3. Line descending (nil positions will be considered to be after the last line in the file)
 // 4. Column descending
-// TODO: figure out where nil locations end up...
 func (ve *ValidationErrors) Sort() {
 	sort.Slice(ve.ValidationIssues, func(i, j int) bool {
 		msgI := ve.ValidationIssues[i]
