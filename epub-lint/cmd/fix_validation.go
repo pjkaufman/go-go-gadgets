@@ -5,10 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"sort"
 	"strings"
-
-	"slices"
 
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
@@ -87,46 +84,12 @@ var autoFixValidationCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		validationIssues, err := epubcheck.ParseEPUBCheckOutput(validationOutput)
+		validationErrors, err := epubcheck.ParseEPUBCheckOutput(validationOutput)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
 
-		sort.Slice(validationIssues, func(i, j int) bool {
-			msgI := validationIssues[i]
-			msgJ := validationIssues[j]
-
-			// Prioritize delete-required messages
-			if strings.HasPrefix(msgI.Message, emptyMetadataProperty) && !strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
-				return true
-			}
-
-			if !strings.HasPrefix(msgI.Message, emptyMetadataProperty) && strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
-				return false
-			}
-
-			// Compare by path ascending
-			if msgI.FilePath != msgJ.FilePath {
-				return msgI.FilePath < msgJ.FilePath
-			}
-
-			if msgI.Location == nil && msgJ.Location == nil {
-				return true
-			}
-
-			if msgI.Location == nil {
-				return false
-			} else if msgJ.Location == nil {
-				return true
-			}
-
-			// If paths are the same, compare by line descending
-			if msgI.Location.Line != msgJ.Location.Line {
-				return msgI.Location.Line > msgJ.Location.Line
-			}
-			// If lines are the same, compare by column descending
-			return msgI.Location.Column > msgJ.Location.Column
-		})
+		validationErrors.Sort()
 
 		var elementNameToNumber = make(map[string]int)
 
@@ -154,8 +117,8 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 				handledFiles []string
 			)
-			for i := 0; i < len(validationIssues); i++ {
-				message := validationIssues[i]
+			for i := 0; i < len(validationErrors.ValidationIssues); i++ {
+				message := validationErrors.ValidationIssues[i]
 
 				switch message.Code {
 				case "OPF-014":
@@ -220,7 +183,7 @@ var autoFixValidationCmd = &cobra.Command{
 								return nil, err
 							}
 
-							incrementLineNumbers(message.Location.Line, message.FilePath, validationIssues)
+							validationErrors.IncrementLineNumbers(message.Location.Line, message.FilePath)
 						}
 					} else if strings.HasPrefix(message.Message, emptyMetadataProperty) {
 						startIndex := strings.Index(message.Message, emptyMetadataProperty)
@@ -246,7 +209,7 @@ var autoFixValidationCmd = &cobra.Command{
 							}
 
 							if deletedLine {
-								validationIssues = decrementLineNumbersAndRemoveLineReferences(message.Location.Line, message.FilePath, validationIssues)
+								validationErrors.DecrementLineNumbersAndRemoveLineReferences(message.Location.Line, message.FilePath)
 								oneDeleted = true
 							}
 						}
@@ -286,7 +249,7 @@ var autoFixValidationCmd = &cobra.Command{
 						nameToUpdatedContents[message.FilePath] = fileContents
 
 						if charactersAdded > 0 {
-							updateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath, validationIssues)
+							validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
 						}
 					} else if strings.HasPrefix(message.Message, invalidBlockquote) {
 						fileContents, ok := nameToUpdatedContents[message.FilePath]
@@ -306,7 +269,7 @@ var autoFixValidationCmd = &cobra.Command{
 						nameToUpdatedContents[message.FilePath] = fileContents
 
 						if charactersAdded > 0 {
-							updateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath, validationIssues)
+							validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
 						}
 					}
 				case "OPF-030":
@@ -426,41 +389,4 @@ func ValidateAutoFixValidationFlags(epubPath, validationIssuesPath string) error
 	}
 
 	return nil
-}
-
-func decrementLineNumbersAndRemoveLineReferences(lineNum int, path string, validationIssues []epubcheck.ValidationError) []epubcheck.ValidationError {
-	for i := 0; i < len(validationIssues); i++ {
-		if validationIssues[i].Location != nil {
-			if validationIssues[i].FilePath == path {
-				if validationIssues[i].Location.Line == lineNum {
-					validationIssues = slices.Delete(validationIssues, i, i+1)
-					i--
-				} else if validationIssues[i].Location.Line > lineNum {
-					validationIssues[i].Location.Line--
-				}
-			}
-		}
-	}
-
-	return validationIssues
-}
-
-func incrementLineNumbers(lineNum int, path string, validationIssues []epubcheck.ValidationError) {
-	for i := range validationIssues {
-		if validationIssues[i].Location != nil {
-			if validationIssues[i].FilePath == path && validationIssues[i].Location.Line > lineNum {
-				validationIssues[i].Location.Line++
-			}
-		}
-	}
-}
-
-func updateLineColumnPosition(lineNum, column, offset int, path string, validationIssues []epubcheck.ValidationError) {
-	for i := range validationIssues {
-		if validationIssues[i].Location != nil {
-			if validationIssues[i].FilePath == path && validationIssues[i].Location.Line == lineNum && validationIssues[i].Location.Column > column {
-				validationIssues[i].Location.Line += offset
-			}
-		}
-	}
 }
