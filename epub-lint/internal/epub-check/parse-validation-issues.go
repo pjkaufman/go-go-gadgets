@@ -5,21 +5,9 @@ import (
 	"strings"
 )
 
-type ValidationError struct {
-	Code     string
-	FilePath string
-	Location *Position
-	Message  string
-}
-
-type Position struct {
-	Line   int
-	Column int
-}
-
 // ParseEPUBCheckOutput parses the contents of an EPUBCheck output from a string.
-func ParseEPUBCheckOutput(logContents string) ([]ValidationError, error) {
-	var errors []ValidationError
+func ParseEPUBCheckOutput(logContents string) (ValidationErrors, error) {
+	var validationErrors ValidationErrors
 	lines := strings.Split(logContents, "\n")
 
 	for _, line := range lines {
@@ -71,12 +59,13 @@ func ParseEPUBCheckOutput(logContents string) ([]ValidationError, error) {
 			pos = &Position{Line: lineNum, Column: colNum}
 		}
 
-		errors = append(errors, ValidationError{
+		validationErrors.ValidationIssues = append(validationErrors.ValidationIssues, ValidationError{
 			Code:     code,
 			FilePath: filePath,
 			Location: pos,
 			Message:  message,
 		})
 	}
-	return errors, nil
+
+	return validationErrors, nil
 }
