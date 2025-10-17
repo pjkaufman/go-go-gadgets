@@ -153,7 +153,6 @@ func convertQuotes(input string) (string, bool, error) {
 			// handles many names that have single quotes in them as well as many contractions
 			isBetweenLetters := isPrevLetter && isNextLetter
 
-			fmt.Println(string(runes[i-1]), string(runes[i+1]))
 			if isPossessive || isDigitScenarios || isBetweenLetters {
 				continue
 			}

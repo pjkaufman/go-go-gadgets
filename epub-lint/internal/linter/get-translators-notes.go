@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var translatorsNotesRegex = regexp.MustCompile(`(?i)(TL Note:|Translator's Note:|Note:)([^<]*?)</(p|span|div)>`)
+var translatorsNotesRegex = regexp.MustCompile(`(?i)(TL Note:|Translator's Note:|Note:|T/N:)([^<]*?)(</(p|span|div)>|<br/>)`)
 
 func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int) {
 	var (
