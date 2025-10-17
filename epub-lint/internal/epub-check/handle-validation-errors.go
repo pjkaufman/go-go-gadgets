@@ -203,6 +203,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if err != nil {
 				return err
 			}
+
 			nameToUpdatedContents[message.FilePath] = rulefixes.RemoveLinkId(fileContent, message.Location.Line-1, message.Location.Column-1)
 		}
 	}

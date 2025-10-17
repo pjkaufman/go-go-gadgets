@@ -23,7 +23,7 @@ const (
 var (
 	validationIssuesFilePath string
 	removeJNovelInfo         bool
-	ErrIssueFileArgEmpty     = errors.New("issuesmust have a non-whitespace value")
+	ErrIssueFileArgEmpty     = errors.New("issues must have a non-whitespace value")
 )
 
 // autoFixValidationCmd represents the auto fix validation command
@@ -64,7 +64,7 @@ var autoFixValidationCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		err = filehandler.FileArgExists(validationIssuesFilePath, "issue-file")
+		err = filehandler.FileArgExists(validationIssuesFilePath, "issues")
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -155,10 +155,10 @@ func init() {
 	fixCmd.AddCommand(autoFixValidationCmd)
 
 	autoFixValidationCmd.Flags().BoolVarP(&removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present")
-	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issue-file", "", "", "the path to the file with the validation issues")
-	err := autoFixValidationCmd.MarkFlagRequired("issue-file")
+	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issues", "", "", "the path to the file with the validation issues")
+	err := autoFixValidationCmd.MarkFlagRequired("issues")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"issue-file\" as required on validation fix command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"issues\" as required on validation fix command: %v\n", err)
 	}
 
 	autoFixValidationCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in")
