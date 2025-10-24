@@ -28,8 +28,8 @@ var defaultTLNoteContents = `<?xml version='1.0' encoding='utf-8'?>
 </html>
 `
 
-// organizeNotesCMd represents the move translator's notes command
-var organizeNotesCMd = &cobra.Command{
+// organizeNotesCmd represents the move translator's notes command
+var organizeNotesCmd = &cobra.Command{
 	Use:   "organize-notes",
 	Short: "Moves translator's notes to their own file at the end of the epub.",
 	Example: heredoc.Doc(`Finds all translator's notes and moves them to their own file if present
@@ -58,14 +58,14 @@ var organizeNotesCMd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(organizeNotesCMd)
-	organizeNotesCMd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to move translator's notes to their own file in")
-	err := organizeNotesCMd.MarkFlagRequired("file")
+	rootCmd.AddCommand(organizeNotesCmd)
+	organizeNotesCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to move translator's notes to their own file in")
+	err := organizeNotesCmd.MarkFlagRequired("file")
 	if err != nil {
 		logger.WriteErrorf(`failed to mark flag "file" as required on tl_notes command: %v\n`, err)
 	}
 
-	err = organizeNotesCMd.MarkFlagFilename("file", "epub")
+	err = organizeNotesCmd.MarkFlagFilename("file", "epub")
 	if err != nil {
 		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on tl_notes command: %v\n`, err)
 	}
