@@ -206,6 +206,18 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				if charactersAdded > 0 {
 					validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
 				}
+			} else if message.Message == missingImgAlt {
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
+				}
+
+				fileContent, charactersAdded := rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
+				nameToUpdatedContents[message.FilePath] = fileContent
+
+				if charactersAdded > 0 {
+					validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
+				}
 			}
 		case "OPF-030":
 			startIndex := strings.Index(message.Message, missingUniqueIdentifier)

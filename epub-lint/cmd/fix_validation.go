@@ -42,6 +42,7 @@ var autoFixValidationCmd = &cobra.Command{
 	  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 		- Update duplicate ids to no longer be duplicates
 		- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
+		- Add an empty alt attribute to img elements that are missing them
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`

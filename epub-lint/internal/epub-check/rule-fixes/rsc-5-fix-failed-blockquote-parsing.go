@@ -15,37 +15,10 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (string, int)
 		return contents, 0
 	}
 
-	lines := strings.Split(contents, "\n")
-	if line > len(lines) {
+	offset := getColumnOffset(contents, line, column)
+	if offset == -1 {
 		return contents, 0
 	}
-
-	byteOffset := 0
-	for i := 0; i < line-1; i++ {
-		byteOffset += len(lines[i]) + 1
-	}
-
-	curLine := lines[line-1]
-	colByte := 0
-	remainingRunes := column - 1
-	for remainingRunes > 0 && colByte < len(curLine) {
-		_, size := utf8.DecodeRuneInString(curLine[colByte:])
-		if size == 0 {
-			break
-		}
-		colByte += size
-		remainingRunes--
-	}
-	if remainingRunes > 0 {
-		colByte = len(curLine)
-	}
-
-	byteOffset += colByte
-	if byteOffset > len(contents) {
-		byteOffset = len(contents)
-	}
-
-	offset := byteOffset
 
 	closeTag := "</blockquote>"
 	openTag := "<blockquote"
@@ -97,4 +70,38 @@ func trimRightSpace(s string) string {
 	}
 
 	return s[:i]
+}
+
+func getColumnOffset(contents string, line, column int) int {
+	lines := strings.Split(contents, "\n")
+	if line > len(lines) {
+		return -1
+	}
+
+	byteOffset := 0
+	for i := 0; i < line-1; i++ {
+		byteOffset += len(lines[i]) + 1
+	}
+
+	curLine := lines[line-1]
+	colByte := 0
+	remainingRunes := column - 1
+	for remainingRunes > 0 && colByte < len(curLine) {
+		_, size := utf8.DecodeRuneInString(curLine[colByte:])
+		if size == 0 {
+			break
+		}
+		colByte += size
+		remainingRunes--
+	}
+	if remainingRunes > 0 {
+		colByte = len(curLine)
+	}
+
+	byteOffset += colByte
+	if byteOffset > len(contents) {
+		byteOffset = len(contents)
+	}
+
+	return byteOffset
 }
