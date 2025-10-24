@@ -38,7 +38,8 @@ var commonContractions = map[string]struct{}{
 	"would've": {}, "wouldn't": {}, "wouldn't've": {}, "y'ain't": {}, "y'all": {}, "y'all'd've": {},
 	"y'all'dn't've": {}, "y'all're": {}, "y'all'ren't": {}, "y'at": {}, "yes'm": {}, "y'ever": {},
 	"y'know": {}, "you'd": {}, "you'dn't've": {}, "you'll": {}, "you're": {}, "you've": {},
-	"mornin'": {}, "sayin'": {}, "doin'": {}, "makin'": {}, "actin'": {},
+	"mornin'": {}, "sayin'": {}, "doin'": {}, "makin'": {}, "actin'": {}, "usin'": {}, "somethin'": {},
+	"goin'": {},
 }
 
 var paragraphsWithSingleQuotes = regexp.MustCompile(`(?m)^([\r\t\f\v ]*?<p[^\n>]*?>)([^\n]*?'[^\n]*?)(</p>)`)
