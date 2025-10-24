@@ -6,41 +6,56 @@ import (
 	"unicode"
 )
 
-const closingMetadataTag = "</metadata>"
-
 // TODO: handle scenario where both of the ids are the same,
 // but there is a scheme specified in both, so they do not match
 // remove the colon back to the scheme to fix this
-// TODO: create helper method for determining the level of spacing for a manifest element
-func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
+func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, int, int, error) {
 	// Extract the unique identifier from the NCX
 	ncxIdentifier, err := getNcxIdentifier(ncxContents)
 	if err != nil {
-		return "", err
+		return "", -1, 0, err
 	}
 
 	// Extract the unique identifier from the OPF
 	opfIdentifierEl, opfIdentifier, opfIdentifierID := getOpfIdentifier(opfContents)
 
+	var (
+		indexOfEndTag               = strings.Index(opfContents, metadataEndTag)
+		textUntilEndTag             = opfContents[:indexOfEndTag]
+		lineNumberThatWillBeUpdated = strings.Count(textUntilEndTag, "\n") + 1
+	)
+
 	// Scenario 1: No unique identifier in OPF, but present in NCX
 	if opfIdentifier == "" && ncxIdentifier != "" {
-		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID)
-		return opfContents, nil
+		var (
+			previousNewLineIndex = strings.LastIndex(textUntilEndTag, "\n")
+			previousNewLine      string
+		)
+		if previousNewLineIndex == -1 {
+			previousNewLine = textUntilEndTag
+		} else {
+			previousNewLine = opfContents[previousNewLineIndex+1 : indexOfEndTag]
+		}
+
+		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID, previousNewLine)
+		return opfContents, lineNumberThatWillBeUpdated, 1, nil
 	}
 
 	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ">"+ncxIdentifier) {
-		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
-		return opfContents, nil
+		var linesAdded int
+		opfContents, linesAdded = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
+
+		return opfContents, lineNumberThatWillBeUpdated, linesAdded, nil
 	}
 
 	// Scenario 3: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ">"+ncxIdentifier) {
 		opfContents = moveOpfIdentifierID(opfContents, opfIdentifier, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
-		return opfContents, nil
+		return opfContents, -1, 0, nil
 	}
 
-	return opfContents, nil
+	return opfContents, -1, 0, nil
 }
 
 // getNcxIdentifier extracts the unique identifier from the NCX content.
@@ -146,24 +161,38 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 }
 
 // addOpfIdentifier adds a unique identifier to the OPF content.
-func addOpfIdentifier(opfContents, identifier, identifierID string) string {
+func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorToEl string) string {
 	if identifierID == "" {
 		identifierID = "pub-id"
 	}
-	var identifierTag = fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
+	var (
+		identifierTag      = fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
+		startingWhitespace string
+	)
 
-	metadataEndTag := closingMetadataTag
-	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+metadataEndTag, 1)
+	if strings.TrimSpace(metadataEndElPriorToEl) == "" {
+		if metadataEndElPriorToEl == "" {
+			identifierTag = "\t" + identifierTag
+		}
+
+		startingWhitespace = metadataEndElPriorToEl
+	}
+
+	// Assuming the metadata tag was on its own line, double the space
+	// behind the identifierTag since that should make the tag align
+	// with the others make sure the manifest tag has the same indentation as it did
+	return strings.Replace(opfContents, metadataEndTag, startingWhitespace+identifierTag+"\n"+startingWhitespace+metadataEndTag, 1)
 }
 
 // addOpfIdentifierAndUpdateExistingOne replaces the unique identifier in the OPF content.
-func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) string {
+func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) (string, int) {
 	var (
 		idAttribute            = fmt.Sprintf(` id="%s"`, identifierID)
 		updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
 		format                 strings.Builder
 	)
 
+	var linesAdded = 1
 	format.WriteString("\n" + getLeadingWhitespace(oldIdentifierEl))
 	format.WriteString("<dc:identifier")
 	if identifierID != "" {
@@ -174,14 +203,15 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	format.WriteString(newIdentifier)
 	format.WriteString("</dc:identifier>")
 
-	if strings.Contains(updatedOldIdentifierEl, closingMetadataTag) {
-		updatedOldIdentifierEl = strings.Replace(updatedOldIdentifierEl, closingMetadataTag, "", 1)
+	if strings.Contains(updatedOldIdentifierEl, metadataEndTag) {
+		updatedOldIdentifierEl = strings.Replace(updatedOldIdentifierEl, metadataEndTag, "", 1)
 
+		linesAdded++
 		format.WriteString("\n")
-		format.WriteString(closingMetadataTag)
+		format.WriteString(metadataEndTag)
 	}
 
-	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1)
+	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1), linesAdded
 }
 
 // moveOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX.

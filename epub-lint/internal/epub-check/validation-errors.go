@@ -47,6 +47,16 @@ func (ve *ValidationErrors) IncrementLineNumbers(lineNum int, path string) {
 	}
 }
 
+func (ve *ValidationErrors) IncrementLineNumbersBy(lineNum, amountToAdd int, path string) {
+	for i := range ve.ValidationIssues {
+		if ve.ValidationIssues[i].Location != nil {
+			if ve.ValidationIssues[i].FilePath == path && ve.ValidationIssues[i].Location.Line > lineNum {
+				ve.ValidationIssues[i].Location.Line += amountToAdd
+			}
+		}
+	}
+}
+
 func (ve *ValidationErrors) UpdateLineColumnPosition(lineNum, column, offset int, path string) {
 	for i := range ve.ValidationIssues {
 		if ve.ValidationIssues[i].Location != nil {

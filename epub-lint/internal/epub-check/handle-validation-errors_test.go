@@ -222,7 +222,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/content.opf": opfAddPropertiesExpected,
 		}),
 	},
-	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
+	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file and make sure that all OPF updates that are for after that line get incremented a line": {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
 		ncxFilename:       "OPS/toc.ncx",
@@ -232,7 +232,13 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				{
 					Code:     "NCX-001",
 					FilePath: "OPS/toc.ncx",
-					Message:  ` NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+				{
+					Code:     "RSC-500",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Some placeholder error`,
+					Location: &epubcheck.Position{Line: 35, Column: 10},
 				},
 			},
 		},
@@ -241,7 +247,13 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				{
 					Code:     "NCX-001",
 					FilePath: "OPS/toc.ncx",
-					Message:  ` NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+				{
+					Code:     "RSC-500",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Some placeholder error`,
+					Location: &epubcheck.Position{Line: 36, Column: 10},
 				},
 			},
 		},

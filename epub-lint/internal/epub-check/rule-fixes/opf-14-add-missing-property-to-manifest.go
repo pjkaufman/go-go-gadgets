@@ -12,7 +12,7 @@ const (
 
 var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
 
-func AddScriptedToManifest(opfContents, fileName, property string) (string, error) {
+func AddPropertyToManifest(opfContents, fileName, property string) (string, error) {
 	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
 		return "", err

@@ -67,7 +67,7 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 func TestAddScriptedToManifest(t *testing.T) {
 	for name, args := range addScriptedToManifestTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.AddScriptedToManifest(args.inputText, args.inputPath, "scripted")
+			actual, err := rulefixes.AddPropertyToManifest(args.inputText, args.inputPath, "scripted")
 
 			assert.Nil(t, err)
 			assert.Equal(t, args.expectedOutput, actual)

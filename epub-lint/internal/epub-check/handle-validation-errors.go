@@ -33,7 +33,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.AddScriptedToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
+			nameToUpdatedContents[opfFilename], err = rulefixes.AddPropertyToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
 				return err
 			}
@@ -69,9 +69,16 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
+			var (
+				newLineAddedAt, amountOfNewLinesAdded int
+			)
+			nameToUpdatedContents[opfFilename], newLineAddedAt, amountOfNewLinesAdded, err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
 			if err != nil {
 				return err
+			}
+
+			if amountOfNewLinesAdded > 0 {
+				validationErrors.IncrementLineNumbersBy(newLineAddedAt, amountOfNewLinesAdded, message.FilePath)
 			}
 		case "RSC-005":
 			if strings.HasPrefix(message.Message, invalidIdPrefix) {

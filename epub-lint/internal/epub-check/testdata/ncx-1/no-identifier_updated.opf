@@ -7,8 +7,8 @@
     <meta name="cover" content="cover"/>
     <meta content="1.9.30" name="Sigil version"/>
     <meta property="dcterms:modified">2025-10-24T13:35:48Z</meta>
-  <dc:identifier id="BookId">urn:uuid:da9fa05e-dd8b-4be3-85ab-455656cc14f2</dc:identifier>
-</metadata>
+    <dc:identifier id="BookId">urn:uuid:da9fa05e-dd8b-4be3-85ab-455656cc14f2</dc:identifier>
+  </metadata>
   <manifest>
     <item id="CoverPage_html" href="CoverPage.html" media-type="application/xhtml+xml"/>
     <item id="toc" href="section-0001.html" media-type="application/xhtml+xml" properties="scripted"/>
