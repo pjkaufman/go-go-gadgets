@@ -23,7 +23,7 @@ const (
 	lintedFileDir   = "testdata/linted"
 )
 
-var LintEpubTestCases = map[string]lintEpubTestCase{
+var lintEpubTestCases = map[string]lintEpubTestCase{
 	"Linting a file with image compression should work consistently": {
 		filename:       "jules-verne_from-the-earth-to-the-moon_ward-lock-co.epub",
 		compressImages: true,
@@ -51,7 +51,7 @@ var LintEpubTestCases = map[string]lintEpubTestCase{
 }
 
 func TestLintEpub(t *testing.T) {
-	for name, test := range LintEpubTestCases {
+	for name, test := range lintEpubTestCases {
 		t.Run(name, func(t *testing.T) {
 			err := epub.LintEpub(originalFileDir, test.filename, test.compressImages, test.verbose, test.removableFileExts)
 			assert.Nil(t, err)
