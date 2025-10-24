@@ -21,14 +21,20 @@ type handleValidationErrorTestCase struct {
 }
 
 var (
-	//go:embed testdata/opf-15-remove-properties.opf
+	//go:embed testdata/opf-15/remove-properties.opf
 	opfRemovePropertiesOriginal string
-	//go:embed testdata/opf-15-remove-properties_updated.opf
+	//go:embed testdata/opf-15/remove-properties_updated.opf
 	opfRemovePropertiesExpected string
-	//go:embed testdata/opf-14-add-properties.opf
+	//go:embed testdata/opf-14/add-properties.opf
 	opfAddPropertiesOriginal string
-	//go:embed testdata/opf-14-add-properties_updated.opf
+	//go:embed testdata/opf-14/add-properties_updated.opf
 	opfAddPropertiesExpected string
+	//go:embed testdata/ncx-1/no-identifier.opf
+	opfNoIdentifierOriginal string
+	//go:embed testdata/ncx-1/no-identifier_updated.opf
+	opfNoIdentifierExpected string
+	//go:embed testdata/ncx-1/uuid-identifier.ncx
+	ncxUuidIdentifier string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string) func(string) (string, error) {
@@ -214,6 +220,34 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
 			"OPS/content.opf": opfAddPropertiesExpected,
+		}),
+	},
+	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNoIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  ` NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  ` NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+			"OPS/content.opf": opfNoIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
 		}),
 	},
 }

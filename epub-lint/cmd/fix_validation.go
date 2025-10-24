@@ -45,11 +45,11 @@ var autoFixValidationCmd = &cobra.Command{
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	`),
 	Example: heredoc.Doc(`
-		epub-lint fix validation -f test.epub --issuesepubCheckOutput.txt
+		epub-lint fix validation -f test.epub --issues epubCheckOutput.txt
 		will read in the contents of the file and try to fix any of the fixable
 		validation issues
 
-		epub-lint fix validation -f test.epub --issuesepubCheckOutput.txt --cleanup-jnovels
+		epub-lint fix validation -f test.epub --issues epubCheckOutput.txt --cleanup-jnovels
 		will read in the contents of the file and try to fix any of the fixable
 		validation issues as well as remove any jnovels specific files
 	`),

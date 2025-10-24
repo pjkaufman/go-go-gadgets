@@ -8,6 +8,10 @@ import (
 
 const closingMetadataTag = "</metadata>"
 
+// TODO: handle scenario where both of the ids are the same,
+// but there is a scheme specified in both, so they do not match
+// remove the colon back to the scheme to fix this
+// TODO: create helper method for determining the level of spacing for a manifest element
 func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the NCX
 	ncxIdentifier, err := getNcxIdentifier(ncxContents)
@@ -20,7 +24,7 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 
 	// Scenario 1: No unique identifier in OPF, but present in NCX
 	if opfIdentifier == "" && ncxIdentifier != "" {
-		opfContents = addOpfIdentifier(opfContents, ncxIdentifier)
+		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID)
 		return opfContents, nil
 	}
 
@@ -138,12 +142,15 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 		}
 	}
 
-	return "", "", ""
+	return "", "", uniqueId
 }
 
 // addOpfIdentifier adds a unique identifier to the OPF content.
-func addOpfIdentifier(opfContents, identifier string) string {
-	var identifierTag = fmt.Sprintf(`<dc:identifier id="pub-id">%s</dc:identifier>`, identifier)
+func addOpfIdentifier(opfContents, identifier, identifierID string) string {
+	if identifierID == "" {
+		identifierID = "pub-id"
+	}
+	var identifierTag = fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
 
 	metadataEndTag := closingMetadataTag
 	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+metadataEndTag, 1)
