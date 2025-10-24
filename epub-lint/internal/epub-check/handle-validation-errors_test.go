@@ -35,6 +35,10 @@ var (
 	opfNoIdentifierExpected string
 	//go:embed testdata/ncx-1/uuid-identifier.ncx
 	ncxUuidIdentifier string
+	//go:embed testdata/ncx-1/number-identifier.opf
+	opfNumberIdentifierOriginal string
+	//go:embed testdata/ncx-1/number-identifier_updated.opf
+	opfNumberIdentifierExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string) func(string) (string, error) {
@@ -262,12 +266,51 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/toc.ncx":     ncxUuidIdentifier,
 		}),
 	},
+	"NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file and make sure that all OPF updates that are for after that line get incremented 2 lines due to metadata being on the same line as the previous metadata": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNumberIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+				{
+					Code:     "RSC-500",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Some placeholder error`,
+					Location: &epubcheck.Position{Line: 35, Column: 10},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+				{
+					Code:     "RSC-500",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Some placeholder error`,
+					Location: &epubcheck.Position{Line: 37, Column: 10},
+				},
+			},
+		},
+		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+			"OPS/content.opf": opfNumberIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
+		}),
+	},
 }
 
 /**
 What should be tested here:
 - Make sure each of the expected rules runs and makes the expected update (these will be single tests with edge cases allotted as well)
-	- NCX-001: fix book id discrepancy between ncx and opf files
 	- RSC 5:
 	  - Invalid id:
 		  - Should work on opf files
