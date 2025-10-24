@@ -159,7 +159,7 @@ epub-lint optimize
 
 ### organize-notes
 
-Goes through all of the content files and looks for "TL Note:", "Translator's Note:", or "Note:"
+Goes through all of the content files and looks for "TL Note:", "Translator's Note:", "T/N:", or "Note:"
 and moves any matches to their own file with bidirectional linking between the footnote and its reference location.
 It also adds an entry to the TOC and spine of the epub so the "tl_notes.xhtml" file is at the end of the file's contents.
 
