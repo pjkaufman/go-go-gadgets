@@ -17,12 +17,23 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 		switch message.Code {
 		case "OPF-014":
+			startIndex := strings.Index(message.Message, `"`)
+			if startIndex == -1 {
+				continue
+			}
+			endIndex := strings.Index(message.Message[startIndex:], `"`)
+			if endIndex == -1 {
+				continue
+			}
+
+			property := message.Message[startIndex : startIndex+endIndex]
+
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.AddScriptedToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"))
+			nameToUpdatedContents[opfFilename], err = rulefixes.AddScriptedToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
 				return err
 			}

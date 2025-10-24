@@ -12,7 +12,7 @@ const (
 
 var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
 
-func AddScriptedToManifest(opfContents string, fileName string) (string, error) {
+func AddScriptedToManifest(opfContents, fileName, property string) (string, error) {
 	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
 		return "", err
@@ -23,13 +23,13 @@ func AddScriptedToManifest(opfContents string, fileName string) (string, error) 
 		if strings.Contains(line, fmt.Sprintf(`href="%s"`, fileName)) {
 
 			if strings.Contains(line, "properties=\"\"") {
-				lines[i] = strings.Replace(line, `properties="`, `properties="scripted`, 1)
+				lines[i] = strings.Replace(line, `properties="`, `properties="`+property, 1)
 			} else if strings.Contains(line, `properties="`) {
 				if !strings.Contains(line, `scripted`) {
-					lines[i] = strings.Replace(line, `properties="`, `properties="scripted `, 1)
+					lines[i] = strings.Replace(line, `properties="`, `properties="`+property+" ", 1)
 				}
 			} else {
-				lines[i] = strings.Replace(line, `/>`, ` properties="scripted"/>`, 1)
+				lines[i] = strings.Replace(line, `/>`, ` properties="`+property+`"/>`, 1)
 			}
 
 			break
