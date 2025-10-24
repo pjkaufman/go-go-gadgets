@@ -27,12 +27,23 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 		case "OPF-015":
+			startIndex := strings.Index(message.Message, `"`)
+			if startIndex == -1 {
+				continue
+			}
+			endIndex := strings.Index(message.Message[startIndex:], `"`)
+			if endIndex == -1 {
+				continue
+			}
+
+			property := message.Message[startIndex : startIndex+endIndex]
+
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.RemoveScriptedFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"))
+			nameToUpdatedContents[opfFilename], err = rulefixes.RemovePropertyFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
 				return err
 			}
@@ -102,12 +113,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 					validationErrors.IncrementLineNumbers(message.Location.Line, message.FilePath)
 				}
-			} else if strings.HasPrefix(message.Message, emptyMetadataProperty) {
-				startIndex := strings.Index(message.Message, emptyMetadataProperty)
+			} else if strings.HasPrefix(message.Message, EmptyMetadataProperty) {
+				startIndex := strings.Index(message.Message, EmptyMetadataProperty)
 				if startIndex == -1 {
 					continue
 				}
-				startIndex += len(emptyMetadataProperty)
+				startIndex += len(EmptyMetadataProperty)
 				endIndex := strings.Index(message.Message[startIndex:], `"`)
 				if endIndex == -1 {
 					continue

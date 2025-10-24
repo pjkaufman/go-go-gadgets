@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func RemoveScriptedFromManifest(opfContents string, fileName string) (string, error) {
+func RemovePropertyFromManifest(opfContents, fileName, property string) (string, error) {
 	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
 	if err != nil {
 		return "", err
@@ -23,8 +23,8 @@ func RemoveScriptedFromManifest(opfContents string, fileName string) (string, er
 				propEnd := strings.Index(line[valStart:], `"`) + valStart
 				properties := line[valStart:propEnd]
 
-				if strings.Contains(properties, "scripted") {
-					updatedProperties := strings.Replace(properties, "scripted", "", 1)
+				if strings.Contains(properties, property) {
+					updatedProperties := strings.Replace(properties, property, "", 1)
 					updatedProperties = strings.TrimSpace(updatedProperties)
 
 					if updatedProperties == "" {

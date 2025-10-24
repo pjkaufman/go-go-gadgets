@@ -68,11 +68,11 @@ func (ve *ValidationErrors) Sort() {
 		msgJ := ve.ValidationIssues[j]
 
 		// Prioritize delete-required messages
-		if strings.HasPrefix(msgI.Message, emptyMetadataProperty) && !strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
+		if strings.HasPrefix(msgI.Message, EmptyMetadataProperty) && !strings.HasPrefix(msgJ.Message, EmptyMetadataProperty) {
 			return true
 		}
 
-		if !strings.HasPrefix(msgI.Message, emptyMetadataProperty) && strings.HasPrefix(msgJ.Message, emptyMetadataProperty) {
+		if !strings.HasPrefix(msgI.Message, EmptyMetadataProperty) && strings.HasPrefix(msgJ.Message, EmptyMetadataProperty) {
 			return false
 		}
 

@@ -38,7 +38,6 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 <item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
 </manifest>
 </package>`,
-
 		inputPath: "OEBPS/nav.xhtml",
 		expectedOutput: `
 <package version="3.0">

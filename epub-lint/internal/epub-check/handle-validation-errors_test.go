@@ -1,12 +1,133 @@
 //go:build unit
 
-package epubcheck
+package epubcheck_test
+
+import (
+	"fmt"
+	"testing"
+
+	_ "embed"
+
+	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
+	"github.com/stretchr/testify/assert"
+)
+
+type handleValidationErrorTestCase struct {
+	opfFolder, ncxFilename, opfFilename string
+	validationErrors                    epubcheck.ValidationErrors
+	expectedErrorState                  epubcheck.ValidationErrors
+	expectedFileState                   map[string]string // filename to content
+	getContentByFileName                func(string) (string, error)
+}
+
+var (
+	//go:embed testdata/opf-15-remove-properties.opf
+	opfRemoveScriptedOriginal string
+	//go:embed testdata/opf-15-remove-properties_updated.opf
+	opfRemoveScriptedExpected string
+)
+
+var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
+	"OPF 15: Removing properties from different files should work without issue": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfRemoveScriptedOriginal},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		getContentByFileName: func(s string) (string, error) {
+			if s == "OPS/content.opf" {
+				return opfRemoveScriptedOriginal, nil
+			}
+
+			return "", fmt.Errorf("unexpected attempt to get file contents for file %q", s)
+		},
+	},
+}
 
 /**
 What should be tested here:
 - Make sure each of the expected rules runs and makes the expected update (these will be single tests with edge cases allotted as well)
   - OPF 14: add scripted to a manifest file
+	  - Technically this is more than just scripted and needs updating to handle other properties as well...
 	- OPF 15: remove scripted from a manifest file
+	  - Technically this is more than just scripted and needs updating to handle other properties as well...
 	- NCX-001: fix book id discrepancy between ncx and opf files
 	- RSC 5:
 	  - Invalid id:
@@ -21,3 +142,20 @@ What should be tested here:
 		-
 - Make sure that multiple rules play well together
 */
+
+func TestHandleValidationErrors(t *testing.T) {
+	for name, tc := range handleValidationErrorTestCases {
+		t.Run(name, func(t *testing.T) {
+			var nameToUpdatedFileContents = map[string]string{}
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, &tc.validationErrors, tc.getContentByFileName)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
+
+			for name, expectedContents := range tc.expectedFileState {
+				actualContents, ok := nameToUpdatedFileContents[name]
+				assert.True(t, ok, fmt.Sprintf("expected file %q to be updated, but it was not", name))
+				assert.Equal(t, expectedContents, actualContents, fmt.Sprintf("expected file contents for %q did not match actual contents", name))
+			}
+		})
+	}
+}
