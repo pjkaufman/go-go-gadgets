@@ -39,6 +39,10 @@ var (
 	opfNumberIdentifierOriginal string
 	//go:embed testdata/ncx-1/number-identifier_updated.opf
 	opfNumberIdentifierExpected string
+	//go:embed testdata/opf-30/missing-unique-identifier.opf
+	opfMissingUniqueIdentifierOriginal string
+	//go:embed testdata/opf-30/missing-unique-identifier_updated.opf
+	opfMissingUniqueIdentifierExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string) func(string) (string, error) {
@@ -304,6 +308,33 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
 			"OPS/content.opf": opfNumberIdentifierOriginal,
 			"OPS/toc.ncx":     ncxUuidIdentifier,
+		}),
+	},
+	"OPF 30: When the unique-identifier property does not match any existing identifiers, add the unique identifier to the first identifier without an id": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfMissingUniqueIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-030",
+					FilePath: "OOPS/content.opf",
+					Message:  `The unique-identifier "BookId" was not found`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-030",
+					FilePath: "OOPS/content.opf",
+					Message:  `The unique-identifier "BookId" was not found`,
+				},
+			},
+		},
+		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+			"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
 		}),
 	},
 }
