@@ -50,6 +50,10 @@ var (
 	opfInvalidIdOriginal string
 	//go:embed testdata/rsc-5/invalid-id_updated.opf
 	opfInvalidIdExpected string
+	//go:embed testdata/rsc-5/duplicate-ids.html
+	htmlDuplicateIdsOriginal string
+	//go:embed testdata/rsc-5/duplicate-ids_updated.html
+	htmlDuplicateIdsExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -413,6 +417,59 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfInvalidIdOriginal,
+		},
+	},
+	"RSC 5: When there are duplicate ids in a file, they should be updated accordingly": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/prologue.html": htmlDuplicateIdsExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/prologue.html": htmlDuplicateIdsOriginal,
 		},
 	},
 }
