@@ -13,11 +13,10 @@ import (
 )
 
 type handleValidationErrorTestCase struct {
-	opfFolder, ncxFilename, opfFilename string
-	validationErrors                    epubcheck.ValidationErrors
-	expectedErrorState                  epubcheck.ValidationErrors
-	expectedFileState                   map[string]string // filename to content
-	getContentByFileName                func(string) (string, error)
+	opfFolder, ncxFilename, opfFilename           string
+	validationErrors                              epubcheck.ValidationErrors
+	expectedErrorState                            epubcheck.ValidationErrors
+	expectedFileState, validFilesToInitialContent map[string]string // filename to content
 }
 
 var (
@@ -43,11 +42,21 @@ var (
 	opfMissingUniqueIdentifierOriginal string
 	//go:embed testdata/opf-30/missing-unique-identifier_updated.opf
 	opfMissingUniqueIdentifierExpected string
+	//go:embed testdata/rsc-5/invalid-id.html
+	htmlInvalidIdOriginal string
+	//go:embed testdata/rsc-5/invalid-id_updated.html
+	htmlInvalidIdExpected string
+	//go:embed testdata/rsc-5/invalid-id.opf
+	opfInvalidIdOriginal string
+	//go:embed testdata/rsc-5/invalid-id_updated.opf
+	opfInvalidIdExpected string
 )
 
-func createTestCaseFileHandlerFunction(validFilesToContent map[string]string) func(string) (string, error) {
+func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
 	return func(s string) (string, error) {
-		if content, ok := validFilesToContent[s]; ok {
+		if content, ok := currentContents[s]; ok {
+			return content, nil
+		} else if content, ok := validFilesToContent[s]; ok {
 			return content, nil
 		}
 
@@ -139,15 +148,15 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				},
 			},
 		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfAddPropertiesExpected,
-		}),
+		},
 	},
 	"OPF 15: Removing properties from different files should work without issue": {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
 		ncxFilename:       "OPS/toc.ncx",
-		expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesOriginal},
+		expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesExpected},
 		validationErrors: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -226,9 +235,9 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				},
 			},
 		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfRemovePropertiesOriginal,
-		}),
+		},
 	},
 	"OPF 30: When the unique-identifier property does not match any existing identifiers, add the unique identifier to the first identifier without an id": {
 		opfFolder:         "OPS",
@@ -253,9 +262,9 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				},
 			},
 		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
-		}),
+		},
 	},
 	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
 		opfFolder:         "OPS",
@@ -280,10 +289,10 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				},
 			},
 		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfNoIdentifierOriginal,
 			"OPS/toc.ncx":     ncxUuidIdentifier,
-		}),
+		},
 	},
 	"NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file": {
 		opfFolder:         "OPS",
@@ -308,10 +317,103 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 				},
 			},
 		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfNumberIdentifierOriginal,
 			"OPS/toc.ncx":     ncxUuidIdentifier,
-		}),
+		},
+	},
+	"RSC 5: When there is an invalid id in a html/xhtml file it should get fixed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/chapter1.html": htmlInvalidIdExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/chapter1.html",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 40,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/chapter1.html",
+					Message:  `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 40,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/chapter1.html": htmlInvalidIdOriginal,
+		},
+	},
+	"RSC 5: When there is an invalid id in an opf file it should get fixed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfInvalidIdExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   77,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 21,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   77,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 21,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfInvalidIdOriginal,
+		},
 	},
 }
 
@@ -319,7 +421,7 @@ func TestHandleValidationErrors(t *testing.T) {
 	for name, tc := range handleValidationErrorTestCases {
 		t.Run(name, func(t *testing.T) {
 			var nameToUpdatedFileContents = map[string]string{}
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, &tc.validationErrors, tc.getContentByFileName)
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 

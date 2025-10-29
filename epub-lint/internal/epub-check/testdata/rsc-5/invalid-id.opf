@@ -8,18 +8,18 @@
     <dc:date>2024-12-02T00:00:00+00:00</dc:date>
     <meta name="cover" content="cover"/>
     <meta content="1.9.30" name="Sigil version"/>
-    <meta property="dcterms:modified">2025-01-26T03:33:11Z</meta>
+    <meta property="dcterms:modified">2025-10-24T13:35:48Z</meta>
   </metadata>
   <manifest>
     <item id="CoverPage_html" href="CoverPage.html" media-type="application/xhtml+xml"/>
-    <item id="toc" href="section-0001.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id=" toc" href="section-0001.html" media-type="application/xhtml+xml" properties="scripted"/>
     <item id="section-0002_html" href="section-0002.html" media-type="application/xhtml+xml"/>
-    <item id="section-0003_html" href="section-0003.html" media-type="application/xhtml+xml"/>
-    <item id="section-0004_html" href="section-0004.html" media-type="application/xhtml+xml"/>
-    <item id="section-0005_html" href="section-0005.html" media-type="application/xhtml+xml"/>
-    <item id="section-0006_html" href="section-0006.html" media-type="application/xhtml+xml"/>
-    <item id="section-0007_html" href="section-0007.html" media-type="application/xhtml+xml"/>
-    <item id="section-0008_html" href="section-0008.html" media-type="application/xhtml+xml"/>
+    <item id="section-0003_html" href="section-0003.html" media-type="application/xhtml+xml" properties="scripted svg"/>
+    <item id="section-0004_html" href="section-0004.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0005_html" href="section-0005.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0006_html" href="section-0006.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0007_html" href="section-0007.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0008_html" href="section-0008.html" media-type="application/xhtml+xml" properties="scripted"/>
     <item id="section-0009_html" href="section-0009.html" media-type="application/xhtml+xml" properties="scripted"/>
     <item id="section-0010_html" href="section-0010.html" media-type="application/xhtml+xml" properties="scripted"/>
     <item id="section-0011_html" href="section-0011.html" media-type="application/xhtml+xml" properties="scripted"/>
@@ -74,7 +74,7 @@
   </manifest>
   <spine toc="ncx">
     <itemref idref="CoverPage_html"/>
-    <itemref idref="toc"/>
+    <itemref idref=" toc"/>
     <itemref idref="section-0002_html"/>
     <itemref idref="section-0003_html"/>
     <itemref idref="section-0004_html"/>

@@ -10,15 +10,12 @@ import (
 )
 
 type sortValidationErrorsTestCase struct {
-	name     string
 	input    epubcheck.ValidationErrors
 	expected epubcheck.ValidationErrors
 }
 
-// TODO: use a map instead
-var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
-	{
-		name: "When an empty metadata property is present in the list of validation errors, it should be the first entry",
+var sortValidationErrorsTestCases = map[string]sortValidationErrorsTestCase{
+	"When an empty metadata property is present in the list of validation errors, it should be the first entry": {
 		input: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -64,8 +61,7 @@ var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
 			},
 		},
 	},
-	{
-		name: "When there are multiple different file paths present, they should be sorted in ascending order",
+	"When there are multiple different file paths present, they should be sorted in ascending order": {
 		input: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -111,8 +107,7 @@ var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
 			},
 		},
 	},
-	{
-		name: "When there are multiple validation errors in the same file, any with no location present should be sorted to be after ones with a location and those with locations should be sorted in descending order",
+	"When there are multiple validation errors in the same file, any with no location present should be sorted to be after ones with a location and those with locations should be sorted in descending order": {
 		input: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -158,8 +153,7 @@ var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
 			},
 		},
 	},
-	{
-		name: "When there are multiple validation errors in the same file on the same line, then errors are sorted by column in a descending order",
+	"When there are multiple validation errors in the same file on the same line, then errors are sorted by column in a descending order": {
 		input: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -205,8 +199,7 @@ var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
 			},
 		},
 	},
-	{
-		name: "When dealing with multiple validation errors, then the sort order should be empty property errors first, then file paths sorted ascending, then file line locations in descending order with nil being after those, file column locations in descending order",
+	"When dealing with multiple validation errors, then the sort order should be empty property errors first, then file paths sorted ascending, then file line locations in descending order with nil being after those, file column locations in descending order": {
 		input: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
@@ -303,11 +296,12 @@ var sortValidationErrorsTestCases = []sortValidationErrorsTestCase{
 }
 
 func TestSortValidationErrors(t *testing.T) {
-	for _, tc := range sortValidationErrorsTestCases {
-		t.Run(tc.name, func(t *testing.T) {
-			input := tc.input
+	for name, args := range sortValidationErrorsTestCases {
+		t.Run(name, func(t *testing.T) {
+			input := args.input
 			input.Sort()
-			assert.Equal(t, tc.expected, input)
+
+			assert.Equal(t, args.expected, input)
 		})
 	}
 }

@@ -21,13 +21,14 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if startIndex == -1 {
 				continue
 			}
+
+			startIndex++
 			endIndex := strings.Index(message.Message[startIndex:], `"`)
 			if endIndex == -1 {
 				continue
 			}
 
 			property := message.Message[startIndex : startIndex+endIndex]
-
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
@@ -42,13 +43,14 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if startIndex == -1 {
 				continue
 			}
+
+			startIndex++
 			endIndex := strings.Index(message.Message[startIndex:], `"`)
 			if endIndex == -1 {
 				continue
 			}
 
 			property := message.Message[startIndex : startIndex+endIndex]
-
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
@@ -87,19 +89,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 				attribute := message.Message[startIndex : startIndex+endIndex]
 
-				// TODO: update to not care about file other than where it gets the file contents
-
-				// for now we will just fix the values in the opf and ncx files and we will handle the other cases separately
-				// when that is encountered since it requires keeping track of which files have already been modified
-				// and which ones have not been modified yet
-				if strings.HasSuffix(message.FilePath, ".opf") || strings.HasSuffix(message.FilePath, ".ncx") {
-					fileContent, err = getContentByFileName(message.FilePath)
-					if err != nil {
-						return err
-					}
-
-					nameToUpdatedContents[message.FilePath] = rulefixes.FixXmlIdValue(fileContent, message.Location.Line, attribute)
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
 				}
+
+				nameToUpdatedContents[message.FilePath] = rulefixes.FixXmlIdValue(fileContent, message.Location.Line, attribute)
 			} else if strings.HasPrefix(message.Message, invalidAttribute) {
 				startIndex := strings.Index(message.Message, invalidAttribute)
 				if startIndex == -1 {

@@ -7,7 +7,7 @@ import (
 )
 
 // UpdateDuplicateIds finds and renames duplicate IDs in file contents.
-// Returns the modified contents and the number of characters added.
+// Returns the modified contents.
 func UpdateDuplicateIds(contents, id string) string {
 	// Pattern: id="id" or id='id'
 	idPattern := fmt.Sprintf(`id=([\'"])%s[\'"]`, regexp.QuoteMeta(id))
