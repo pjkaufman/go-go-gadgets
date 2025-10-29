@@ -124,7 +124,7 @@ var autoFixValidationCmd = &cobra.Command{
 					return fileContents, nil
 				}
 			)
-			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFileContents, nameToUpdatedContents, &validationErrors, getFileContentsByName)
+			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, nameToUpdatedContents, &validationErrors, getFileContentsByName)
 			if err != nil {
 				return nil, err
 			}

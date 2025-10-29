@@ -1,14 +1,14 @@
 package rulefixes
 
-func FixMissingImageAlt(line, column int, contents string) (string, int) {
+func FixMissingImageAlt(line, column int, contents string) string {
 	if line < 1 {
-		return contents, 0
+		return contents
 	}
 
 	// column is the index of the `>` in `/>`
 	offset := getColumnOffset(contents, line, column)
 	if offset == -1 {
-		return contents, 0
+		return contents
 	}
 
 	var emptyAlt = "alt=\"\""
@@ -16,5 +16,5 @@ func FixMissingImageAlt(line, column int, contents string) (string, int) {
 		emptyAlt = " " + emptyAlt
 	}
 
-	return contents[:offset-2] + emptyAlt + contents[offset-2:], len(emptyAlt)
+	return contents[:offset-2] + emptyAlt + contents[offset-2:]
 }

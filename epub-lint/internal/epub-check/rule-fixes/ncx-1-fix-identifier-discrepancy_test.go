@@ -10,10 +10,9 @@ import (
 )
 
 type identifierTestCase struct {
-	opfContents                                 string
-	ncxContents                                 string
-	expectedOutput                              string
-	expectedLineToUpdate, expectedNewLinesAdded int
+	opfContents    string
+	ncxContents    string
+	expectedOutput string
 }
 
 var fixIdentifierTestCases = map[string]identifierTestCase{
@@ -41,8 +40,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 	<manifest></manifest>
 	<spine></spine>
 </package>`,
-		expectedNewLinesAdded: 1,
-		expectedLineToUpdate:  5,
 	},
 	"When no unique identifier is in the OPF, but it is present in the NCX, the unique identifier should be added as a UUID": {
 		opfContents: `
@@ -68,8 +65,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 	<manifest></manifest>
 	<spine></spine>
 </package>`,
-		expectedNewLinesAdded: 1,
-		expectedLineToUpdate:  5,
 	},
 	"When no unique identifier is in the OPF, but it is present in the NCX and it is an ISBN, the unique identifier should be added as an ISBN": {
 		opfContents: `
@@ -95,8 +90,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <manifest></manifest>
 <spine></spine>
 </package>`,
-		expectedNewLinesAdded: 1,
-		expectedLineToUpdate:  5,
 	},
 	"When the OPF and NCX have two different unique identifier values and the opf should have a unique identifier added and the id should have been moved from the original identifier to the new one": {
 		opfContents: `
@@ -124,8 +117,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <manifest></manifest>
 <spine></spine>
 </package>`,
-		expectedNewLinesAdded: 1,
-		expectedLineToUpdate:  6,
 	},
 	"Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF and there is no id already gets the unique identifier moved to the one that is in the NCX": {
 		opfContents: `
@@ -154,7 +145,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <manifest></manifest>
 <spine></spine>
 </package>`,
-		expectedLineToUpdate: -1,
 	},
 	"Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF and there is an id already gets the unique identifier as the replacement for the one that is in the NCX": {
 		opfContents: `
@@ -183,7 +173,6 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <manifest></manifest>
 <spine></spine>
 </package>`,
-		expectedLineToUpdate: -1,
 	},
 	"When the OPF and NCX have two different unique identifier values and the opf should have a unique identifier added and the id should have been moved from the original identifier to the new one make sure that the ending metadata tag is not put before the added identifier": {
 		opfContents: `
@@ -210,19 +199,15 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <manifest></manifest>
 <spine></spine>
 </package>`,
-		expectedNewLinesAdded: 2,
-		expectedLineToUpdate:  5,
 	},
 }
 
 func TestFixIdentifiers(t *testing.T) {
 	for name, args := range fixIdentifierTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, actualLineToUpdate, actualNewLineAdded, err := rulefixes.FixIdentifierDiscrepancy(args.opfContents, args.ncxContents)
+			actual, err := rulefixes.FixIdentifierDiscrepancy(args.opfContents, args.ncxContents)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedLineToUpdate, actualLineToUpdate)
-			assert.Equal(t, args.expectedNewLinesAdded, actualNewLineAdded)
 			assert.Equal(t, args.expectedOutput, actual)
 		})
 	}
