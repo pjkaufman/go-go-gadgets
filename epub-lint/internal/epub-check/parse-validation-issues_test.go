@@ -71,6 +71,24 @@ ERROR(RSC-007): /home/user/Documents/Book.epub/chapter2.html(15,20): Referenced 
 			},
 		},
 	},
+	{
+		name: "validation issues for duplicate id references should be cut down to a single instance per file per id",
+		input: `ERROR(RSC-005): /home/user/Documents/Book.epub/OPS/section-0009.html(15,54): Error while parsing file: Duplicate ID "auto_bookmark_toc_9"
+ERROR(RSC-005): /home/user/Documents/Book.epub/OPS/section-0009.html(14,54): Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+		expected: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/section-0009.html",
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 54,
+					},
+					Message: `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+				},
+			},
+		},
+	},
 }
 
 func TestParseEPUBCheckOutput(t *testing.T) {

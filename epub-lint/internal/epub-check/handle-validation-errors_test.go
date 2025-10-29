@@ -56,93 +56,6 @@ func createTestCaseFileHandlerFunction(validFilesToContent map[string]string) fu
 }
 
 var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
-	"OPF 15: Removing properties from different files should work without issue": {
-		opfFolder:         "OPS",
-		opfFilename:       "OPS/content.opf",
-		ncxFilename:       "OPS/toc.ncx",
-		expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesOriginal},
-		validationErrors: epubcheck.ValidationErrors{
-			ValidationIssues: []epubcheck.ValidationError{
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0001.html",
-					Message:  `The property "svg" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0003.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0004.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0005.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0006.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0007.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0008.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-			},
-		},
-		expectedErrorState: epubcheck.ValidationErrors{
-			ValidationIssues: []epubcheck.ValidationError{
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0001.html",
-					Message:  `The property "svg" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0003.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0004.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0005.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0006.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0007.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-				{
-					Code:     "OPF-015",
-					FilePath: "OPS/section-0008.html",
-					Message:  `The property "scripted" should not be declared in the OPF file.`,
-				},
-			},
-		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
-			"OPS/content.opf": opfRemovePropertiesOriginal,
-		}),
-	},
 	"OPF 14: Adding properties to different files should work without issue": {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
@@ -230,84 +143,91 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/content.opf": opfAddPropertiesExpected,
 		}),
 	},
-	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file and make sure that all OPF updates that are for after that line get incremented a line": {
+	"OPF 15: Removing properties from different files should work without issue": {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
 		ncxFilename:       "OPS/toc.ncx",
-		expectedFileState: map[string]string{"OPS/content.opf": opfNoIdentifierExpected},
+		expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesOriginal},
 		validationErrors: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
-					Code:     "NCX-001",
-					FilePath: "OPS/toc.ncx",
-					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
 				},
 				{
-					Code:     "RSC-500",
-					FilePath: "OPS/toc.ncx",
-					Message:  `Some placeholder error`,
-					Location: &epubcheck.Position{Line: 35, Column: 10},
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
 				},
 			},
 		},
 		expectedErrorState: epubcheck.ValidationErrors{
 			ValidationIssues: []epubcheck.ValidationError{
 				{
-					Code:     "NCX-001",
-					FilePath: "OPS/toc.ncx",
-					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
 				},
 				{
-					Code:     "RSC-500",
-					FilePath: "OPS/toc.ncx",
-					Message:  `Some placeholder error`,
-					Location: &epubcheck.Position{Line: 36, Column: 10},
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
 				},
 			},
 		},
 		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
-			"OPS/content.opf": opfNoIdentifierOriginal,
-			"OPS/toc.ncx":     ncxUuidIdentifier,
-		}),
-	},
-	"NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file and make sure that all OPF updates that are for after that line get incremented 2 lines due to metadata being on the same line as the previous metadata": {
-		opfFolder:         "OPS",
-		opfFilename:       "OPS/content.opf",
-		ncxFilename:       "OPS/toc.ncx",
-		expectedFileState: map[string]string{"OPS/content.opf": opfNumberIdentifierExpected},
-		validationErrors: epubcheck.ValidationErrors{
-			ValidationIssues: []epubcheck.ValidationError{
-				{
-					Code:     "NCX-001",
-					FilePath: "OPS/toc.ncx",
-					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
-				},
-				{
-					Code:     "RSC-500",
-					FilePath: "OPS/toc.ncx",
-					Message:  `Some placeholder error`,
-					Location: &epubcheck.Position{Line: 35, Column: 10},
-				},
-			},
-		},
-		expectedErrorState: epubcheck.ValidationErrors{
-			ValidationIssues: []epubcheck.ValidationError{
-				{
-					Code:     "NCX-001",
-					FilePath: "OPS/toc.ncx",
-					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
-				},
-				{
-					Code:     "RSC-500",
-					FilePath: "OPS/toc.ncx",
-					Message:  `Some placeholder error`,
-					Location: &epubcheck.Position{Line: 37, Column: 10},
-				},
-			},
-		},
-		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
-			"OPS/content.opf": opfNumberIdentifierOriginal,
-			"OPS/toc.ncx":     ncxUuidIdentifier,
+			"OPS/content.opf": opfRemovePropertiesOriginal,
 		}),
 	},
 	"OPF 30: When the unique-identifier property does not match any existing identifiers, add the unique identifier to the first identifier without an id": {
@@ -337,24 +257,63 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
 		}),
 	},
+	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNoIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+			"OPS/content.opf": opfNoIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
+		}),
+	},
+	"NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNumberIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+			},
+		},
+		getContentByFileName: createTestCaseFileHandlerFunction(map[string]string{
+			"OPS/content.opf": opfNumberIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
+		}),
+	},
 }
-
-/**
-What should be tested here:
-- Make sure each of the expected rules runs and makes the expected update (these will be single tests with edge cases allotted as well)
-	- RSC 5:
-	  - Invalid id:
-		  - Should work on opf files
-			- Should work on ncx files
-			- Should work on html/xhtml files
-			- Make sure that it increments or decrements anything that comes after it on the same line based on the change in characters from the rule
-		- Invalid attribute:
-		  - Should swap to the refines syntax in the opf file and work on multiple entries
-		- Empty metadata property:
-		  - Should remove the empty metadata property in opf files, remove any errors for that line, and decrement subsequent line number references on errors
-		-
-- Make sure that multiple rules play well together
-*/
 
 func TestHandleValidationErrors(t *testing.T) {
 	for name, tc := range handleValidationErrorTestCases {

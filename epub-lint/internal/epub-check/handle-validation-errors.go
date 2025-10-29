@@ -69,16 +69,9 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			var (
-				newLineAddedAt, amountOfNewLinesAdded int
-			)
-			nameToUpdatedContents[opfFilename], newLineAddedAt, amountOfNewLinesAdded, err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
+			nameToUpdatedContents[opfFilename], err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
 			if err != nil {
 				return err
-			}
-
-			if amountOfNewLinesAdded > 0 {
-				validationErrors.IncrementLineNumbersBy(newLineAddedAt, amountOfNewLinesAdded, message.FilePath)
 			}
 		case "RSC-005":
 			if strings.HasPrefix(message.Message, invalidIdPrefix) {
@@ -128,8 +121,6 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					if err != nil {
 						return err
 					}
-
-					validationErrors.IncrementLineNumbers(message.Location.Line, message.FilePath)
 				}
 			} else if strings.HasPrefix(message.Message, EmptyMetadataProperty) {
 				startIndex := strings.Index(message.Message, EmptyMetadataProperty)
@@ -188,36 +179,21 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				fileContent, charactersAdded := rulefixes.UpdateDuplicateIds(fileContent, id)
-				nameToUpdatedContents[message.FilePath] = fileContent
-
-				if charactersAdded > 0 {
-					validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
-				}
+				nameToUpdatedContents[message.FilePath] = rulefixes.UpdateDuplicateIds(fileContent, id)
 			} else if strings.HasPrefix(message.Message, invalidBlockquote) {
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
 					return err
 				}
 
-				fileContent, charactersAdded := rulefixes.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContent)
-				nameToUpdatedContents[message.FilePath] = fileContent
-
-				if charactersAdded > 0 {
-					validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
-				}
+				nameToUpdatedContents[message.FilePath] = rulefixes.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContent)
 			} else if message.Message == missingImgAlt {
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
 					return err
 				}
 
-				fileContent, charactersAdded := rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
-				nameToUpdatedContents[message.FilePath] = fileContent
-
-				if charactersAdded > 0 {
-					validationErrors.UpdateLineColumnPosition(message.Location.Line, message.Location.Column, charactersAdded, message.FilePath)
-				}
+				nameToUpdatedContents[message.FilePath] = rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
 			}
 		case "OPF-030":
 			startIndex := strings.Index(message.Message, missingUniqueIdentifier)

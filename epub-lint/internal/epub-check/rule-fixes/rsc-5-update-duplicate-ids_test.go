@@ -10,11 +10,10 @@ import (
 )
 
 type handleDuplicateIDTestCase struct {
-	name         string
-	contents     string
-	id           string
-	expected     string
-	expectedDiff int
+	name     string
+	contents string
+	id       string
+	expected string
 }
 
 var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
@@ -31,7 +30,6 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
     <div id="something"></div>
   </body>
 </html>`,
-		expectedDiff: 0,
 	},
 	{
 		name: "two duplicate ids get _2 suffix on second occurrence and diff of 2",
@@ -48,7 +46,6 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
     <span id="chapter1_2"></span>
   </body>
 </html>`,
-		expectedDiff: 2,
 	},
 	{
 		name: "three duplicate ids get _2 and _3, total diff of 4 and no double _2",
@@ -59,7 +56,6 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 		expected: `<div id="chapter1"></div>
 <div id="chapter1_2"></div>
 <div id="chapter1_3"></div>`,
-		expectedDiff: 4,
 	},
 	{
 		name: "only exact matches updated even if the id to update is a subset of the id to remove duplicates for",
@@ -70,16 +66,15 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 		expected: `<div id="chapter1"></div>
 <div id="chapter1_2"></div>
 <div id="chapter1-long"></div>`,
-		expectedDiff: 2,
 	},
 }
 
 func TestHandleDuplicateID(t *testing.T) {
 	for _, tc := range handleDuplicateIDTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, diff := rulefixes.UpdateDuplicateIds(tc.contents, tc.id)
+			actual := rulefixes.UpdateDuplicateIds(tc.contents, tc.id)
+
 			assert.Equal(t, tc.expected, actual)
-			assert.Equal(t, tc.expectedDiff, diff)
 		})
 	}
 }

@@ -10,19 +10,17 @@ import (
 )
 
 type fixMissingImageAltTestCase struct {
-	input         string
-	line, column  int
-	expected      string
-	expectedAdded int
+	input        string
+	line, column int
+	expected     string
 }
 
 var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 	"An image with a missing alt should get it added correctly when other elements are on the same line": {
-		input:         `<html><body><img src="test.png"/></body></html>`,
-		line:          1,
-		column:        34,
-		expected:      `<html><body><img src="test.png" alt=""/></body></html>`,
-		expectedAdded: 7,
+		input:    `<html><body><img src="test.png"/></body></html>`,
+		line:     1,
+		column:   34,
+		expected: `<html><body><img src="test.png" alt=""/></body></html>`,
 	},
 	"An image with a missing alt should get it added correctly when no other elements are on the same line": {
 		input: `<?xml version="1.0" encoding="utf-8" standalone="no"?>
@@ -71,17 +69,15 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 </body>
 </html>
 `,
-		expectedAdded: 6,
 	},
 }
 
 func TestFixMissingImageAlt(t *testing.T) {
 	for name, args := range fixMissingImageAltTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, added := rulefixes.FixMissingImageAlt(args.line, args.column, args.input)
+			actual := rulefixes.FixMissingImageAlt(args.line, args.column, args.input)
 
 			assert.Equal(t, args.expected, actual)
-			assert.Equal(t, args.expectedAdded, added)
 		})
 	}
 }

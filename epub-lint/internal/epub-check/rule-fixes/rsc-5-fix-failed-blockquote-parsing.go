@@ -10,14 +10,14 @@ import (
 // file contents, and returns updated contents and a count of added characters.
 // It inserts </p> before the ending blockquote element at the given position,
 // and <p> after the opening blockquote element corresponding to that blockquote.
-func FixFailedBlockquoteParsing(line, column int, contents string) (string, int) {
+func FixFailedBlockquoteParsing(line, column int, contents string) string {
 	if line < 1 {
-		return contents, 0
+		return contents
 	}
 
 	offset := getColumnOffset(contents, line, column)
 	if offset == -1 {
-		return contents, 0
+		return contents
 	}
 
 	closeTag := "</blockquote>"
@@ -26,7 +26,7 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (string, int)
 	pClose := "</p>"
 
 	if offset < len(closeTag) {
-		return contents, 0
+		return contents
 	}
 
 	closeIdx := offset - len(closeTag)
@@ -37,17 +37,17 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (string, int)
 	if !strings.HasSuffix(trimmed, "</span>") &&
 		!strings.HasSuffix(trimmed, "/>") &&
 		trimmed[len(trimmed)-1] == '>' {
-		return contents, 0
+		return contents
 	}
 
 	// Find the opening <blockquote before closeIdx
 	openIdx := strings.LastIndex(contents[:closeIdx], openTag)
 	if openIdx == -1 {
-		return contents, 0
+		return contents
 	}
 	openEnd := strings.Index(contents[openIdx:], ">")
 	if openEnd == -1 || openIdx+openEnd > closeIdx {
-		return contents, 0
+		return contents
 	}
 	openEndIdx := openIdx + openEnd
 
@@ -59,8 +59,7 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (string, int)
 	sb.WriteString(pClose)
 	sb.WriteString(contents[closeIdx:]) // from closing tag onward
 
-	added := len(pOpen) + len(pClose)
-	return sb.String(), added
+	return sb.String()
 }
 
 func trimRightSpace(s string) string {

@@ -6,11 +6,11 @@ import (
 	"unicode"
 )
 
-func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, int, int, error) {
+func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the NCX
 	ncxIdentifier, err := getNcxIdentifier(ncxContents)
 	if err != nil {
-		return "", -1, 0, err
+		return "", err
 	}
 
 	// Extract the unique identifier from the OPF
@@ -21,9 +21,8 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, int, int
 	// remove the colon back to the scheme to fix this
 
 	var (
-		indexOfEndTag               = strings.Index(opfContents, metadataEndTag)
-		textUntilEndTag             = opfContents[:indexOfEndTag]
-		lineNumberThatWillBeUpdated = strings.Count(textUntilEndTag, "\n") + 1
+		indexOfEndTag   = strings.Index(opfContents, metadataEndTag)
+		textUntilEndTag = opfContents[:indexOfEndTag]
 	)
 
 	// Scenario 1: No unique identifier in OPF, but present in NCX
@@ -39,24 +38,23 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, int, int
 		}
 
 		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID, previousNewLine)
-		return opfContents, lineNumberThatWillBeUpdated, 1, nil
+		return opfContents, nil
 	}
 
 	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ">"+ncxIdentifier) {
-		var linesAdded int
-		opfContents, linesAdded = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
+		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
 
-		return opfContents, lineNumberThatWillBeUpdated, linesAdded, nil
+		return opfContents, nil
 	}
 
 	// Scenario 3: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ">"+ncxIdentifier) {
 		opfContents = moveOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
-		return opfContents, -1, 0, nil
+		return opfContents, nil
 	}
 
-	return opfContents, -1, 0, nil
+	return opfContents, nil
 }
 
 // getNcxIdentifier extracts the unique identifier from the NCX content.
@@ -190,12 +188,11 @@ func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorT
 }
 
 // addOpfIdentifierAndUpdateExistingOne replaces the unique identifier in the OPF content.
-func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) (string, int) {
+func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) string {
 	var (
 		idAttribute                    = fmt.Sprintf(` id="%s"`, identifierID)
 		updatedOldIdentifierEl         = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
 		format                         strings.Builder
-		linesAdded                     = 1
 		oldIdentifierLeadingWhitespace = getLeadingWhitespace(oldIdentifierEl)
 	)
 
@@ -212,12 +209,11 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	if strings.Contains(updatedOldIdentifierEl, metadataEndTag) {
 		updatedOldIdentifierEl = strings.Replace(updatedOldIdentifierEl, metadataEndTag, "", 1)
 
-		linesAdded++
 		format.WriteString("\n")
 		format.WriteString(getMetadataWhitespaceForNewLine(oldIdentifierLeadingWhitespace) + metadataEndTag)
 	}
 
-	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1), linesAdded
+	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1)
 }
 
 // moveOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX.
