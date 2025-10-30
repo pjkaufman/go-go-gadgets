@@ -54,6 +54,10 @@ var (
 	htmlDuplicateIdsOriginal string
 	//go:embed testdata/rsc-5/duplicate-ids_updated.html
 	htmlDuplicateIdsExpected string
+	//go:embed testdata/rsc-5/missing-image-alt.html
+	htmlMissingImageAltOriginal string
+	//go:embed testdata/rsc-5/missing-image-alt_updated.html
+	htmlMissingImageAltExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -470,6 +474,59 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/Text/prologue.html": htmlDuplicateIdsOriginal,
+		},
+	},
+	`RSC 5: When an image is missing its "alt" attribute, an empty one should be added`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/frontmatter.html": htmlMissingImageAltExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 28,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 28,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/frontmatter.html": htmlMissingImageAltOriginal,
 		},
 	},
 }
