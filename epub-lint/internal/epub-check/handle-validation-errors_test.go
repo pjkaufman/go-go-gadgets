@@ -58,6 +58,10 @@ var (
 	htmlMissingImageAltOriginal string
 	//go:embed testdata/rsc-5/missing-image-alt_updated.html
 	htmlMissingImageAltExpected string
+	//go:embed testdata/rsc-5/fixable-blockquote.html
+	htmlFixableBlockquoteOriginal string
+	//go:embed testdata/rsc-5/fixable-blockquote_updated.html
+	htmlFixableBlockquoteExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -527,6 +531,77 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/Text/frontmatter.html": htmlMissingImageAltOriginal,
+		},
+	},
+	`RSC 5: When a blockquote fails to be parsed, if the blockquote ends in a closing span element, a self-closing tag, or just text, then it should be updated to have a paragraph tag inserted at the start and end`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/content.html": htmlFixableBlockquoteExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 58,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 51,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 60,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 58,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 51,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 60,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/content.html": htmlFixableBlockquoteOriginal,
 		},
 	},
 }

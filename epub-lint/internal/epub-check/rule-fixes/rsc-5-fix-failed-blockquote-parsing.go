@@ -7,7 +7,7 @@ import (
 )
 
 // FixFailedBlockquoteParsing takes a line and column (both 1-based), and
-// file contents, and returns updated contents and a count of added characters.
+// file contents, and returns updated contents
 // It inserts </p> before the ending blockquote element at the given position,
 // and <p> after the opening blockquote element corresponding to that blockquote.
 func FixFailedBlockquoteParsing(line, column int, contents string) string {
