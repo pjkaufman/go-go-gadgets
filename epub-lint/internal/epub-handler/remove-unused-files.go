@@ -15,11 +15,9 @@ func RemoveUnusedFiles(handledFiles []string, zipFiles map[string]*zip.File, man
 			continue
 		}
 
-		if strings.HasSuffix(filePath, "META-INF/container.xml") {
-			continue
-		}
-
-		if hasFilename(filePath, "onix.xml") || hasFilename(filePath, "encryption.xml") {
+		if filePath == "mimetype" || strings.HasSuffix(filePath, "META-INF/container.xml") ||
+			hasFilename(filePath, "onix.xml") || hasFilename(filePath, "encryption.xml") ||
+			strings.HasSuffix(filePath, ".opf") {
 			continue
 		}
 
