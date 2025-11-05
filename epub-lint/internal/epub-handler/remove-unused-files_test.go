@@ -28,7 +28,7 @@ type removeUnusedFilesTestCase struct {
 
 func TestRemoveUnusedFiles(t *testing.T) {
 	tests := map[string]removeUnusedFilesTestCase{
-		"mimetype left alone": {
+		"When dealing with mimetype, it should be left alone": {
 			zipFiles: map[string]*zip.File{
 				"mimetype": nil,
 			},
@@ -36,7 +36,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{},
 		},
-		"META-INF/container.xml left alone": {
+		"When dealing with META-INF/container.xml, it should be left alone": {
 			zipFiles: map[string]*zip.File{
 				"META-INF/container.xml": nil,
 			},
@@ -44,7 +44,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{},
 		},
-		"onix.xml left alone": {
+		"When dealing with an onix.xml, it should be left alone": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/onix.xml": nil,
 			},
@@ -52,7 +52,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{},
 		},
-		"encryption.xml left alone": {
+		"When dealing with an encryption.xml, it should be left alone": {
 			zipFiles: map[string]*zip.File{
 				"META-INF/encryption.xml": nil,
 			},
@@ -60,7 +60,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{},
 		},
-		"file not listed in manifest or removable exts": {
+		"When a file is not listed in the manifest or removable exts, it should be left alone": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/keepme.txt": nil,
 			},
@@ -68,7 +68,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{},
 		},
-		"manifest file should be ignored": {
+		"When a file is in the manifest, it should not be removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/content.xhtml": nil,
 			},
@@ -76,7 +76,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".xhtml"},
 			expectedHandled:   []string{},
 		},
-		".jpg file is removed": {
+		"When `.jpg` is in the file types to remove and a jpg file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/image.jpg": nil,
 			},
@@ -84,7 +84,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpg"},
 			expectedHandled:   []string{"OEBPS/image.jpg"},
 		},
-		".jpeg file is removed": {
+		"When `.jpeg` is in the file types to remove and a jpeg file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/image.jpeg": nil,
 			},
@@ -92,7 +92,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".jpeg"},
 			expectedHandled:   []string{"OEBPS/image.jpeg"},
 		},
-		".png file is removed": {
+		"When `.png` is in the file types to remove and a png file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/image.png": nil,
 			},
@@ -100,7 +100,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".png"},
 			expectedHandled:   []string{"OEBPS/image.png"},
 		},
-		".gif file is removed": {
+		"When `.gif` is in the file types to remove and a gif file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/image.gif": nil,
 			},
@@ -108,7 +108,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".gif"},
 			expectedHandled:   []string{"OEBPS/image.gif"},
 		},
-		".bmp file is removed": {
+		"When `.bmp` is in the file types to remove and a bmp file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/image.bmp": nil,
 			},
@@ -116,7 +116,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".bmp"},
 			expectedHandled:   []string{"OEBPS/image.bmp"},
 		},
-		".js file is removed": {
+		"When `.js` is in the file types to remove and a js file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/script.js": nil,
 			},
@@ -124,7 +124,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".js"},
 			expectedHandled:   []string{"OEBPS/script.js"},
 		},
-		".html file is removed": {
+		"When `.html` is in the file types to remove and an html file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/index.html": nil,
 			},
@@ -132,7 +132,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".html"},
 			expectedHandled:   []string{"OEBPS/index.html"},
 		},
-		".htm file is removed": {
+		"When `.htm` is in the file types to remove and an htm file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/index.htm": nil,
 			},
@@ -140,7 +140,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".htm"},
 			expectedHandled:   []string{"OEBPS/index.htm"},
 		},
-		".xhtml file is removed": {
+		"When `.xhtml` is in the file types to remove and an xhtml file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/content.xhtml": nil,
 			},
@@ -148,7 +148,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".xhtml"},
 			expectedHandled:   []string{"OEBPS/content.xhtml"},
 		},
-		".txt file is removed": {
+		"When `.txt` is in the file types to remove and a txt file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/notes.txt": nil,
 			},
@@ -156,7 +156,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".txt"},
 			expectedHandled:   []string{"OEBPS/notes.txt"},
 		},
-		".css file is removed": {
+		"When `.css` is in the file types to remove and a css file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/style.css": nil,
 			},
@@ -164,7 +164,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".css"},
 			expectedHandled:   []string{"OEBPS/style.css"},
 		},
-		".xml file is removed": {
+		"When `.xml` is in the file types to remove and an xml file is not in the manifest, it is removed": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/data.xml": nil,
 			},
@@ -172,7 +172,7 @@ func TestRemoveUnusedFiles(t *testing.T) {
 			removableFileExts: []string{".xml"},
 			expectedHandled:   []string{"OEBPS/data.xml"},
 		},
-		"complex: manifest files mixed, rights.xml should not be removed, others handled": {
+		"When some files are present in the manifest and others are not, then the proper files should be removed based on the remove file types": {
 			zipFiles: map[string]*zip.File{
 				"OEBPS/test.html":    nil,
 				"OEBPS/keep.xhtml":   nil,
