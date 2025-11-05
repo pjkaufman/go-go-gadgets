@@ -100,7 +100,7 @@ func init() {
 
 	optimizeCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
 	optimizeCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
-	optimizeCmd.Flags().StringVarP(&removableFileTypes, "remove-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
+	optimizeCmd.Flags().StringVarP(&removableFileTypes, "remove-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
 	optimizeCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
 	optimizeCmd.Flags().BoolVarP(&runCompressImages, "compress", "i", false, "whether or not to also compress images which requires imgp to be installed")
 }
@@ -190,22 +190,7 @@ func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFi
 			manifestFiles[filehandler.JoinPath(opfFolder, otherPath)] = struct{}{}
 		}
 
-		for filePath := range zipFiles {
-			if _, exists := manifestFiles[filePath]; exists {
-				continue
-			}
-
-			if hasExt(removableFileExts, filePath) {
-				// label file as handled despite not saving it to the destination
-				handledFiles = append(handledFiles, filePath)
-
-				if verbose {
-					logger.WriteInfof("Removed file %q from the epub since it is not in the manifest.\n", filePath)
-				}
-			}
-		}
-
-		return handledFiles, nil
+		return epubhandler.RemoveUnusedFiles(handledFiles, zipFiles, manifestFiles, removableFileExts, verbose), nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to update epub %q: %s", src, err)
@@ -228,14 +213,4 @@ func ValidateOptimizeFlags(lintDir, lang string) error {
 
 func getFilePath(opfFolder, file string) string {
 	return filehandler.JoinPath(opfFolder, file)
-}
-
-func hasExt(slice []string, file string) bool {
-	for _, item := range slice {
-		if strings.HasSuffix(file, item) {
-			return true
-		}
-	}
-
-	return false
 }
