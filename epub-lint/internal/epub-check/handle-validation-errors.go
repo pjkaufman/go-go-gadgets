@@ -112,7 +112,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				// when that is encountered since it requires keeping track of which files have already been modified
 				// and which ones have not been modified yet
 				if strings.HasSuffix(message.FilePath, ".opf") {
-					nameToUpdatedContents[opfFilename], err = rulefixes.FixManifestAttribute(nameToUpdatedContents[opfFilename], attribute, message.Location.Line-1, elementNameToNumber)
+					fileContent, err = getContentByFileName(opfFilename)
+					if err != nil {
+						return err
+					}
+
+					nameToUpdatedContents[opfFilename], err = rulefixes.FixManifestAttribute(fileContent, attribute, message.Location.Line-1, elementNameToNumber)
 					if err != nil {
 						return err
 					}

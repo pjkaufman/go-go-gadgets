@@ -66,6 +66,10 @@ var (
 	ncxDuplicatePlayOrderOriginal string
 	//go:embed testdata/rsc-5/duplicate-play-order_updated.ncx
 	ncxDuplicatePlayOrderExpected string
+	//go:embed testdata/rsc-5/empty-elements.opf
+	opfEmptyElementsOriginal string
+	//go:embed testdata/rsc-5/empty-elements_updated.opf
+	opfEmptyElementsExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -633,6 +637,68 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
+		},
+	},
+	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed and other lines after it decremented`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfEmptyElementsExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: character content of element "dc:identifier"`,
+					Location: &epubcheck.Position{
+						Line:   7,
+						Column: 36,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: character content of element "dc:creator"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 32,
+					},
+				},
+				{
+					Code:     "RSC-999",
+					FilePath: "OPS/content.opf",
+					Message:  `Some error here..."`,
+					Location: &epubcheck.Position{
+						Line:   50,
+						Column: 35,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-999",
+					FilePath: "OPS/content.opf",
+					Message:  `Some error here..."`,
+					Location: &epubcheck.Position{
+						Line:   48,
+						Column: 35,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfEmptyElementsOriginal,
 		},
 	},
 }
