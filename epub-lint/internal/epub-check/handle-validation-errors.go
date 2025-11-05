@@ -155,7 +155,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					i--
 				}
 			} else if message.Message == invalidPlayOrder {
-				nameToUpdatedContents[ncxFilename] = rulefixes.FixPlayOrder(nameToUpdatedContents[ncxFilename])
+				fileContent, err = getContentByFileName(ncxFilename)
+				if err != nil {
+					return err
+				}
+
+				nameToUpdatedContents[ncxFilename] = rulefixes.FixPlayOrder(fileContent)
 			} else if strings.HasPrefix(message.Message, duplicateIdPrefix) {
 				startIndex := strings.Index(message.Message, duplicateIdPrefix)
 				if startIndex == -1 {

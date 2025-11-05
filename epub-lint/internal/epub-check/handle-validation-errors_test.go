@@ -62,6 +62,10 @@ var (
 	htmlFixableBlockquoteOriginal string
 	//go:embed testdata/rsc-5/fixable-blockquote_updated.html
 	htmlFixableBlockquoteExpected string
+	//go:embed testdata/rsc-5/duplicate-play-order.ncx
+	ncxDuplicatePlayOrderOriginal string
+	//go:embed testdata/rsc-5/duplicate-play-order_updated.ncx
+	ncxDuplicatePlayOrderExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -602,6 +606,33 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/Text/content.html": htmlFixableBlockquoteOriginal,
+		},
+	},
+	`RSC 5: When a play order is found to be identical/incorrect, the play order should be updated to be back in order`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/toc.ncx": ncxDuplicatePlayOrderExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
 		},
 	},
 }
