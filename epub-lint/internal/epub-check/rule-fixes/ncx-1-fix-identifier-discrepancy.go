@@ -20,6 +20,9 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// but there is a scheme specified in both, so they do not match
 	// remove the colon back to the scheme to fix this
 
+	// TODO: update logic to handle the scenario where the NCX does have an id
+	// the OPF does not, but one of the identifiers does indeed have a match to the ncx value
+
 	var (
 		indexOfEndTag   = strings.Index(opfContents, metadataEndTag)
 		textUntilEndTag = opfContents[:indexOfEndTag]

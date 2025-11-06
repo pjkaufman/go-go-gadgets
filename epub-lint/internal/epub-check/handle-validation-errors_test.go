@@ -82,6 +82,18 @@ var (
 	ncxNotFoundLinkOriginal string
 	//go:embed testdata/rsc-12/not-found-link_updated.ncx
 	ncxNotFoundLinkExpected string
+	//go:embed testdata/general/toc.ncx
+	generalNcxOriginal string
+	//go:embed testdata/general/toc_updated.ncx
+	generalNcxExpected string
+	//go:embed testdata/general/file.html
+	generalHtmlOriginal string
+	//go:embed testdata/general/file_updated.html
+	generalHtmlExpected string
+	//go:embed testdata/general/content.opf
+	generalOpfOriginal string
+	//go:embed testdata/general/content_updated.opf
+	generalOpfExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -870,6 +882,284 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/toc.ncx": ncxNotFoundLinkOriginal,
+		},
+	},
+	`When multiple rules are at play across multiple files, the correct updates are made`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/toc.ncx":        generalNcxExpected,
+			"OPS/content.opf":    generalOpfExpected,
+			"OPS/Text/file.html": generalHtmlExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: character content of element "dc:identifier"`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 36,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   78,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 20,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   11,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0002.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   41,
+						Column: 49,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   13,
+						Column: 35,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   45,
+						Column: 27,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 28,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   36,
+						Column: 59,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   18,
+						Column: 90,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   77,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 20,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0002.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   41,
+						Column: 49,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   13,
+						Column: 35,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   45,
+						Column: 27,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 28,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   36,
+						Column: 59,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   18,
+						Column: 90,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/toc.ncx":        generalNcxOriginal,
+			"OPS/content.opf":    generalOpfOriginal,
+			"OPS/Text/file.html": generalHtmlOriginal,
 		},
 	},
 }

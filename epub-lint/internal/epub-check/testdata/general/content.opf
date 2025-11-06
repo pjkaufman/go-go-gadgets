@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="BookId">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dc:title id="title1">Some Title</dc:title>
+    <dc:identifier>calibre:99</dc:identifier>
+    <dc:identifier></dc:identifier>
+    <dc:language>en</dc:language>
+    <dc:date>2024-12-02T00:00:00+00:00</dc:date>
+    <meta name="cover" content="cover"/>
+    <meta content="1.9.30" name="Sigil version"/>
+    <dc:creator opf:role="aut">Some Author</dc:creator>
+    <meta property="dcterms:modified">2025-01-26T03:33:11Z</meta>
+  </metadata>
+  <manifest>
+    <item id="CoverPage_html" href="CoverPage.html" media-type="application/xhtml+xml"/>
+    <item id="2toc" href="section-0001.html" media-type="application/xhtml+xml" properties="scripted svg"/>
+    <item id="section-0002_html" href="section-0002.html" media-type="application/xhtml+xml"/>
+    <item id="section-0003_html" href="section-0003.html" media-type="application/xhtml+xml" properties="scripted svg"/>
+    <item id="section-0004_html" href="section-0004.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0005_html" href="section-0005.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0006_html" href="section-0006.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0007_html" href="section-0007.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0008_html" href="section-0008.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0009_html" href="section-0009.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0010_html" href="section-0010.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0011_html" href="section-0011.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0012_html" href="section-0012.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0013_html" href="section-0013.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0014_html" href="section-0014.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0015_html" href="section-0015.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0016_html" href="section-0016.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0017_html" href="section-0017.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0018_html" href="section-0018.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0019_html" href="section-0019.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0020_html" href="section-0020.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0021_html" href="section-0021.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0022_html" href="section-0022.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0023_html" href="section-0023.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0024_html" href="section-0024.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0025_html" href="section-0025.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0026_html" href="section-0026.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0027_html" href="section-0027.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0028_html" href="section-0028.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0029_html" href="section-0029.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0030_html" href="section-0030.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0031_html" href="section-0031.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0032_html" href="section-0032.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0033_html" href="section-0033.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0034_html" href="section-0034.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0035_html" href="section-0035.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="section-0036_html" href="section-0036.html" media-type="application/xhtml+xml" properties="scripted"/>
+    <item id="navid" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="css-kobo.css" href="../css/kobo.css" media-type="text/css"/>
+    <item id="styles_css" href="styles.css" media-type="text/css"/>
+    <item id="COLORGALLERY_01_jpg" href="COLORGALLERY_01.jpg" media-type="image/jpeg"/>
+    <item id="COLORGALLERY_02_jpg" href="COLORGALLERY_02.jpg" media-type="image/jpeg"/>
+    <item id="COLORGALLERY_03_jpg" href="COLORGALLERY_03.jpg" media-type="image/jpeg"/>
+    <item id="cover" href="CoverDesign.jpg" media-type="image/jpeg" properties="cover-image"/>
+    <item id="FRONTMATTER_01_jpg" href="FRONTMATTER_01.jpg" media-type="image/jpeg"/>
+    <item id="FRONTMATTER_02_jpg" href="FRONTMATTER_02.jpg" media-type="image/jpeg"/>
+    <item id="FRONTMATTER_03_jpg" href="FRONTMATTER_03.jpg" media-type="image/jpeg"/>
+    <item id="FRONTMATTER_04_jpg" href="FRONTMATTER_04.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_01_jpg" href="INTERIORIMAGES_01.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_02_jpg" href="INTERIORIMAGES_02.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_03_jpg" href="INTERIORIMAGES_03.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_04_jpg" href="INTERIORIMAGES_04.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_05_jpg" href="INTERIORIMAGES_05.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_06_jpg" href="INTERIORIMAGES_06.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_07_jpg" href="INTERIORIMAGES_07.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_08_jpg" href="INTERIORIMAGES_08.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_09_jpg" href="INTERIORIMAGES_09.jpg" media-type="image/jpeg"/>
+    <item id="INTERIORIMAGES_10_jpg" href="INTERIORIMAGES_10.jpg" media-type="image/jpeg"/>
+    <item id="js-kobo.js" href="../js/kobo.js" media-type="application/javascript"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="CoverPage_html"/>
+    <itemref idref="2toc"/>
+    <itemref idref="section-0002_html"/>
+    <itemref idref="section-0003_html"/>
+    <itemref idref="section-0004_html"/>
+    <itemref idref="section-0005_html"/>
+    <itemref idref="section-0006_html"/>
+    <itemref idref="section-0007_html"/>
+    <itemref idref="section-0008_html"/>
+    <itemref idref="section-0009_html"/>
+    <itemref idref="section-0010_html"/>
+    <itemref idref="section-0011_html"/>
+    <itemref idref="section-0012_html"/>
+    <itemref idref="section-0013_html"/>
+    <itemref idref="section-0014_html"/>
+    <itemref idref="section-0015_html"/>
+    <itemref idref="section-0016_html"/>
+    <itemref idref="section-0017_html"/>
+    <itemref idref="section-0018_html"/>
+    <itemref idref="section-0019_html"/>
+    <itemref idref="section-0020_html"/>
+    <itemref idref="section-0021_html"/>
+    <itemref idref="section-0022_html"/>
+    <itemref idref="section-0023_html"/>
+    <itemref idref="section-0024_html"/>
+    <itemref idref="section-0025_html"/>
+    <itemref idref="section-0026_html"/>
+    <itemref idref="section-0027_html"/>
+    <itemref idref="section-0028_html"/>
+    <itemref idref="section-0029_html"/>
+    <itemref idref="section-0030_html"/>
+    <itemref idref="section-0031_html"/>
+    <itemref idref="section-0032_html"/>
+    <itemref idref="section-0033_html"/>
+    <itemref idref="section-0034_html"/>
+    <itemref idref="section-0035_html"/>
+    <itemref idref="section-0036_html"/>
+    <itemref idref="navid" linear="no"/>
+  </spine>
+  <guide>
+    <reference type="cover" title="Cover Page" href="CoverPage.html"/>
+    <reference type="toc" title="Table of Contents" href="section-0001.html"/>
+  </guide>
+</package>
