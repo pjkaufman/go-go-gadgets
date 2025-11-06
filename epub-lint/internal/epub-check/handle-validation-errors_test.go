@@ -70,6 +70,10 @@ var (
 	opfEmptyElementsOriginal string
 	//go:embed testdata/rsc-5/empty-elements_updated.opf
 	opfEmptyElementsExpected string
+	//go:embed testdata/rsc-5/invalid-manifest-attribute.opf
+	opfInvalidManifestAttributeOriginal string
+	//go:embed testdata/rsc-5/invalid-manifest-attribute_updated.opf
+	opfInvalidManifestAttributeExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -699,6 +703,59 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfEmptyElementsOriginal,
+		},
+	},
+	`RSC 5: When an OPF manifest element has an invalid property, it should be moved over to a meta attribute that refines it`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfInvalidManifestAttributeExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   11,
+						Column: 31,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   11,
+						Column: 31,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfInvalidManifestAttributeOriginal,
 		},
 	},
 }

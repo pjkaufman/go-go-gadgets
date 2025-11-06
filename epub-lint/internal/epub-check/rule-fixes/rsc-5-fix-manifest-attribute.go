@@ -81,7 +81,6 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 
 	// Join the lines back together
 	updatedOpfContents := strings.Join(lines, "\n")
-	// updatedOpfContents = strings.Replace(updatedOpfContents, closingMetadataTag, metaTag+"\n"+closingMetadataTag, 1)
 
 	return updatedOpfContents, nil
 }
