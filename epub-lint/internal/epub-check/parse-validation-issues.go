@@ -67,17 +67,11 @@ func ParseEPUBCheckOutput(logContents string) (ValidationErrors, error) {
 			Message:  message,
 		}
 		if strings.HasPrefix(message, duplicateIdPrefix) {
-			startIndex := strings.Index(message, duplicateIdPrefix)
-			if startIndex == -1 {
-				continue
-			}
-			startIndex += len(duplicateIdPrefix)
-			endIndex := strings.Index(message[startIndex:], `"`)
-			if endIndex == -1 {
+			id, foundId := getFirstQuotedValue(message, len(duplicateIdPrefix))
+			if !foundId {
 				continue
 			}
 
-			id := message[startIndex : startIndex+endIndex]
 			if idToError, fileFound := fileToIdToError[filePath]; fileFound {
 				if validationIssue, idFound := idToError[id]; idFound {
 					if validationIssue.Location == nil || (pos != nil && (pos.Line < validationIssue.Location.Line || (pos.Line == validationIssue.Location.Line && pos.Column < validationIssue.Location.Column))) {

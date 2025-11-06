@@ -17,18 +17,11 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 		switch message.Code {
 		case "OPF-014":
-			startIndex := strings.Index(message.Message, `"`)
-			if startIndex == -1 {
+			property, foundPropertyName := getFirstQuotedValue(message.Message, -1)
+			if !foundPropertyName {
 				continue
 			}
 
-			startIndex++
-			endIndex := strings.Index(message.Message[startIndex:], `"`)
-			if endIndex == -1 {
-				continue
-			}
-
-			property := message.Message[startIndex : startIndex+endIndex]
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
@@ -39,18 +32,11 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 		case "OPF-015":
-			startIndex := strings.Index(message.Message, `"`)
-			if startIndex == -1 {
+			property, foundPropertyName := getFirstQuotedValue(message.Message, -1)
+			if !foundPropertyName {
 				continue
 			}
 
-			startIndex++
-			endIndex := strings.Index(message.Message[startIndex:], `"`)
-			if endIndex == -1 {
-				continue
-			}
-
-			property := message.Message[startIndex : startIndex+endIndex]
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
 				return err
@@ -77,17 +63,10 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			}
 		case "RSC-005":
 			if strings.HasPrefix(message.Message, invalidIdPrefix) {
-				startIndex := strings.Index(message.Message, invalidIdPrefix)
-				if startIndex == -1 {
+				attribute, foundAttributeName := getFirstQuotedValue(message.Message, len(invalidIdPrefix))
+				if !foundAttributeName {
 					continue
 				}
-				startIndex += len(invalidIdPrefix)
-				endIndex := strings.Index(message.Message[startIndex:], `"`)
-				if endIndex == -1 {
-					continue
-				}
-
-				attribute := message.Message[startIndex : startIndex+endIndex]
 
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
@@ -96,17 +75,10 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 				nameToUpdatedContents[message.FilePath] = rulefixes.FixXmlIdValue(fileContent, message.Location.Line, attribute)
 			} else if strings.HasPrefix(message.Message, invalidAttribute) {
-				startIndex := strings.Index(message.Message, invalidAttribute)
-				if startIndex == -1 {
+				attribute, foundAttributeName := getFirstQuotedValue(message.Message, len(invalidAttribute))
+				if !foundAttributeName {
 					continue
 				}
-				startIndex += len(invalidAttribute)
-				endIndex := strings.Index(message.Message[startIndex:], `"`)
-				if endIndex == -1 {
-					continue
-				}
-
-				attribute := message.Message[startIndex : startIndex+endIndex]
 
 				// for now we will just fix the values in the opf file and we will handle the other cases separately
 				// when that is encountered since it requires keeping track of which files have already been modified
@@ -123,19 +95,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					}
 				}
 			} else if strings.HasPrefix(message.Message, EmptyMetadataProperty) {
-				startIndex := strings.Index(message.Message, EmptyMetadataProperty)
-				if startIndex == -1 {
-					continue
-				}
-				startIndex += len(EmptyMetadataProperty)
-				endIndex := strings.Index(message.Message[startIndex:], `"`)
-				if endIndex == -1 {
+				elementName, foundElementName := getFirstQuotedValue(message.Message, len(EmptyMetadataProperty))
+				if !foundElementName {
 					continue
 				}
 
-				elementName := message.Message[startIndex : startIndex+endIndex]
-
-				var deletedLine, oneDeleted bool
+				var deletedLine bool
 				// for now we will just fix the values in the opf file and we will handle the other cases separately
 				// when that is encountered since it requires keeping track of which files have already been modified
 				// and which ones have not been modified yet
@@ -152,12 +117,8 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 					if deletedLine {
 						validationErrors.DecrementLineNumbersAndRemoveLineReferences(message.Location.Line, message.FilePath)
-						oneDeleted = true
+						i--
 					}
-				}
-
-				if oneDeleted {
-					i--
 				}
 			} else if message.Message == invalidPlayOrder {
 				fileContent, err = getContentByFileName(ncxFilename)
@@ -167,17 +128,10 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 				nameToUpdatedContents[ncxFilename] = rulefixes.FixPlayOrder(fileContent)
 			} else if strings.HasPrefix(message.Message, duplicateIdPrefix) {
-				startIndex := strings.Index(message.Message, duplicateIdPrefix)
-				if startIndex == -1 {
+				id, foundId := getFirstQuotedValue(message.Message, len(duplicateIdPrefix))
+				if !foundId {
 					continue
 				}
-				startIndex += len(duplicateIdPrefix)
-				endIndex := strings.Index(message.Message[startIndex:], `"`)
-				if endIndex == -1 {
-					continue
-				}
-
-				id := message.Message[startIndex : startIndex+endIndex]
 
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
@@ -201,13 +155,8 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				nameToUpdatedContents[message.FilePath] = rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
 			}
 		case "OPF-030":
-			startIndex := strings.Index(message.Message, missingUniqueIdentifier)
-			if startIndex == -1 {
-				continue
-			}
-			startIndex += len(missingUniqueIdentifier)
-			endIndex := strings.Index(message.Message[startIndex:], `"`)
-			if endIndex == -1 {
+			id, foundId := getFirstQuotedValue(message.Message, len(missingUniqueIdentifier))
+			if !foundId {
 				continue
 			}
 
@@ -216,7 +165,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.FixMissingUniqueIdentifierId(fileContent, message.Message[startIndex:startIndex+endIndex])
+			nameToUpdatedContents[opfFilename], err = rulefixes.FixMissingUniqueIdentifierId(fileContent, id)
 			if err != nil {
 				return err
 			}
@@ -231,4 +180,30 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 	}
 
 	return nil
+}
+
+// getFirstQuotedValue takes in a message and a potential start index
+// if start index is -1 then it will find the first double quote itself
+func getFirstQuotedValue(message string, startIndex int) (string, bool) {
+	if startIndex == -1 {
+		startIndex = strings.Index(message, `"`)
+		if startIndex == -1 {
+			return "", false
+		}
+
+		startIndex++
+	}
+
+	endIndex := strings.Index(message[startIndex:], `"`)
+	if endIndex == -1 {
+		return "", false
+	}
+
+	quotedValue := message[startIndex : startIndex+endIndex]
+	// there is a situation where EPUBCheck returns null as the id when it does not exist
+	if quotedValue == "null" {
+		quotedValue = ""
+	}
+
+	return quotedValue, true
 }
