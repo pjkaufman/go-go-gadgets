@@ -74,6 +74,14 @@ var (
 	opfInvalidManifestAttributeOriginal string
 	//go:embed testdata/rsc-5/invalid-manifest-attribute_updated.opf
 	opfInvalidManifestAttributeExpected string
+	//go:embed testdata/rsc-12/not-found-link.xhtml
+	xhtmlNotFoundLinkOriginal string
+	//go:embed testdata/rsc-12/not-found-link_updated.xhtml
+	xhtmlNotFoundLinkExpected string
+	//go:embed testdata/rsc-12/not-found-link.ncx
+	ncxNotFoundLinkOriginal string
+	//go:embed testdata/rsc-12/not-found-link_updated.ncx
+	ncxNotFoundLinkExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -756,6 +764,112 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfInvalidManifestAttributeOriginal,
+		},
+	},
+	`RSC 12: When a link in an xhtml/html file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.xhtml": xhtmlNotFoundLinkExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   19,
+						Column: 24,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 27,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   19,
+						Column: 24,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 27,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.xhtml": xhtmlNotFoundLinkOriginal,
+		},
+	},
+	`RSC 12: When a link in an ncx file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/toc.ncx": ncxNotFoundLinkExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   35,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   23,
+						Column: 49,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   35,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   23,
+						Column: 49,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/toc.ncx": ncxNotFoundLinkOriginal,
 		},
 	},
 }

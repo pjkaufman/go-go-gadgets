@@ -1,7 +1,7 @@
 .PHONY: test install cover lint bench generate install-termux clean update-deps
 
 # Tool definitions
-TOOLS := epub-lint git-helper song-converter cat-ascii magnum jp-proc versy
+TOOLS := epub-lint song-converter cat-ascii magnum jp-proc versy
 GENERATE_TOOLS := epub-lint jp-proc magnum song-converter
 
 # Enhanced LDFLAGS for size reduction
