@@ -200,6 +200,34 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 <spine></spine>
 </package>`,
 	},
+	"When the OPF file has no unique identifier set, but the NCX id is present as an identifier, set the id for the identifier instead of adding a new identifier": {
+		opfContents: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+<metadata>
+  <dc:title>Example Book</dc:title>
+  <dc:identifier>ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+  <dc:identifier>12345</dc:identifier>
+</metadata>
+<manifest></manifest>
+<spine></spine>
+</package>`,
+		ncxContents: `
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/">
+<head>
+  <meta name="dtb:uid" content="12345" />
+</head>
+</ncx>`,
+		expectedOutput: `
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="MainId">
+<metadata>
+  <dc:title>Example Book</dc:title>
+  <dc:identifier>ef932546-7cf7-4ded-a0ea-5a069fbb8abc</dc:identifier>
+  <dc:identifier id="MainId">12345</dc:identifier>
+</metadata>
+<manifest></manifest>
+<spine></spine>
+</package>`,
+	},
 }
 
 func TestFixIdentifiers(t *testing.T) {

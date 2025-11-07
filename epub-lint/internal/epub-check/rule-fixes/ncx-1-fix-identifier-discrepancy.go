@@ -16,20 +16,24 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the OPF
 	opfIdentifierEl, opfIdentifier, opfIdentifierID := getOpfIdentifier(opfContents)
 
-	// TODO: handle scenario where both of the ids are the same,
-	// but there is a scheme specified in both, so they do not match
-	// remove the colon back to the scheme to fix this
-
 	// TODO: update logic to handle the scenario where the NCX does have an id
 	// the OPF does not, but one of the identifiers does indeed have a match to the ncx value
 
 	var (
-		indexOfEndTag   = strings.Index(opfContents, metadataEndTag)
-		textUntilEndTag = opfContents[:indexOfEndTag]
+		indexOfEndTag    = strings.Index(opfContents, metadataEndTag)
+		textUntilEndTag  = opfContents[:indexOfEndTag]
+		hasNcxIdentifier = strings.Contains(opfContents, ">"+ncxIdentifier+"<")
 	)
 
-	// Scenario 1: No unique identifier in OPF, but present in NCX
 	if opfIdentifier == "" && ncxIdentifier != "" {
+		// Scenario 1: No unique identifier in OPF, but an identifier el exists and matches the NCX id
+		if hasNcxIdentifier {
+			opfContents = moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, "")
+
+			return opfContents, nil
+		}
+
+		// Scenario 2: No unique identifier in OPF, but it is present in NCX
 		var (
 			previousNewLineIndex = strings.LastIndex(textUntilEndTag, "\n")
 			previousNewLine      string
@@ -44,16 +48,16 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 		return opfContents, nil
 	}
 
-	// Scenario 2: Different unique identifier in OPF and NCX and the NCX identifier is not already present
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !strings.Contains(opfContents, ">"+ncxIdentifier) {
+	// Scenario 3: Different unique identifier in OPF and NCX and the NCX identifier is not already present
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !hasNcxIdentifier {
 		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
 
 		return opfContents, nil
 	}
 
-	// Scenario 3: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
-	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && strings.Contains(opfContents, ">"+ncxIdentifier) {
-		opfContents = moveOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
+	// Scenario 4: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
+	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && hasNcxIdentifier {
+		opfContents = moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
 		return opfContents, nil
 	}
 
@@ -219,10 +223,9 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1)
 }
 
-// moveOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX.
-// moveOpfIdentifierID updates the identifier line, adding or replacing the id attribute,
-// and removes the id attribute from the old identifier element.
-func moveOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifierEl string) string {
+// moveOrSetOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX
+// assuming that the oldIdentifierEl is not an empty string. If it is an empty string, it just sets the identifier's id.
+func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifierEl string) string {
 	// Find the line containing the ncxIdentifier
 	ncxIdentifierLineStart := strings.Index(opfContents, ncxIdentifier)
 	if ncxIdentifierLineStart == -1 {
@@ -237,13 +240,16 @@ func moveOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifierEl s
 		lineEnd += ncxIdentifierLineStart
 	}
 
-	var (
-		line                   = opfContents[lineStart:lineEnd]
-		idAttribute            = fmt.Sprintf(` id="%s"`, uniqueId)
-		updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
-	)
+	if oldIdentifierEl != "" {
+		var (
+			idAttribute            = fmt.Sprintf(` id="%s"`, uniqueId)
+			updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
+		)
 
-	opfContents = strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl, 1)
+		opfContents = strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl, 1)
+	}
+
+	var line = opfContents[lineStart:lineEnd]
 
 	// Check if the line already has an id attribute
 	idAttr := ` id="`
