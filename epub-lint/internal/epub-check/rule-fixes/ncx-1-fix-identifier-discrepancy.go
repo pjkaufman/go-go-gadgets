@@ -16,9 +16,6 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
 	// Extract the unique identifier from the OPF
 	opfIdentifierEl, opfIdentifier, opfIdentifierID := getOpfIdentifier(opfContents)
 
-	// TODO: update logic to handle the scenario where the NCX does have an id
-	// the OPF does not, but one of the identifiers does indeed have a match to the ncx value
-
 	var (
 		indexOfEndTag    = strings.Index(opfContents, metadataEndTag)
 		textUntilEndTag  = opfContents[:indexOfEndTag]
