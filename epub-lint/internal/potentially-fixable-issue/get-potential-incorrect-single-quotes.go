@@ -71,6 +71,7 @@ func convertQuotes(input string) (string, bool, error) {
 		insideDoubleQuotes                        = false
 		doubleQuoteCount                          = 0
 		singleQuoteCount                          = 0 // Only counts non-possesive, non-contraction, and non-plural or omission digit single quotes
+		potentialPossesiveCount                   = 0
 		updateMade                                = false
 		checkForSpecialContractionsAndGetNewStart = func(startIndex int) int {
 			var start = startIndex
@@ -117,15 +118,25 @@ func convertQuotes(input string) (string, bool, error) {
 				}
 
 				// for now, we will do this the less performant way
+				var prev rune
 				for i := start; i <= end; i++ {
 					if runes[i] == '\'' {
-						singleQuoteCount++
-
 						if !insideDoubleQuotes {
 							runes[i] = '"'
 							updateMade = true
+						} else {
+							isPrevS := prev == 's'
+							isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
+							isPotentialPossesive := isPrevS && !isNextLetter && (singleQuoteCount-potentialPossesiveCount)%2 == 1
+
+							if isPotentialPossesive {
+								potentialPossesiveCount++
+							}
 						}
+
+						singleQuoteCount++
 					}
+					prev = runes[i]
 				}
 			}
 
@@ -140,19 +151,20 @@ func convertQuotes(input string) (string, bool, error) {
 			insideDoubleQuotes = !insideDoubleQuotes
 			doubleQuoteCount++
 		} else if currentRune == '\'' {
-			isPrevDigit := i > 0 && unicode.IsDigit(runes[i-1])
-			isNextDigit := i < len(runes)-1 && unicode.IsDigit(runes[i+1])
-			isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
-			isNextS := i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
-			isPrevLetter := i > 0 && unicode.IsLetter(runes[i-1])
-			isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
-
-			// is a plural, possesive, or omitted number scenario
-			isDigitScenarios := (isPrevDigit && isNextS) || (!isPrevLetter && isNextDigit)
-			// we will assume that no possesives show up inside a single quote as that gets hairy and is not valid
-			isPossessive := (isPrevS || (isPrevLetter && isNextS)) && singleQuoteCount%2 == 0
-			// handles many names that have single quotes in them as well as many contractions
-			isBetweenLetters := isPrevLetter && isNextLetter
+			var (
+				isPrevDigit  = i > 0 && unicode.IsDigit(runes[i-1])
+				isNextDigit  = i < len(runes)-1 && unicode.IsDigit(runes[i+1])
+				isPrevS      = i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
+				isNextS      = i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
+				isPrevLetter = i > 0 && unicode.IsLetter(runes[i-1])
+				isNextLetter = i < len(runes)-1 && unicode.IsLetter(runes[i+1])
+				// is a plural, possesive, or omitted number scenario
+				isDigitScenarios = (isPrevDigit && isNextS) || (!isPrevLetter && isNextDigit)
+				// we will only handle regular possesives here and let other logic handle the ones in single quotes
+				isPossessive = (isPrevS || (isPrevLetter && isNextS)) && singleQuoteCount%2 == 0
+				// handles many names that have single quotes in them as well as many contractions
+				isBetweenLetters = isPrevLetter && isNextLetter
+			)
 
 			if isPossessive || isDigitScenarios || isBetweenLetters {
 				continue
@@ -162,13 +174,17 @@ func convertQuotes(input string) (string, bool, error) {
 		}
 	}
 
+	// TODO: decide how to handle this without throwing an error and crashing the program
 	// Note: this will fail any time we get into measurements like 6'2" (6 foot and 2 inches)
 	if doubleQuoteCount%2 != 0 {
 		return "", false, fmt.Errorf("unmatched double quotes: found %d double quotes", doubleQuoteCount)
 	}
 
 	if singleQuoteCount%2 != 0 {
-		return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural or omission digit single quotes", singleQuoteCount)
+		var potentialSingleQuoteCount = singleQuoteCount - potentialPossesiveCount
+		if potentialSingleQuoteCount%2 != 0 {
+			return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural or omission digit single quotes", potentialSingleQuoteCount)
+		}
 	}
 
 	return string(runes), updateMade, nil

@@ -94,6 +94,22 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p><strong>"He said 'I'm going to the store', before he left"</strong></p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a simple version of a possesive in a single quote works": {
+		inputText:           `<p><strong>"He said 'Hello there. Boss' work is not done yet.', before he left"</strong></p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure tha a possessive that starts a single quote works": {
+		inputText:           `<p><strong>"He said 'Boss' work is not done yet.', before he left"</strong></p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that multiple possessives in a single quotes works": {
+		inputText:           `<p><strong>"He said 'Boss' blabberers' work is not done yet.', before he left"</strong></p>`,
+		expectedSuggestions: map[string]string{},
+	},
+	"make sure that a single quote that ends with the letter s and has a possesive works": {
+		inputText:           `<p><strong>"He said 'Boss' work is', before he left"</strong></p>`,
+		expectedSuggestions: map[string]string{},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
