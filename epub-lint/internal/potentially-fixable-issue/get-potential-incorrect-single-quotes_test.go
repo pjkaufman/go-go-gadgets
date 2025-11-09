@@ -90,7 +90,7 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p><strong>"Victorique! Are you there? What took you so long? I bet you were reading a thick Latin book again, eating macaroons, saying 'Who's Kujou?'. Hello?"</strong></p>`,
 		expectedSuggestions: map[string]string{},
 	},
-	"When a contraction that includes the word `I` in it starts a quote inside a quote, it should be handled properly": {
+	"make sure that when a contraction that includes the word `I` in it starts a quote inside a quote that it is recognized as a contraction": {
 		inputText:           `<p><strong>"He said 'I'm going to the store', before he left"</strong></p>`,
 		expectedSuggestions: map[string]string{},
 	},
