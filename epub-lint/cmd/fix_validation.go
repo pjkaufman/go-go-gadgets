@@ -132,7 +132,8 @@ var autoFixValidationCmd = &cobra.Command{
 			for filename, updatedContents := range nameToUpdatedContents {
 				handledFiles = append(handledFiles, filename)
 
-				if removeJNovelInfo && (strings.HasSuffix(filename, jnovelsFile) || strings.HasSuffix(filename, jnovelsImage)) {
+				var name = filepath.Base(filename)
+				if removeJNovelInfo && (name == jnovelsFile || name == jnovelsImage) {
 					continue
 				}
 
