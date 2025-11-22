@@ -3,17 +3,14 @@ package rulefixes
 import (
 	"fmt"
 	"strings"
-)
 
-const (
-	manifestStartTag = "<manifest>"
-	manifestEndTag   = "</manifest>"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
 
 func AddPropertyToManifest(opfContents, fileName, property string) (string, error) {
-	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
+	startIndex, endIndex, manifestContent, err := epubhandler.GetManifestContents(opfContents)
 	if err != nil {
 		return "", err
 	}
@@ -37,18 +34,7 @@ func AddPropertyToManifest(opfContents, fileName, property string) (string, erro
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(manifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
+	updatedOpfContents := opfContents[:startIndex+len(epubhandler.ManifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
 
 	return updatedOpfContents, nil
-}
-
-func getManifestContents(opfContents string) (int, int, string, error) {
-	startIndex := strings.Index(opfContents, manifestStartTag)
-	endIndex := strings.Index(opfContents, manifestEndTag)
-
-	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", ErrNoManifest
-	}
-
-	return startIndex, endIndex, opfContents[startIndex+len(manifestStartTag) : endIndex], nil
 }

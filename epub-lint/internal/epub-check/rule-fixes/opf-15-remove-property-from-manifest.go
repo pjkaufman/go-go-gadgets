@@ -3,10 +3,12 @@ package rulefixes
 import (
 	"fmt"
 	"strings"
+
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 func RemovePropertyFromManifest(opfContents, fileName, property string) (string, error) {
-	startIndex, endIndex, manifestContent, err := getManifestContents(opfContents)
+	startIndex, endIndex, manifestContent, err := epubhandler.GetManifestContents(opfContents)
 	if err != nil {
 		return "", err
 	}
@@ -40,7 +42,7 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (string,
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(manifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
+	updatedOpfContents := opfContents[:startIndex+len(epubhandler.ManifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
 
 	return updatedOpfContents, nil
 }
