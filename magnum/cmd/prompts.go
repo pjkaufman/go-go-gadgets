@@ -25,8 +25,8 @@ func selectBookName(series []config.SeriesInfo, includeCompleted bool) string {
 		Items: seriesNames,
 		Searcher: func(input string, index int) bool {
 			seriesName := seriesNames[index]
-			name := strings.Replace(strings.ToLower(seriesName), " ", "", -1)
-			input = strings.Replace(strings.ToLower(input), " ", "", -1)
+			name := strings.ReplaceAll(strings.ToLower(seriesName), " ", "")
+			input = strings.ReplaceAll(strings.ToLower(input), " ", "")
 
 			return strings.Contains(name, input)
 		},

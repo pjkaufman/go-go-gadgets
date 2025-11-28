@@ -184,12 +184,12 @@ func init() {
 	contentCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
 	err := contentCmd.MarkFlagRequired("file")
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as required on fixable command: %v\n`, err)
+		logger.WriteErrorf(`failed to mark flag "file" as required on fix content command: %v\n`, err)
 	}
 
 	err = contentCmd.MarkFlagFilename("file", "epub")
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on fixable command: %v\n`, err)
+		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on fix content command: %v\n`, err)
 	}
 }
 
