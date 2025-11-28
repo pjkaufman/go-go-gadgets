@@ -3,20 +3,13 @@ package cmd
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
-	"os"
-	"sort"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	tea "github.com/charmbracelet/bubbletea"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/ui"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue/fixer"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
-	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 	"github.com/spf13/cobra"
 )
 
@@ -150,18 +143,80 @@ var contentCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
+		var handler fixer.Fixer
 		if useTui {
-			err = runTuiEpubFixable()
+			handler = &fixer.TuiFixer{}
 		} else {
-			err = runCliEpubFixable()
+			handler = &fixer.CliFixer{}
+		}
 
+		var initialLog = handler.InitialLog()
+		if initialLog != "" {
+			logger.WriteInfo(initialLog)
+		}
+
+		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
+			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 			if err != nil {
-				logger.WriteInfo("\nFinished showing manually fixable issues...")
+				return nil, err
+			}
+
+			err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
+			if err != nil {
+				return nil, err
+			}
+
+			var cssFiles = make([]string, 0, len(epubInfo.CssFiles))
+			for cssFile := range epubInfo.CssFiles {
+				cssFiles = append(cssFiles, cssFile)
+			}
+
+			var skipCss = runAll && len(cssFiles) == 0
+			if (runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
+				return nil, ErrNoCssFiles
+			}
+
+			handler.Init(&epubInfo, runAll, skipCss, runSectionBreak, potentiallyFixableIssues, cssFiles, logFile, opfFolder, func(fileName string) (string, error) {
+				zipFile := zipFiles[fileName]
+
+				fileText, err := filehandler.ReadInZipFileContents(zipFile)
+				if err != nil {
+					return "", err
+				}
+
+				return fileText, nil
+			}, func(fileName, content string) error {
+				err = filehandler.WriteZipCompressedString(w, fileName, content)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			})
+
+			err = handler.Setup()
+			if err != nil {
+				return nil, err
+			}
+
+			err = handler.Run()
+			if err != nil {
+				return nil, err
+			}
+
+			return handler.HandleCss()
+		})
+
+		if err != nil {
+			successLog := handler.SuccessfulLog()
+
+			if successLog != "" {
+				logger.WriteInfo(successLog)
 			}
 		}
 
 		if err != nil {
-			logger.WriteErrorf("failed to fix manually fixable issues for %q: %s", epubFile, err)
+			logger.WriteErrorf("failed to fix manually fixable content issues for %q: %s", epubFile, err)
 		}
 	},
 }
@@ -204,313 +259,4 @@ func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSe
 	}
 
 	return nil
-}
-
-func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]string, fileText string, replaceAllInstances bool) (string, bool, bool) {
-	var valueReplaced = false
-	var newText = fileText
-
-	if len(suggestions) == 0 {
-		return newText, valueReplaced, false
-	}
-
-	// replace count was added to make sure that if we have a case where the original and suggested value
-	// may exist more than once in a file we want to go ahead and replace all instances of the original
-	// with the suggested
-	var replaceCount = 1
-	if replaceAllInstances {
-		replaceCount = -1
-	}
-
-	logger.WriteInfo(cliLineSeparator)
-	logger.WriteInfo(suggestionsTitle + ":")
-	logger.WriteInfo(cliLineSeparator + "\n")
-
-	for original, suggestion := range suggestions {
-		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		// Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
-		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", diffString))
-		switch strings.ToLower(resp) {
-		case "y":
-			newText = strings.Replace(newText, original, suggestion, replaceCount)
-			valueReplaced = true
-		case "q":
-			return newText, valueReplaced, true
-		}
-
-		logger.WriteInfo("")
-	}
-
-	return newText, valueReplaced, false
-}
-
-func handleCssChangesCli(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder string, cssFiles []string, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) ([]string, error) {
-	if !addCssSectionIfMissing && !addCssPageIfMissing {
-		return handledFiles, nil
-	}
-
-	var cssSelectionPrompt = "Please enter the number of the css file to append the css to:\n"
-	for i, file := range cssFiles {
-		cssSelectionPrompt += fmt.Sprintf("%d. %s\n", i, file)
-	}
-
-	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt)
-	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(cssFiles) {
-		return nil, fmt.Errorf("please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
-	}
-
-	return updateCssFile(addCssSectionIfMissing, addCssPageIfMissing, filehandler.JoinPath(opfFolder, cssFiles[selectedCssFileIndex]), contextBreak, zipFiles, w, handledFiles)
-}
-
-func handleCssChangesTui(addCssSectionIfMissing, addCssPageIfMissing bool, opfFolder, selectedCssFile, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) ([]string, error) {
-	if !addCssSectionIfMissing && !addCssPageIfMissing {
-		return handledFiles, nil
-	}
-
-	if strings.TrimSpace(selectedCssFile) == "" {
-		return nil, fmt.Errorf("please select a valid css file instead of %q.\n", selectedCssFile)
-	}
-
-	return updateCssFile(addCssSectionIfMissing, addCssPageIfMissing, filehandler.JoinPath(opfFolder, selectedCssFile), contextBreak, zipFiles, w, handledFiles)
-}
-
-func updateCssFile(addCssSectionIfMissing, addCssPageIfMissing bool, selectedCssFile, contextBreak string, zipFiles map[string]*zip.File, w *zip.Writer, handledFiles []string) ([]string, error) {
-	zipFile := zipFiles[selectedCssFile]
-	css, err := filehandler.ReadInZipFileContents(zipFile)
-	if err != nil {
-		return nil, err
-	}
-
-	var newCssText = css
-	if addCssSectionIfMissing {
-		newCssText = potentiallyfixableissue.AddCssSectionBreakIfMissing(newCssText, contextBreak)
-	}
-
-	if addCssPageIfMissing {
-		newCssText = potentiallyfixableissue.AddCssPageBreakIfMissing(newCssText)
-	}
-
-	if newCssText == css {
-		return handledFiles, nil
-	}
-
-	err = filehandler.WriteZipCompressedString(w, selectedCssFile, newCssText)
-	if err != nil {
-		return nil, err
-	}
-
-	return append(handledFiles, selectedCssFile), nil
-}
-
-func runTuiEpubFixable() error {
-	return epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
-		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
-		if err != nil {
-			return nil, err
-		}
-
-		err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
-		if err != nil {
-			return nil, err
-		}
-
-		var cssFiles = make([]string, 0, len(epubInfo.CssFiles))
-		for cssFile := range epubInfo.CssFiles {
-			cssFiles = append(cssFiles, cssFile)
-		}
-
-		var skipCss = runAll && len(cssFiles) == 0
-		if (runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-			return nil, ErrNoCssFiles
-		}
-
-		var file *os.File
-		if strings.TrimSpace(logFile) != "" {
-			file, err = tea.LogToFile(logFile, "debug")
-			if err != nil {
-				return nil, fmt.Errorf("failed to create TUI log file %q: %w", logFile, err)
-			}
-
-			defer file.Close()
-		}
-
-		var (
-			initialModel = ui.NewFixableIssuesModel(runAll, skipCss, runSectionBreak, potentiallyFixableIssues, cssFiles, file, &contextBreak)
-			i            = 0
-		)
-		initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(epubInfo.HtmlFiles))
-
-		var numFixableIssues = len(potentiallyFixableIssues)
-		// Collect file contents
-		for file := range epubInfo.HtmlFiles {
-			var filePath = getFilePath(opfFolder, file)
-			zipFile := zipFiles[filePath]
-
-			fileText, err := filehandler.ReadInZipFileContents(zipFile)
-			if err != nil {
-				return nil, err
-			}
-
-			initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
-				Name:        filePath,
-				Text:        linter.CleanupHtmlSpacing(fileText),
-				Suggestions: make([][]ui.SuggestionState, numFixableIssues),
-			}
-
-			i++
-		}
-
-		sort.Slice(initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData, func(i, j int) bool {
-			return initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i].Name < initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[j].Name
-		})
-
-		p := tea.NewProgram(&initialModel, tea.WithAltScreen())
-		finalModel, err := p.Run()
-		if err != nil {
-			return nil, err
-		}
-
-		model := finalModel.(ui.FixableIssuesModel)
-		if model.Err != nil {
-			if errors.Is(model.Err, ui.ErrUserKilledProgram) {
-				logger.WriteInfo("Quitting. User exited the program...")
-				os.Exit(0)
-			}
-
-			return nil, model.Err
-		}
-
-		var handledFiles []string
-		// Process and write updated files
-		for _, fileData := range model.PotentiallyFixableIssuesInfo.FileSuggestionData {
-			err = filehandler.WriteZipCompressedString(w, fileData.Name, fileData.Text)
-			if err != nil {
-				return nil, err
-			}
-			handledFiles = append(handledFiles, fileData.Name)
-		}
-
-		return handleCssChangesTui(model.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing, model.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing, opfFolder, model.CssSelectionInfo.SelectedCssFile, contextBreak, zipFiles, w, handledFiles)
-	})
-}
-
-func runCliEpubFixable() error {
-	logger.WriteInfo("Started showing manually fixable issues...\n")
-
-	return epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
-		err := validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
-		if err != nil {
-			return nil, err
-		}
-
-		err = validateFilesExist(opfFolder, epubInfo.CssFiles, zipFiles)
-		if err != nil {
-			return nil, err
-		}
-
-		var (
-			handledFiles                                []string
-			addCssSectionIfMissing, addCssPageIfMissing bool
-		)
-
-		var cssFiles = make([]string, len(epubInfo.CssFiles))
-		var i = 0
-		for cssFile := range epubInfo.CssFiles {
-			cssFiles[i] = cssFile
-			i++
-		}
-
-		var skipCss = runAll && len(cssFiles) == 0
-		if (runSectionBreak || runPageBreak) && len(cssFiles) == 0 {
-			return nil, ErrNoCssFiles
-		}
-
-		if !skipCss && (runAll || runSectionBreak) {
-			contextBreak = logger.GetInputString("What is the section break for the epub?:")
-
-			if strings.TrimSpace(contextBreak) == "" {
-				return nil, fmt.Errorf("please provide a non-whitespace section break")
-			}
-
-			/**
-			TODO: handle the scenario where the section break is an image
-
-			Image Context Breaks
-			To use an image:
-
-			In the CSS:
-			hr.image {
-			display:block;
-			background: transparent url("images/sectionBreakImage.png") no-repeat center;
-			height:2em;
-			border:0;
-			}
-
-			In the HTML:
-			<hr class="image" />
-			**/
-		}
-
-		var saveAndQuit = false
-		for file := range epubInfo.HtmlFiles {
-			if saveAndQuit {
-				break
-			}
-
-			var filePath = getFilePath(opfFolder, file)
-			zipFile := zipFiles[filePath]
-
-			fileText, err := filehandler.ReadInZipFileContents(zipFile)
-			if err != nil {
-				return nil, err
-			}
-
-			var newText = linter.CleanupHtmlSpacing(fileText)
-
-			for _, potentiallyFixableIssue := range potentiallyFixableIssues {
-				if saveAndQuit {
-					break
-				}
-
-				if skipCss && (potentiallyFixableIssue.AddCssPageBreakIfMissing || potentiallyFixableIssue.AddCssSectionBreakIfMissing) {
-					continue
-				}
-
-				if potentiallyFixableIssue.IsEnabled == nil {
-					return nil, fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.Name)
-				}
-
-				if runAll || *potentiallyFixableIssue.IsEnabled {
-					suggestions, err := potentiallyFixableIssue.GetSuggestions(newText)
-					if err != nil {
-						return nil, err
-					}
-
-					var updateMade bool
-					newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
-
-					if potentiallyFixableIssue.AddCssSectionBreakIfMissing && updateMade {
-						addCssSectionIfMissing = addCssSectionIfMissing || updateMade
-					}
-
-					if potentiallyFixableIssue.AddCssPageBreakIfMissing && updateMade {
-						addCssPageIfMissing = addCssPageIfMissing || updateMade
-					}
-				}
-			}
-
-			err = filehandler.WriteZipCompressedString(w, filePath, newText)
-			if err != nil {
-				return nil, err
-			}
-
-			handledFiles = append(handledFiles, filePath)
-		}
-
-		return handleCssChangesCli(addCssSectionIfMissing, addCssPageIfMissing, opfFolder, cssFiles, contextBreak, zipFiles, w, handledFiles)
-	})
 }

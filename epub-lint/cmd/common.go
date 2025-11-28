@@ -7,9 +7,7 @@ import (
 	"strings"
 )
 
-const (
-	cliLineSeparator = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-)
+const cliLineSeparator = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
 var (
 	ErrEpubPathArgEmpty   = errors.New("epub-file must have a non-whitespace value")

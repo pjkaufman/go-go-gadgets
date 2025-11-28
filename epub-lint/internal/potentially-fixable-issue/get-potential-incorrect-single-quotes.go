@@ -174,16 +174,17 @@ func convertQuotes(input string) (string, bool, error) {
 		}
 	}
 
-	// TODO: decide how to handle this without throwing an error and crashing the program
 	// Note: this will fail any time we get into measurements like 6'2" (6 foot and 2 inches)
 	if doubleQuoteCount%2 != 0 {
-		return "", false, fmt.Errorf("unmatched double quotes: found %d double quotes", doubleQuoteCount)
+		runes = append(runes, '"')
+		updateMade = true
 	}
 
 	if singleQuoteCount%2 != 0 {
 		var potentialSingleQuoteCount = singleQuoteCount - potentialPossesiveCount
 		if potentialSingleQuoteCount%2 != 0 {
-			return "", false, fmt.Errorf("unmatched single quotes: found %d non-contraction, non-possesive, non-plural or omission digit single quotes", potentialSingleQuoteCount)
+			runes = append(runes, '\'')
+			updateMade = true
 		}
 	}
 
