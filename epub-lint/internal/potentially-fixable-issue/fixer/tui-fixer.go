@@ -26,7 +26,7 @@ type TuiFixer struct {
 	logFile                                     string
 	opfFolder                                   string
 	selectedCssFile                             string
-	contextBreak                                string
+	contextBreak                                *string
 	runAll, skipCss, runSectionBreak            bool
 	addCssSectionIfMissing, addCssPageIfMissing bool
 }
@@ -41,7 +41,7 @@ func (t *TuiFixer) SuccessfulLog() string {
 	return ""
 }
 
-func (t *TuiFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, getFile FileGetter, writeFile FileWriter) {
+func (t *TuiFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, contextBreak *string, getFile FileGetter, writeFile FileWriter) {
 	t.epubInfo = epubInfo
 	t.runAll = runAll
 	t.skipCss = skipCss
@@ -52,6 +52,7 @@ func (t *TuiFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSect
 	t.opfFolder = opfFolder
 	t.getFile = getFile
 	t.writeFile = writeFile
+	t.contextBreak = contextBreak
 }
 
 func (t *TuiFixer) Setup() error {
@@ -65,7 +66,7 @@ func (t *TuiFixer) Setup() error {
 		defer file.Close()
 	}
 
-	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, file, &t.contextBreak)
+	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, file, t.contextBreak)
 	var i = 0
 
 	t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(t.epubInfo.HtmlFiles))
@@ -112,10 +113,9 @@ func (t *TuiFixer) Run() error {
 		return model.Err
 	}
 
-	// TODO: can this be done in a way that is handled by both  CLI and TUI?
 	t.handledFiles = make([]string, len(model.PotentiallyFixableIssuesInfo.FileSuggestionData))
 	for _, fileData := range model.PotentiallyFixableIssuesInfo.FileSuggestionData {
-		t.writeFile(fileData.Name, fileData.Text)
+		err = t.writeFile(fileData.Name, fileData.Text)
 		if err != nil {
 			return err
 		}
@@ -139,5 +139,5 @@ func (t *TuiFixer) HandleCss() ([]string, error) {
 		return nil, fmt.Errorf("please select a valid css file instead of %q.\n", t.selectedCssFile)
 	}
 
-	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.selectedCssFile), t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
+	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.selectedCssFile), *t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
 }

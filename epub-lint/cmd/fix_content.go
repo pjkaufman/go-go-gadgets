@@ -176,7 +176,7 @@ var contentCmd = &cobra.Command{
 				return nil, ErrNoCssFiles
 			}
 
-			handler.Init(&epubInfo, runAll, skipCss, runSectionBreak, potentiallyFixableIssues, cssFiles, logFile, opfFolder, func(fileName string) (string, error) {
+			handler.Init(&epubInfo, runAll, skipCss, runSectionBreak, potentiallyFixableIssues, cssFiles, logFile, opfFolder, &contextBreak, func(fileName string) (string, error) {
 				zipFile := zipFiles[fileName]
 
 				fileText, err := filehandler.ReadInZipFileContents(zipFile)

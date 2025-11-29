@@ -7,7 +7,7 @@ import (
 
 type Fixer interface {
 	InitialLog() string
-	Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, getFile FileGetter, writeFile FileWriter)
+	Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, contextBreak *string, getFile FileGetter, writeFile FileWriter)
 	Setup() error
 	Run() error
 	HandleCss() ([]string, error)

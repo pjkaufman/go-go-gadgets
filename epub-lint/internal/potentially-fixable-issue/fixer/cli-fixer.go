@@ -21,7 +21,7 @@ type CliFixer struct {
 	writeFile                                   FileWriter
 	cssFiles, handledFiles                      []string
 	opfFolder                                   string
-	contextBreak                                string
+	contextBreak                                *string
 	runAll, skipCss, runSectionBreak            bool
 	addCssSectionIfMissing, addCssPageIfMissing bool
 }
@@ -34,7 +34,7 @@ func (t *CliFixer) SuccessfulLog() string {
 	return "\nFinished showing manually fixable issues..."
 }
 
-func (t *CliFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, getFile FileGetter, writeFile FileWriter) {
+func (t *CliFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, contextBreak *string, getFile FileGetter, writeFile FileWriter) {
 	t.epubInfo = epubInfo
 	t.runAll = runAll
 	t.skipCss = skipCss
@@ -44,13 +44,14 @@ func (t *CliFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSect
 	t.opfFolder = opfFolder
 	t.getFile = getFile
 	t.writeFile = writeFile
+	t.contextBreak = contextBreak
 }
 
 func (t *CliFixer) Setup() error {
 	if !t.skipCss && (t.runAll || t.runSectionBreak) {
-		t.contextBreak = logger.GetInputString("What is the section break for the epub?:")
+		*t.contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
-		if strings.TrimSpace(t.contextBreak) == "" {
+		if strings.TrimSpace(*t.contextBreak) == "" {
 			return fmt.Errorf("please provide a non-whitespace section break")
 		}
 
@@ -149,7 +150,7 @@ func (t *CliFixer) HandleCss() ([]string, error) {
 		return nil, fmt.Errorf("please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
 	}
 
-	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.cssFiles[selectedCssFileIndex]), t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
+	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.cssFiles[selectedCssFileIndex]), *t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
 }
 
 func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]string, fileText string, replaceAllInstances bool) (string, bool, bool) {
