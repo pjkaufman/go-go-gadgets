@@ -26,32 +26,32 @@ type CliFixer struct {
 	addCssSectionIfMissing, addCssPageIfMissing bool
 }
 
-func (t *CliFixer) InitialLog() string {
+func (c *CliFixer) InitialLog() string {
 	return "Started showing manually fixable issues...\n"
 }
 
-func (t *CliFixer) SuccessfulLog() string {
+func (c *CliFixer) SuccessfulLog() string {
 	return "\nFinished showing manually fixable issues..."
 }
 
-func (t *CliFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, contextBreak *string, getFile FileGetter, writeFile FileWriter) {
-	t.epubInfo = epubInfo
-	t.runAll = runAll
-	t.skipCss = skipCss
-	t.runSectionBreak = runSectionBreak
-	t.potentiallyFixableIssues = potentiallyFixableIssues
-	t.cssFiles = cssFiles
-	t.opfFolder = opfFolder
-	t.getFile = getFile
-	t.writeFile = writeFile
-	t.contextBreak = contextBreak
+func (c *CliFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile, opfFolder string, contextBreak *string, getFile FileGetter, writeFile FileWriter) {
+	c.epubInfo = epubInfo
+	c.runAll = runAll
+	c.skipCss = skipCss
+	c.runSectionBreak = runSectionBreak
+	c.potentiallyFixableIssues = potentiallyFixableIssues
+	c.cssFiles = cssFiles
+	c.opfFolder = opfFolder
+	c.getFile = getFile
+	c.writeFile = writeFile
+	c.contextBreak = contextBreak
 }
 
-func (t *CliFixer) Setup() error {
-	if !t.skipCss && (t.runAll || t.runSectionBreak) {
-		*t.contextBreak = logger.GetInputString("What is the section break for the epub?:")
+func (c *CliFixer) Setup() error {
+	if !c.skipCss && (c.runAll || c.runSectionBreak) {
+		*c.contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
-		if strings.TrimSpace(*t.contextBreak) == "" {
+		if strings.TrimSpace(*c.contextBreak) == "" {
 			return fmt.Errorf("please provide a non-whitespace section break")
 		}
 
@@ -77,27 +77,27 @@ func (t *CliFixer) Setup() error {
 	return nil
 }
 
-func (t *CliFixer) Run() error {
+func (c *CliFixer) Run() error {
 	var saveAndQuit = false
-	for file := range t.epubInfo.HtmlFiles {
+	for file := range c.epubInfo.HtmlFiles {
 		if saveAndQuit {
 			break
 		}
 
-		var filePath = getFilePath(t.opfFolder, file)
-		fileText, err := t.getFile(filePath)
+		var filePath = getFilePath(c.opfFolder, file)
+		fileText, err := c.getFile(filePath)
 		if err != nil {
 			return err
 		}
 
 		var newText = linter.CleanupHtmlSpacing(fileText)
 
-		for _, potentiallyFixableIssue := range t.potentiallyFixableIssues {
+		for _, potentiallyFixableIssue := range c.potentiallyFixableIssues {
 			if saveAndQuit {
 				break
 			}
 
-			if t.skipCss && (potentiallyFixableIssue.AddCssPageBreakIfMissing || potentiallyFixableIssue.AddCssSectionBreakIfMissing) {
+			if c.skipCss && (potentiallyFixableIssue.AddCssPageBreakIfMissing || potentiallyFixableIssue.AddCssSectionBreakIfMissing) {
 				continue
 			}
 
@@ -105,7 +105,7 @@ func (t *CliFixer) Run() error {
 				return fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.Name)
 			}
 
-			if t.runAll || *potentiallyFixableIssue.IsEnabled {
+			if c.runAll || *potentiallyFixableIssue.IsEnabled {
 				suggestions, err := potentiallyFixableIssue.GetSuggestions(newText)
 				if err != nil {
 					return err
@@ -115,42 +115,42 @@ func (t *CliFixer) Run() error {
 				newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
 
 				if potentiallyFixableIssue.AddCssSectionBreakIfMissing && updateMade {
-					t.addCssSectionIfMissing = t.addCssSectionIfMissing || updateMade
+					c.addCssSectionIfMissing = c.addCssSectionIfMissing || updateMade
 				}
 
 				if potentiallyFixableIssue.AddCssPageBreakIfMissing && updateMade {
-					t.addCssPageIfMissing = t.addCssPageIfMissing || updateMade
+					c.addCssPageIfMissing = c.addCssPageIfMissing || updateMade
 				}
 			}
 		}
 
-		err = t.writeFile(filePath, newText)
+		err = c.writeFile(filePath, newText)
 		if err != nil {
 			return err
 		}
 
-		t.handledFiles = append(t.handledFiles, filePath)
+		c.handledFiles = append(c.handledFiles, filePath)
 	}
 
 	return nil
 }
 
-func (t *CliFixer) HandleCss() ([]string, error) {
-	if !t.addCssSectionIfMissing && !t.addCssPageIfMissing {
-		return t.handledFiles, nil
+func (c *CliFixer) HandleCss() ([]string, error) {
+	if !c.addCssSectionIfMissing && !c.addCssPageIfMissing {
+		return c.handledFiles, nil
 	}
 
 	var cssSelectionPrompt = "Please enter the number of the css file to append the css to:\n"
-	for i, file := range t.cssFiles {
+	for i, file := range c.cssFiles {
 		cssSelectionPrompt += fmt.Sprintf("%d. %s\n", i, file)
 	}
 
 	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt)
-	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(t.cssFiles) {
+	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(c.cssFiles) {
 		return nil, fmt.Errorf("please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
 	}
 
-	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.cssFiles[selectedCssFileIndex]), *t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
+	return updateCssFile(c.addCssSectionIfMissing, c.addCssPageIfMissing, filehandler.JoinPath(c.opfFolder, c.cssFiles[selectedCssFileIndex]), *c.contextBreak, c.handledFiles, c.getFile, c.writeFile)
 }
 
 func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]string, fileText string, replaceAllInstances bool) (string, bool, bool) {
