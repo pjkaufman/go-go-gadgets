@@ -53,6 +53,14 @@ var (
 				SeriesName: "How a Realist Hero Rebuilt the Kingdom",
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
+						Name:        "How a Realist Hero Rebuilt the Kingdom: Short Story Chronicles",
+						ReleaseDate: sitehandler.TimePtr(time.Date(2026, time.June, 4, 0, 0, 0, 0, time.Local)),
+					},
+					{
+						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 20",
+						ReleaseDate: sitehandler.TimePtr(time.Date(2025, time.December, 29, 0, 0, 0, 0, time.Local)),
+					},
+					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 19",
 						ReleaseDate: sitehandler.TimePtr(time.Date(2025, time.March, 24, 0, 0, 0, 0, time.Local)),
 					},
@@ -129,7 +137,7 @@ var (
 						ReleaseDate: sitehandler.TimePtr(time.Date(2017, time.February, 23, 0, 0, 0, 0, time.Local)),
 					},
 				},
-				ExpectedCount: 19,
+				ExpectedCount: 21,
 			},
 		},
 		Endpoints: []sitehandler.MockedEndpoint{

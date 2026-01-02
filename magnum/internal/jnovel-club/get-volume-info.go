@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
@@ -21,14 +23,41 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 
 	var firstErr error
 	var jsonVolumeInfo JSONVolumeInfo
-	j.scrapper.OnHTML("#__NEXT_DATA__", func(e *colly.HTMLElement) {
-		err := json.Unmarshal([]byte(e.Text), &jsonVolumeInfo)
-		if err != nil {
-			firstErr = fmt.Errorf("failed to deserialize json %q to volume info: %w", e.Text, err)
-			e.Request.Abort()
+	j.scrapper.OnHTML("script", func(e *colly.HTMLElement) {
+		if strings.Contains(e.Text, "publishing") {
+			// this is a bit brittle, but seems to get the job done.
+			// it parses out the JSON object, then unquotes the logic since it is now JS instead of JSON
+			var jsonText = e.Text[strings.Index(e.Text, "{"):]
+			jsonText, _ = strings.CutSuffix(jsonText, "]\\n\"])")
 
-			return
+			var err error
+			jsonText, err = strconv.Unquote("\"" + jsonText + "\"")
+			if err != nil {
+				firstErr = fmt.Errorf("failed to unquote JS to get it into proper JSON %q to volume info: %w", jsonText, err)
+				e.Request.Abort()
+
+				return
+			}
+
+			err = json.Unmarshal([]byte(jsonText), &jsonVolumeInfo)
+			if err != nil {
+				firstErr = fmt.Errorf("failed to deserialize json %q to volume info: %w", jsonText, err)
+				e.Request.Abort()
+
+				return
+			}
+
+			fmt.Println("After:")
+			spew.Dump(jsonVolumeInfo)
 		}
+
+		// err := json.Unmarshal([]byte(e.Text), &jsonVolumeInfo)
+		// if err != nil {
+		// 	firstErr = fmt.Errorf("failed to deserialize json %q to volume info: %w", e.Text, err)
+		// 	e.Request.Abort()
+
+		// 	return
+		// }
 	})
 
 	var seriesURL = j.options.BaseURL + seriesPath + seriesSlug
@@ -41,9 +70,9 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 		return nil, -1, firstErr
 	}
 
-	var numVolumes = len(jsonVolumeInfo.Props.PageProps.Aggregate.Volumes)
+	var numVolumes = len(jsonVolumeInfo.Volumes)
 	var volumes = make([]*sitehandler.VolumeInfo, numVolumes)
-	for i, volume := range jsonVolumeInfo.Props.PageProps.Aggregate.Volumes {
+	for i, volume := range jsonVolumeInfo.Volumes {
 		// no release data is present, but this should not happen
 		if volume.Volume.Publishing.Seconds == "" {
 			return nil, -1, fmt.Errorf("failed to get volume info properly for series %q as there is no publishing data", seriesName)
