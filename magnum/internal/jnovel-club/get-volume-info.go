@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gocolly/colly/v2"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
@@ -46,18 +45,7 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 
 				return
 			}
-
-			fmt.Println("After:")
-			spew.Dump(jsonVolumeInfo)
 		}
-
-		// err := json.Unmarshal([]byte(e.Text), &jsonVolumeInfo)
-		// if err != nil {
-		// 	firstErr = fmt.Errorf("failed to deserialize json %q to volume info: %w", e.Text, err)
-		// 	e.Request.Abort()
-
-		// 	return
-		// }
 	})
 
 	var seriesURL = j.options.BaseURL + seriesPath + seriesSlug
