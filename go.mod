@@ -1,8 +1,8 @@
 module github.com/pjkaufman/go-go-gadgets
 
-go 1.23.0
+go 1.24.1
 
-toolchain go1.23.4
+toolchain go1.24.12
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
@@ -26,6 +26,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/image v0.28.0
+	golang.org/x/net v0.41.0
 )
 
 require (
@@ -69,7 +70,6 @@ require (
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
