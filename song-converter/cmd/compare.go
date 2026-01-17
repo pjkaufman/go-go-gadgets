@@ -30,7 +30,7 @@ const (
 
 // CompareCmd represents the Compare command
 var CompareCmd = &cobra.Command{
-	Use:   "compares",
+	Use:   "compare",
 	Short: "Compares the provided HTML and PDF file to see if there are any potentially meaningful difference like linebreaks and whitespace differences",
 	// Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
 	// song-converter  -d working-dir -c cover.md -o songs.html
@@ -119,6 +119,9 @@ func ValidateCompareHtmlFlags(htmlFilePath, pdfFilePath string) error {
 
 // Extract visible lines from HTML (treat <p>, <br>, <div>, <li> as new lines)
 func extractTextLinesFromHTML(source string) []string {
+	// the parser only recognizes <br>, so make sure that is the only line break present
+	source = strings.ReplaceAll(source, "<br/>", "<br>")
+
 	var (
 		lines            []string
 		inMetadataDiv    bool
@@ -193,7 +196,7 @@ func extractTextLinesFromHTML(source string) []string {
 
 				inMetadataDiv = true
 				metadataDivDepth = 1
-			} else if inMetadataDiv {
+			} else if inMetadataDiv && tag == "div" {
 				metadataDivDepth++
 			} else if !inMetadataDiv && (tag == "br" || tag == "div" || tag == "li" || tag == "p") {
 				s := collapseWhitespace(lineBuf.String())
@@ -201,6 +204,10 @@ func extractTextLinesFromHTML(source string) []string {
 					lines = append(lines, s)
 				}
 				lineBuf.Reset()
+
+				if len(lines) == 3059 {
+					lineBuf.Reset()
+				}
 			}
 
 		case html.EndTagToken:
