@@ -64,7 +64,7 @@ var BuildHtmlSongsTestCases = map[string]BuildHtmlSongsTestCase{
 func TestBuildHtmlSongs(t *testing.T) {
 	for name, args := range BuildHtmlSongsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, actualSongIds, err := converter.BuildHtmlSongs(args.InputMdInfo)
+			actual, actualSongIds, err := converter.BuildHtmlSongs(args.InputMdInfo, converter.Digital)
 			if args.ExpectError {
 				assert.NotNil(t, err)
 			} else {
@@ -79,6 +79,6 @@ func TestBuildHtmlSongs(t *testing.T) {
 
 func BenchmarkBuildHtmlSongs(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		converter.BuildHtmlSongs(multipleFileMdInfo)
+		converter.BuildHtmlSongs(multipleFileMdInfo, converter.Digital)
 	}
 }

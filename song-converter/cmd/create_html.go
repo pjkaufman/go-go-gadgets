@@ -42,17 +42,18 @@ var (
 	coverOutputFile    string
 	coverInputFilePath string
 	versionDescriptor  string
+	location           string
 )
 
 // CreateHtmlCmd represents the CreateSongs command
 var CreateHtmlCmd = &cobra.Command{
-	Use:   "create-html",
+	Use:   "html",
 	Short: "Converts the cover and all Markdown files in the specified folder into html in alphabetical order generating three sections: the cover, table of contents, and songs",
 	Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
-	song-converter create-html -d working-dir -c cover.md -o songs.html
+	song-converter create html -d working-dir -c cover.md -o songs.html
 
 	To write the output of converting the files in the specified folder to html to std out:
-	song-converter create-html -d working-dir -s cover.md
+	song-converter create html -d working-dir -s cover.md
 	`),
 	Long: heredoc.Doc(`How it works:
 	- Reads in all of the files in the specified folder
@@ -86,7 +87,7 @@ var CreateHtmlCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		coverHtml := converter.BuildHtmlCover(coverMd, versionDescriptor, time.Now())
+		coverHtml := converter.BuildHtmlCover(coverMd, versionDescriptor, "", time.Now())
 
 		if isWritingToFile {
 			logger.WriteInfo("Finished creating html cover file")
@@ -119,7 +120,7 @@ var CreateHtmlCmd = &cobra.Command{
 			}
 		}
 
-		songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo)
+		songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converter.Digital)
 		if err != nil {
 			logger.WriteError(err.Error())
 		}
@@ -133,7 +134,7 @@ var CreateHtmlCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(CreateHtmlCmd)
+	createCmd.AddCommand(CreateHtmlCmd)
 
 	CreateHtmlCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := CreateHtmlCmd.MarkFlagRequired("working-dir")

@@ -18,13 +18,13 @@ var (
 
 // createCsvCmd represents the createCsv command
 var createCsvCmd = &cobra.Command{
-	Use:   "create-csv",
+	Use:   "csv",
 	Short: `Creates a "|" delimited csv file that includes metadata about songs like whether they are in the church or copyrighted`,
 	Example: heredoc.Doc(`To write the output of converting the files in the specified folder into a csv format to a file:
-	song-converter create-csv -d working-dir -o churchSongs.csv
+	song-converter create csv -d working-dir -o churchSongs.csv
 
 	To write the output of converting the files in the specified folder into a csv format to std out:
-	song-converter create-csv -d working-dir
+	song-converter create csv -d working-dir
 	`),
 	Long: heredoc.Doc(`How it works:
 	- Reads in all of the files in the specified folder.
@@ -85,7 +85,7 @@ var createCsvCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(createCsvCmd)
+	createCmd.AddCommand(createCsvCmd)
 
 	createCsvCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
 	err := createCsvCmd.MarkFlagRequired("working-dir")

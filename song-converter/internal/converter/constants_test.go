@@ -30,7 +30,7 @@ ZW= Zelma Wanagas
 non returns*
 
 *\*Punctuation alters the alphabetical order*`
-	coverFileHtmlFormat = `<div style="text-align: center">
+	coverFileHtmlFormat = `<div style="text-align: center%s">
 <h1 id="church-songs-e-version-%s">Church Songs - E Version %s</h1>
 <p>Date: %s
 <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/> <br/></p>

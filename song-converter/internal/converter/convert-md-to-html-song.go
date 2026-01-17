@@ -20,27 +20,44 @@ type SongMetadata struct {
 	Copyright      string `yaml:"copyright"`
 }
 
+type SongGenerationType int
+
+const (
+	Digital SongGenerationType = iota
+	Book
+)
+
 const (
 	emptyColumnContent = "&nbsp;&nbsp;&nbsp;&nbsp;"
 	closeMetadata      = "</div><br>"
 	maxAuthorSize      = 36
+	maxBookKeySize     = 16
+	maxBookVerseSize   = 16
+	smallBookKeySize   = 5
 )
 
 var commonOrPotentialIssueFixer = strings.NewReplacer("\u00a0\u00a0\n", "<br>\n", "\\&", "&", "\n\n", "\n")
 
-func ConvertMdToHtmlSong(filePath, fileContents string) (string, error) {
+func ConvertMdToHtmlSong(filePath, fileContents string, songType SongGenerationType, isLastOnPage bool) (string, error) {
 	var metadata SongMetadata
 	mdContent, err := parseFrontmatter(filePath, fileContents, &metadata)
 	if err != nil {
 		return "", err
 	}
 
-	var metadataHtml = buildMetadataDiv(&metadata)
-	html := mdToHTML([]byte(mdContent))
+	var (
+		extraClass   = ""
+		metadataHtml = buildDigitalMetadataDiv(&metadata, songType)
+		html         = mdToHTML([]byte(mdContent))
+	)
 	html = replaceOtherTitle(html)
 	html = strings.Replace(html, "</h1>\n", "</h1>\n"+metadataHtml, 1)
 
-	return fmt.Sprintf("<div class=\"keep-together\">\n%s</div>\n<br>", commonOrPotentialIssueFixer.Replace(html)), nil
+	if songType == Book && isLastOnPage {
+		extraClass = " end-page"
+	}
+
+	return fmt.Sprintf("<div class=\"keep-together%s\">\n%s</div>\n<br>", extraClass, commonOrPotentialIssueFixer.Replace(html)), nil
 }
 
 func mdToHTML(md []byte) string {
@@ -57,7 +74,7 @@ func mdToHTML(md []byte) string {
 	return string(markdown.Render(doc, renderer))
 }
 
-func buildMetadataDiv(metadata *SongMetadata) string {
+func buildDigitalMetadataDiv(metadata *SongMetadata, songType SongGenerationType) string {
 	if metadata == nil {
 		return ""
 	}
@@ -67,10 +84,18 @@ func buildMetadataDiv(metadata *SongMetadata) string {
 	var row2 = 0
 
 	metadataCount, row2 = updateCountsIfMetatdataExists(metadata.Melody, metadataCount, row2)
-	metadataCount, row2 = updateCountsIfMetatdataExists(metadata.VerseReference, metadataCount, row2)
+	if songType == Digital {
+		metadataCount, row2 = updateCountsIfMetatdataExists(metadata.VerseReference, metadataCount, row2)
+	}
+
 	metadataCount, row1 = updateCountsIfMetatdataExists(metadata.Authors, metadataCount, row1)
+	if songType == Book {
+		metadataCount, row1 = updateCountsIfMetatdataExists(metadata.VerseReference, metadataCount, row1)
+	}
 	metadataCount, row1 = updateCountsIfMetatdataExists(metadata.SongKey, metadataCount, row1)
-	metadataCount, row1 = updateCountsIfMetatdataExists(metadata.BookLocation, metadataCount, row1)
+	if songType == Digital {
+		metadataCount, row1 = updateCountsIfMetatdataExists(metadata.BookLocation, metadataCount, row1)
+	}
 
 	if metadataCount == 0 {
 		return ""
@@ -117,8 +142,26 @@ func buildMetadataDiv(metadata *SongMetadata) string {
 			addRegularRowEntry(metadata.Authors, authorClass)
 		}
 
-		addBoldRowEntry(metadata.SongKey, "key")
-		addRegularRowEntry(metadata.BookLocation, "location")
+		var (
+			verseClass = "verse"
+			keyClass   = "key"
+		)
+		if songType == Book {
+			if metadata.VerseReference == "" && len(metadata.SongKey) > maxBookKeySize {
+				verseClass = "verse-5"
+				keyClass = "key-45"
+			} else if len(metadata.VerseReference) > maxBookVerseSize && len(metadata.SongKey) <= smallBookKeySize {
+				verseClass = "verse-40"
+				keyClass = "key-10"
+			}
+
+			addRegularRowEntry(metadata.VerseReference, verseClass)
+		}
+
+		addBoldRowEntry(metadata.SongKey, keyClass)
+		if songType == Digital {
+			addRegularRowEntry(metadata.BookLocation, "location")
+		}
 
 		metadataHtml.WriteString("</div>")
 	}
@@ -134,7 +177,10 @@ func buildMetadataDiv(metadata *SongMetadata) string {
 		addBoldRowEntry(metadata.Melody, "melody-75")
 	} else {
 		addBoldRowEntry(metadata.Melody, "melody")
-		addRegularRowEntry(metadata.VerseReference, "verse")
+
+		if songType == Digital {
+			addRegularRowEntry(metadata.VerseReference, "verse")
+		}
 	}
 
 	metadataHtml.WriteString("</div>")

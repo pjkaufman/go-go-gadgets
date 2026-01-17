@@ -317,7 +317,6 @@ func detectMeaningfulLineDifferences(pdfLines, htmlLines []string) {
 		}
 
 		// TODO: decide if the below is how I want the mismatch handled, but for now it should do
-
 		// If none of the above, log as a mismatch
 		logger.WriteInfof("[Line Mismatch]: Line %d does not match:\n  HTML: %q\n  PDF:  %q\n", i+1, htmlLine, pdfLine)
 		pdfIdx++

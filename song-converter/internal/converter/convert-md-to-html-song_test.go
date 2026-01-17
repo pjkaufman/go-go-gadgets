@@ -41,7 +41,7 @@ var ConvertMdToHtmlSongTestCases = map[string]ConvertMdToHtmlSongTestCase{
 func TestConvertMdToHtmlSong(t *testing.T) {
 	for name, args := range ConvertMdToHtmlSongTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := converter.ConvertMdToHtmlSong(args.InputFilePath, args.InputContent)
+			actual, err := converter.ConvertMdToHtmlSong(args.InputFilePath, args.InputContent, converter.Digital, false)
 			assert.Nil(t, err, "there should be no errors when parsing the song contents for the UTs")
 
 			assert.Equal(t, args.ExpectedHtml, actual)

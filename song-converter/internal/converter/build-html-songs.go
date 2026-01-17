@@ -9,17 +9,52 @@ type MdFileInfo struct {
 	FilePath     string
 	FileName     string
 	FileContents string
+	// book generation properties
+	Header      string
+	PageNumbers []int
 }
 
-func BuildHtmlSongs(mdInfo []MdFileInfo) (string, []string, error) {
+func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, []string, error) {
 	html := strings.Builder{}
 	html.Grow(estimateCapacity(mdInfo)) // Pre-allocate capacity
 
-	headerIdMap := make(map[string]int, len(mdInfo))
-	headerIds := make([]string, len(mdInfo))
+	var (
+		headerIdMap     = make(map[string]int, len(mdInfo))
+		pageNumberIndex = make(map[string]int)
+		headerIds       = make([]string, len(mdInfo))
+		pageNumber      int
+		isLastOnPage    bool
+	)
 
 	for i, mdData := range mdInfo {
-		fileContentInHtml, err := ConvertMdToHtmlSong(mdData.FilePath, mdData.FileContents)
+		if songType == Book {
+			if val, ok := pageNumberIndex[mdData.FileName]; ok {
+				pageNumber = mdData.PageNumbers[val]
+			} else {
+				pageNumber = mdData.PageNumbers[0]
+				pageNumberIndex[mdData.FileName] = 1
+			}
+
+			var nextMdData *MdFileInfo
+			if i+1 < len(mdInfo) {
+				nextMdData = &mdInfo[i+1]
+			}
+
+			nextPageNumber := 0
+			if nextMdData != nil {
+				if val, ok := pageNumberIndex[nextMdData.FileName]; ok {
+					nextPageNumber = nextMdData.PageNumbers[val]
+				} else {
+					nextPageNumber = mdData.PageNumbers[0]
+				}
+
+			}
+
+			// this is not needed for the last page, so we will use this for all pages except that one
+			isLastOnPage = nextMdData != nil && pageNumber != nextPageNumber
+		}
+
+		fileContentInHtml, err := ConvertMdToHtmlSong(mdData.FilePath, mdData.FileContents, songType, isLastOnPage)
 		if err != nil {
 			return "", nil, err
 		}
