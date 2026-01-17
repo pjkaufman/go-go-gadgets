@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -32,13 +33,13 @@ const (
 // CompareCmd represents the Compare command
 var CompareCmd = &cobra.Command{
 	Use:   "compare",
-	Short: "Compares the provided HTML and PDF file to see if there are any potentially meaningful difference like linebreaks and whitespace differences",
-	// Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
-	// song-converter  -d working-dir -c cover.md -o songs.html
+	Short: "Compares the provided html and pdf file to see if there are any potentially meaningful difference like linebreaks and whitespace differences",
+	Example: heredoc.Doc(`To compare a pdf and its html source:
+	song-converter compare -s songs.html -f songs.pdf
 
-	// To write the output of converting the files in the specified folder to html to std out:
-	// song-converter create-html -d working-dir -s cover.md
-	// `),
+	To compare a pdf and its html source where the first several lines of text are meant to be the heading on a single line:
+	song-converter compare -s songs.html -f songs.pdf --join-lines 4
+	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateCompareHtmlFlags(htmlFile, pdfFile)
 		if err != nil {
