@@ -17,6 +17,7 @@ import (
 
 var (
 	pdfFile, htmlFile string
+	numJoinLines      int
 	wsCollapse        = regexp.MustCompile(`\s+`)
 	tocCollapse       = regexp.MustCompile(`(.+?)  +(\d+)$`) // finds toc page numbers
 )
@@ -54,7 +55,7 @@ var CompareCmd = &cobra.Command{
 			logger.WriteError(err.Error())
 		}
 
-		pdfLines, err := pdfToTextCleaned(pdfFile, 3)
+		pdfLines, err := pdfToTextCleaned(pdfFile, numJoinLines)
 		if err != nil {
 			log.Fatalf("PDF extraction error: %v", err)
 		}
@@ -95,6 +96,8 @@ func init() {
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"file\" as a looking for specific file types on compare command: %v\n", err)
 	}
+
+	CompareCmd.Flags().IntVarP(&numJoinLines, "join-lines", "", 0, "the number of lines at the start of the pdf to join together to help make the html and pdf content as similar as possible")
 }
 
 func ValidateCompareHtmlFlags(htmlFilePath, pdfFilePath string) error {
@@ -204,10 +207,6 @@ func extractTextLinesFromHTML(source string) []string {
 					lines = append(lines, s)
 				}
 				lineBuf.Reset()
-
-				if len(lines) == 3059 {
-					lineBuf.Reset()
-				}
 			}
 
 		case html.EndTagToken:
@@ -356,7 +355,7 @@ func pdfToTextCleaned(pdfPath string, combineN int) ([]string, error) {
 			continue // skip page numbers
 		}
 
-		if len(line) > 4 && strings.HasPrefix(line, "     ") { // 5+ spaces
+		if len(line) > 3 && strings.HasPrefix(line, "    ") { // 4+ spaces
 			line = wsCollapse.ReplaceAllString(line, " ")
 		}
 
