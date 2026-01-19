@@ -7,14 +7,10 @@ import (
 )
 
 const (
-	spineStartTag   = "<spine"
-	spineEndTag     = "</spine>"
 	hrefAttribute   = "href="
 	itemStartTag    = "<item"
 	itemRefStartTag = "<itemref"
 )
-
-var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
 
 func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	startIndex, endIndex, manifestContent, err := GetManifestContents(opfContents)
@@ -23,9 +19,7 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	}
 
 	lines := strings.Split(manifestContent, "\n")
-	var (
-		fileIDs []string
-	)
+	var fileID string
 
 	for i, line := range lines {
 		// find each item in the line and check if the href is the one you are looking for
@@ -87,93 +81,30 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 				continue
 			}
 
-			var fileID = extractID(itemEl)
-			if fileID != "" {
-				fileIDs = append(fileIDs, fileID)
-			}
-
+			fileID = ExtractID(itemEl)
 			line = strings.Replace(line, itemEl, "", 1)
 
 			if strings.TrimSpace(line) == "" {
 				lines = slices.Delete(lines, i, i+1)
-				break
+			} else {
+				lines[i] = line
 			}
 
-			lines[i] = line
-			lineSubset = lineSubset[endOfItem:]
+			break
 		}
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
 	updatedOpfContents := opfContents[:startIndex+len(ManifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
 
-	if len(fileIDs) == 0 {
+	if fileID == "" {
 		return updatedOpfContents, nil
 	}
 
-	startIndex, endIndex, spineContent, err := getSpineContents(updatedOpfContents)
-	if err != nil {
-		return "", err
-	}
-
-	lines = strings.Split(spineContent, "\n")
-	for _, fileID := range fileIDs {
-		var idRef = fmt.Sprintf(`idref="%s"`, fileID)
-
-		for i, line := range lines {
-			if strings.Contains(line, idRef) {
-				// start iterating all idref els
-				var (
-					found       = false
-					lineSubset  = line
-					startOfItem int
-				)
-				for startOfItem != -1 {
-					startOfItem = strings.Index(lineSubset, itemRefStartTag)
-					if startOfItem == -1 {
-						break
-					}
-
-					// for now we will assume the itemrefs are self-closing
-					var endOfItem = strings.Index(lineSubset, "/>")
-					if endOfItem == -1 {
-						return "", fmt.Errorf("failed to parse itemref out of line contents %q due to missing %q", lineSubset, "/>")
-					}
-
-					var (
-						endOfItemRef = endOfItem + 2
-						itemrefEl    = lineSubset[startOfItem:endOfItemRef]
-					)
-					if strings.Contains(itemrefEl, idRef) {
-						line = strings.Replace(line, itemrefEl, "", 1)
-
-						if strings.TrimSpace(line) == "" {
-							lines = slices.Delete(lines, i, i+1)
-						} else {
-							lines[i] = line
-						}
-
-						found = true
-						break
-					}
-
-					lineSubset = lineSubset[endOfItemRef:]
-				}
-
-				if found {
-					break
-				}
-			}
-		}
-	}
-
-	updatedSpineContent := strings.Join(lines, "\n")
-	updatedOpfContents = updatedOpfContents[:startIndex+len(spineStartTag)] + updatedSpineContent + updatedOpfContents[endIndex:]
-
-	return updatedOpfContents, nil
+	return RemoveIdFromSpine(updatedOpfContents, fileID)
 }
 
-func extractID(line string) string {
+func ExtractID(line string) string {
 	const idAttr = `id="`
 	startIndex := strings.Index(line, idAttr)
 	if startIndex == -1 {
@@ -187,15 +118,4 @@ func extractID(line string) string {
 	}
 
 	return line[startIndex : startIndex+endIndex]
-}
-
-func getSpineContents(opfContents string) (int, int, string, error) {
-	startIndex := strings.Index(opfContents, spineStartTag)
-	endIndex := strings.Index(opfContents, spineEndTag)
-
-	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", ErrNoSpine
-	}
-
-	return startIndex, endIndex, opfContents[startIndex+len(spineStartTag) : endIndex], nil
 }

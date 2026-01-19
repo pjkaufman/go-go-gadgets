@@ -46,6 +46,16 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if err != nil {
 				return err
 			}
+		case "OPF-074":
+			fileContent, err = getContentByFileName(opfFilename)
+			if err != nil {
+				return err
+			}
+
+			nameToUpdatedContents[opfFilename], err = rulefixes.RemoveDuplicateManifestEntry(message.Location.Line, message.Location.Column, fileContent)
+			if err != nil {
+				return err
+			}
 		case "NCX-001":
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
