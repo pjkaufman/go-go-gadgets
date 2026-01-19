@@ -17,7 +17,6 @@ require (
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
 	github.com/fatih/color v1.18.0
-	github.com/godbus/dbus/v5 v5.1.0
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/liut/jpegquality v0.0.0-20240710065817-3f50304d6fdd
 	github.com/manifoldco/promptui v0.9.0
