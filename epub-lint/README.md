@@ -91,6 +91,7 @@ epub-lint fix content -f test.epub -oxford-commas --thoughts --necessary-words
 Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
 - OPF-014: add scripted to the list of values in the properties attribute on the manifest item
 - OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
+- OPF-074: remove duplicate manifest entries
 - NCX-001: fix discrepancy in identifier between the OPF and NCX files
 - OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 - RSC-005: seems to be a catch all error id, but the following are handled around it
