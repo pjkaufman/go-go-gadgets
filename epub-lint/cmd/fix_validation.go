@@ -138,7 +138,7 @@ var autoFixValidationCmd = &cobra.Command{
 						continue
 					}
 
-					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], filename)
+					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], name)
 					if err != nil {
 						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
 					}
