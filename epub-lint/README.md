@@ -102,6 +102,7 @@ Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix is
 	- Update duplicate ids to no longer be duplicates
 	- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
 	- Add an empty alt attribute to img elements that are missing them
+	- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
 - RSC-012: try to fix broken links by removing the id link in the href attribute
 
 

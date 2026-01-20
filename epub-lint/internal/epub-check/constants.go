@@ -9,4 +9,5 @@ const (
 	duplicateIdPrefix       = "Error while parsing file: Duplicate ID \""
 	invalidBlockquote       = "Error while parsing file: element \"blockquote\" incomplete;"
 	missingImgAlt           = "Error while parsing file: element \"img\" missing required attribute \"alt\""
+	unexpectedSectionEl     = "Error while parsing file: element \"section\" not allowed here"
 )

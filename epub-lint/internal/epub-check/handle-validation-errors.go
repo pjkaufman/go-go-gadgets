@@ -163,6 +163,13 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				}
 
 				nameToUpdatedContents[message.FilePath] = rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
+			} else if strings.HasPrefix(message.Message, unexpectedSectionEl) {
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
+				}
+
+				nameToUpdatedContents[message.FilePath] = rulefixes.FixSectionElementUnexpected(message.Location.Line, message.Location.Column, fileContent)
 			}
 		case "OPF-030":
 			id, foundId := getFirstQuotedValue(message.Message, len(missingUniqueIdentifier))
