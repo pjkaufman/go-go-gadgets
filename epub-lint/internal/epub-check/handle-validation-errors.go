@@ -1,6 +1,8 @@
 package epubcheck
 
 import (
+	"fmt"
+	"sort"
 	"strings"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
@@ -11,6 +13,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 		err                         error
 		fileContent, ncxFileContent string
 		elementNameToNumber         = make(map[string]int)
+		fileToChanges               = make(map[string]rulefixes.TextDocumentEdit)
 	)
 	for i := 0; i < len(validationErrors.ValidationIssues); i++ {
 		message := validationErrors.ValidationIssues[i]
@@ -148,7 +151,18 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				nameToUpdatedContents[message.FilePath] = rulefixes.UpdateDuplicateIds(fileContent, id)
+				updates := rulefixes.UpdateDuplicateIds(fileContent, id)
+				if len(updates) != 0 {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    updates,
+						}
+					}
+				}
 			} else if strings.HasPrefix(message.Message, invalidBlockquote) {
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
@@ -192,11 +206,59 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[message.FilePath] = rulefixes.RemoveLinkId(fileContent, message.Location.Line-1, message.Location.Column-1)
+			update := rulefixes.RemoveLinkId(fileContent, message.Location.Line, message.Location.Column)
+			if update.Range.Start.Column != 0 && update.Range.Start.Line != 0 {
+				if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, update)
+					fileToChanges[message.FilePath] = existingUpdates
+				} else {
+					fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+						FilePath: message.FilePath,
+						Edits:    []rulefixes.TextEdit{update},
+					}
+				}
+			}
 		}
 	}
 
+	var updatedContents string
+	for filePath, documentEdit := range fileToChanges {
+		updatedContents, err = applyEdits(filePath, documentEdit.Edits, getContentByFileName)
+		if err != nil {
+			return err
+		}
+
+		nameToUpdatedContents[filePath] = updatedContents
+	}
+
 	return nil
+}
+
+func applyEdits(filePath string, edits []rulefixes.TextEdit, getContentByFileName func(string) (string, error)) (string, error) {
+	sort.Slice(edits, func(i, j int) bool {
+		if edits[i].Range.Start.Line != edits[j].Range.Start.Line {
+			return edits[i].Range.Start.Line != edits[j].Range.Start.Line
+		}
+
+		return edits[i].Range.Start.Column != edits[j].Range.Start.Column
+	})
+
+	content, err := getContentByFileName(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	for _, e := range edits {
+		startOffset := rulefixes.GetPositionOffset(content, e.Range.Start.Line, e.Range.Start.Column)
+		endOffset := rulefixes.GetPositionOffset(content, e.Range.End.Line, e.Range.End.Column)
+		if startOffset < 0 || endOffset < startOffset {
+			return "", fmt.Errorf("failed to update %q due to invalid range of %d to %d", filePath, startOffset, endOffset)
+		}
+
+		content = content[:startOffset] + e.NewText + content[endOffset:]
+	}
+
+	return content, nil
 }
 
 // getFirstQuotedValue takes in a message and a potential start index

@@ -7,7 +7,7 @@ import (
 )
 
 func RemoveDuplicateManifestEntry(line, column int, opfContents string) (string, error) {
-	offset := getColumnOffset(opfContents, line, column)
+	offset := GetPositionOffset(opfContents, line, column)
 	if offset == -1 {
 		return opfContents, nil
 	}

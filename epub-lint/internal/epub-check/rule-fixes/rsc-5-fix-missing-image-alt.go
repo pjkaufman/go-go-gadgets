@@ -6,7 +6,7 @@ func FixMissingImageAlt(line, column int, contents string) string {
 	}
 
 	// column is the index of the `>` in `/>`
-	offset := getColumnOffset(contents, line, column)
+	offset := GetPositionOffset(contents, line, column)
 	if offset == -1 {
 		return contents
 	}

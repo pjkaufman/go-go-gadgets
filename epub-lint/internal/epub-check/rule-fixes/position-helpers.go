@@ -42,6 +42,62 @@ func getColumnFromIndex(contents string, line, index int) int {
 	return col + 1 // Columns are 1-based
 }
 
+func indexToPosition(contents string, index int) Position {
+	if index < 0 {
+		return Position{Line: 1, Column: 1}
+	}
+
+	// Early clamp to avoid unnecessary work
+	if index >= len(contents) {
+		// Place at the very end (after last character of last line)
+		lines := strings.Split(contents, "\n")
+		if len(lines) == 0 {
+			return Position{Line: 1, Column: 1}
+		}
+
+		lastLine := lines[len(lines)-1]
+
+		return Position{
+			Line:   len(lines),
+			Column: utf8.RuneCountInString(lastLine) + 1,
+		}
+	}
+
+	line := 1
+	bytePos := 0
+	colByteStart := 0
+
+	for i := 0; i < len(contents); {
+		if contents[i] == '\n' {
+			line++
+			colByteStart = i + 1
+			i++
+			continue
+		}
+
+		// We found the rune that contains or is after the target index
+		if bytePos <= index && index < bytePos+utf8.RuneLen(rune(contents[i])) {
+			// Column = number of runes from start of line up to (but not including) this rune + 1
+			lineContent := contents[colByteStart:index]
+			col := utf8.RuneCountInString(lineContent) + 1
+			return Position{Line: line, Column: col}
+		}
+
+		size := utf8.RuneLen(rune(contents[i]))
+		if size == 0 { // should not happen with valid UTF-8
+			size = 1
+		}
+		bytePos += size
+		i += size
+	}
+
+	// index == len(contents) case — end of file
+	lineContent := contents[colByteStart:]
+	col := utf8.RuneCountInString(lineContent) + 1
+
+	return Position{Line: line, Column: col}
+}
+
 func getColumnForLine(line string, index int) int {
 	if index > len(line) {
 		index = len(line)
@@ -61,7 +117,7 @@ func getColumnForLine(line string, index int) int {
 	return col + 1 // Columns are 1-based, like your other function
 }
 
-func getColumnOffset(contents string, line, column int) int {
+func GetPositionOffset(contents string, line, column int) int {
 	lines := strings.Split(contents, "\n")
 	if line > len(lines) {
 		return -1

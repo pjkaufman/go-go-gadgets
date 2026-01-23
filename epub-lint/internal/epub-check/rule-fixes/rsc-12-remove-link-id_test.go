@@ -42,11 +42,11 @@ line3`,
 				Range: rulefixes.Range{
 					Start: rulefixes.Position{
 						Line:   2,
-						Column: 15,
+						Column: 14,
 					},
 					End: rulefixes.Position{
 						Line:   2,
-						Column: 18,
+						Column: 17,
 					},
 				},
 			},
@@ -80,11 +80,11 @@ line3`,
 				Range: rulefixes.Range{
 					Start: rulefixes.Position{
 						Line:   2,
-						Column: 20,
+						Column: 19,
 					},
 					End: rulefixes.Position{
 						Line:   2,
-						Column: 23,
+						Column: 22,
 					},
 				},
 			},

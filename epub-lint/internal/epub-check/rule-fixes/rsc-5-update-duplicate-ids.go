@@ -2,41 +2,50 @@ package rulefixes
 
 import (
 	"fmt"
-	"regexp"
+	"sort"
 	"strings"
 )
 
 // UpdateDuplicateIds finds and renames duplicate IDs in file contents.
-// Returns the modified contents.
-func UpdateDuplicateIds(contents, id string) string {
-	// Pattern: id="id" or id='id'
-	idPattern := fmt.Sprintf(`id=([\'"])%s[\'"]`, regexp.QuoteMeta(id))
-	re := regexp.MustCompile(idPattern)
+func UpdateDuplicateIds(contents, id string) (edits []TextEdit) {
+	var indexes = getAllIndexesInStringForLastCharOfSubstring(contents, "id=\""+id+"\"")
+	indexes = append(indexes, getAllIndexesInStringForLastCharOfSubstring(contents, "id='"+id+"'")...)
 
-	matches := re.FindAllStringIndex(contents, -1)
-	if len(matches) <= 1 {
-		return contents
+	if len(indexes) <= 1 {
+		return
 	}
 
-	var sb strings.Builder
-	var lastIdx int
+	sort.Ints(indexes)
 
-	for i, idx := range matches {
-		start, end := idx[0], idx[1]
-		sb.WriteString(contents[lastIdx:start])
+	for i := 1; i < len(indexes); i++ {
+		start := indexToPosition(contents, indexes[i])
+		edits = append(edits, TextEdit{
+			Range: Range{
+				Start: start,
+				End:   start,
+			},
+			NewText: fmt.Sprintf("_%d", i+1),
+		})
+	}
 
-		// Write id= + quote + id
-		quote := contents[start+3]
-		sb.WriteString(contents[start : end-1]) // everything except closing quote
+	return
+}
 
-		if i > 0 {
-			suffix := fmt.Sprintf("_%d", i+1)
-			sb.WriteString(suffix)
+func getAllIndexesInStringForLastCharOfSubstring(content, substring string) []int {
+	var indexes []int
+	offset := 0
+
+	for {
+		index := strings.Index(content[offset:], substring)
+		if index == -1 {
+			break
 		}
-		sb.WriteByte(quote)
-		lastIdx = end
-	}
-	sb.WriteString(contents[lastIdx:])
 
-	return sb.String()
+		index += len(substring) - 1 // should get us to the last character before the single or double quote
+
+		indexes = append(indexes, offset+index)
+		offset += index + 1
+	}
+
+	return indexes
 }

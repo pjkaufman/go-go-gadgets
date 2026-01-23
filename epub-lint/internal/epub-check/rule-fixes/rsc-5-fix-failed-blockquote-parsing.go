@@ -14,7 +14,7 @@ func FixFailedBlockquoteParsing(line, column int, contents string) string {
 		return contents
 	}
 
-	offset := getColumnOffset(contents, line, column)
+	offset := GetPositionOffset(contents, line, column)
 	if offset == -1 {
 		return contents
 	}

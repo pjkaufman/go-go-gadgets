@@ -9,7 +9,7 @@ func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit Text
 		return
 	}
 
-	offset := getColumnOffset(contents, lineToUpdate, startOfFragment)
+	offset := GetPositionOffset(contents, lineToUpdate, startOfFragment)
 	if offset == -1 {
 		return
 	}
@@ -18,8 +18,8 @@ func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit Text
 	var (
 		hrefAttributeIndicator = "href="
 		srcAttributeIndicator  = "src="
-		fragmentStart          = strings.LastIndex(contents[:startOfFragment], hrefAttributeIndicator)
-		srcStart               = strings.LastIndex(contents[:startOfFragment], srcAttributeIndicator)
+		fragmentStart          = strings.LastIndex(contents[:offset], hrefAttributeIndicator)
+		srcStart               = strings.LastIndex(contents[:offset], srcAttributeIndicator)
 		startAttr              int
 	)
 	if fragmentStart == -1 && srcStart == -1 {
@@ -50,11 +50,11 @@ func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit Text
 		Range: Range{
 			Start: Position{
 				Line:   lineToUpdate,
-				Column: getColumnFromIndex(contents, lineToUpdate, startAttr+1+idIndicatorStart+1),
+				Column: getColumnFromIndex(contents, lineToUpdate, startAttr+1+idIndicatorStart),
 			},
 			End: Position{
 				Line:   lineToUpdate,
-				Column: getColumnFromIndex(contents, lineToUpdate, endOfFragment+1),
+				Column: getColumnFromIndex(contents, lineToUpdate, endOfFragment),
 			},
 		},
 		NewText: "",

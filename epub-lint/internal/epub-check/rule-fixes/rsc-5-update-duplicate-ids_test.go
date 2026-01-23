@@ -13,7 +13,7 @@ type handleDuplicateIDTestCase struct {
 	name     string
 	contents string
 	id       string
-	expected string
+	changes  []rulefixes.TextEdit
 }
 
 var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
@@ -24,12 +24,8 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
     <div id="something"></div>
   </body>
 </html>`,
-		id: "chapter1",
-		expected: `<html>
-  <body>
-    <div id="something"></div>
-  </body>
-</html>`,
+		id:      "chapter1",
+		changes: nil,
 	},
 	{
 		name: "two duplicate ids get _2 suffix on second occurrence and diff of 2",
@@ -40,12 +36,21 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
   </body>
 </html>`,
 		id: "chapter1",
-		expected: `<html>
-  <body>
-    <div id="chapter1"></div>
-    <span id="chapter1_2"></span>
-  </body>
-</html>`,
+		changes: []rulefixes.TextEdit{
+			{
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{
+						Line:   4,
+						Column: 23,
+					},
+					End: rulefixes.Position{
+						Line:   4,
+						Column: 23,
+					},
+				},
+				NewText: "_2",
+			},
+		},
 	},
 	{
 		name: "three duplicate ids get _2 and _3, total diff of 4 and no double _2",
@@ -53,9 +58,34 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 <div id="chapter1"></div>
 <div id="chapter1"></div>`,
 		id: "chapter1",
-		expected: `<div id="chapter1"></div>
-<div id="chapter1_2"></div>
-<div id="chapter1_3"></div>`,
+		changes: []rulefixes.TextEdit{
+			{
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{
+						Line:   2,
+						Column: 18,
+					},
+					End: rulefixes.Position{
+						Line:   2,
+						Column: 18,
+					},
+				},
+				NewText: "_2",
+			},
+			{
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{
+						Line:   3,
+						Column: 18,
+					},
+					End: rulefixes.Position{
+						Line:   3,
+						Column: 18,
+					},
+				},
+				NewText: "_3",
+			},
+		},
 	},
 	{
 		name: "only exact matches updated even if the id to update is a subset of the id to remove duplicates for",
@@ -63,9 +93,21 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 <div id="chapter1"></div>
 <div id="chapter1-long"></div>`,
 		id: "chapter1",
-		expected: `<div id="chapter1"></div>
-<div id="chapter1_2"></div>
-<div id="chapter1-long"></div>`,
+		changes: []rulefixes.TextEdit{
+			{
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{
+						Line:   2,
+						Column: 18,
+					},
+					End: rulefixes.Position{
+						Line:   2,
+						Column: 18,
+					},
+				},
+				NewText: "_2",
+			},
+		},
 	},
 }
 
@@ -74,7 +116,7 @@ func TestHandleDuplicateID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := rulefixes.UpdateDuplicateIds(tc.contents, tc.id)
 
-			assert.Equal(t, tc.expected, actual)
+			assert.Equal(t, tc.changes, actual)
 		})
 	}
 }

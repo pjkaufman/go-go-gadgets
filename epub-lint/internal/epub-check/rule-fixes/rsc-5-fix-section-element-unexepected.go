@@ -5,7 +5,7 @@ import (
 )
 
 func FixSectionElementUnexpected(line, column int, contents string) string {
-	offset := getColumnOffset(contents, line, column) // gets the index that actually represents the line and column in the current file
+	offset := GetPositionOffset(contents, line, column) // gets the index that actually represents the line and column in the current file
 	if offset == -1 {
 		return contents
 	}
