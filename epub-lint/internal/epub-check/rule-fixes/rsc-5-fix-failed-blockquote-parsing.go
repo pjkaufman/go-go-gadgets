@@ -3,7 +3,6 @@ package rulefixes
 import (
 	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
 // FixFailedBlockquoteParsing takes a line and column (both 1-based), and
@@ -69,38 +68,4 @@ func trimRightSpace(s string) string {
 	}
 
 	return s[:i]
-}
-
-func getColumnOffset(contents string, line, column int) int {
-	lines := strings.Split(contents, "\n")
-	if line > len(lines) {
-		return -1
-	}
-
-	byteOffset := 0
-	for i := 0; i < line-1; i++ {
-		byteOffset += len(lines[i]) + 1
-	}
-
-	curLine := lines[line-1]
-	colByte := 0
-	remainingRunes := column - 1
-	for remainingRunes > 0 && colByte < len(curLine) {
-		_, size := utf8.DecodeRuneInString(curLine[colByte:])
-		if size == 0 {
-			break
-		}
-		colByte += size
-		remainingRunes--
-	}
-	if remainingRunes > 0 {
-		colByte = len(curLine)
-	}
-
-	byteOffset += colByte
-	if byteOffset > len(contents) {
-		byteOffset = len(contents)
-	}
-
-	return byteOffset
 }
