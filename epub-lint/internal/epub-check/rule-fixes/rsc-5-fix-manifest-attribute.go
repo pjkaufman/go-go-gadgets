@@ -5,27 +5,28 @@ import (
 	"strings"
 )
 
-// TODO: swap to lsp update method...
-func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) (string, error) {
+func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) ([]TextEdit, error) {
+	var edits []TextEdit
+	lineNum--
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {
-		return opfContents, fmt.Errorf("line number out of range")
+		return edits, fmt.Errorf("line number out of range")
 	}
 
 	// Find the target line
 	line := lines[lineNum]
 	if !strings.Contains(line, attribute) {
-		return opfContents, fmt.Errorf("attribute not found on the specified line")
+		return edits, fmt.Errorf("attribute not found on the specified line")
 	}
 
 	// Determine the element name
 	elementStart := strings.Index(line, "<dc:")
 	if elementStart == -1 {
-		return opfContents, nil
+		return edits, nil
 	}
 	elementEnd := strings.Index(line[elementStart:], ">")
 	if elementEnd == -1 {
-		return opfContents, fmt.Errorf("malformed element")
+		return edits, fmt.Errorf("malformed element")
 	}
 	elementEnd += elementStart
 	element := line[elementStart : elementEnd+1]
@@ -38,7 +39,7 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 		idStart += len(idAttr)
 		idEnd := strings.Index(line[idStart:], `"`)
 		if idEnd == -1 {
-			return opfContents, fmt.Errorf("malformed id attribute")
+			return edits, fmt.Errorf("malformed id attribute")
 		}
 		id = line[idStart : idStart+idEnd]
 	} else {
@@ -57,31 +58,60 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 		}
 
 		id = elementName + num
-		line = strings.Replace(line, element, fmt.Sprintf(`<%s id="%s">`, element[1:len(element)-1], id), 1)
+		insertIdPos := Position{
+			Line:   lineNum + 1,
+			Column: getColumnForLine(line, elementStart+len(element)-1),
+		}
+		edits = append(edits, TextEdit{
+			Range: Range{
+				Start: insertIdPos,
+				End:   insertIdPos,
+			},
+			NewText: fmt.Sprintf(` id="%s"`, id),
+		})
 	}
 
 	// Parse out the value of the attribute
 	attrStart := strings.Index(line, attribute+`="`)
 	if attrStart == -1 {
-		return opfContents, fmt.Errorf("attribute not found")
+		return edits, fmt.Errorf("attribute not found")
 	}
-	attrStart += len(attribute) + 2
-	attrEnd := strings.Index(line[attrStart:], `"`)
+
+	attrValueStart := attrStart + len(attribute) + 2
+	attrEnd := strings.Index(line[attrValueStart:], `"`)
 	if attrEnd == -1 {
-		return opfContents, fmt.Errorf("malformed attribute value")
+		return edits, fmt.Errorf("malformed attribute value")
 	}
-	attrValue := line[attrStart : attrStart+attrEnd]
+	attrValue := line[attrValueStart : attrValueStart+attrEnd]
 
 	// Remove the attribute from the line
-	line = strings.Replace(line, fmt.Sprintf(` %s="%s"`, attribute, attrValue), "", 1)
+	edits = append(edits, TextEdit{
+		Range: Range{
+			Start: Position{
+				Line:   lineNum + 1,
+				Column: getColumnForLine(line, attrStart-1),
+			},
+			End: Position{
+				Line:   lineNum + 1,
+				Column: getColumnForLine(line, attrValueStart+attrEnd+1),
+			},
+		},
+	})
 
 	// Create the meta tag
-	metaTag := "\n" + getLeadingWhitespace(line) + fmt.Sprintf(`<meta refines="#%s" property="%s">%s</meta>`, id, attribute[strings.Index(attribute, ":")+1:], attrValue)
+	metaTag := fmt.Sprintf(`<meta refines="#%s" property="%s">%s</meta>`, id, attribute[strings.Index(attribute, ":")+1:], attrValue) + "\n" + getLeadingWhitespace(line)
 
-	lines[lineNum] = line + metaTag
+	newTagInsertPos := Position{
+		Line:   lineNum + 2,
+		Column: 1,
+	}
+	edits = append(edits, TextEdit{
+		Range: Range{
+			Start: newTagInsertPos,
+			End:   newTagInsertPos,
+		},
+		NewText: metaTag,
+	})
 
-	// Join the lines back together
-	updatedOpfContents := strings.Join(lines, "\n")
-
-	return updatedOpfContents, nil
+	return edits, nil
 }

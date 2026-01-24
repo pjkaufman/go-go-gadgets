@@ -14,7 +14,7 @@ type fixManifestAttributeTestCase struct {
 	attribute             string
 	line                  int
 	attributeNameToNumber map[string]int
-	expectedOutput        string
+	expectedChanges       []rulefixes.TextEdit
 }
 
 var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
@@ -23,54 +23,120 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
     <dc:creator opf:role="aut">Author Name</dc:creator>
 </metadata>`,
 		attribute:             "opf:role",
-		line:                  1,
+		line:                  2,
 		attributeNameToNumber: map[string]int{},
-		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:creator id="creator1">Author Name</dc:creator>
-    <meta refines="#creator1" property="role">aut</meta>
-</metadata>`,
+		expectedChanges: []rulefixes.TextEdit{
+			{ // Insert id="creator1"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 31},
+					End:   rulefixes.Position{Line: 2, Column: 31},
+				},
+				NewText: ` id="creator1"`,
+			},
+			{ // Remove opf:role="aut"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 16},
+					End:   rulefixes.Position{Line: 2, Column: 31},
+				},
+				NewText: "",
+			},
+			{ // Insert meta tag
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 3, Column: 1},
+					End:   rulefixes.Position{Line: 3, Column: 1},
+				},
+				NewText: `<meta refines="#creator1" property="role">aut</meta>
+    `,
+			},
+		},
 	},
 	"Creator element with role and an id should have the proper meta element added referencing the existing id": {
 		opfContents: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:creator id="creator-existing" opf:role="aut">Author Name</dc:creator>
+            <dc:creator id="creator-existing" opf:role="aut">Author Name</dc:creator>
 </metadata>`,
-
 		attribute:             "opf:role",
-		line:                  1,
+		line:                  2,
 		attributeNameToNumber: map[string]int{},
-		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:creator id="creator-existing">Author Name</dc:creator>
-			<meta refines="#creator-existing" property="role">aut</meta>
-</metadata>`,
+		expectedChanges: []rulefixes.TextEdit{
+			{ // Remove opf:role="aut"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 46},
+					End:   rulefixes.Position{Line: 2, Column: 61},
+				},
+				NewText: "",
+			},
+			{ // Insert meta tag
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 3, Column: 1},
+					End:   rulefixes.Position{Line: 3, Column: 1},
+				},
+				NewText: `<meta refines="#creator-existing" property="role">aut</meta>
+            `,
+			},
+		},
 	},
+
 	"Contributor element with file-as and no id should get the proper id and have the proper meta element added when a contributor has already been handled so far": {
 		opfContents: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:contributor opf:file-as="Contributor Name">Contributor Name</dc:contributor>
+            <dc:contributor opf:file-as="Contributor Name">Contributor Name</dc:contributor>
 </metadata>`,
-
 		attribute: "opf:file-as",
-		line:      1,
+		line:      2,
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
-		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:contributor id="contributor2">Contributor Name</dc:contributor>
-			<meta refines="#contributor2" property="file-as">Contributor Name</meta>
-</metadata>`,
+		expectedChanges: []rulefixes.TextEdit{
+			{ // Insert id="contributor2"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 59},
+					End:   rulefixes.Position{Line: 2, Column: 59},
+				},
+				NewText: ` id="contributor2"`,
+			},
+			{ // Remove opf:file-as="Contributor Name"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 28},
+					End:   rulefixes.Position{Line: 2, Column: 59},
+				},
+				NewText: "",
+			},
+			{ // Insert meta tag
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 3, Column: 1},
+					End:   rulefixes.Position{Line: 3, Column: 1},
+				},
+				NewText: `<meta refines="#contributor2" property="file-as">Contributor Name</meta>
+            `,
+			},
+		},
 	},
+
 	"Contributor element with file-as and an id should have the proper meta element added referencing the proper id when a contributor has already been handled so far": {
 		opfContents: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:contributor id="contributor-existing" opf:file-as="Contributor Name">Contributor Name</dc:contributor>
+            <dc:contributor id="contributor-existing" opf:file-as="Contributor Name">Contributor Name</dc:contributor>
 </metadata>`,
 		attribute: "opf:file-as",
-		line:      1,
+		line:      2,
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
-		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-			<dc:contributor id="contributor-existing">Contributor Name</dc:contributor>
-			<meta refines="#contributor-existing" property="file-as">Contributor Name</meta>
-</metadata>`,
+		expectedChanges: []rulefixes.TextEdit{
+			{ // Remove opf:file-as="Contributor Name"
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 2, Column: 54},
+					End:   rulefixes.Position{Line: 2, Column: 85},
+				},
+				NewText: "",
+			},
+			{ // Insert meta tag
+				Range: rulefixes.Range{
+					Start: rulefixes.Position{Line: 3, Column: 1},
+					End:   rulefixes.Position{Line: 3, Column: 1},
+				},
+				NewText: `<meta refines="#contributor-existing" property="file-as">Contributor Name</meta>
+            `,
+			},
+		},
 	},
 }
 
@@ -80,7 +146,7 @@ func TestFixManifestAttribute(t *testing.T) {
 			actual, err := rulefixes.FixManifestAttribute(args.opfContents, args.attribute, args.line, args.attributeNameToNumber)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			assert.Equal(t, args.expectedChanges, actual)
 		})
 	}
 }
