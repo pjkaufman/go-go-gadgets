@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TODO: swap to lsp update method...
 func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) (string, error) {
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {

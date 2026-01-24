@@ -47,32 +47,24 @@ func indexToPosition(contents string, index int) Position {
 		return Position{Line: 1, Column: 1}
 	}
 
-	// Early clamp to avoid unnecessary work
-	if index >= len(contents) {
-		// Place at the very end (after last character of last line)
-		lines := strings.Split(contents, "\n")
-		if len(lines) == 0 {
-			return Position{Line: 1, Column: 1}
-		}
-
-		lastLine := lines[len(lines)-1]
-
-		return Position{
-			Line:   len(lines),
-			Column: utf8.RuneCountInString(lastLine) + 1,
-		}
+	// Clamp to end of contents
+	if index > len(contents) {
+		index = len(contents)
 	}
 
-	var (
-		upToIndex = contents[:index+1]
-		line      = strings.Count(upToIndex, "\n") + 1
-		col       int
-	)
-	if line == 1 {
-		col = utf8.RuneCountInString(upToIndex) + 1
+	// Count lines up to (but NOT including) index
+	line := strings.Count(contents[:index], "\n") + 1
+
+	// Find start of this line
+	lineStart := strings.LastIndex(contents[:index], "\n")
+	if lineStart == -1 {
+		lineStart = 0
 	} else {
-		col = utf8.RuneCountInString(upToIndex[strings.LastIndex(upToIndex, "\n")+1:])
+		lineStart++ // move past '\n'
 	}
+
+	// Column = number of runes BEFORE the cursor
+	col := utf8.RuneCountInString(contents[lineStart:index]) + 1
 
 	return Position{Line: line, Column: col}
 }

@@ -24,11 +24,11 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 			Range: rulefixes.Range{
 				Start: rulefixes.Position{
 					Line:   1,
-					Column: 33,
+					Column: 32,
 				},
 				End: rulefixes.Position{
 					Line:   1,
-					Column: 33,
+					Column: 32,
 				},
 			},
 			NewText: ` alt=""`,
