@@ -1,14 +1,14 @@
 package rulefixes
 
-func FixMissingImageAlt(line, column int, contents string) string {
+func FixMissingImageAlt(line, column int, contents string) (edit TextEdit) {
 	if line < 1 {
-		return contents
+		return
 	}
 
 	// column is the index of the `>` in `/>`
 	offset := GetPositionOffset(contents, line, column)
 	if offset == -1 {
-		return contents
+		return
 	}
 
 	var emptyAlt = "alt=\"\""
@@ -16,5 +16,10 @@ func FixMissingImageAlt(line, column int, contents string) string {
 		emptyAlt = " " + emptyAlt
 	}
 
-	return contents[:offset-2] + emptyAlt + contents[offset-2:]
+	insertStartPos := indexToPosition(contents, offset-2)
+	edit.Range.Start = insertStartPos
+	edit.Range.End = insertStartPos
+	edit.NewText = emptyAlt
+
+	return
 }
