@@ -50,6 +50,8 @@ func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string)
 	if strings.TrimSpace(updatedLine) == "" {
 		// Remove the line
 		edit.Range.End.Line += 1
+		edit.Range.Start.Column = 1
+		edit.Range.End.Column = 1
 
 		return edit, true, nil
 	}

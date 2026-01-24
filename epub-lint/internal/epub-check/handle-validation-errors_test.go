@@ -1037,7 +1037,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
 					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
 					Location: &epubcheck.Position{
-						Line:   77,
+						Line:   78,
 						Column: 26,
 					},
 				},
@@ -1047,7 +1047,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
 					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
 					Location: &epubcheck.Position{
-						Line:   15,
+						Line:   16,
 						Column: 20,
 					},
 				},
@@ -1056,7 +1056,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					FilePath: "OPS/content.opf",
 					Message:  `Error while parsing file: attribute "opf:role"`,
 					Location: &epubcheck.Position{
-						Line:   10,
+						Line:   11,
 						Column: 31,
 					},
 				},

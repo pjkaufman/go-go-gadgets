@@ -135,7 +135,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					}
 
 					var update rulefixes.TextEdit
-					update, deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line-1, fileContent)
+					update, deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line, fileContent)
 					if err != nil {
 						return err
 					}
@@ -207,7 +207,18 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				nameToUpdatedContents[message.FilePath] = rulefixes.FixSectionElementUnexpected(message.Location.Line, message.Location.Column, fileContent)
+				updates := rulefixes.FixSectionElementUnexpected(message.Location.Line, message.Location.Column, fileContent)
+				if len(updates) != 0 {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    updates,
+						}
+					}
+				}
 			}
 		case "OPF-030":
 			id, foundId := getFirstQuotedValue(message.Message, len(missingUniqueIdentifier))

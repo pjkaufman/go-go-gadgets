@@ -4,22 +4,22 @@ import (
 	"strings"
 )
 
-func FixSectionElementUnexpected(line, column int, contents string) string {
+func FixSectionElementUnexpected(line, column int, contents string) (edits []TextEdit) {
 	offset := GetPositionOffset(contents, line, column) // gets the index that actually represents the line and column in the current file
 	if offset == -1 {
-		return contents
+		return
 	}
 
 	openSection := "<section"
 	openIdx := strings.LastIndex(contents[:offset], openSection)
 	if openIdx == -1 {
-		return contents
+		return
 	}
 
-	endSection := "</section>"
+	const endSection = "</section>"
 	endIdx := strings.Index(contents[offset:], endSection)
 	if endIdx == -1 {
-		return contents
+		return
 	}
 
 	openingSectionEl := contents[openIdx:offset]
@@ -79,36 +79,83 @@ func FixSectionElementUnexpected(line, column int, contents string) string {
 	}
 
 	if len(movedBeforeElements) == 0 {
-		return contents
+		return
 	}
 
+	// remove opening and closing els
 	var (
-		endLineContent = contents[offset+endIdx+len(endSection) : offset+lineEnd]
-		updatedLine    = contents[lineStart:openIdx] + contents[offset:offset+endIdx] + endLineContent
+		endStart      = offset + endIdx
+		endEnd        = offset + endIdx + len(endSection)
+		lineEndOffset = offset + lineEnd
+	)
+	edits = append(edits, TextEdit{
+		Range: Range{
+			Start: indexToPosition(contents, openIdx),
+			End:   indexToPosition(contents, offset),
+		},
+	},
+		TextEdit{
+			Range: Range{
+				Start: indexToPosition(contents, endStart),
+				End:   indexToPosition(contents, endEnd),
+			},
+		})
+
+	var (
+		endLineContent               = contents[endEnd:lineEndOffset]
+		lineContents                 = contents[lineStart:lineEndOffset]
+		insertStartPos, insertEndPos Position
 	)
 	if indexToMoveTo == 0 {
-		updatedLine = openingSectionEl + updatedLine + endSection
+		insertStartPos = indexToPosition(contents, lineStart)
+		insertEndPos = Position{
+			Line:   insertStartPos.Line + 1,
+			Column: 1,
+		}
 	} else if strings.TrimSpace(currentLine[:indexToMoveTo]) == "" {
-		updatedLine = updatedLine[:indexToMoveTo] + openingSectionEl + updatedLine[indexToMoveTo:] + endSection
+		insertStartPos = indexToPosition(contents, lineStart+indexToMoveTo)
+		insertEndPos = Position{
+			Line:   insertStartPos.Line + 1,
+			Column: 1,
+		}
 	} else {
-		var endIndexToMoveTo = strings.Index(updatedLine, endLineContent)
+		var endIndexToMoveTo = strings.Index(lineContents, endLineContent)
 		for _, tagName := range movedBeforeElements {
 			var (
 				endTag      = "</" + tagName + ">"
 				endTagIndex = strings.Index(endLineContent, endTag)
 			)
 			if endTagIndex == -1 { // something is wrong, so we are skipping this one...
-				return contents
+				return
 			}
 
 			endIndexToMoveTo += endTagIndex + len(endTag)
 			endLineContent = endLineContent[endTagIndex+len(endTag):]
 		}
 
-		// add end of section first to prevent accounting for that shift as well
-		updatedLine = updatedLine[:endIndexToMoveTo] + endSection + updatedLine[endIndexToMoveTo:]
-		updatedLine = updatedLine[:indexToMoveTo] + openingSectionEl + updatedLine[indexToMoveTo:]
+		insertStartPos = indexToPosition(contents, lineStart+indexToMoveTo)
+		insertEndPos = indexToPosition(contents, lineStart+endIndexToMoveTo)
 	}
 
-	return contents[:lineStart] + updatedLine + contents[offset+lineEnd:]
+	edits = append(edits, TextEdit{
+		Range: Range{
+			Start: insertStartPos,
+			End:   insertStartPos,
+		},
+		NewText: openingSectionEl,
+	},
+		TextEdit{
+			Range: Range{
+				Start: insertEndPos,
+				End:   insertEndPos,
+			},
+			NewText: endSection,
+		})
+	// TODO: there are 4 edits that are potentially made
+	// opening el insert and delete
+	// ending ele insert and delete
+
+	// contents[:lineStart] + updatedLine + contents[offset+lineEnd:]
+
+	return
 }

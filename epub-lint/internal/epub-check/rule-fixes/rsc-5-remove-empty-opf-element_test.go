@@ -27,11 +27,11 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 			Range: rulefixes.Range{
 				Start: rulefixes.Position{
 					Line:   2,
-					Column: 0,
+					Column: 1,
 				},
 				End: rulefixes.Position{
 					Line:   3,
-					Column: 0,
+					Column: 1,
 				},
 			},
 		},
@@ -48,11 +48,11 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 			Range: rulefixes.Range{
 				Start: rulefixes.Position{
 					Line:   2,
-					Column: 0,
+					Column: 1,
 				},
 				End: rulefixes.Position{
 					Line:   3,
-					Column: 0,
+					Column: 1,
 				},
 			},
 		},
@@ -69,11 +69,11 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 			Range: rulefixes.Range{
 				Start: rulefixes.Position{
 					Line:   3,
-					Column: 0,
+					Column: 1,
 				},
 				End: rulefixes.Position{
 					Line:   4,
-					Column: 0,
+					Column: 1,
 				},
 			},
 		},
@@ -90,11 +90,11 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 			Range: rulefixes.Range{
 				Start: rulefixes.Position{
 					Line:   3,
-					Column: 0,
+					Column: 1,
 				},
 				End: rulefixes.Position{
 					Line:   4,
-					Column: 0,
+					Column: 1,
 				},
 			},
 		},

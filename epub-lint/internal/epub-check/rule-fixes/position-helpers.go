@@ -63,37 +63,16 @@ func indexToPosition(contents string, index int) Position {
 		}
 	}
 
-	line := 1
-	bytePos := 0
-	colByteStart := 0
-
-	for i := 0; i < len(contents); {
-		if contents[i] == '\n' {
-			line++
-			colByteStart = i + 1
-			i++
-			continue
-		}
-
-		// We found the rune that contains or is after the target index
-		if bytePos <= index && index < bytePos+utf8.RuneLen(rune(contents[i])) {
-			// Column = number of runes from start of line up to (but not including) this rune + 1
-			lineContent := contents[colByteStart:index]
-			col := utf8.RuneCountInString(lineContent) + 1
-			return Position{Line: line, Column: col}
-		}
-
-		size := utf8.RuneLen(rune(contents[i]))
-		if size == 0 { // should not happen with valid UTF-8
-			size = 1
-		}
-		bytePos += size
-		i += size
+	var (
+		upToIndex = contents[:index+1]
+		line      = strings.Count(upToIndex, "\n") + 1
+		col       int
+	)
+	if line == 1 {
+		col = utf8.RuneCountInString(upToIndex) + 1
+	} else {
+		col = utf8.RuneCountInString(upToIndex[strings.LastIndex(upToIndex, "\n")+1:])
 	}
-
-	// index == len(contents) case — end of file
-	lineContent := contents[colByteStart:]
-	col := utf8.RuneCountInString(lineContent) + 1
 
 	return Position{Line: line, Column: col}
 }
