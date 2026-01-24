@@ -86,7 +86,18 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				nameToUpdatedContents[message.FilePath] = rulefixes.FixXmlIdValue(fileContent, message.Location.Line, attribute)
+				update := rulefixes.FixXmlIdValue(fileContent, message.Location.Line, attribute)
+				if !update.IsEmpty() {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, update)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    []rulefixes.TextEdit{update},
+						}
+					}
+				}
 			} else if strings.HasPrefix(message.Message, invalidAttribute) {
 				attribute, foundAttributeName := getFirstQuotedValue(message.Message, len(invalidAttribute))
 				if !foundAttributeName {
@@ -123,13 +134,26 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						return err
 					}
 
-					nameToUpdatedContents[opfFilename], deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line-1, fileContent)
+					var update rulefixes.TextEdit
+					update, deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line-1, fileContent)
 					if err != nil {
 						return err
 					}
 
+					if !update.IsEmpty() {
+						if existingUpdates, ok := fileToChanges[opfFilename]; ok {
+							existingUpdates.Edits = append(existingUpdates.Edits, update)
+							fileToChanges[opfFilename] = existingUpdates
+						} else {
+							fileToChanges[opfFilename] = rulefixes.TextDocumentEdit{
+								FilePath: opfFilename,
+								Edits:    []rulefixes.TextEdit{update},
+							}
+						}
+					}
+
 					if deletedLine {
-						validationErrors.DecrementLineNumbersAndRemoveLineReferences(message.Location.Line, message.FilePath)
+						validationErrors.RemoveLineReferences(message.Location.Line, message.FilePath)
 						i--
 					}
 				}
@@ -207,7 +231,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			}
 
 			update := rulefixes.RemoveLinkId(fileContent, message.Location.Line, message.Location.Column)
-			if update.Range.Start.Column != 0 && update.Range.Start.Line != 0 {
+			if !update.IsEmpty() {
 				if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
 					existingUpdates.Edits = append(existingUpdates.Edits, update)
 					fileToChanges[message.FilePath] = existingUpdates

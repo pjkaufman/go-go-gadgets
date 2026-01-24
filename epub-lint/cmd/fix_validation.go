@@ -37,10 +37,10 @@ var autoFixValidationCmd = &cobra.Command{
 	- NCX-001: fix discrepancy in identifier between the OPF and NCX files
 	- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 	- RSC-005: seems to be a catch all error id, but the following are handled around it
-	  - Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
-	    and starting the value with an underscore instead of a number if it currently is started by a number
-	  - Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
-	  - Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
+		- Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
+			and starting the value with an underscore instead of a number if it currently is started by a number
+		- Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
+		- Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 		- Update duplicate ids to no longer be duplicates
 		- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
 		- Add an empty alt attribute to img elements that are missing them

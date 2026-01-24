@@ -663,7 +663,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
 		},
 	},
-	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed and other lines after it decremented`: {
+	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed`: {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
 		ncxFilename:       "OPS/toc.ncx",
@@ -715,7 +715,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					FilePath: "OPS/content.opf",
 					Message:  `Some error here..."`,
 					Location: &epubcheck.Position{
-						Line:   48,
+						Line:   50,
 						Column: 35,
 					},
 				},
