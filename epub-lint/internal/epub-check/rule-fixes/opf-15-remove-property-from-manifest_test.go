@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ type removeScriptedFromManifest struct {
 	inputText      string
 	inputPath      string
 	property       string
-	expectedOutput string
+	expectedChange positions.TextEdit
 }
 
 var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
@@ -26,12 +27,18 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 </package>`,
 		inputPath: "OEBPS/chapter1.xhtml",
 		property:  "scripted",
-		expectedOutput: `
-<package version="3.0">
-<manifest>
-<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
-</manifest>
-</package>`,
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
+					Line:   4,
+					Column: 59,
+				},
+				End: positions.Position{
+					Line:   4,
+					Column: 80,
+				},
+			},
+		},
 	},
 	"Remove the specified property from properties attribute if the attribute is already present for item matching path file name and is not the only value": {
 		inputText: `
@@ -42,12 +49,18 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 </package>`,
 		inputPath: "OEBPS/nav.xhtml",
 		property:  "scripted",
-		expectedOutput: `
-<package version="3.0">
-<manifest>
-<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-</manifest>
-</package>`,
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
+					Line:   4,
+					Column: 70,
+				},
+				End: positions.Position{
+					Line:   4,
+					Column: 80,
+				},
+			},
+		},
 	},
 }
 
@@ -57,7 +70,7 @@ func TestRemoveScriptedFromManifest(t *testing.T) {
 			actual, err := rulefixes.RemovePropertyFromManifest(args.inputText, args.inputPath, args.property)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			assert.Equal(t, args.expectedChange, actual)
 		})
 	}
 }

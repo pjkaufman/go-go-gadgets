@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ import (
 type fixMissingImageAltTestCase struct {
 	input          string
 	line, column   int
-	expectedChange rulefixes.TextEdit
+	expectedChange positions.TextEdit
 }
 
 var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
@@ -20,13 +21,13 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 		input:  `<html><body><img src="test.png"/></body></html>`,
 		line:   1,
 		column: 34,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   1,
 					Column: 32,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   1,
 					Column: 32,
 				},
@@ -59,13 +60,13 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 `,
 		line:   19,
 		column: 67,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   19,
 					Column: 65,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   19,
 					Column: 65,
 				},

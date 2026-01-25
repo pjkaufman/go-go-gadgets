@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ import (
 type addScriptedToManifest struct {
 	inputText      string
 	inputPath      string
-	expectedOutput string
+	expectedChange positions.TextEdit
 }
 
 var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
@@ -24,12 +25,19 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 </manifest>
 </package>`,
 		inputPath: "OEBPS/chapter1.xhtml",
-		expectedOutput: `
-<package version="3.0">
-<manifest>
-<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
-</manifest>
-</package>`,
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
+					Line:   4,
+					Column: 59,
+				},
+				End: positions.Position{
+					Line:   4,
+					Column: 59,
+				},
+			},
+			NewText: ` properties="scripted"`,
+		},
 	},
 	"Add scripted to properties attribute if the attribute is already present for item matching path file name": {
 		inputText: `
@@ -39,12 +47,19 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 </manifest>
 </package>`,
 		inputPath: "OEBPS/nav.xhtml",
-		expectedOutput: `
-<package version="3.0">
-<manifest>
-<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="scripted nav"/>
-</manifest>
-</package>`,
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
+					Line:   4,
+					Column: 67,
+				},
+				End: positions.Position{
+					Line:   4,
+					Column: 67,
+				},
+			},
+			NewText: `scripted `,
+		},
 	},
 	"Add scripted to properties attribute if it is empty for the path file name": {
 		inputText: `
@@ -55,12 +70,19 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 </package>`,
 
 		inputPath: "OEBPS/chapter2.xhtml",
-		expectedOutput: `
-<package version="3.0">
-<manifest>
-<item href="OEBPS/chapter2.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
-</manifest>
-</package>`,
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
+					Line:   4,
+					Column: 72,
+				},
+				End: positions.Position{
+					Line:   4,
+					Column: 72,
+				},
+			},
+			NewText: `scripted`,
+		},
 	},
 }
 
@@ -70,7 +92,7 @@ func TestAddScriptedToManifest(t *testing.T) {
 			actual, err := rulefixes.AddPropertyToManifest(args.inputText, args.inputPath, "scripted")
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			assert.Equal(t, args.expectedChange, actual)
 		})
 	}
 }

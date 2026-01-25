@@ -1,11 +1,11 @@
-package rulefixes
+package positions
 
 import (
 	"strings"
 	"unicode/utf8"
 )
 
-func getColumnFromIndex(contents string, line, index int) int {
+func GetColumnFromIndex(contents string, line, index int) int {
 	lines := strings.Split(contents, "\n")
 	if line < 1 || line > len(lines) {
 		return -1
@@ -42,7 +42,7 @@ func getColumnFromIndex(contents string, line, index int) int {
 	return col + 1 // Columns are 1-based
 }
 
-func indexToPosition(contents string, index int) Position {
+func IndexToPosition(contents string, index int) Position {
 	if index < 0 {
 		return Position{Line: 1, Column: 1}
 	}
@@ -69,7 +69,7 @@ func indexToPosition(contents string, index int) Position {
 	return Position{Line: line, Column: col}
 }
 
-func getColumnForLine(line string, index int) int {
+func GetColumnForLine(line string, index int) int {
 	if index > len(line) {
 		index = len(line)
 	}

@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,21 +16,21 @@ func TestRemoveLinkId(t *testing.T) {
 		fileContents    string
 		lineToUpdate    int
 		startOfFragment int
-		change          rulefixes.TextEdit
+		change          positions.TextEdit
 	}{
 		{
 			name:            "Line number does not exist",
 			fileContents:    "line1\nline2\nline3",
 			lineToUpdate:    5,
 			startOfFragment: 1,
-			change:          rulefixes.TextEdit{},
+			change:          positions.TextEdit{},
 		},
 		{
 			name:            "Line has less characters than start of fragment",
 			fileContents:    "line1\nline2\nline3",
 			lineToUpdate:    2,
 			startOfFragment: 11,
-			change:          rulefixes.TextEdit{},
+			change:          positions.TextEdit{},
 		},
 		{
 			name: "Line has href with # in the link",
@@ -38,13 +39,13 @@ func TestRemoveLinkId(t *testing.T) {
 line3`,
 			lineToUpdate:    2,
 			startOfFragment: 15,
-			change: rulefixes.TextEdit{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+			change: positions.TextEdit{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 14,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 17,
 					},
@@ -58,7 +59,7 @@ line3`,
 line3`,
 			lineToUpdate:    2,
 			startOfFragment: 16,
-			change:          rulefixes.TextEdit{},
+			change:          positions.TextEdit{},
 		},
 		{
 			name: "Line has src without # in the link",
@@ -67,7 +68,7 @@ line3`,
 line3`,
 			lineToUpdate:    2,
 			startOfFragment: 21,
-			change:          rulefixes.TextEdit{},
+			change:          positions.TextEdit{},
 		},
 		{
 			name: "Line has src with # in the link",
@@ -76,13 +77,13 @@ line3`,
 line3`,
 			lineToUpdate:    2,
 			startOfFragment: 20,
-			change: rulefixes.TextEdit{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+			change: positions.TextEdit{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 19,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 22,
 					},

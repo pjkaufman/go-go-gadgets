@@ -9,6 +9,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -140,12 +141,15 @@ var autoFixValidationCmd = &cobra.Command{
 						continue
 					}
 
-					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], name)
+					opfEdits, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], name)
 					if err != nil {
 						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
 					}
 
-					nameToUpdatedContents[opfFilename] = updatedOpfContents
+					nameToUpdatedContents[opfFilename], err = positions.ApplyEdits(opfFilename, nameToUpdatedContents[opfFilename], opfEdits)
+					if err != nil {
+						logger.WriteErrorf("Failed to apply removal file %q from the opf contents: %s", filename, err)
+					}
 				}
 			}
 

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 // UpdateDuplicateIds finds and renames duplicate IDs in file contents.
-func UpdateDuplicateIds(contents, id string) (edits []TextEdit) {
+func UpdateDuplicateIds(contents, id string) (edits []positions.TextEdit) {
 	var indexes = getAllIndexesInStringForLastCharOfSubstring(contents, "id=\""+id+"\"")
 	indexes = append(indexes, getAllIndexesInStringForLastCharOfSubstring(contents, "id='"+id+"'")...)
 
@@ -18,9 +20,9 @@ func UpdateDuplicateIds(contents, id string) (edits []TextEdit) {
 	sort.Ints(indexes)
 
 	for i := 1; i < len(indexes); i++ {
-		start := indexToPosition(contents, indexes[i])
-		edits = append(edits, TextEdit{
-			Range: Range{
+		start := positions.IndexToPosition(contents, indexes[i])
+		edits = append(edits, positions.TextEdit{
+			Range: positions.Range{
 				Start: start,
 				End:   start,
 			},

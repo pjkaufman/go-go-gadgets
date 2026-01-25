@@ -1,10 +1,9 @@
 package epubcheck
 
 import (
-	"fmt"
-	"sort"
 	"strings"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 )
 
@@ -13,7 +12,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 		err                         error
 		fileContent, ncxFileContent string
 		elementNameToNumber         = make(map[string]int)
-		fileToChanges               = make(map[string]rulefixes.TextDocumentEdit)
+		fileToChanges               = make(map[string]positions.TextDocumentEdit)
 	)
 	for i := 0; i < len(validationErrors.ValidationIssues); i++ {
 		message := validationErrors.ValidationIssues[i]
@@ -30,9 +29,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.AddPropertyToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
+			var update positions.TextEdit
+			update, err = rulefixes.AddPropertyToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
 				return err
+			}
+
+			if !update.IsEmpty() {
+				if existingUpdates, ok := fileToChanges[opfFilename]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, update)
+					fileToChanges[opfFilename] = existingUpdates
+				} else {
+					fileToChanges[opfFilename] = positions.TextDocumentEdit{
+						FilePath: opfFilename,
+						Edits:    []positions.TextEdit{update},
+					}
+				}
 			}
 		case "OPF-015":
 			property, foundPropertyName := getFirstQuotedValue(message.Message, -1)
@@ -45,9 +57,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.RemovePropertyFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
+			var update positions.TextEdit
+			update, err = rulefixes.RemovePropertyFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
 				return err
+			}
+
+			if !update.IsEmpty() {
+				if existingUpdates, ok := fileToChanges[opfFilename]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, update)
+					fileToChanges[opfFilename] = existingUpdates
+				} else {
+					fileToChanges[opfFilename] = positions.TextDocumentEdit{
+						FilePath: opfFilename,
+						Edits:    []positions.TextEdit{update},
+					}
+				}
 			}
 		case "OPF-074":
 			fileContent, err = getContentByFileName(opfFilename)
@@ -55,9 +80,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.RemoveDuplicateManifestEntry(message.Location.Line, message.Location.Column, fileContent)
+			var updates []positions.TextEdit
+			updates, err = rulefixes.RemoveDuplicateManifestEntry(message.Location.Line, message.Location.Column, fileContent)
 			if err != nil {
 				return err
+			}
+
+			if len(updates) != 0 {
+				if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+					fileToChanges[message.FilePath] = existingUpdates
+				} else {
+					fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+						FilePath: message.FilePath,
+						Edits:    updates,
+					}
+				}
 			}
 		case "NCX-001":
 			fileContent, err = getContentByFileName(opfFilename)
@@ -70,9 +108,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
+			var updates []positions.TextEdit
+			updates, err = rulefixes.FixIdentifierDiscrepancy(fileContent, ncxFileContent)
 			if err != nil {
 				return err
+			}
+
+			if len(updates) != 0 {
+				if existingUpdates, ok := fileToChanges[opfFilename]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+					fileToChanges[opfFilename] = existingUpdates
+				} else {
+					fileToChanges[opfFilename] = positions.TextDocumentEdit{
+						FilePath: opfFilename,
+						Edits:    updates,
+					}
+				}
 			}
 		case "RSC-005":
 			if strings.HasPrefix(message.Message, invalidIdPrefix) {
@@ -92,9 +143,9 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						existingUpdates.Edits = append(existingUpdates.Edits, update)
 						fileToChanges[message.FilePath] = existingUpdates
 					} else {
-						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
 							FilePath: message.FilePath,
-							Edits:    []rulefixes.TextEdit{update},
+							Edits:    []positions.TextEdit{update},
 						}
 					}
 				}
@@ -113,9 +164,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						return err
 					}
 
-					nameToUpdatedContents[opfFilename], err = rulefixes.FixManifestAttribute(fileContent, attribute, message.Location.Line-1, elementNameToNumber)
+					var updates []positions.TextEdit
+					updates, err = rulefixes.FixManifestAttribute(fileContent, attribute, message.Location.Line, elementNameToNumber)
 					if err != nil {
 						return err
+					}
+
+					if len(updates) != 0 {
+						if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+							existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+							fileToChanges[message.FilePath] = existingUpdates
+						} else {
+							fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+								FilePath: message.FilePath,
+								Edits:    updates,
+							}
+						}
 					}
 				}
 			} else if strings.HasPrefix(message.Message, EmptyMetadataProperty) {
@@ -134,7 +198,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						return err
 					}
 
-					var update rulefixes.TextEdit
+					var update positions.TextEdit
 					update, deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line, fileContent)
 					if err != nil {
 						return err
@@ -145,9 +209,9 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 							existingUpdates.Edits = append(existingUpdates.Edits, update)
 							fileToChanges[opfFilename] = existingUpdates
 						} else {
-							fileToChanges[opfFilename] = rulefixes.TextDocumentEdit{
+							fileToChanges[opfFilename] = positions.TextDocumentEdit{
 								FilePath: opfFilename,
-								Edits:    []rulefixes.TextEdit{update},
+								Edits:    []positions.TextEdit{update},
 							}
 						}
 					}
@@ -163,7 +227,18 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				nameToUpdatedContents[ncxFilename] = rulefixes.FixPlayOrder(fileContent)
+				updates := rulefixes.FixPlayOrder(fileContent)
+				if len(updates) != 0 {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    updates,
+						}
+					}
+				}
 			} else if strings.HasPrefix(message.Message, duplicateIdPrefix) {
 				id, foundId := getFirstQuotedValue(message.Message, len(duplicateIdPrefix))
 				if !foundId {
@@ -181,7 +256,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
 						fileToChanges[message.FilePath] = existingUpdates
 					} else {
-						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
 							FilePath: message.FilePath,
 							Edits:    updates,
 						}
@@ -193,14 +268,36 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				nameToUpdatedContents[message.FilePath] = rulefixes.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContent)
+				updates := rulefixes.FixFailedBlockquoteParsing(message.Location.Line, message.Location.Column, fileContent)
+				if len(updates) != 0 {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    updates,
+						}
+					}
+				}
 			} else if message.Message == missingImgAlt {
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
 					return err
 				}
 
-				nameToUpdatedContents[message.FilePath] = rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
+				update := rulefixes.FixMissingImageAlt(message.Location.Line, message.Location.Column, fileContent)
+				if !update.IsEmpty() {
+					if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+						existingUpdates.Edits = append(existingUpdates.Edits, update)
+						fileToChanges[message.FilePath] = existingUpdates
+					} else {
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+							FilePath: message.FilePath,
+							Edits:    []positions.TextEdit{update},
+						}
+					}
+				}
 			} else if strings.HasPrefix(message.Message, unexpectedSectionEl) {
 				fileContent, err = getContentByFileName(message.FilePath)
 				if err != nil {
@@ -213,7 +310,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						existingUpdates.Edits = append(existingUpdates.Edits, updates...)
 						fileToChanges[message.FilePath] = existingUpdates
 					} else {
-						fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+						fileToChanges[message.FilePath] = positions.TextDocumentEdit{
 							FilePath: message.FilePath,
 							Edits:    updates,
 						}
@@ -231,9 +328,22 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			nameToUpdatedContents[opfFilename], err = rulefixes.FixMissingUniqueIdentifierId(fileContent, id)
+			var update positions.TextEdit
+			update, err = rulefixes.FixMissingUniqueIdentifierId(fileContent, id)
 			if err != nil {
 				return err
+			}
+
+			if !update.IsEmpty() {
+				if existingUpdates, ok := fileToChanges[message.FilePath]; ok {
+					existingUpdates.Edits = append(existingUpdates.Edits, update)
+					fileToChanges[message.FilePath] = existingUpdates
+				} else {
+					fileToChanges[message.FilePath] = positions.TextDocumentEdit{
+						FilePath: message.FilePath,
+						Edits:    []positions.TextEdit{update},
+					}
+				}
 			}
 		case "RSC-012":
 			fileContent, err = getContentByFileName(message.FilePath)
@@ -247,9 +357,9 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					existingUpdates.Edits = append(existingUpdates.Edits, update)
 					fileToChanges[message.FilePath] = existingUpdates
 				} else {
-					fileToChanges[message.FilePath] = rulefixes.TextDocumentEdit{
+					fileToChanges[message.FilePath] = positions.TextDocumentEdit{
 						FilePath: message.FilePath,
-						Edits:    []rulefixes.TextEdit{update},
+						Edits:    []positions.TextEdit{update},
 					}
 				}
 			}
@@ -258,7 +368,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 	var updatedContents string
 	for filePath, documentEdit := range fileToChanges {
-		updatedContents, err = applyEdits(filePath, documentEdit.Edits, getContentByFileName)
+		updatedContents, err = getContentByFileName(filePath)
+		if err != nil {
+			return err
+		}
+
+		updatedContents, err = positions.ApplyEdits(filePath, updatedContents, documentEdit.Edits)
 		if err != nil {
 			return err
 		}
@@ -267,33 +382,6 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 	}
 
 	return nil
-}
-
-func applyEdits(filePath string, edits []rulefixes.TextEdit, getContentByFileName func(string) (string, error)) (string, error) {
-	sort.Slice(edits, func(i, j int) bool {
-		if edits[i].Range.Start.Line != edits[j].Range.Start.Line {
-			return edits[i].Range.Start.Line != edits[j].Range.Start.Line
-		}
-
-		return edits[i].Range.Start.Column != edits[j].Range.Start.Column
-	})
-
-	content, err := getContentByFileName(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	for _, e := range edits {
-		startOffset := rulefixes.GetPositionOffset(content, e.Range.Start.Line, e.Range.Start.Column)
-		endOffset := rulefixes.GetPositionOffset(content, e.Range.End.Line, e.Range.End.Column)
-		if startOffset < 0 || endOffset < startOffset {
-			return "", fmt.Errorf("failed to update %q due to invalid range of %d to %d", filePath, startOffset, endOffset)
-		}
-
-		content = content[:startOffset] + e.NewText + content[endOffset:]
-	}
-
-	return content, nil
 }
 
 // getFirstQuotedValue takes in a message and a potential start index

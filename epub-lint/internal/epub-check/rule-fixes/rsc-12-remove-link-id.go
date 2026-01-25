@@ -2,14 +2,16 @@ package rulefixes
 
 import (
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
-func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit TextEdit) {
+func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit positions.TextEdit) {
 	if lineToUpdate < 1 {
 		return
 	}
 
-	offset := GetPositionOffset(contents, lineToUpdate, startOfFragment)
+	offset := positions.GetPositionOffset(contents, lineToUpdate, startOfFragment)
 	if offset == -1 {
 		return
 	}
@@ -46,18 +48,17 @@ func RemoveLinkId(contents string, lineToUpdate, startOfFragment int) (edit Text
 		return
 	}
 
-	edit = TextEdit{
-		Range: Range{
-			Start: Position{
+	edit = positions.TextEdit{
+		Range: positions.Range{
+			Start: positions.Position{
 				Line:   lineToUpdate,
-				Column: getColumnFromIndex(contents, lineToUpdate, startAttr+1+idIndicatorStart),
+				Column: positions.GetColumnFromIndex(contents, lineToUpdate, startAttr+1+idIndicatorStart),
 			},
-			End: Position{
+			End: positions.Position{
 				Line:   lineToUpdate,
-				Column: getColumnFromIndex(contents, lineToUpdate, endOfFragment),
+				Column: positions.GetColumnFromIndex(contents, lineToUpdate, endOfFragment),
 			},
 		},
-		NewText: "",
 	}
 
 	return

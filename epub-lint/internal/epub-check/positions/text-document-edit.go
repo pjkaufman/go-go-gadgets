@@ -1,4 +1,4 @@
-package rulefixes
+package positions
 
 type Position struct {
 	Line   int

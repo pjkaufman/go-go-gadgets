@@ -3,10 +3,12 @@ package rulefixes
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
-func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) ([]TextEdit, error) {
-	var edits []TextEdit
+func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) ([]positions.TextEdit, error) {
+	var edits []positions.TextEdit
 	lineNum--
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {
@@ -58,12 +60,12 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 		}
 
 		id = elementName + num
-		insertIdPos := Position{
+		insertIdPos := positions.Position{
 			Line:   lineNum + 1,
-			Column: getColumnForLine(line, elementStart+len(element)-1),
+			Column: positions.GetColumnForLine(line, elementStart+len(element)-1),
 		}
-		edits = append(edits, TextEdit{
-			Range: Range{
+		edits = append(edits, positions.TextEdit{
+			Range: positions.Range{
 				Start: insertIdPos,
 				End:   insertIdPos,
 			},
@@ -85,15 +87,15 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 	attrValue := line[attrValueStart : attrValueStart+attrEnd]
 
 	// Remove the attribute from the line
-	edits = append(edits, TextEdit{
-		Range: Range{
-			Start: Position{
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
+			Start: positions.Position{
 				Line:   lineNum + 1,
-				Column: getColumnForLine(line, attrStart-1),
+				Column: positions.GetColumnForLine(line, attrStart-1),
 			},
-			End: Position{
+			End: positions.Position{
 				Line:   lineNum + 1,
-				Column: getColumnForLine(line, attrValueStart+attrEnd+1),
+				Column: positions.GetColumnForLine(line, attrValueStart+attrEnd+1),
 			},
 		},
 	})
@@ -101,12 +103,12 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 	// Create the meta tag
 	metaTag := fmt.Sprintf(`<meta refines="#%s" property="%s">%s</meta>`, id, attribute[strings.Index(attribute, ":")+1:], attrValue) + "\n" + getLeadingWhitespace(line)
 
-	newTagInsertPos := Position{
+	newTagInsertPos := positions.Position{
 		Line:   lineNum + 2,
 		Column: 1,
 	}
-	edits = append(edits, TextEdit{
-		Range: Range{
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
 			Start: newTagInsertPos,
 			End:   newTagInsertPos,
 		},

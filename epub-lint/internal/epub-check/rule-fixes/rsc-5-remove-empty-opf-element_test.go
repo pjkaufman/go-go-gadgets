@@ -3,6 +3,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -11,7 +12,7 @@ type removeEmptyOpfElementsTestCase struct {
 	elementName    string
 	lineNum        int
 	opfContents    string
-	expectedChange rulefixes.TextEdit
+	expectedChange positions.TextEdit
 	expectedDelete bool
 }
 
@@ -23,13 +24,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
     <dc:identifier></dc:identifier>
     <dc:title>Example Book</dc:title>
 </metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 1,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   3,
 					Column: 1,
 				},
@@ -44,13 +45,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
     <dc:identifier />
     <dc:title>Example Book</dc:title>
 </metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 1,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   3,
 					Column: 1,
 				},
@@ -65,13 +66,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
     <dc:title>Example Book</dc:title>
     <dc:description></dc:description>
 </metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   3,
 					Column: 1,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   4,
 					Column: 1,
 				},
@@ -86,13 +87,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
     <dc:title>Example Book</dc:title>
     <dc:description />
 </metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   3,
 					Column: 1,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   4,
 					Column: 1,
 				},
@@ -106,13 +107,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 		opfContents: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Example Book</dc:title>
     <dc:description></dc:description></metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   3,
 					Column: 5,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   3,
 					Column: 38,
 				},
@@ -126,13 +127,13 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 		opfContents: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Example Book</dc:title>
     <dc:description /></metadata>`,
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   3,
 					Column: 5,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   3,
 					Column: 23,
 				},

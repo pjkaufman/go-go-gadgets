@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ type fixXmlIdValueTestCase struct {
 	inputText      string
 	lineNumber     int
 	attribute      string
-	expectedChange rulefixes.TextEdit
+	expectedChange positions.TextEdit
 }
 
 var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
@@ -24,13 +25,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</metadata>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 28,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 45,
 				},
@@ -44,13 +45,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</metadata>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 28,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 42,
 				},
@@ -64,13 +65,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</metadata>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 28,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 43,
 				},
@@ -84,13 +85,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</metadata>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 28,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 41,
 				},
@@ -104,13 +105,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</manifest>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 19,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 36,
 				},
@@ -124,13 +125,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</manifest>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 19,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 33,
 				},
@@ -144,13 +145,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</manifest>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 19,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 34,
 				},
@@ -164,13 +165,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</manifest>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 19,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 32,
 				},
@@ -184,13 +185,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</spine>`,
 		lineNumber: 2,
 		attribute:  "idref",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 25,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 42,
 				},
@@ -204,13 +205,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</spine>`,
 		lineNumber: 2,
 		attribute:  "idref",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 25,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 39,
 				},
@@ -224,13 +225,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</spine>`,
 		lineNumber: 2,
 		attribute:  "idref",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 25,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 40,
 				},
@@ -244,13 +245,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</spine>`,
 		lineNumber: 2,
 		attribute:  "idref",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 25,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 38,
 				},
@@ -269,13 +270,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</navMap>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 23,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 40,
 				},
@@ -294,13 +295,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</navMap>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 23,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 37,
 				},
@@ -319,13 +320,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</navMap>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 23,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 38,
 				},
@@ -344,13 +345,13 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 						</navMap>`,
 		lineNumber: 2,
 		attribute:  "id",
-		expectedChange: rulefixes.TextEdit{
-			Range: rulefixes.Range{
-				Start: rulefixes.Position{
+		expectedChange: positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.Position{
 					Line:   2,
 					Column: 23,
 				},
-				End: rulefixes.Position{
+				End: positions.Position{
 					Line:   2,
 					Column: 36,
 				},

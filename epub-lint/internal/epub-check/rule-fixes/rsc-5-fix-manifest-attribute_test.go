@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ type fixManifestAttributeTestCase struct {
 	attribute             string
 	line                  int
 	attributeNameToNumber map[string]int
-	expectedChanges       []rulefixes.TextEdit
+	expectedChanges       []positions.TextEdit
 }
 
 var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
@@ -25,25 +26,25 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 		attribute:             "opf:role",
 		line:                  2,
 		attributeNameToNumber: map[string]int{},
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{ // Insert id="creator1"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 31},
-					End:   rulefixes.Position{Line: 2, Column: 31},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 31},
+					End:   positions.Position{Line: 2, Column: 31},
 				},
 				NewText: ` id="creator1"`,
 			},
 			{ // Remove opf:role="aut"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 16},
-					End:   rulefixes.Position{Line: 2, Column: 31},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 16},
+					End:   positions.Position{Line: 2, Column: 31},
 				},
 				NewText: "",
 			},
 			{ // Insert meta tag
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 3, Column: 1},
-					End:   rulefixes.Position{Line: 3, Column: 1},
+				Range: positions.Range{
+					Start: positions.Position{Line: 3, Column: 1},
+					End:   positions.Position{Line: 3, Column: 1},
 				},
 				NewText: `<meta refines="#creator1" property="role">aut</meta>
     `,
@@ -57,18 +58,18 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 		attribute:             "opf:role",
 		line:                  2,
 		attributeNameToNumber: map[string]int{},
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{ // Remove opf:role="aut"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 46},
-					End:   rulefixes.Position{Line: 2, Column: 61},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 46},
+					End:   positions.Position{Line: 2, Column: 61},
 				},
 				NewText: "",
 			},
 			{ // Insert meta tag
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 3, Column: 1},
-					End:   rulefixes.Position{Line: 3, Column: 1},
+				Range: positions.Range{
+					Start: positions.Position{Line: 3, Column: 1},
+					End:   positions.Position{Line: 3, Column: 1},
 				},
 				NewText: `<meta refines="#creator-existing" property="role">aut</meta>
             `,
@@ -85,25 +86,25 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{ // Insert id="contributor2"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 59},
-					End:   rulefixes.Position{Line: 2, Column: 59},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 59},
+					End:   positions.Position{Line: 2, Column: 59},
 				},
 				NewText: ` id="contributor2"`,
 			},
 			{ // Remove opf:file-as="Contributor Name"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 28},
-					End:   rulefixes.Position{Line: 2, Column: 59},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 28},
+					End:   positions.Position{Line: 2, Column: 59},
 				},
 				NewText: "",
 			},
 			{ // Insert meta tag
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 3, Column: 1},
-					End:   rulefixes.Position{Line: 3, Column: 1},
+				Range: positions.Range{
+					Start: positions.Position{Line: 3, Column: 1},
+					End:   positions.Position{Line: 3, Column: 1},
 				},
 				NewText: `<meta refines="#contributor2" property="file-as">Contributor Name</meta>
             `,
@@ -120,18 +121,18 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{ // Remove opf:file-as="Contributor Name"
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 2, Column: 54},
-					End:   rulefixes.Position{Line: 2, Column: 85},
+				Range: positions.Range{
+					Start: positions.Position{Line: 2, Column: 54},
+					End:   positions.Position{Line: 2, Column: 85},
 				},
 				NewText: "",
 			},
 			{ // Insert meta tag
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{Line: 3, Column: 1},
-					End:   rulefixes.Position{Line: 3, Column: 1},
+				Range: positions.Range{
+					Start: positions.Position{Line: 3, Column: 1},
+					End:   positions.Position{Line: 3, Column: 1},
 				},
 				NewText: `<meta refines="#contributor-existing" property="file-as">Contributor Name</meta>
             `,

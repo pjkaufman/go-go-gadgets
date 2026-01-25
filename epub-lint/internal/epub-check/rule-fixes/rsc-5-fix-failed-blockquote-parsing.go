@@ -3,18 +3,20 @@ package rulefixes
 import (
 	"strings"
 	"unicode"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 // FixFailedBlockquoteParsing takes a line and column (both 1-based), and
 // file contents, and returns updated contents
 // It inserts </p> before the ending blockquote element at the given position,
 // and <p> after the opening blockquote element corresponding to that blockquote.
-func FixFailedBlockquoteParsing(line, column int, contents string) (edits []TextEdit) {
+func FixFailedBlockquoteParsing(line, column int, contents string) (edits []positions.TextEdit) {
 	if line < 1 {
 		return
 	}
 
-	offset := GetPositionOffset(contents, line, column)
+	offset := positions.GetPositionOffset(contents, line, column)
 	if offset == -1 {
 		return
 	}
@@ -52,18 +54,17 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (edits []Text
 
 	// Insert <p> after opening tag and </p> before closing tag
 	var (
-		insertStartTagPos = indexToPosition(contents, openEndIdx+1)
-		insertEndTagPos   = indexToPosition(contents, closeIdx)
+		insertStartTagPos = positions.IndexToPosition(contents, openEndIdx+1)
+		insertEndTagPos   = positions.IndexToPosition(contents, closeIdx)
 	)
-	// fmt.Println(string(contents[openEndIdx]) + pOpen)
-	edits = append(edits, TextEdit{
-		Range: Range{
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
 			Start: insertStartTagPos,
 			End:   insertStartTagPos,
 		},
 		NewText: pOpen,
-	}, TextEdit{
-		Range: Range{
+	}, positions.TextEdit{
+		Range: positions.Range{
 			Start: insertEndTagPos,
 			End:   insertEndTagPos,
 		},
@@ -71,14 +72,6 @@ func FixFailedBlockquoteParsing(line, column int, contents string) (edits []Text
 	})
 
 	return
-	// var sb strings.Builder
-	// sb.WriteString(contents[:openEndIdx+1]) // up to and including opening tag
-	// sb.WriteString(pOpen)
-	// sb.WriteString(contents[openEndIdx+1 : closeIdx]) // content between
-	// sb.WriteString(pClose)
-	// sb.WriteString(contents[closeIdx:]) // from closing tag onward
-
-	// return sb.String()
 }
 
 func trimRightSpace(s string) string {

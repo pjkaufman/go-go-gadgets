@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ import (
 type fixSectionElementUnexpectedTestCase struct {
 	contents        string
 	line, column    int
-	expectedChanges []rulefixes.TextEdit
+	expectedChanges []positions.TextEdit
 }
 
 var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpectedTestCase{
@@ -31,38 +32,38 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 </html>`,
 		line:   10,
 		column: 84,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   10,
 						Column: 41,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   10,
 						Column: 84,
 					},
 				},
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   10,
 						Column: 162,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   10,
 						Column: 172,
 					},
 				},
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   10,
 						Column: 1,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   10,
 						Column: 1,
 					},
@@ -70,12 +71,12 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 				NewText: `<section epub:type="frontmatter titlepage">`,
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   11,
 						Column: 1,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   11,
 						Column: 1,
 					},
@@ -101,38 +102,38 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 	//
 	//		line:   10,
 	//		column: 89,
-	//		expectedChanges: []rulefixes.TextEdit{
+	//		expectedChanges: []positions.TextEdit{
 	//			{
-	//				Range: rulefixes.Range{
-	//					Start: rulefixes.Position{
+	//				Range: positions.Range{
+	//					Start: positions.Position{
 	//						Line:   10,
 	//						Column: 46,
 	//					},
-	//					End: rulefixes.Position{
+	//					End: positions.Position{
 	//						Line:   10,
 	//						Column: 89,
 	//					},
 	//				},
 	//			},
 	//			{
-	//				Range: rulefixes.Range{
-	//					Start: rulefixes.Position{
+	//				Range: positions.Range{
+	//					Start: positions.Position{
 	//						Line:   10,
 	//						Column: 167,
 	//					},
-	//					End: rulefixes.Position{
+	//					End: positions.Position{
 	//						Line:   10,
 	//						Column: 177,
 	//					},
 	//				},
 	//			},
 	//			{
-	//				Range: rulefixes.Range{
-	//					Start: rulefixes.Position{
+	//				Range: positions.Range{
+	//					Start: positions.Position{
 	//						Line:   10,
 	//						Column: 6,
 	//					},
-	//					End: rulefixes.Position{
+	//					End: positions.Position{
 	//						Line:   10,
 	//						Column: 6,
 	//					},
@@ -140,12 +141,12 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 	//				NewText: `<section epub:type="frontmatter titlepage">`,
 	//			},
 	//			{
-	//				Range: rulefixes.Range{
-	//					Start: rulefixes.Position{
+	//				Range: positions.Range{
+	//					Start: positions.Position{
 	//						Line:   10,
 	//						Column: 188,
 	//					},
-	//					End: rulefixes.Position{
+	//					End: positions.Position{
 	//						Line:   10,
 	//						Column: 188,
 	//					},

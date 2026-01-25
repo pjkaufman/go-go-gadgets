@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,7 @@ type handleDuplicateIDTestCase struct {
 	name     string
 	contents string
 	id       string
-	changes  []rulefixes.TextEdit
+	changes  []positions.TextEdit
 }
 
 var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
@@ -36,14 +37,14 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
   </body>
 </html>`,
 		id: "chapter1",
-		changes: []rulefixes.TextEdit{
+		changes: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   4,
 						Column: 23,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   4,
 						Column: 23,
 					},
@@ -58,14 +59,14 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 <div id="chapter1"></div>
 <div id="chapter1"></div>`,
 		id: "chapter1",
-		changes: []rulefixes.TextEdit{
+		changes: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 18,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 18,
 					},
@@ -73,12 +74,12 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 				NewText: "_2",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   3,
 						Column: 18,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   3,
 						Column: 18,
 					},
@@ -93,14 +94,14 @@ var handleDuplicateIDTestCases = []handleDuplicateIDTestCase{
 <div id="chapter1"></div>
 <div id="chapter1-long"></div>`,
 		id: "chapter1",
-		changes: []rulefixes.TextEdit{
+		changes: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 18,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 18,
 					},

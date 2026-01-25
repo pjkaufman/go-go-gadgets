@@ -2,10 +2,12 @@ package rulefixes
 
 import (
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
-func FixSectionElementUnexpected(line, column int, contents string) (edits []TextEdit) {
-	offset := GetPositionOffset(contents, line, column) // gets the index that actually represents the line and column in the current file
+func FixSectionElementUnexpected(line, column int, contents string) (edits []positions.TextEdit) {
+	offset := positions.GetPositionOffset(contents, line, column) // gets the index that actually represents the line and column in the current file
 	if offset == -1 {
 		return
 	}
@@ -88,33 +90,33 @@ func FixSectionElementUnexpected(line, column int, contents string) (edits []Tex
 		endEnd        = offset + endIdx + len(endSection)
 		lineEndOffset = offset + lineEnd
 	)
-	edits = append(edits, TextEdit{
-		Range: Range{
-			Start: indexToPosition(contents, openIdx),
-			End:   indexToPosition(contents, offset),
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
+			Start: positions.IndexToPosition(contents, openIdx),
+			End:   positions.IndexToPosition(contents, offset),
 		},
 	},
-		TextEdit{
-			Range: Range{
-				Start: indexToPosition(contents, endStart),
-				End:   indexToPosition(contents, endEnd),
+		positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.IndexToPosition(contents, endStart),
+				End:   positions.IndexToPosition(contents, endEnd),
 			},
 		})
 
 	var (
 		endLineContent               = contents[endEnd:lineEndOffset]
 		lineContents                 = contents[lineStart:lineEndOffset]
-		insertStartPos, insertEndPos Position
+		insertStartPos, insertEndPos positions.Position
 	)
 	if indexToMoveTo == 0 {
-		insertStartPos = indexToPosition(contents, lineStart)
-		insertEndPos = Position{
+		insertStartPos = positions.IndexToPosition(contents, lineStart)
+		insertEndPos = positions.Position{
 			Line:   insertStartPos.Line + 1,
 			Column: 1,
 		}
 	} else if strings.TrimSpace(currentLine[:indexToMoveTo]) == "" {
-		insertStartPos = indexToPosition(contents, lineStart+indexToMoveTo)
-		insertEndPos = Position{
+		insertStartPos = positions.IndexToPosition(contents, lineStart+indexToMoveTo)
+		insertEndPos = positions.Position{
 			Line:   insertStartPos.Line + 1,
 			Column: 1,
 		}
@@ -133,29 +135,24 @@ func FixSectionElementUnexpected(line, column int, contents string) (edits []Tex
 			endLineContent = endLineContent[endTagIndex+len(endTag):]
 		}
 
-		insertStartPos = indexToPosition(contents, lineStart+indexToMoveTo)
-		insertEndPos = indexToPosition(contents, lineStart+endIndexToMoveTo)
+		insertStartPos = positions.IndexToPosition(contents, lineStart+indexToMoveTo)
+		insertEndPos = positions.IndexToPosition(contents, lineStart+endIndexToMoveTo)
 	}
 
-	edits = append(edits, TextEdit{
-		Range: Range{
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
 			Start: insertStartPos,
 			End:   insertStartPos,
 		},
 		NewText: openingSectionEl,
 	},
-		TextEdit{
-			Range: Range{
+		positions.TextEdit{
+			Range: positions.Range{
 				Start: insertEndPos,
 				End:   insertEndPos,
 			},
 			NewText: endSection,
 		})
-	// TODO: there are 4 edits that are potentially made
-	// opening el insert and delete
-	// ending ele insert and delete
-
-	// contents[:lineStart] + updatedLine + contents[offset+lineEnd:]
 
 	return
 }

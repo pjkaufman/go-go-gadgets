@@ -2,8 +2,9 @@ package epubhandler
 
 import (
 	"fmt"
-	"slices"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 const (
@@ -13,65 +14,65 @@ const (
 
 var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
 
-func RemoveIdFromSpine(opfContents, fileId string) (string, error) {
-	startIndex, endIndex, spineContent, err := getSpineContents(opfContents)
+func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
+	var edit positions.TextEdit
+
+	startIndex, _, spineContent, err := getSpineContents(opfContents)
 	if err != nil {
-		return "", err
+		return edit, err
 	}
 
 	lines := strings.Split(spineContent, "\n")
-	var idRef = fmt.Sprintf(`idref="%s"`, fileId)
+	idRef := fmt.Sprintf(`idref="%s"`, fileId)
+
+	// Global offset where <spine ...> content begins
+	spineGlobalOffset := startIndex + len(spineStartTag)
 
 	for i, line := range lines {
-		if strings.Contains(line, idRef) {
-			// start iterating all idref els
-			var (
-				found          = false
-				lineSubset     = line
-				startOfItemref int
-			)
-			for startOfItemref != -1 {
-				startOfItemref = strings.Index(lineSubset, itemRefStartTag)
-				if startOfItemref == -1 {
-					break
-				}
+		if !strings.Contains(line, idRef) {
+			continue
+		}
 
-				// for now we will assume the itemrefs are self-closing
-				var endOfItemref = strings.Index(lineSubset, "/>")
-				if endOfItemref == -1 {
-					return "", fmt.Errorf("failed to parse itemref out of line contents %q due to missing %q", lineSubset, "/>")
-				}
+		lineSubset := line
+		localOffset := 0
 
-				var (
-					endOfItemRef = endOfItemref + 2
-					itemrefEl    = lineSubset[startOfItemref:endOfItemRef]
-				)
-				if strings.Contains(itemrefEl, idRef) {
-					line = strings.Replace(line, itemrefEl, "", 1)
-
-					if strings.TrimSpace(line) == "" {
-						lines = slices.Delete(lines, i, i+1)
-					} else {
-						lines[i] = line
-					}
-
-					found = true
-					break
-				}
-
-				lineSubset = lineSubset[endOfItemRef:]
-			}
-
-			if found {
+		for {
+			startOfItemref := strings.Index(lineSubset, itemRefStartTag)
+			if startOfItemref == -1 {
 				break
 			}
+
+			endOfItemref := strings.Index(lineSubset, "/>")
+			if endOfItemref == -1 {
+				return edit, fmt.Errorf("failed to parse itemref out of line contents %q due to missing %q", lineSubset, "/>")
+			}
+
+			itemStart := localOffset + startOfItemref
+			itemEnd := localOffset + endOfItemref + 2
+			itemrefEl := line[itemStart:itemEnd]
+
+			if strings.Contains(itemrefEl, idRef) {
+				// Compute global delete range
+				globalStart := spineGlobalOffset + computeLineOffset(lines, i) + itemStart
+				globalEnd := spineGlobalOffset + computeLineOffset(lines, i) + itemEnd
+
+				edit = positions.TextEdit{
+					Range: positions.Range{
+						Start: positions.IndexToPosition(opfContents, globalStart),
+						End:   positions.IndexToPosition(opfContents, globalEnd),
+					},
+				}
+
+				return edit, nil
+			}
+
+			// Continue scanning the rest of the line
+			localOffset += endOfItemref + 2
+			lineSubset = lineSubset[endOfItemref+2:]
 		}
 	}
 
-	updatedSpineContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(spineStartTag)] + updatedSpineContent + opfContents[endIndex:]
-
-	return updatedOpfContents, nil
+	return edit, nil
 }
 
 func getSpineContents(opfContents string) (int, int, string, error) {

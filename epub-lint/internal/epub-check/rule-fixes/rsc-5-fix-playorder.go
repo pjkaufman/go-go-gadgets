@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 var navPointRegex = regexp.MustCompile(`(?i)(<navPoint[^>]*)`)
 
-func FixPlayOrder(fileContents string) (edits []TextEdit) {
+func FixPlayOrder(fileContents string) (edits []positions.TextEdit) {
 	navPoints := navPointRegex.FindAllStringIndex(fileContents, -1)
 	if len(navPoints) == 0 {
 		return
@@ -27,9 +29,9 @@ func FixPlayOrder(fileContents string) (edits []TextEdit) {
 			playOrderStart = strings.Index(match, "playOrder=")
 		)
 		if playOrderStart == -1 {
-			insertStartPos := indexToPosition(fileContents, navPointIndex[1])
-			edits = append(edits, TextEdit{
-				Range: Range{
+			insertStartPos := positions.IndexToPosition(fileContents, navPointIndex[1])
+			edits = append(edits, positions.TextEdit{
+				Range: positions.Range{
 					Start: insertStartPos,
 					End:   insertStartPos,
 				},
@@ -50,10 +52,10 @@ func FixPlayOrder(fileContents string) (edits []TextEdit) {
 			}
 
 			if match[playOrderStart:playOrderStart+playOrderEnd] != expectedPlayOrder {
-				insertStartPos := indexToPosition(fileContents, navPointIndex[0]+playOrderStart)
-				insertEndPos := indexToPosition(fileContents, navPointIndex[0]+playOrderStart+playOrderEnd)
-				edits = append(edits, TextEdit{
-					Range: Range{
+				insertStartPos := positions.IndexToPosition(fileContents, navPointIndex[0]+playOrderStart)
+				insertEndPos := positions.IndexToPosition(fileContents, navPointIndex[0]+playOrderStart+playOrderEnd)
+				edits = append(edits, positions.TextEdit{
+					Range: positions.Range{
 						Start: insertStartPos,
 						End:   insertEndPos,
 					},

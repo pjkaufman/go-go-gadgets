@@ -5,6 +5,7 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ import (
 type fixFailedBlockquoteParsingTestCase struct {
 	input           string
 	line, column    int
-	expectedChanges []rulefixes.TextEdit
+	expectedChanges []positions.TextEdit
 }
 
 var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingTestCase{
@@ -26,14 +27,14 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 		input:  `<blockquote><img src="foo" /></blockquote>`,
 		line:   1,
 		column: 43,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
@@ -41,12 +42,12 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 				NewText: "<p>",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 30,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 30,
 					},
@@ -59,14 +60,14 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 		input:  `<blockquote><span>foo</span> </blockquote>`,
 		line:   1,
 		column: 50,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
@@ -74,12 +75,12 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 				NewText: "<p>",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 30,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 30,
 					},
@@ -92,14 +93,14 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 		input:  `<blockquote>   some text    </blockquote>`,
 		line:   1,
 		column: 42,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 13,
 					},
@@ -107,12 +108,12 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 				NewText: "<p>",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   1,
 						Column: 29,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   1,
 						Column: 29,
 					},
@@ -133,14 +134,14 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 </body></html>`,
 		line:   2,
 		column: 43,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 13,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 13,
 					},
@@ -148,12 +149,12 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 				NewText: "<p>",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   2,
 						Column: 30,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   2,
 						Column: 30,
 					},
@@ -169,14 +170,14 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 </body></html>`,
 		line:   3,
 		column: 42,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   3,
 						Column: 13,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   3,
 						Column: 13,
 					},
@@ -184,12 +185,12 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 				NewText: "<p>",
 			},
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   3,
 						Column: 29,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   3,
 						Column: 29,
 					},

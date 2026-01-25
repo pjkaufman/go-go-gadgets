@@ -3,6 +3,8 @@ package rulefixes
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 const (
@@ -12,34 +14,47 @@ const (
 
 var ErrNoMetadata = fmt.Errorf("metadata tag not found in OPF contents")
 
-func FixMissingUniqueIdentifierId(opfContents string, id string) (string, error) {
-	startIndex, endIndex, manifestContent, err := getMetadataContents(opfContents)
+func FixMissingUniqueIdentifierId(opfContents string, id string) (positions.TextEdit, error) {
+	var edit positions.TextEdit
+	startIndex, _, manifestContent, err := getMetadataContents(opfContents)
 	if err != nil {
-		return "", err
+		return edit, err
 	}
 
-	lines := strings.Split(manifestContent, "\n")
+	var (
+		remainingManifestContent                 = manifestContent
+		identifierStartIndex, identifierEndIndex int
+		insertIndex                              = startIndex
+	)
 
-	for i, line := range lines {
-		if strings.Contains(line, "<dc:identifier") {
-			if strings.Contains(line, "id=") {
-				continue
-			}
-
-			closeTagIndex := strings.Index(line, ">")
-			if closeTagIndex == -1 {
-				continue
-			}
-
-			lines[i] = line[:closeTagIndex] + ` id="` + id + `"` + line[closeTagIndex:]
-			break
+	for identifierStartIndex != -1 {
+		identifierStartIndex = strings.Index(remainingManifestContent, "<dc:identifier")
+		if identifierStartIndex == -1 {
+			return edit, nil
 		}
+
+		insertIndex += identifierStartIndex
+		identifierEndIndex = strings.Index(remainingManifestContent[identifierStartIndex:], ">")
+		if identifierEndIndex == -1 {
+			remainingManifestContent = remainingManifestContent[identifierStartIndex:]
+			continue // something is wrong, so ignore this element
+		}
+
+		insertIndex += identifierEndIndex
+		identifierOpeningEl := remainingManifestContent[identifierStartIndex : identifierStartIndex+identifierEndIndex]
+		if strings.Contains(identifierOpeningEl, "id=") {
+			remainingManifestContent = remainingManifestContent[identifierStartIndex+identifierEndIndex:]
+			continue
+		}
+
+		insertIdPos := positions.IndexToPosition(opfContents, insertIndex)
+		edit.Range.Start = insertIdPos
+		edit.Range.End = insertIdPos
+		edit.NewText = ` id="` + id + `"`
+		return edit, nil
 	}
 
-	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(metadataStartTag)] + updatedManifestContent + opfContents[endIndex:]
-
-	return updatedOpfContents, nil
+	return edit, nil
 }
 
 func getMetadataContents(opfContents string) (int, int, string, error) {

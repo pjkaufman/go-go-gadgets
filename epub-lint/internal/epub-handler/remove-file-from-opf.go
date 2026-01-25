@@ -2,8 +2,9 @@ package epubhandler
 
 import (
 	"fmt"
-	"slices"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 const (
@@ -12,96 +13,120 @@ const (
 	itemRefStartTag = "<itemref"
 )
 
-func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
-	startIndex, endIndex, manifestContent, err := GetManifestContents(opfContents)
+func RemoveFileFromOpf(opfContents, fileName string) ([]positions.TextEdit, error) {
+	var edits []positions.TextEdit
+
+	startIndex, _, manifestContent, err := GetManifestContents(opfContents)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	lines := strings.Split(manifestContent, "\n")
 	var fileID string
 
+	manifestGlobalOffset := startIndex + len(ManifestStartTag)
+
 	for i, line := range lines {
-		// find each item in the line and check if the href is the one you are looking for
-		// if it is, remove it from that line. If the line is now blank, remove it.
-		var (
-			lineSubset  = line
-			startOfItem int
-		)
-		for startOfItem != -1 {
-			startOfItem = strings.Index(lineSubset, itemStartTag)
+		lineSubset := line
+		localOffset := 0
+
+		for {
+			startOfItem := strings.Index(lineSubset, itemStartTag)
 			if startOfItem == -1 {
 				break
 			}
 
-			// for now we will assume the items are self-closing
-			var endOfItem = strings.Index(lineSubset, "/>")
+			endOfItem := strings.Index(lineSubset, "/>")
 			if endOfItem == -1 {
-				return "", fmt.Errorf("failed to parse item out of line contents %q due to missing %q", lineSubset, "/>")
+				return nil, fmt.Errorf("failed to parse item out of line contents %q due to missing %q", lineSubset, "/>")
 			}
 
-			var (
-				itemEndIndex = endOfItem + 2
-				itemEl       = lineSubset[startOfItem:itemEndIndex]
-			)
-			// to make sure we are only operating on the href
-			var startOfHref = strings.Index(itemEl, hrefAttribute)
-			if startOfHref == -1 {
-				lineSubset = lineSubset[itemEndIndex:]
+			itemStart := localOffset + startOfItem
+			itemEnd := localOffset + endOfItem + 2
+			itemEl := line[itemStart:itemEnd]
+
+			// find href
+			hrefIdx := strings.Index(itemEl, hrefAttribute)
+			if hrefIdx == -1 {
+				localOffset += endOfItem
+				lineSubset = lineSubset[endOfItem:]
 				continue
 			}
 
-			startOfHref += len(hrefAttribute)
-			var hrefQuote = itemEl[startOfHref : startOfHref+1]
-			startOfHref++
+			hrefIdx += len(hrefAttribute)
+			quote := itemEl[hrefIdx : hrefIdx+1]
+			hrefIdx++
 
-			var endOfHrefIndex = strings.Index(itemEl[startOfHref:], hrefQuote)
-			if endOfHrefIndex == -1 {
-				lineSubset = lineSubset[itemEndIndex:]
-				continue // something went wrong, so we have to ignore the el...
+			hrefEnd := strings.Index(itemEl[hrefIdx:], quote)
+			if hrefEnd == -1 {
+				localOffset += endOfItem
+				lineSubset = lineSubset[endOfItem:]
+				continue
 			}
 
-			var hrefContent = itemEl[startOfHref : startOfHref+endOfHrefIndex]
+			hrefContent := itemEl[hrefIdx : hrefIdx+hrefEnd]
 			if !strings.HasSuffix(hrefContent, fileName) {
-				lineSubset = lineSubset[endOfItem:] // start over with any other items on this line
+				localOffset += endOfItem
+				lineSubset = lineSubset[endOfItem:]
 				continue
 			}
 
-			hrefContent = strings.TrimSuffix(hrefContent, fileName)
-
-			// check for a false positive by checking that previous char is not a slash or a quote
-			var previousChar rune
-			if len(hrefContent) == 0 {
-				previousChar = rune(hrefQuote[0])
+			// false positive check
+			trimmed := strings.TrimSuffix(hrefContent, fileName)
+			var prev rune
+			if len(trimmed) == 0 {
+				prev = rune(quote[0])
 			} else {
-				previousChar = rune(hrefContent[len(hrefContent)-1])
+				prev = rune(trimmed[len(trimmed)-1])
 			}
-			if previousChar != '\'' && previousChar != '"' && previousChar != '\\' && previousChar != '/' {
+			if prev != '\'' && prev != '"' && prev != '\\' && prev != '/' {
+				localOffset += endOfItem
 				lineSubset = lineSubset[endOfItem:]
 				continue
 			}
 
 			fileID = ExtractID(itemEl)
-			line = strings.Replace(line, itemEl, "", 1)
 
-			if strings.TrimSpace(line) == "" {
-				lines = slices.Delete(lines, i, i+1)
-			} else {
-				lines[i] = line
-			}
+			// compute global delete range
+			globalStart := manifestGlobalOffset + computeLineOffset(lines, i) + itemStart
+			globalEnd := manifestGlobalOffset + computeLineOffset(lines, i) + itemEnd
+
+			edits = append(edits, positions.TextEdit{
+				Range: positions.Range{
+					Start: positions.IndexToPosition(opfContents, globalStart),
+					End:   positions.IndexToPosition(opfContents, globalEnd),
+				},
+			})
 
 			break
 		}
 	}
 
-	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(ManifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
-
 	if fileID == "" {
-		return updatedOpfContents, nil
+		return edits, nil
 	}
 
-	return RemoveIdFromSpine(updatedOpfContents, fileID)
+	// append spine edits
+	spineEdit, err := RemoveIdFromSpine(opfContents, fileID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !spineEdit.IsEmpty() {
+
+		edits = append(edits, spineEdit)
+	}
+
+	return edits, nil
+}
+
+// computeLineOffset returns the byte offset of the start of line i within manifestContent
+func computeLineOffset(lines []string, lineIndex int) int {
+	offset := 0
+	for j := 0; j < lineIndex; j++ {
+		offset += len(lines[j]) + 1 // +1 for newline
+	}
+	return offset
 }
 
 func ExtractID(line string) string {

@@ -5,13 +5,14 @@ package rulefixes_test
 import (
 	"testing"
 
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
 )
 
 type updatePlayOrderTestCase struct {
 	input           string
-	expectedChanges []rulefixes.TextEdit
+	expectedChanges []positions.TextEdit
 }
 
 var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
@@ -28,14 +29,14 @@ var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
     </navPoint>
   </navMap>
 </ncx>`,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   7,
 						Column: 42,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   7,
 						Column: 43,
 					},
@@ -57,14 +58,14 @@ var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
     </navPoint>
   </navMap>
 </ncx>`,
-		expectedChanges: []rulefixes.TextEdit{
+		expectedChanges: []positions.TextEdit{
 			{
-				Range: rulefixes.Range{
-					Start: rulefixes.Position{
+				Range: positions.Range{
+					Start: positions.Position{
 						Line:   7,
 						Column: 30,
 					},
-					End: rulefixes.Position{
+					End: positions.Position{
 						Line:   7,
 						Column: 30,
 					},

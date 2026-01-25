@@ -3,11 +3,13 @@ package rulefixes
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 // RemoveEmptyOpfElement processes the specified element in the OPF contents
-func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string) (TextEdit, bool, error) {
-	var edit TextEdit
+func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string) (positions.TextEdit, bool, error) {
+	var edit positions.TextEdit
 	lineNum--
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {
@@ -56,8 +58,8 @@ func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string)
 		return edit, true, nil
 	}
 
-	edit.Range.Start.Column = getColumnForLine(line, startIndex)
-	edit.Range.End.Column = getColumnForLine(line, endIndex)
+	edit.Range.Start.Column = positions.GetColumnForLine(line, startIndex)
+	edit.Range.End.Column = positions.GetColumnForLine(line, endIndex)
 
 	return edit, false, nil
 }
