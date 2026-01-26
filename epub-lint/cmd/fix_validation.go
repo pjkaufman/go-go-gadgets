@@ -42,7 +42,7 @@ var autoFixValidationCmd = &cobra.Command{
 		- Move attribute properties to their own meta elements that refine the element they were on to fix incorrect scheme declarations or other prefixes
 		- Remove empty elements that should not be empty but are empty which is typically an identifier or description that has 0 content in it
 		- Update duplicate ids to no longer be duplicates
-		- Add paragraph tags inside of blockquote elements that were not able to be parsed and either were a self-closing element, just text, or a span tag
+		- Add div tags inside of blockquote elements that were not able to be parsed and do not have a blockquote inside of them
 		- Add an empty alt attribute to img elements that are missing them
 		- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
