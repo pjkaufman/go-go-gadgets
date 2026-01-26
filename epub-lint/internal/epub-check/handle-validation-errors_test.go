@@ -193,7 +193,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			},
 		},
 		validFilesToInitialContent: map[string]string{
-			"OPS/content.opf": opfAddPropertiesExpected,
+			"OPS/content.opf": opfAddPropertiesOriginal,
 		},
 	},
 	"OPF 15: Removing properties from different files should work without issue": {
