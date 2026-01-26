@@ -22,55 +22,55 @@ func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 		return edit, err
 	}
 
-	lines := strings.Split(spineContent, "\n")
+	// lines := strings.Split(spineContent, "\n")
 	idRef := fmt.Sprintf(`idref="%s"`, fileId)
-
-	// Global offset where <spine ...> content begins
-	spineGlobalOffset := startIndex + len(spineStartTag)
-
-	for i, line := range lines {
-		if !strings.Contains(line, idRef) {
-			continue
-		}
-
-		lineSubset := line
-		localOffset := 0
-
-		for {
-			startOfItemref := strings.Index(lineSubset, itemRefStartTag)
-			if startOfItemref == -1 {
-				break
-			}
-
-			endOfItemref := strings.Index(lineSubset, "/>")
-			if endOfItemref == -1 {
-				return edit, fmt.Errorf("failed to parse itemref out of line contents %q due to missing %q", lineSubset, "/>")
-			}
-
-			itemStart := localOffset + startOfItemref
-			itemEnd := localOffset + endOfItemref + 2
-			itemrefEl := line[itemStart:itemEnd]
-
-			if strings.Contains(itemrefEl, idRef) {
-				// Compute global delete range
-				globalStart := spineGlobalOffset + computeLineOffset(lines, i) + itemStart
-				globalEnd := spineGlobalOffset + computeLineOffset(lines, i) + itemEnd
-
-				edit = positions.TextEdit{
-					Range: positions.Range{
-						Start: positions.IndexToPosition(opfContents, globalStart),
-						End:   positions.IndexToPosition(opfContents, globalEnd),
-					},
-				}
-
-				return edit, nil
-			}
-
-			// Continue scanning the rest of the line
-			localOffset += endOfItemref + 2
-			lineSubset = lineSubset[endOfItemref+2:]
-		}
+	idRefIndex := strings.Index(spineContent, idRef)
+	if idRefIndex == -1 {
+		return edit, nil
 	}
+
+	startItemRefIndex := strings.LastIndex(spineContent[:idRefIndex], itemRefStartTag)
+	if startItemRefIndex == -1 {
+		return edit, fmt.Errorf("failed to parse itemref out of spine content for id %q due to missing %q", fileId, itemRefStartTag)
+	}
+
+	endItemRefIndex := strings.Index(spineContent[idRefIndex:], "/>")
+	if endItemRefIndex == -1 {
+		return edit, fmt.Errorf("failed to parse itemref out of spine content for id %q due to missing %q", fileId, "/>")
+	}
+
+	endItemRefIndex += 2
+
+	startOfLineIndex := strings.LastIndex(spineContent[:idRefIndex], "\n")
+	if startOfLineIndex == -1 {
+		startOfLineIndex = 0
+	}
+
+	if startItemRefIndex < startOfLineIndex {
+		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the start of itemref being on a different line from the itemref's href", fileId)
+	}
+
+	endOfLineIndex := strings.LastIndex(spineContent[idRefIndex:], "\n")
+	if endOfLineIndex == -1 {
+		endOfLineIndex = len(spineContent) - 1
+	}
+
+	if endItemRefIndex > endOfLineIndex {
+		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the end of itemref being on a different line from the itemref's href", fileId)
+	}
+
+	var startPos, endPos positions.Position
+	if strings.TrimSpace(spineContent[startOfLineIndex:startItemRefIndex]+spineContent[idRefIndex+endItemRefIndex:idRefIndex+endOfLineIndex]) == "" {
+		// no other line content other than whitespace is on the line...
+		startPos = positions.IndexToPosition(opfContents, startIndex+startOfLineIndex)
+		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endOfLineIndex)
+	} else {
+		startPos = positions.IndexToPosition(opfContents, startIndex+startItemRefIndex)
+		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endItemRefIndex)
+	}
+
+	edit.Range.Start = startPos
+	edit.Range.End = endPos
 
 	return edit, nil
 }
@@ -83,5 +83,5 @@ func getSpineContents(opfContents string) (int, int, string, error) {
 		return 0, 0, "", ErrNoSpine
 	}
 
-	return startIndex, endIndex, opfContents[startIndex+len(spineStartTag) : endIndex], nil
+	return startIndex + len(spineStartTag) + 1, endIndex, opfContents[startIndex+len(spineStartTag)+1 : endIndex], nil
 }
