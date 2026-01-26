@@ -31,7 +31,6 @@ func RemoveDuplicateManifestEntry(line, column int, opfContents string) ([]posit
 			},
 		},
 	})
-	// opfContents = opfContents[:openIdx] + opfContents[offset:]
 
 	fileId := epubhandler.ExtractID(duplicateEl)
 	if fileId == "" {

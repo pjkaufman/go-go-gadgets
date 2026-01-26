@@ -17,12 +17,11 @@ var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
 func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 	var edit positions.TextEdit
 
-	startIndex, _, spineContent, err := getSpineContents(opfContents)
+	startIndex, spineContent, err := getSpineContents(opfContents)
 	if err != nil {
 		return edit, err
 	}
 
-	// lines := strings.Split(spineContent, "\n")
 	idRef := fmt.Sprintf(`idref="%s"`, fileId)
 	idRefIndex := strings.Index(spineContent, idRef)
 	if idRefIndex == -1 {
@@ -75,13 +74,13 @@ func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 	return edit, nil
 }
 
-func getSpineContents(opfContents string) (int, int, string, error) {
+func getSpineContents(opfContents string) (int, string, error) {
 	startIndex := strings.Index(opfContents, spineStartTag)
 	endIndex := strings.Index(opfContents, spineEndTag)
 
 	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", ErrNoSpine
+		return 0, "", ErrNoSpine
 	}
 
-	return startIndex + len(spineStartTag) + 1, endIndex, opfContents[startIndex+len(spineStartTag)+1 : endIndex], nil
+	return startIndex + len(spineStartTag) + 1, opfContents[startIndex+len(spineStartTag)+1 : endIndex], nil
 }

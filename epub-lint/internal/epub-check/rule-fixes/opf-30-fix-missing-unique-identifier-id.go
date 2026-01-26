@@ -16,7 +16,7 @@ var ErrNoMetadata = fmt.Errorf("metadata tag not found in OPF contents")
 
 func FixMissingUniqueIdentifierId(opfContents string, id string) (positions.TextEdit, error) {
 	var edit positions.TextEdit
-	startIndex, _, manifestContent, err := getMetadataContents(opfContents)
+	startIndex, manifestContent, err := getMetadataContents(opfContents)
 	if err != nil {
 		return edit, err
 	}
@@ -57,13 +57,13 @@ func FixMissingUniqueIdentifierId(opfContents string, id string) (positions.Text
 	return edit, nil
 }
 
-func getMetadataContents(opfContents string) (int, int, string, error) {
+func getMetadataContents(opfContents string) (int, string, error) {
 	startIndex := strings.Index(opfContents, metadataStartTag)
 	endIndex := strings.Index(opfContents, metadataEndTag)
 
 	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", ErrNoMetadata
+		return 0, "", ErrNoMetadata
 	}
 
-	return startIndex + len(metadataStartTag), endIndex, opfContents[startIndex+len(metadataStartTag) : endIndex], nil
+	return startIndex + len(metadataStartTag), opfContents[startIndex+len(metadataStartTag) : endIndex], nil
 }
