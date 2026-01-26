@@ -94,6 +94,10 @@ var (
 	generalOpfOriginal string
 	//go:embed testdata/general/content_updated.opf
 	generalOpfExpected string
+	//go:embed testdata/general/blockquote-img.html
+	blockquoteImgHtmlOriginal string
+	//go:embed testdata/general/blockquote-img_updated.html
+	blockquoteImgHtmlExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -1160,6 +1164,61 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/toc.ncx":        generalNcxOriginal,
 			"OPS/content.opf":    generalOpfOriginal,
 			"OPS/Text/file.html": generalHtmlOriginal,
+		},
+	},
+	`When an image without an alt is inside of an invalid blockquote, both issues should be fixed without breaking the HTML`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlOriginal,
 		},
 	},
 }
