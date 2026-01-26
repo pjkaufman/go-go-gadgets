@@ -110,16 +110,10 @@ func FixSectionElementUnexpected(line, column int, contents string) (edits []pos
 	)
 	if indexToMoveTo == 0 {
 		insertStartPos = positions.IndexToPosition(contents, lineStart)
-		insertEndPos = positions.Position{
-			Line:   insertStartPos.Line + 1,
-			Column: 1,
-		}
+		insertEndPos = positions.IndexToPosition(contents, lineEndOffset)
 	} else if strings.TrimSpace(currentLine[:indexToMoveTo]) == "" {
 		insertStartPos = positions.IndexToPosition(contents, lineStart+indexToMoveTo)
-		insertEndPos = positions.Position{
-			Line:   insertStartPos.Line + 1,
-			Column: 1,
-		}
+		insertEndPos = positions.IndexToPosition(contents, lineEndOffset)
 	} else {
 		var endIndexToMoveTo = strings.Index(lineContents, endLineContent)
 		for _, tagName := range movedBeforeElements {

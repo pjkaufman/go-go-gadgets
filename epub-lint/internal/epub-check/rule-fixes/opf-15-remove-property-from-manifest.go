@@ -58,7 +58,7 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (positio
 		if strings.TrimSpace(attributeValue) == property {
 			// remove properties attribute and the preceding space
 			removePropertiesStartPos = positions.IndexToPosition(opfContents, startIndex+startOfElement+startOfPropertiesIndex-1)
-			removePropertiesEndPos = positions.IndexToPosition(opfContents, startIndex+startOfElement+startOfAttributeValue+attributeEnd)
+			removePropertiesEndPos = positions.IndexToPosition(opfContents, startIndex+startOfElement+startOfAttributeValue+attributeEnd+1)
 		} else {
 			propertyIndex := strings.Index(attributeValue, property)
 			if propertyIndex == -1 {
@@ -70,7 +70,7 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (positio
 				removePropertiesEndPos = positions.IndexToPosition(opfContents, startOfValueIndex+len(property)+1) // remove the following space
 			} else {
 				removePropertiesStartPos = positions.IndexToPosition(opfContents, startOfValueIndex+propertyIndex-1) // remove the preceding space
-				removePropertiesEndPos = positions.IndexToPosition(opfContents, startOfValueIndex+propertyIndex+len(property)+1)
+				removePropertiesEndPos = positions.IndexToPosition(opfContents, startOfValueIndex+propertyIndex+len(property))
 			}
 		}
 	}

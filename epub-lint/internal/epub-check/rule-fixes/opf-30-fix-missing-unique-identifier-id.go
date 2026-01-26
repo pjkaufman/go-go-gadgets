@@ -65,5 +65,5 @@ func getMetadataContents(opfContents string) (int, int, string, error) {
 		return 0, 0, "", ErrNoMetadata
 	}
 
-	return startIndex, endIndex, opfContents[startIndex+len(metadataStartTag) : endIndex], nil
+	return startIndex + len(metadataStartTag), endIndex, opfContents[startIndex+len(metadataStartTag) : endIndex], nil
 }

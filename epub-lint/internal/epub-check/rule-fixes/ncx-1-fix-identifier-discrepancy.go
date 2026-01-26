@@ -202,17 +202,20 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 				Start: positions.IndexToPosition(opfContents, oldIdentifierElIndex+idx),
 				End:   positions.IndexToPosition(opfContents, oldIdentifierElIndex+idx+len(idAttr)),
 			},
-			NewText: "",
 		})
 	}
 
 	// Insert new identifier element after old one
-	insertPoint := oldIdentifierElIndex + len(oldIdentifierEl)
+	var (
+		insertPoint = oldIdentifierElIndex + len(oldIdentifierEl)
+		newLine     = "\n" + oldLeadingWS + fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, newIdentifier)
+	)
+	if strings.Contains(oldIdentifierEl, metadataEndTag) {
+		insertPoint -= len(metadataEndTag)
+		newLine += "\n" + getMetadataWhitespaceForNewLine(oldLeadingWS)
+	}
+
 	pos := positions.IndexToPosition(opfContents, insertPoint)
-
-	newLine := "\n" + oldLeadingWS +
-		fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, newIdentifier)
-
 	edits = append(edits, positions.TextEdit{
 		Range: positions.Range{
 			Start: pos,
