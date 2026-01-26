@@ -18,33 +18,33 @@ type addScriptedToManifest struct {
 var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 	"Add properties attribute if no attribute is already present for item matching path file name": {
 		inputText: `
-	<package version="3.0">
-	<manifest>
-	<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
-	</manifest>
-	</package>`,
+<package version="3.0">
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml"/>
+</manifest>
+</package>`,
 		inputPath: "OEBPS/chapter1.xhtml",
 		expectedOutput: `
-	<package version="3.0">
-	<manifest>
-	<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
-	</manifest>
-	</package>`,
+<package version="3.0">
+<manifest>
+<item href="OEBPS/chapter1.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
+</manifest>
+</package>`,
 	},
 	"Add scripted to properties attribute if the attribute is already present for item matching path file name": {
 		inputText: `
-	<package version="3.0">
-	<manifest>
-	<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-	</manifest>
-	</package>`,
+<package version="3.0">
+<manifest>
+<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+</manifest>
+</package>`,
 		inputPath: "OEBPS/nav.xhtml",
 		expectedOutput: `
-	<package version="3.0">
-	<manifest>
-	<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="scripted nav"/>
-	</manifest>
-	</package>`,
+<package version="3.0">
+<manifest>
+<item href="OEBPS/nav.xhtml" media-type="application/xhtml+xml" properties="scripted nav"/>
+</manifest>
+</package>`,
 	},
 	"Add scripted to properties attribute if it is empty for the path file name": {
 		inputText: `
