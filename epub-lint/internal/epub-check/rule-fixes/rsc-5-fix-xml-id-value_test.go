@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
 )
 
 // fixXmlIdValueTestCase structure to hold the OPF/NCX content, line number, and attribute to update
@@ -223,9 +222,9 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 func TestFixXmlIdValue(t *testing.T) {
 	for name, args := range fixXmlIdValueTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := rulefixes.FixXmlIdValue(args.inputText, args.lineNumber, args.attribute)
+			edit := rulefixes.FixXmlIdValue(args.inputText, args.lineNumber, args.attribute)
 
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.inputText, args.expectedOutput, edit)
 		})
 	}
 }

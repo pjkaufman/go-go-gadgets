@@ -15,5 +15,5 @@ func GetManifestContents(opfContents string) (int, int, string, error) {
 		return 0, 0, "", ErrNoManifest
 	}
 
-	return startIndex, endIndex, opfContents[startIndex+len(ManifestStartTag) : endIndex], nil
+	return startIndex + len(ManifestStartTag), endIndex, opfContents[startIndex+len(ManifestStartTag) : endIndex], nil
 }

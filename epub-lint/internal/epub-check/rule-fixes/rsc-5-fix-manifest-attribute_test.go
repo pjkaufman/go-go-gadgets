@@ -23,7 +23,7 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
     <dc:creator opf:role="aut">Author Name</dc:creator>
 </metadata>`,
 		attribute:             "opf:role",
-		line:                  1,
+		line:                  2,
 		attributeNameToNumber: map[string]int{},
 		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:creator id="creator1">Author Name</dc:creator>
@@ -36,7 +36,7 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 </metadata>`,
 
 		attribute:             "opf:role",
-		line:                  1,
+		line:                  2,
 		attributeNameToNumber: map[string]int{},
 		expectedOutput: `<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
 			<dc:creator id="creator-existing">Author Name</dc:creator>
@@ -49,7 +49,7 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 </metadata>`,
 
 		attribute: "opf:file-as",
-		line:      1,
+		line:      2,
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
@@ -63,7 +63,7 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 			<dc:contributor id="contributor-existing" opf:file-as="Contributor Name">Contributor Name</dc:contributor>
 </metadata>`,
 		attribute: "opf:file-as",
-		line:      1,
+		line:      2,
 		attributeNameToNumber: map[string]int{
 			"contributor": 2,
 		},
@@ -77,10 +77,10 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 func TestFixManifestAttribute(t *testing.T) {
 	for name, args := range fixManifestAttributeTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.FixManifestAttribute(args.opfContents, args.attribute, args.line, args.attributeNameToNumber)
+			edits, err := rulefixes.FixManifestAttribute(args.opfContents, args.attribute, args.line, args.attributeNameToNumber)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edits...)
 		})
 	}
 }

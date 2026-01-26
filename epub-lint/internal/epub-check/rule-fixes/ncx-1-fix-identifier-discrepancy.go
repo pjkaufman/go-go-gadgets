@@ -4,61 +4,54 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
-func FixIdentifierDiscrepancy(opfContents, ncxContents string) (string, error) {
-	// Extract the unique identifier from the NCX
+func FixIdentifierDiscrepancy(opfContents, ncxContents string) ([]positions.TextEdit, error) {
+	var edits []positions.TextEdit
+
 	ncxIdentifier, err := getNcxIdentifier(ncxContents)
 	if err != nil {
-		return "", err
+		return edits, err
 	}
 
-	// Extract the unique identifier from the OPF
-	opfIdentifierEl, opfIdentifier, opfIdentifierID := getOpfIdentifier(opfContents)
+	opfIdentifierEl, opfIdentifier, opfIdentifierID, opfIdentifierIndex := getOpfIdentifier(opfContents)
 
-	var (
-		indexOfEndTag    = strings.Index(opfContents, metadataEndTag)
-		textUntilEndTag  = opfContents[:indexOfEndTag]
-		hasNcxIdentifier = strings.Contains(opfContents, ">"+ncxIdentifier+"<")
-	)
+	indexOfEndTag := strings.Index(opfContents, metadataEndTag)
+	textUntilEndTag := opfContents[:indexOfEndTag]
+	hasNcxIdentifier := strings.Contains(opfContents, ">"+ncxIdentifier+"<")
 
+	// Scenario 1: OPF has no unique identifier but contains the NCX identifier
+	if opfIdentifier == "" && ncxIdentifier != "" && hasNcxIdentifier {
+		return moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl, opfIdentifierIndex), nil
+	}
+
+	// Scenario 2: OPF has no unique identifier, NCX does
 	if opfIdentifier == "" && ncxIdentifier != "" {
-		// Scenario 1: No unique identifier in OPF, but an identifier el exists and matches the NCX id
-		if hasNcxIdentifier {
-			opfContents = moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, "")
-
-			return opfContents, nil
-		}
-
-		// Scenario 2: No unique identifier in OPF, but it is present in NCX
-		var (
-			previousNewLineIndex = strings.LastIndex(textUntilEndTag, "\n")
-			previousNewLine      string
-		)
-		if previousNewLineIndex == -1 {
-			previousNewLine = textUntilEndTag
+		prevNL := strings.LastIndex(textUntilEndTag, "\n")
+		var prevLine string
+		if prevNL == -1 {
+			prevLine = textUntilEndTag
 		} else {
-			previousNewLine = opfContents[previousNewLineIndex+1 : indexOfEndTag]
+			prevLine = opfContents[prevNL+1 : indexOfEndTag]
 		}
 
-		opfContents = addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID, previousNewLine)
-		return opfContents, nil
+		edit := addOpfIdentifier(opfContents, ncxIdentifier, opfIdentifierID, prevLine)
+		return []positions.TextEdit{edit}, nil
 	}
 
-	// Scenario 3: Different unique identifier in OPF and NCX and the NCX identifier is not already present
+	// Scenario 3: OPF and NCX identifiers differ, NCX identifier not present in OPF
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && !hasNcxIdentifier {
-		opfContents = addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier)
-
-		return opfContents, nil
+		return addOpfIdentifierAndUpdateExistingOne(opfIdentifierEl, opfContents, opfIdentifierID, ncxIdentifier, opfIdentifierIndex), nil
 	}
 
-	// Scenario 4: Different unique identifier in OPF and NCX where the OPF has the identifier from the NCX, but it is not the identifier specified in the OPF
+	// Scenario 4: OPF and NCX differ, but OPF already contains NCX identifier
 	if opfIdentifier != "" && ncxIdentifier != "" && opfIdentifier != ncxIdentifier && hasNcxIdentifier {
-		opfContents = moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl)
-		return opfContents, nil
+		return moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, opfIdentifierID, opfIdentifierEl, opfIdentifierIndex), nil
 	}
 
-	return opfContents, nil
+	return edits, nil
 }
 
 // getNcxIdentifier extracts the unique identifier from the NCX content.
@@ -96,7 +89,7 @@ func getNcxIdentifier(ncxContents string) (string, error) {
 }
 
 // getOpfIdentifier extracts the unique identifier from the OPF content.
-func getOpfIdentifier(opfContents string) (string, string, string) {
+func getOpfIdentifier(opfContents string) (string, string, string, int) {
 	// Attempt to find the unique-identifier attribute value
 	uniqueIdAttr := `unique-identifier="`
 	uniqueIdStart := strings.Index(opfContents, uniqueIdAttr)
@@ -132,7 +125,7 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 				identifierEnd := strings.Index(fullLine[identifierStart:], `<`)
 				if identifierEnd != -1 {
 					identifier := fullLine[identifierStart : identifierStart+identifierEnd]
-					return fullLine, identifier, uniqueId
+					return fullLine, identifier, uniqueId, lineStart
 				}
 			}
 		}
@@ -154,83 +147,100 @@ func getOpfIdentifier(opfContents string) (string, string, string) {
 				identifierEnd := strings.Index(fullLine[identifierStart:], `<`)
 				if identifierEnd != -1 {
 					identifier := fullLine[identifierStart : identifierStart+identifierEnd]
-					return fullLine, identifier, ""
+					return fullLine, identifier, "", firstIdStart
 				}
 			}
 		}
 	}
 
-	return "", "", uniqueId
+	return "", "", uniqueId, -1
 }
 
 // addOpfIdentifier adds a unique identifier to the OPF content.
-func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorToEl string) string {
+func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorToEl string) positions.TextEdit {
 	if identifierID == "" {
 		identifierID = "pub-id"
 	}
-	var (
-		identifierTag = fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
-		endingEl      = metadataEndTag
-	)
+
+	identifierTag := fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
+
+	var insertText string
 	if strings.TrimSpace(metadataEndElPriorToEl) == "" {
-		// Assuming the metadata tag was on its own line, double the space
-		// behind the identifierTag since that should make the tag align
-		// with the others make sure the manifest tag has the same indentation as it did
 		if metadataEndElPriorToEl == "" {
-			identifierTag = "\t" + identifierTag
+			insertText = "\t" + identifierTag + "\n"
 		} else {
-			endingEl = metadataEndElPriorToEl + endingEl
-			identifierTag = metadataEndElPriorToEl + identifierTag
+			insertText = metadataEndElPriorToEl + identifierTag + "\n" + metadataEndElPriorToEl
 		}
 	} else {
-		var currentLineWhitespace = getLeadingWhitespace(metadataEndElPriorToEl)
-		identifierTag = currentLineWhitespace + identifierTag
-		endingEl = getMetadataWhitespaceForNewLine(currentLineWhitespace) + endingEl
+		ws := getLeadingWhitespace(metadataEndElPriorToEl)
+		insertText = ws + identifierTag + "\n" + getMetadataWhitespaceForNewLine(ws)
 	}
 
-	return strings.Replace(opfContents, metadataEndTag, identifierTag+"\n"+endingEl, 1)
+	idx := strings.Index(opfContents, metadataEndTag)
+	pos := positions.IndexToPosition(opfContents, idx)
+
+	return positions.TextEdit{
+		Range: positions.Range{
+			Start: pos,
+			End:   pos,
+		},
+		NewText: insertText,
+	}
 }
 
 // addOpfIdentifierAndUpdateExistingOne replaces the unique identifier in the OPF content.
-func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string) string {
+func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string, oldIdentifierElIndex int) []positions.TextEdit {
+	var edits []positions.TextEdit
+
+	idAttr := fmt.Sprintf(` id="%s"`, identifierID)
+	oldLeadingWS := getLeadingWhitespace(oldIdentifierEl)
+
+	// Remove id="..." from old element (minimal deletion)
+	if idx := strings.Index(oldIdentifierEl, idAttr); idx != -1 {
+		edits = append(edits, positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.IndexToPosition(opfContents, oldIdentifierElIndex+idx),
+				End:   positions.IndexToPosition(opfContents, oldIdentifierElIndex+idx+len(idAttr)),
+			},
+		})
+	}
+
+	// Insert new identifier element after old one
 	var (
-		idAttribute                    = fmt.Sprintf(` id="%s"`, identifierID)
-		updatedOldIdentifierEl         = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
-		format                         strings.Builder
-		oldIdentifierLeadingWhitespace = getLeadingWhitespace(oldIdentifierEl)
+		insertPoint = oldIdentifierElIndex + len(oldIdentifierEl)
+		newLine     = "\n" + oldLeadingWS + fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, newIdentifier)
 	)
-
-	format.WriteString("\n" + oldIdentifierLeadingWhitespace)
-	format.WriteString("<dc:identifier")
-	if identifierID != "" {
-		format.WriteString(idAttribute)
+	if strings.Contains(oldIdentifierEl, metadataEndTag) {
+		insertPoint -= len(metadataEndTag)
+		newLine += "\n" + getMetadataWhitespaceForNewLine(oldLeadingWS)
 	}
 
-	format.WriteString(">")
-	format.WriteString(newIdentifier)
-	format.WriteString("</dc:identifier>")
+	pos := positions.IndexToPosition(opfContents, insertPoint)
+	edits = append(edits, positions.TextEdit{
+		Range: positions.Range{
+			Start: pos,
+			End:   pos,
+		},
+		NewText: newLine,
+	})
 
-	if strings.Contains(updatedOldIdentifierEl, metadataEndTag) {
-		updatedOldIdentifierEl = strings.Replace(updatedOldIdentifierEl, metadataEndTag, "", 1)
-
-		format.WriteString("\n")
-		format.WriteString(getMetadataWhitespaceForNewLine(oldIdentifierLeadingWhitespace) + metadataEndTag)
-	}
-
-	return strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl+format.String(), 1)
+	return edits
 }
 
 // moveOrSetOpfIdentifierID moves the identifier's id from the current identifier in the OPF to the other identifier in the OPF that matches the NCX
 // assuming that the oldIdentifierEl is not an empty string. If it is an empty string, it just sets the identifier's id.
-func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifierEl string) string {
+func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifierEl string, oldOpfIdentifierIndex int) []positions.TextEdit {
 	// Find the line containing the ncxIdentifier
 	ncxIdentifierLineStart := strings.Index(opfContents, ncxIdentifier)
 	if ncxIdentifierLineStart == -1 {
-		return opfContents // ncxIdentifier not found, return the content unchanged
+		return nil // ncxIdentifier not found
 	}
 
-	lineStart := strings.LastIndex(opfContents[:ncxIdentifierLineStart], "\n") + 1
-	lineEnd := strings.Index(opfContents[ncxIdentifierLineStart:], "\n")
+	var (
+		edits     []positions.TextEdit
+		lineStart = strings.LastIndex(opfContents[:ncxIdentifierLineStart], "\n") + 1
+		lineEnd   = strings.Index(opfContents[ncxIdentifierLineStart:], "\n")
+	)
 	if lineEnd == -1 {
 		lineEnd = len(opfContents)
 	} else {
@@ -240,10 +250,17 @@ func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifie
 	if oldIdentifierEl != "" {
 		var (
 			idAttribute            = fmt.Sprintf(` id="%s"`, uniqueId)
-			updatedOldIdentifierEl = strings.Replace(oldIdentifierEl, idAttribute, "", 1)
+			indexOfOldIdentifierId = strings.Index(oldIdentifierEl, idAttribute)
 		)
 
-		opfContents = strings.Replace(opfContents, oldIdentifierEl, updatedOldIdentifierEl, 1)
+		if indexOfOldIdentifierId != -1 {
+			edits = append(edits, positions.TextEdit{
+				Range: positions.Range{
+					Start: positions.IndexToPosition(opfContents, oldOpfIdentifierIndex+indexOfOldIdentifierId),
+					End:   positions.IndexToPosition(opfContents, oldOpfIdentifierIndex+indexOfOldIdentifierId+len(idAttribute)),
+				},
+			})
+		}
 	}
 
 	var line = opfContents[lineStart:lineEnd]
@@ -253,16 +270,32 @@ func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifie
 	idStart := strings.Index(line, idAttr)
 	if idStart == -1 {
 		// No id attribute, add it
-		newLine := strings.Replace(line, ">"+ncxIdentifier, fmt.Sprintf(` id="%s">%s`, uniqueId, ncxIdentifier), 1)
-		opfContents = strings.Replace(opfContents, line, newLine, 1)
+		var (
+			ncxIdentifierIdInsertIndex = strings.Index(line, ">"+ncxIdentifier)
+			// we are ignoring that the index could be -1 for now and will deal with it if we need to
+			ncxInsertPos = positions.IndexToPosition(opfContents, lineStart+ncxIdentifierIdInsertIndex)
+		)
+		edits = append(edits, positions.TextEdit{
+			Range: positions.Range{
+				Start: ncxInsertPos,
+				End:   ncxInsertPos,
+			},
+			NewText: fmt.Sprintf(` id="%s"`, uniqueId),
+		})
 	} else {
 		// Replace the existing id attribute value with the uniqueId
 		idEnd := strings.Index(line[idStart+len(idAttr):], `"`) + idStart + len(idAttr)
-		newLine := line[:idStart+len(idAttr)] + uniqueId + line[idEnd:]
-		opfContents = strings.Replace(opfContents, line, newLine, 1)
+		// we are ignoring that the idEnd could be -1 for now and will deal with it if we need to
+		edits = append(edits, positions.TextEdit{
+			Range: positions.Range{
+				Start: positions.IndexToPosition(opfContents, lineStart+idStart+len(idAttr)),
+				End:   positions.IndexToPosition(opfContents, lineStart+idEnd),
+			},
+			NewText: uniqueId,
+		})
 	}
 
-	return opfContents
+	return edits
 }
 
 // getLeadingWhitespace returns the leading whitespace from the input string.

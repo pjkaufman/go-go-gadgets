@@ -94,6 +94,10 @@ var (
 	generalOpfOriginal string
 	//go:embed testdata/general/content_updated.opf
 	generalOpfExpected string
+	//go:embed testdata/general/blockquote-img.html
+	blockquoteImgHtmlOriginal string
+	//go:embed testdata/general/blockquote-img_updated.html
+	blockquoteImgHtmlExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -193,7 +197,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			},
 		},
 		validFilesToInitialContent: map[string]string{
-			"OPS/content.opf": opfAddPropertiesExpected,
+			"OPS/content.opf": opfAddPropertiesOriginal,
 		},
 	},
 	"OPF 15: Removing properties from different files should work without issue": {
@@ -663,7 +667,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
 		},
 	},
-	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed and other lines after it decremented`: {
+	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed`: {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
 		ncxFilename:       "OPS/toc.ncx",
@@ -715,7 +719,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					FilePath: "OPS/content.opf",
 					Message:  `Some error here..."`,
 					Location: &epubcheck.Position{
-						Line:   48,
+						Line:   50,
 						Column: 35,
 					},
 				},
@@ -1037,7 +1041,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
 					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
 					Location: &epubcheck.Position{
-						Line:   77,
+						Line:   78,
 						Column: 26,
 					},
 				},
@@ -1047,7 +1051,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
 					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
 					Location: &epubcheck.Position{
-						Line:   15,
+						Line:   16,
 						Column: 20,
 					},
 				},
@@ -1056,7 +1060,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 					FilePath: "OPS/content.opf",
 					Message:  `Error while parsing file: attribute "opf:role"`,
 					Location: &epubcheck.Position{
-						Line:   10,
+						Line:   11,
 						Column: 31,
 					},
 				},
@@ -1160,6 +1164,61 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/toc.ncx":        generalNcxOriginal,
 			"OPS/content.opf":    generalOpfOriginal,
 			"OPS/Text/file.html": generalHtmlOriginal,
+		},
+	},
+	`When an image without an alt is inside of an invalid blockquote, both issues should be fixed without breaking the HTML`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlOriginal,
 		},
 	},
 }

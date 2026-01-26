@@ -3,6 +3,8 @@ package rulefixes
 import (
 	"strings"
 	"unicode"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 func isValidStart(ch rune) bool {
@@ -44,10 +46,10 @@ func convertToValidID(id string) string {
 	return builder.String()
 }
 
-func FixXmlIdValue(original string, lineNumber int, attribute string) string {
+func FixXmlIdValue(original string, lineNumber int, attribute string) (edit positions.TextEdit) {
 	lines := strings.Split(original, "\n")
 	if lineNumber <= 0 || lineNumber > len(lines) {
-		return original
+		return
 	}
 
 	line := lines[lineNumber-1] // lineNumber is 1-based
@@ -60,13 +62,18 @@ func FixXmlIdValue(original string, lineNumber int, attribute string) string {
 		for endIndex < len(line) && line[endIndex] != '"' {
 			endIndex++
 		}
+
 		if endIndex < len(line) {
 			invalidID := line[startIndex:endIndex]
 			validID := convertToValidID(invalidID)
-			line = line[:startIndex] + validID + line[endIndex:]
-			lines[lineNumber-1] = line
+			edit.Range.Start.Line = lineNumber
+			edit.Range.End.Line = lineNumber
+			edit.Range.Start.Column = positions.GetColumnForLine(line, startIndex)
+			edit.Range.End.Column = positions.GetColumnForLine(line, endIndex)
+
+			edit.NewText = validID
 		}
 	}
 
-	return strings.Join(lines, "\n")
+	return
 }

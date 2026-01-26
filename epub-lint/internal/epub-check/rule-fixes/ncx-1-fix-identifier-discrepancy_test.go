@@ -233,10 +233,10 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 func TestFixIdentifiers(t *testing.T) {
 	for name, args := range fixIdentifierTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.FixIdentifierDiscrepancy(args.opfContents, args.ncxContents)
+			edits, err := rulefixes.FixIdentifierDiscrepancy(args.opfContents, args.ncxContents)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edits...)
 		})
 	}
 }

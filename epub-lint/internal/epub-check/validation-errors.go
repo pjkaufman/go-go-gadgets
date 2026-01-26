@@ -22,15 +22,13 @@ type Position struct {
 	Column int
 }
 
-func (ve *ValidationErrors) DecrementLineNumbersAndRemoveLineReferences(lineNum int, path string) {
+func (ve *ValidationErrors) RemoveLineReferences(lineNum int, path string) {
 	for i := 0; i < len(ve.ValidationIssues); i++ {
 		if ve.ValidationIssues[i].Location != nil {
 			if ve.ValidationIssues[i].FilePath == path {
 				if ve.ValidationIssues[i].Location.Line == lineNum {
 					ve.ValidationIssues = slices.Delete(ve.ValidationIssues, i, i+1)
 					i--
-				} else if ve.ValidationIssues[i].Location.Line > lineNum {
-					ve.ValidationIssues[i].Location.Line--
 				}
 			}
 		}

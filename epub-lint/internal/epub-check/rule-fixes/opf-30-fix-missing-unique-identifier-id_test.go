@@ -63,10 +63,10 @@ var fixMissingUniqueIdentifierIdTestCases = map[string]fixMissingUniqueIdentifie
 func TestFixMissingUniqueIdentifierId(t *testing.T) {
 	for name, args := range fixMissingUniqueIdentifierIdTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.FixMissingUniqueIdentifierId(args.opfContents, args.id)
+			edit, err := rulefixes.FixMissingUniqueIdentifierId(args.opfContents, args.id)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edit)
 		})
 	}
 }

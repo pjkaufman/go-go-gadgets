@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
 )
 
 type fixMissingImageAltTestCase struct {
@@ -75,9 +74,9 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 func TestFixMissingImageAlt(t *testing.T) {
 	for name, args := range fixMissingImageAltTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := rulefixes.FixMissingImageAlt(args.line, args.column, args.input)
+			edit := rulefixes.FixMissingImageAlt(args.line, args.column, args.input)
 
-			assert.Equal(t, args.expected, actual)
+			checkFinalOutputMatches(t, args.input, args.expected, edit)
 		})
 	}
 }

@@ -281,10 +281,10 @@ var removeDuplicateUniqueIdentifierIdTestCases = map[string]removeDuplicateManif
 func TestRemoveDuplicateManifestEntry(t *testing.T) {
 	for name, args := range removeDuplicateUniqueIdentifierIdTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.RemoveDuplicateManifestEntry(args.line, args.column, args.opfContents)
+			edits, err := rulefixes.RemoveDuplicateManifestEntry(args.line, args.column, args.opfContents)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edits...)
 		})
 	}
 }

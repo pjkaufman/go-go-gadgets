@@ -2,8 +2,9 @@ package epubhandler
 
 import (
 	"fmt"
-	"slices"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 const (
@@ -13,74 +14,73 @@ const (
 
 var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
 
-func RemoveIdFromSpine(opfContents, fileId string) (string, error) {
-	startIndex, endIndex, spineContent, err := getSpineContents(opfContents)
+func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
+	var edit positions.TextEdit
+
+	startIndex, spineContent, err := getSpineContents(opfContents)
 	if err != nil {
-		return "", err
+		return edit, err
 	}
 
-	lines := strings.Split(spineContent, "\n")
-	var idRef = fmt.Sprintf(`idref="%s"`, fileId)
-
-	for i, line := range lines {
-		if strings.Contains(line, idRef) {
-			// start iterating all idref els
-			var (
-				found          = false
-				lineSubset     = line
-				startOfItemref int
-			)
-			for startOfItemref != -1 {
-				startOfItemref = strings.Index(lineSubset, itemRefStartTag)
-				if startOfItemref == -1 {
-					break
-				}
-
-				// for now we will assume the itemrefs are self-closing
-				var endOfItemref = strings.Index(lineSubset, "/>")
-				if endOfItemref == -1 {
-					return "", fmt.Errorf("failed to parse itemref out of line contents %q due to missing %q", lineSubset, "/>")
-				}
-
-				var (
-					endOfItemRef = endOfItemref + 2
-					itemrefEl    = lineSubset[startOfItemref:endOfItemRef]
-				)
-				if strings.Contains(itemrefEl, idRef) {
-					line = strings.Replace(line, itemrefEl, "", 1)
-
-					if strings.TrimSpace(line) == "" {
-						lines = slices.Delete(lines, i, i+1)
-					} else {
-						lines[i] = line
-					}
-
-					found = true
-					break
-				}
-
-				lineSubset = lineSubset[endOfItemRef:]
-			}
-
-			if found {
-				break
-			}
-		}
+	idRef := fmt.Sprintf(`idref="%s"`, fileId)
+	idRefIndex := strings.Index(spineContent, idRef)
+	if idRefIndex == -1 {
+		return edit, nil
 	}
 
-	updatedSpineContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(spineStartTag)] + updatedSpineContent + opfContents[endIndex:]
+	startItemRefIndex := strings.LastIndex(spineContent[:idRefIndex], itemRefStartTag)
+	if startItemRefIndex == -1 {
+		return edit, fmt.Errorf("failed to parse itemref out of spine content for id %q due to missing %q", fileId, itemRefStartTag)
+	}
 
-	return updatedOpfContents, nil
+	endItemRefIndex := strings.Index(spineContent[idRefIndex:], "/>")
+	if endItemRefIndex == -1 {
+		return edit, fmt.Errorf("failed to parse itemref out of spine content for id %q due to missing %q", fileId, "/>")
+	}
+
+	endItemRefIndex += 2
+
+	startOfLineIndex := strings.LastIndex(spineContent[:idRefIndex], "\n")
+	if startOfLineIndex == -1 {
+		startOfLineIndex = 0
+	}
+
+	if startItemRefIndex < startOfLineIndex {
+		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the start of itemref being on a different line from the itemref's href", fileId)
+	}
+
+	endOfLineIndex := strings.LastIndex(spineContent[idRefIndex:], "\n")
+	if endOfLineIndex == -1 {
+		endOfLineIndex = len(spineContent) - 1
+	}
+
+	if endItemRefIndex > endOfLineIndex {
+		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the end of itemref being on a different line from the itemref's href", fileId)
+	}
+
+	var startPos, endPos positions.Position
+	if strings.TrimSpace(spineContent[startOfLineIndex:startItemRefIndex]+spineContent[idRefIndex+endItemRefIndex:idRefIndex+endOfLineIndex]) == "" {
+		// no other line content other than whitespace is on the line...
+		startPos = positions.IndexToPosition(opfContents, startIndex+startOfLineIndex)
+		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endOfLineIndex)
+	} else {
+		startPos = positions.IndexToPosition(opfContents, startIndex+startItemRefIndex)
+		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endItemRefIndex)
+	}
+
+	edit.Range.Start = startPos
+	edit.Range.End = endPos
+
+	return edit, nil
 }
 
-func getSpineContents(opfContents string) (int, int, string, error) {
+func getSpineContents(opfContents string) (int, string, error) {
 	startIndex := strings.Index(opfContents, spineStartTag)
 	endIndex := strings.Index(opfContents, spineEndTag)
 
 	if startIndex == -1 || endIndex == -1 {
-		return 0, 0, "", ErrNoSpine
+		return 0, "", ErrNoSpine
 	}
 
-	return startIndex, endIndex, opfContents[startIndex+len(spineStartTag) : endIndex], nil
+	return startIndex + len(spineStartTag) + 1, opfContents[startIndex+len(spineStartTag)+1 : endIndex], nil
 }

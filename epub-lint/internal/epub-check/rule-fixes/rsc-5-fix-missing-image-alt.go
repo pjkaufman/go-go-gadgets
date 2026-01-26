@@ -1,14 +1,16 @@
 package rulefixes
 
-func FixMissingImageAlt(line, column int, contents string) string {
+import "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+
+func FixMissingImageAlt(line, column int, contents string) (edit positions.TextEdit) {
 	if line < 1 {
-		return contents
+		return
 	}
 
 	// column is the index of the `>` in `/>`
-	offset := getColumnOffset(contents, line, column)
+	offset := positions.GetPositionOffset(contents, line, column)
 	if offset == -1 {
-		return contents
+		return
 	}
 
 	var emptyAlt = "alt=\"\""
@@ -16,5 +18,10 @@ func FixMissingImageAlt(line, column int, contents string) string {
 		emptyAlt = " " + emptyAlt
 	}
 
-	return contents[:offset-2] + emptyAlt + contents[offset-2:]
+	insertStartPos := positions.IndexToPosition(contents, offset-2)
+	edit.Range.Start = insertStartPos
+	edit.Range.End = insertStartPos
+	edit.NewText = emptyAlt
+
+	return
 }

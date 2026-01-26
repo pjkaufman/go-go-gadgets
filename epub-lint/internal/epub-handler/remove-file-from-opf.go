@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 const (
@@ -95,13 +97,22 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	}
 
 	updatedManifestContent := strings.Join(lines, "\n")
-	updatedOpfContents := opfContents[:startIndex+len(ManifestStartTag)] + updatedManifestContent + opfContents[endIndex:]
+	updatedOpfContents := opfContents[:startIndex] + updatedManifestContent + opfContents[endIndex:]
 
 	if fileID == "" {
 		return updatedOpfContents, nil
 	}
 
-	return RemoveIdFromSpine(updatedOpfContents, fileID)
+	edit, err := RemoveIdFromSpine(updatedOpfContents, fileID)
+	if err != nil {
+		return "", err
+	}
+
+	if edit.IsEmpty() {
+		return updatedOpfContents, nil
+	}
+
+	return positions.ApplyEdits("", updatedOpfContents, []positions.TextEdit{edit})
 }
 
 func ExtractID(line string) string {

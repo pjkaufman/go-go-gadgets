@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
 )
 
 type updatePlayOrderTestCase struct {
@@ -98,8 +97,9 @@ var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
 func TestFixPlayOrder(t *testing.T) {
 	for name, tc := range updatePlayOrderTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := rulefixes.FixPlayOrder(tc.input)
-			assert.Equal(t, tc.expectedOutput, actual)
+			edits := rulefixes.FixPlayOrder(tc.input)
+
+			checkFinalOutputMatches(t, tc.input, tc.expectedOutput, edits...)
 		})
 	}
 }

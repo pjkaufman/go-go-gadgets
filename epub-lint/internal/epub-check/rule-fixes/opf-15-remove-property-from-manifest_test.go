@@ -51,13 +51,13 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 	},
 }
 
-func TestRemoveScriptedFromManifest(t *testing.T) {
+func TestRemovePropertyFromManifest(t *testing.T) {
 	for name, args := range removeScriptedFromManifestTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := rulefixes.RemovePropertyFromManifest(args.inputText, args.inputPath, args.property)
+			edit, err := rulefixes.RemovePropertyFromManifest(args.inputText, args.inputPath, args.property)
 
 			assert.Nil(t, err)
-			assert.Equal(t, args.expectedOutput, actual)
+			checkFinalOutputMatches(t, args.inputText, args.expectedOutput, edit)
 		})
 	}
 }
