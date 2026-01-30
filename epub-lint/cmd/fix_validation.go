@@ -45,7 +45,9 @@ var autoFixValidationCmd = &cobra.Command{
 		- Add div tags inside of blockquote elements that were not able to be parsed and do not have a blockquote inside of them
 		- Add an empty alt attribute to img elements that are missing them
 		- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
+	- RSC-007: try to fix broken file links and remove
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
+	- HTM-004: try to fix broken DOCTYPEs by replacing them with the expected DOCTYPE
 	`),
 	Example: heredoc.Doc(`
 		epub-lint fix validation -f test.epub --issues epubCheckOutput.txt
@@ -103,6 +105,16 @@ var autoFixValidationCmd = &cobra.Command{
 				return nil, err
 			}
 
+			var basenameToFilePaths = make(map[string][]string)
+			for filename := range zipFiles {
+				var basename = filepath.Base(filename)
+				if files, ok := basenameToFilePaths[basename]; ok {
+					basenameToFilePaths[basename] = append(files, filename)
+				} else {
+					basenameToFilePaths[basename] = []string{filename}
+				}
+			}
+
 			var (
 				nameToUpdatedContents = map[string]string{
 					ncxFilename: ncxFileContents,
@@ -126,21 +138,23 @@ var autoFixValidationCmd = &cobra.Command{
 					return fileContents, nil
 				}
 			)
-			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, nameToUpdatedContents, &validationErrors, getFileContentsByName)
+			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName)
 			if err != nil {
 				return nil, err
 			}
 
 			if removeJNovelInfo {
-				for filename := range zipFiles {
-					var name = filepath.Base(filename)
-					if name == jnovelsFile || name == jnovelsImage {
-						handledFiles = append(handledFiles, filename)
-					} else {
-						continue
+				for _, filename := range basenameToFilePaths[jnovelsFile] {
+					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[filename], jnovelsFile)
+					if err != nil {
+						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
 					}
 
-					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], name)
+					nameToUpdatedContents[opfFilename] = updatedOpfContents
+				}
+
+				for _, filename := range basenameToFilePaths[jnovelsImage] {
+					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[filename], jnovelsImage)
 					if err != nil {
 						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
 					}

@@ -7,7 +7,7 @@ import (
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 )
 
-func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUpdatedContents map[string]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error)) error {
+func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error)) error {
 	var (
 		err                         error
 		fileContent, ncxFileContent string
@@ -61,7 +61,6 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				return err
 			}
 
-			// TODO: apply immediately since it can need to remove two values to the same property
 			var update positions.TextEdit
 			update, err = rulefixes.RemovePropertyFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
 			if err != nil {
@@ -246,6 +245,36 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				fileUpdated = opfFilename
 				edits = append(edits, update)
 			}
+		case "RSC-007":
+			// we will not update the NCX files since they deal with the nav and that can get pretty tricky in the end
+			// as it could remove a TOC entry you want to keep
+			if strings.HasSuffix(message.FilePath, ".ncx") {
+				continue
+			}
+
+			resource, foundId := getFirstQuotedValue(message.Message, len("Referenced resource "))
+			if !foundId {
+				continue
+			}
+
+			fileContent, err = getContentByFileName(message.FilePath)
+			if err != nil {
+				return err
+			}
+
+			var update positions.TextEdit
+			update, err = rulefixes.FixFileNotFound(fileContent, resource, message.Message, message.Location.Line, message.Location.Column, basenameToFilePaths)
+			if err != nil {
+				return err
+			}
+
+			if !update.IsEmpty() {
+				fileUpdated = message.FilePath
+				edits = append(edits, update)
+			}
+
+			// TODO: handle the scenario where a JS file is removed in the reference by checking if there is a js file currently referenced and if not create a message for removing the scripted tag
+
 		case "RSC-012":
 			fileContent, err = getContentByFileName(message.FilePath)
 			if err != nil {
@@ -257,6 +286,34 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				fileUpdated = message.FilePath
 				edits = append(edits, update)
 			}
+		case "HTM-004":
+			fileContent, err = getContentByFileName(message.FilePath)
+			if err != nil {
+				return err
+			}
+
+			const expectedStart = `expected "`
+			startOfExpected := strings.Index(message.Message, expectedStart)
+			if startOfExpected == -1 {
+				continue
+			}
+
+			startOfExpected += len(expectedStart)
+
+			// the expected doctype does not seem to be properly escaped in the string provided,
+			// so we will just go ahead and grab the last double quote and that should be the correct one
+			endOfExpected := strings.LastIndex(message.Message[startOfExpected:], `"`)
+			if endOfExpected == -1 {
+				continue
+			}
+			endOfExpected += startOfExpected
+
+			update := rulefixes.FixIrregularDoctype(fileContent, message.Message[startOfExpected:endOfExpected])
+			if !update.IsEmpty() {
+				fileUpdated = message.FilePath
+				edits = append(edits, update)
+			}
+
 		}
 
 		if len(edits) != 0 {

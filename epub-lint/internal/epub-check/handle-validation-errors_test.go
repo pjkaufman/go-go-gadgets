@@ -98,6 +98,10 @@ var (
 	blockquoteImgHtmlOriginal string
 	//go:embed testdata/general/blockquote-img_updated.html
 	blockquoteImgHtmlExpected string
+	//go:embed testdata/htm-4/incomplete-doctype.html
+	incompleteDoctypeHtmlOriginal string
+	//go:embed testdata/htm-4/incomplete-doctype_updated.html
+	incompleteDoctypeHtmlExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -1221,13 +1225,40 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/Text/file.html": blockquoteImgHtmlOriginal,
 		},
 	},
+	`HTM 4: When a html file is missing part of the DOCTYPE, it gets the value properly updated`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/content.html": incompleteDoctypeHtmlExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "HTM-004",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "HTM-004",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/content.html": incompleteDoctypeHtmlOriginal,
+		},
+	},
 }
 
 func TestHandleValidationErrors(t *testing.T) {
 	for name, tc := range handleValidationErrorTestCases {
 		t.Run(name, func(t *testing.T) {
 			var nameToUpdatedFileContents = map[string]string{}
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, map[string][]string{}, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 
