@@ -17,6 +17,7 @@ type handleValidationErrorTestCase struct {
 	validationErrors                              epubcheck.ValidationErrors
 	expectedErrorState                            epubcheck.ValidationErrors
 	expectedFileState, validFilesToInitialContent map[string]string // filename to content
+	basenameToFilePaths                           map[string][]string
 }
 
 var (
@@ -102,6 +103,26 @@ var (
 	incompleteDoctypeHtmlOriginal string
 	//go:embed testdata/htm-4/incomplete-doctype_updated.html
 	incompleteDoctypeHtmlExpected string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-base.html
+	htmlFileReferencedDoesNotExistBaseOriginal string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-replaced_updated.html
+	htmlFileReferencedDoesNotExistReplacedExpected string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-removed_updated.html
+	htmlFileReferencedDoesNotExistRemovedExpected string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-single-script.html
+	htmlFileReferencedDoesNotExistSingleScriptOriginal string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-single-script_updated.html
+	htmlFileReferencedDoesNotExistSingleScriptExpected string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-double-script.html
+	htmlFileReferencedDoesNotExistDoubleScriptOriginal string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-double-script_updated.html
+	htmlFileReferencedDoesNotExistDoubleScriptExpected string
+	//go:embed testdata/rsc-7/file-referenced-does-not-exist-double-script-single_updated.html
+	htmlFileReferencedDoesNotExistDoubleScriptSingleUpdateExpected string
+	//go:embed testdata/rsc-7/manifest.opf
+	opfScriptRemovedOriginal string
+	//go:embed testdata/rsc-7/manifest_updated.opf
+	opfScriptRemovedExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -1252,13 +1273,270 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/Text/content.html": incompleteDoctypeHtmlOriginal,
 		},
 	},
+	`RSC 7: When the NCX file references a file that does not exist, it will be ignored as that could mess up the table of contents`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 36,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 36,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{}, // leave blank since it will throw an error if an attempt to access this happens
+	},
+	`RSC 7: When an html file references a file that does not exist and there is a matching file basename in the EPUB, update the link to the matching basename`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistReplacedExpected,
+		},
+		basenameToFilePaths: map[string][]string{
+			"files.html": {"OPS/Text/files.html"},
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
+		},
+	},
+	`RSC 7: When an html file references a file that does not exist and there is no matching file basename in the EPUB, remove the link`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
+		},
+	},
+	`RSC 7: When an html file references a script that does not exist, there is no matching file basename in the EPUB, and it is the only script tag in the file, remove the script and create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptExpected,
+			"OPS/content.opf":    opfScriptRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/Text/file.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptOriginal,
+			"OPS/content.opf":    opfScriptRemovedOriginal,
+		},
+	},
+	`RSC 7: When an html file references 2 scripts that do not exist, there are no matching file basenames in the EPUB, and they are the only script tags in the file, remove the scripts and create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptExpected,
+			"OPS/content.opf":    opfScriptRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/Text/file.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
+			"OPS/content.opf":    opfScriptRemovedOriginal,
+		},
+	},
+	`RSC 7: When an html file references 2 scripts with 1 not existing and there is no matching file basename in the EPUB, remove the script and do not create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptSingleUpdateExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{ // this should throw an error if it even tries to update/read in the OPF file
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
+		},
+	},
 }
 
 func TestHandleValidationErrors(t *testing.T) {
 	for name, tc := range handleValidationErrorTestCases {
 		t.Run(name, func(t *testing.T) {
 			var nameToUpdatedFileContents = map[string]string{}
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, map[string][]string{}, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
+			if tc.basenameToFilePaths == nil {
+				tc.basenameToFilePaths = map[string][]string{}
+			}
+
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 

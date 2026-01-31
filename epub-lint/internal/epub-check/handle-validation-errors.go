@@ -13,6 +13,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 		fileContent, ncxFileContent string
 		elementNameToNumber         = make(map[string]int)
 		fileToChanges               = make(map[string]positions.TextDocumentEdit)
+		fileToScriptTagsRemoved     = make(map[string]int)
 	)
 	for i := 0; i < len(validationErrors.ValidationIssues); i++ {
 		var (
@@ -252,7 +253,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				continue
 			}
 
-			resource, foundId := getFirstQuotedValue(message.Message, len("Referenced resource "))
+			resource, foundId := getFirstQuotedValue(message.Message, len("Referenced resource \""))
 			if !foundId {
 				continue
 			}
@@ -263,7 +264,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			}
 
 			var update positions.TextEdit
-			update, err = rulefixes.FixFileNotFound(fileContent, resource, message.Message, message.Location.Line, message.Location.Column, basenameToFilePaths)
+			update, err = rulefixes.FixFileNotFound(fileContent, resource, message.FilePath, message.Location.Line, message.Location.Column, basenameToFilePaths)
 			if err != nil {
 				return err
 			}
@@ -271,10 +272,29 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if !update.IsEmpty() {
 				fileUpdated = message.FilePath
 				edits = append(edits, update)
+
+				if strings.HasSuffix(resource, ".js") {
+					var (
+						numberOfExistingScriptTags = strings.Count(fileContent, "<script")
+						numberOfRemovedScriptTags  = 1
+					)
+
+					if updateCount, ok := fileToScriptTagsRemoved[message.FilePath]; ok {
+						numberOfRemovedScriptTags += updateCount
+						fileToScriptTagsRemoved[message.FilePath] = numberOfRemovedScriptTags
+					} else {
+						fileToScriptTagsRemoved[message.FilePath] = numberOfRemovedScriptTags
+					}
+
+					if numberOfRemovedScriptTags == numberOfExistingScriptTags { // remove the scripted tag from the OPF for the file if all scripted tags have been removed
+						validationErrors.ValidationIssues = append(validationErrors.ValidationIssues, ValidationError{
+							Code:     "OPF-015",
+							FilePath: message.FilePath,
+							Message:  `The property "scripted" should not be declared in the OPF file.`,
+						})
+					}
+				}
 			}
-
-			// TODO: handle the scenario where a JS file is removed in the reference by checking if there is a js file currently referenced and if not create a message for removing the scripted tag
-
 		case "RSC-012":
 			fileContent, err = getContentByFileName(message.FilePath)
 			if err != nil {

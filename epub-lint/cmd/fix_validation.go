@@ -33,9 +33,9 @@ var autoFixValidationCmd = &cobra.Command{
 	Long: heredoc.Doc(`Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
 	- OPF-014: add scripted to the list of values in the properties attribute on the manifest item
 	- OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
+	- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 	- OPF-074: remove duplicate manifest entries
 	- NCX-001: fix discrepancy in identifier between the OPF and NCX files
-	- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 	- RSC-005: seems to be a catch all error id, but the following are handled around it
 		- Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
 			and starting the value with an underscore instead of a number if it currently is started by a number
