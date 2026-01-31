@@ -3,6 +3,9 @@
 
 version: 2
 
+env:
+  - CGO_ENABLED=0
+
 before:
   hooks:
     - go mod tidy
@@ -10,10 +13,7 @@ before:
 
 builds:
   - id: cat-ascii
-    ldflags: -s -w
     main: ./cat-ascii/main.go
-    env:
-      - CGO_ENABLED=0
     binary: cat-ascii
     goos:
       - linux
@@ -21,10 +21,7 @@ builds:
       - windows
 
   - id: epub-lint
-    ldflags: -s -w
     main: ./epub-lint/main.go
-    env:
-      - CGO_ENABLED=0
     binary: epub-lint
     goos:
       - linux
@@ -32,44 +29,32 @@ builds:
       - windows
 
   - id: jp-proc
-    ldflags: -s -w
     main: ./jp-proc/main.go
     binary: jp-proc
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
       - windows
 
   - id: magnum
-    ldflags: -s -w
     main: ./magnum/main.go
     binary: magnum
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
       - windows
 
   - id: song-converter
-    ldflags: -s -w
     main: ./song-converter/main.go
     binary: song-converter
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
       - windows
 
   - id: versy
-    ldflags: -s -w
     main: ./versy/main.go
     binary: versy
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
@@ -80,7 +65,7 @@ archives:
   - id: cat-ascii-archive
     ids:
       - cat-ascii
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -88,13 +73,12 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
   # epub-lint binary only
   - id: epub-lint-archive
     ids:
       - epub-lint
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -102,13 +86,12 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
   # jp-proc binary only
   - id: jp-proc-archive
     ids:
       - jp-proc
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -116,13 +99,12 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
   # magnum binary only
   - id: magnum-archive
     ids:
       - magnum
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -130,13 +112,12 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
   # song-converter binary only
   - id: song-converter-archive
     ids:
       - song-converter
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -144,13 +125,12 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
   # versy binary only
   - id: versy-archive
     ids:
       - versy
-    format: binary
+    formats: binary
     name_template: >-
       {{ .Binary }}_
       {{- title .Os }}_
@@ -158,7 +138,6 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-      {{- if eq .Os "windows" }}.exe{{ end }}
 
 changelog:
   sort: asc
