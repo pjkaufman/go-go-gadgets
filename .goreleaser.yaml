@@ -1,8 +1,3 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
@@ -10,13 +5,10 @@ version: 2
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
     - go generate ./...
 
 builds:
-
   - id: cat-ascii
     ldflags: -s -w
     main: ./cat-ascii/main.go
@@ -49,7 +41,7 @@ builds:
       - linux
       - darwin
       - windows
-  
+
   - id: magnum
     ldflags: -s -w
     main: ./magnum/main.go
@@ -60,7 +52,7 @@ builds:
       - linux
       - darwin
       - windows
-  
+
   - id: song-converter
     ldflags: -s -w
     main: ./song-converter/main.go
@@ -84,19 +76,89 @@ builds:
       - windows
 
 archives:
-  - formats: [tar.gz]
-    # this name template makes the OS and Arch compatible with the results of `uname`.
+  # cat-ascii binary only
+  - id: cat-ascii-archive
+    ids:
+      - cat-ascii
+    format: binary
     name_template: >-
-      {{ .ProjectName }}_
+      {{ .Binary }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        formats: [zip]
+      {{- if eq .Os "windows" }}.exe{{ end }}
+
+  # epub-lint binary only
+  - id: epub-lint-archive
+    ids:
+      - epub-lint
+    format: binary
+    name_template: >-
+      {{ .Binary }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if eq .Os "windows" }}.exe{{ end }}
+
+  # jp-proc binary only
+  - id: jp-proc-archive
+    ids:
+      - jp-proc
+    format: binary
+    name_template: >-
+      {{ .Binary }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if eq .Os "windows" }}.exe{{ end }}
+
+  # magnum binary only
+  - id: magnum-archive
+    ids:
+      - magnum
+    format: binary
+    name_template: >-
+      {{ .Binary }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if eq .Os "windows" }}.exe{{ end }}
+
+  # song-converter binary only
+  - id: song-converter-archive
+    ids:
+      - song-converter
+    format: binary
+    name_template: >-
+      {{ .Binary }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if eq .Os "windows" }}.exe{{ end }}
+
+  # versy binary only
+  - id: versy-archive
+    ids:
+      - versy
+    format: binary
+    name_template: >-
+      {{ .Binary }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if eq .Os "windows" }}.exe{{ end }}
 
 changelog:
   sort: asc
