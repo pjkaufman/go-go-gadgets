@@ -145,6 +145,7 @@ var autoFixValidationCmd = &cobra.Command{
 
 			if removeJNovelInfo {
 				for _, filename := range basenameToFilePaths[jnovelsFile] {
+					handledFiles = append(handledFiles, filename)
 					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
 					if err != nil {
 						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
@@ -154,6 +155,7 @@ var autoFixValidationCmd = &cobra.Command{
 				}
 
 				for _, filename := range basenameToFilePaths[jnovelsImage] {
+					handledFiles = append(handledFiles, filename)
 					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
 					if err != nil {
 						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
