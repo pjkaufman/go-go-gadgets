@@ -40,10 +40,6 @@ A versatile ebook management tool that helps maintain and improve your epubs.
 
 Perfect for maintaining an ebook collection, preparing files for e-readers, and ensuring consistent formatting.
 
-### Git Helper
-
-Helps simplify some git commands and actions I normally forget.
-
 ### [Song Converter](./song-converter/README.md)
 
 A specialized tool for converting song collections between different formats to create songbooks.
