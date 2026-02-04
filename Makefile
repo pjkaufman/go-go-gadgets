@@ -95,3 +95,12 @@ golden:
 	@echo "Generating golden files"
 	@go run -tags "generate_golden" ./magnum/ golden -o ./magnum/internal
 	@echo "Golden files generated"
+
+deadcode:
+ifeq (,$(shell which deadcode))
+	@echo "Installing deadcode"
+	@go install golang.org/x/tools/cmd/deadcode@latest
+endif
+
+	@echo "Checking for dead code..."
+	@deadcode -test ./...
