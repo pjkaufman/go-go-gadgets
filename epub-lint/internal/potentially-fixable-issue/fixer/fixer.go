@@ -11,6 +11,7 @@ type Fixer interface {
 	Setup() error
 	Run() error
 	HandleCss() ([]string, error)
+	Cleanup()
 	SuccessfulLog() string
 }
 

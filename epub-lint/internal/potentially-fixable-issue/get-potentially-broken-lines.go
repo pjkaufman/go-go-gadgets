@@ -40,11 +40,19 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 
 		addToParsedLines(parsedLines, currentLine)
 
-		var originalString = currentLine
-		var suggestedString = groups[1] + groups[3] + " "
-		var nextLine = currentLine
+		var (
+			originalString  = currentLine
+			suggestedString = groups[1] + groups[3] + " "
+			nextLine        = currentLine
+		)
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
 			nextLine = getNextLine(fileContent, nextLine)
+			if hasParsedLine(parsedLines, nextLine) {
+				// TODO: this is a stop gap that should handle the issue of duplicate lines (like in a poem) for now,
+				// but we need to rework the logic to better handle replacements
+				break
+			}
+
 			addToParsedLines(parsedLines, nextLine)
 			originalString += nextLine
 

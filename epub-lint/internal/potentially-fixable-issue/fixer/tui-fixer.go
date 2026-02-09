@@ -24,6 +24,7 @@ type TuiFixer struct {
 	writeFile                                   FileWriter
 	cssFiles, handledFiles                      []string
 	logFile                                     string
+	file                                        *os.File
 	opfFolder                                   string
 	selectedCssFile                             string
 	contextBreak                                *string
@@ -56,17 +57,16 @@ func (t *TuiFixer) Init(epubInfo *epubhandler.EpubInfo, runAll, skipCss, runSect
 }
 
 func (t *TuiFixer) Setup() error {
-	var file *os.File
 	if strings.TrimSpace(t.logFile) != "" {
-		file, err := tea.LogToFile(t.logFile, "debug")
+		var err error
+
+		t.file, err = tea.LogToFile(t.logFile, "debug")
 		if err != nil {
 			return fmt.Errorf("failed to create TUI log file %q: %w", t.logFile, err)
 		}
-
-		defer file.Close()
 	}
 
-	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, file, t.contextBreak)
+	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, t.file, t.contextBreak)
 	var i = 0
 
 	t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(t.epubInfo.HtmlFiles))
@@ -140,4 +140,10 @@ func (t *TuiFixer) HandleCss() ([]string, error) {
 	}
 
 	return updateCssFile(t.addCssSectionIfMissing, t.addCssPageIfMissing, filehandler.JoinPath(t.opfFolder, t.selectedCssFile), *t.contextBreak, t.handledFiles, t.getFile, t.writeFile)
+}
+
+func (t *TuiFixer) Cleanup() {
+	if t.file != nil {
+		t.file.Close()
+	}
 }

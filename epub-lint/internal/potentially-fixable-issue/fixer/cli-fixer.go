@@ -194,3 +194,7 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 
 	return newText, valueReplaced, false
 }
+
+// For now this is empty as there is not really anything to cleanup here
+func (c *CliFixer) Cleanup() {
+}

@@ -194,6 +194,8 @@ var contentCmd = &cobra.Command{
 				return nil
 			})
 
+			defer handler.Cleanup()
+
 			err = handler.Setup()
 			if err != nil {
 				return nil, err
