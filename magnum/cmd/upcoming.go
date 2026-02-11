@@ -12,12 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ShowInfoCmd represents the add book info command
-var ShowInfoCmd = &cobra.Command{
-	Use:   "show-info",
+// UpcomingCmd represents the upcoming release command
+var UpcomingCmd = &cobra.Command{
+	Use:   "upcoming",
 	Short: "Shows each series that has upcoming releases along with when the releases are in the order they are going to be released",
 	Example: heredoc.Doc(`To show upcoming releases in order of when they are releasing:
-	magnum show-info
+	magnum upcoming
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -91,7 +91,7 @@ var ShowInfoCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(ShowInfoCmd)
+	rootCmd.AddCommand(UpcomingCmd)
 }
 
 func parseVolumeReleaseDate(name, releaseDate string) time.Time {

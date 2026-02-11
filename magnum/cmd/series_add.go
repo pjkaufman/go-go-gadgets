@@ -28,14 +28,14 @@ var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Adds the provided series info to the list of series to keep track of",
 	Example: heredoc.Doc(`To add a series with just a name and other information to be filled out:
-	magnum add -n "Lady and the Tramp"
+	magnum series add -n "Lady and the Tramp"
 	Note: that the other fields will be filled in via prompts except the series status which is assumed to be ongoing
 
 	To add a series with a special URL slug that does not follow the normal pattern for the publisher in question or is on its own page:
-	magnum add -n "Re:ZERO -Starting Life in Another World" -s "re-starting-life-in-another-world"
+	magnum series add -n "Re:ZERO -Starting Life in Another World" -s "re-starting-life-in-another-world"
 
 	To add a series that is not ongoing (for example Completed):
-	magnum add -n "Demon Slayer" -r "C"
+	magnum series add -n "Demon Slayer" -r "C"
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateAddSeriesFlags(seriesName)
@@ -88,7 +88,7 @@ var AddCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(AddCmd)
+	seriesCmd.AddCommand(AddCmd)
 
 	AddCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
 	err := AddCmd.MarkFlagRequired("name")

@@ -91,9 +91,9 @@ epub-lint fix content -f test.epub -oxford-commas --thoughts --necessary-words
 Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix issues. Here is a list of all of the error codes that are currently handled:
 - OPF-014: add scripted to the list of values in the properties attribute on the manifest item
 - OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
+- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 - OPF-074: remove duplicate manifest entries
 - NCX-001: fix discrepancy in identifier between the OPF and NCX files
-- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 - RSC-005: seems to be a catch all error id, but the following are handled around it
 	- Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
 		and starting the value with an underscore instead of a number if it currently is started by a number
@@ -103,7 +103,9 @@ Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix is
 	- Add div tags inside of blockquote elements that were not able to be parsed and do not have a blockquote inside of them
 	- Add an empty alt attribute to img elements that are missing them
 	- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
+- RSC-007: try to fix broken file links and remove
 - RSC-012: try to fix broken links by removing the id link in the href attribute
+- HTM-004: try to fix broken DOCTYPEs by replacing them with the expected DOCTYPE
 
 
 ##### Flags

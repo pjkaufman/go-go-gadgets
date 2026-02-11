@@ -27,21 +27,21 @@ var (
 	vizMediaHandler               sitehandler.SiteHandler
 )
 
-// GetInfoCmd represents the get book info command
-var GetInfoCmd = &cobra.Command{
-	Use:   "get-info",
-	Short: "Gets the book release info for books that have been added to the list of series to track",
+// CheckCmd represents the check book info command
+var CheckCmd = &cobra.Command{
+	Use:   "check",
+	Short: "Checks the book release info for books that have been added to the list of series to track",
 	Example: heredoc.Doc(`To get all of the release data for non-completed series:
-	magnum get-info
+	magnum series check
 
 	To get release data including completed series:
-	magnum get-info -c
+	magnum series check -c
 
 	To get release data for a specific series:
-	magnum get-info -s "Series Name"
+	magnum series check -s "Series Name"
 
 	To interactively select a series from a prompt:
-	magnum get-info -p
+	magnum series check -p
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -80,12 +80,12 @@ var GetInfoCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(GetInfoCmd)
+	seriesCmd.AddCommand(CheckCmd)
 
-	GetInfoCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
-	GetInfoCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
-	GetInfoCmd.Flags().StringVarP(&seriesName, "series", "s", "", "get info for just the specified series")
-	GetInfoCmd.Flags().BoolVarP(&promptForSeries, "prompt-name", "p", false, "get info for a series that you will select from a prompt")
+	CheckCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
+	CheckCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
+	CheckCmd.Flags().StringVarP(&seriesName, "series", "s", "", "get info for just the specified series")
+	CheckCmd.Flags().BoolVarP(&promptForSeries, "interactive", "i", false, "get info for a series that you will select from a prompt")
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {

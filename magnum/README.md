@@ -21,19 +21,24 @@ Magnum is a program that checks if the list of specified light novels has any up
 
 ## Commands
 
-- [add](#add)
-- [get-info](#get-info)
-- [list](#list)
-- [remove](#remove)
-- [set-status](#set-status)
-- [show-info](#show-info)
+- [series](#series)
+  - [add](#add)
+  - [check](#check)
+  - [list](#list)
+  - [remove](#remove)
+  - [set-status](#set-status)
+- [upcoming](#upcoming)
 - [validate](#validate)
 
-### add
+### series
+
+Deals with series related information that magnum tracks
+
+#### add
 
 Adds the provided series info to the list of series to keep track of
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
@@ -44,54 +49,54 @@ Adds the provided series info to the list of series to keep track of
 | t | type | the series type | string |  | false |  |
 | o | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
 
-#### Usage
+##### Usage
 
 ``` bash
 # To add a series with just a name and other information to be filled out:
-magnum add -n "Lady and the Tramp"
+magnum series add -n "Lady and the Tramp"
 Note: that the other fields will be filled in via prompts except the series status which is assumed to be ongoing
 
 # To add a series with a special URL slug that does not follow the normal pattern for the publisher in question or is on its own page:
-magnum add -n "Re:ZERO -Starting Life in Another World" -s "re-starting-life-in-another-world"
+magnum series add -n "Re:ZERO -Starting Life in Another World" -s "re-starting-life-in-another-world"
 
 # To add a series that is not ongoing (for example Completed):
-magnum add -n "Demon Slayer" -r "C"
+magnum series add -n "Demon Slayer" -r "C"
 ```
 
-### get-info
+#### check
 
-Gets the book release info for books that have been added to the list of series to track
+Checks the book release info for books that have been added to the list of series to track
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | include-completed | get info for completed series |  | false | false |  |
-| p | prompt-name | get info for a series that you will select from a prompt |  | false | false |  |
+| i | interactive | get info for a series that you will select from a prompt |  | false | false |  |
 | s | series | get info for just the specified series | string |  | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
 
-#### Usage
+##### Usage
 
 ``` bash
 # To get all of the release data for non-completed series:
-magnum get-info
+magnum series check
 
 # To get release data including completed series:
-magnum get-info -c
+magnum series check -c
 
 # To get release data for a specific series:
-magnum get-info -s "Series Name"
+magnum series check -s "Series Name"
 
 # To interactively select a series from a prompt:
-magnum get-info -p
+magnum series check -p
 ```
 
-### list
+#### list
 
 Lists the names of each of the series that is currently being tracked
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
@@ -100,38 +105,38 @@ Lists the names of each of the series that is currently being tracked
 | t | type | show series with the specified type | string |  | false |  |
 | v | verbose | show the publisher and other info about the series |  | false | false |  |
 
-#### Usage
+##### Usage
 
 ``` bash
 # To show a list of all series names that are being tracked:
-magnum list
+magnum series list
 
 # To include information like publisher, status, series, etc.:
-magnum list -v
+magnum series list -v
 ```
 
-### remove
+#### remove
 
 Removes the provided series from the list of series to keep track of
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | n | name | the name of the series | string |  | true |  |
 
-#### Usage
+##### Usage
 
 ``` bash
 # To remove a series use the following command:
-magnum remove -n "Lady and the Tramp"
+magnum series remove -n "Lady and the Tramp"
 ```
 
-### set-status
+#### set-status
 
 Sets the status of the provided/selected book name
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
@@ -139,24 +144,24 @@ Sets the status of the provided/selected book name
 | n | name | name of the book to set the status for | string |  | false |  |
 | s | status | status to set for the selected book (O/H/C) | string |  | false |  |
 
-#### Usage
+##### Usage
 
 ``` bash
 # To set the status of a book you know the name of:
-magnum set-status -n "book_name"
+magnum series set-status -n "book_name"
 This will result in being prompted for a status for that book.
 
 # To set the status of a book you know the name and status of:
-magnum set-status -n "book_name" -s C
+magnum series set-status -n "book_name" -s C
 
 # To set the status of a book by using the cli selection options:
-magnum set-status
+magnum series set-status
 
 # To set the status of a book and include the completed series:
-magnum set-status -c
+magnum series set-status -c
 ```
 
-### show-info
+### upcoming
 
 Shows each series that has upcoming releases along with when the releases are in the order they are going to be released
 
@@ -164,7 +169,7 @@ Shows each series that has upcoming releases along with when the releases are in
 
 ``` bash
 # To show upcoming releases in order of when they are releasing:
-magnum show-info
+magnum upcoming
 ```
 
 ### validate

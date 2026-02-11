@@ -20,17 +20,17 @@ var SetStatus = &cobra.Command{
 	Use:   "set-status",
 	Short: "Sets the status of the provided/selected book name",
 	Example: heredoc.Doc(`To set the status of a book you know the name of:
-	magnum set-status -n "book_name"
+	magnum series set-status -n "book_name"
 	This will result in being prompted for a status for that book.
 
 	To set the status of a book you know the name and status of:
-	magnum set-status -n "book_name" -s C
+	magnum series set-status -n "book_name" -s C
 
 	To set the status of a book by using the cli selection options:
-	magnum set-status
+	magnum series set-status
 
 	To set the status of a book and include the completed series:
-	magnum set-status -c
+	magnum series set-status -c
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -82,7 +82,7 @@ var SetStatus = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(SetStatus)
+	seriesCmd.AddCommand(SetStatus)
 
 	SetStatus.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "include completed series in the books to search")
 	SetStatus.Flags().StringVarP(&bookName, "name", "n", "", "name of the book to set the status for")

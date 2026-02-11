@@ -14,10 +14,10 @@ var ListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists the names of each of the series that is currently being tracked",
 	Example: heredoc.Doc(`To show a list of all series names that are being tracked:
-	magnum list
+	magnum series list
 
 	To include information like publisher, status, series, etc.:
-	magnum list -v
+	magnum series list -v
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -61,7 +61,7 @@ var ListCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(ListCmd)
+	seriesCmd.AddCommand(ListCmd)
 
 	ListCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show the publisher and other info about the series")
 	ListCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "show series with the specified publisher")

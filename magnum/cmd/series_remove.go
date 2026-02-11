@@ -15,7 +15,7 @@ var RemoveCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Removes the provided series from the list of series to keep track of",
 	Example: heredoc.Doc(`To remove a series use the following command:
-	magnum remove -n "Lady and the Tramp"
+	magnum series remove -n "Lady and the Tramp"
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := ValidateRemoveSeriesFlags(seriesName)
@@ -37,7 +37,7 @@ var RemoveCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(RemoveCmd)
+	seriesCmd.AddCommand(RemoveCmd)
 
 	RemoveCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
 	err := RemoveCmd.MarkFlagRequired("name")
