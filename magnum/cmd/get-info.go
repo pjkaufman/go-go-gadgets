@@ -60,6 +60,7 @@ var GetInfoCmd = &cobra.Command{
 			for i, series := range seriesInfo.Series {
 				if strings.EqualFold(seriesName, series.Name) {
 					seriesInfo.Series[i] = getSeriesVolumeInfo(series)
+					config.WriteConfig(seriesInfo)
 					return
 				}
 			}
@@ -177,6 +178,10 @@ func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler siteha
 
 	var shouldSkipGettingVolumesAndHandleExistingData bool
 	switch seriesInfo.Publisher {
+	case config.SevenSeasEntertainment:
+		// We cannot trust that the release date in question is 100% correct
+		// as they will put out early releases with little to no warning sometimes
+		fallthrough
 	case config.YenPress:
 		// We cannot really trust that Yen Press release data is 100% accurate as they could have delayed the book release,
 		// so we need to double check volumes any time we have an upcoming release
