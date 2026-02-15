@@ -27,13 +27,13 @@ func GetPotentiallyBrokenLines(fileContent string) (map[string]string, error) {
 }
 
 func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{}, originalToSuggested map[string]string) {
-	var subMatches = unendedParagraphRegex.FindAllStringSubmatch(fileContent, -1)
+	var subMatches = unendedParagraphRegex.FindAllStringSubmatchIndex(fileContent, -1)
 	if len(subMatches) == 0 {
 		return
 	}
 
 	for _, groups := range subMatches {
-		var currentLine = groups[0]
+		var currentLine = fileContent[groups[0]:groups[1]]
 		if hasParsedLine(parsedLines, currentLine) {
 			continue
 		}
@@ -42,24 +42,21 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 
 		var (
 			originalString  = currentLine
-			suggestedString = groups[1] + groups[3] + " "
+			suggestedString = fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + " "
 			nextLine        = currentLine
+			endOfLineIndex  = groups[1]
 		)
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
-			nextLine = getNextLine(fileContent, nextLine)
-			if hasParsedLine(parsedLines, nextLine) {
-				// TODO: this is a stop gap that should handle the issue of duplicate lines (like in a poem) for now,
-				// but we need to rework the logic to better handle replacements
-				break
-			}
+			nextLine = getNextLine(fileContent, endOfLineIndex)
 
 			addToParsedLines(parsedLines, nextLine)
 			originalString += nextLine
 
-			var nextLineGroups = unendedParagraphRegex.FindStringSubmatch(nextLine)
+			var nextLineGroups = unendedParagraphRegex.FindAllStringSubmatchIndex(nextLine, 1)
 			lineIsPotentiallyBroken = len(nextLineGroups) > 0
 			if lineIsPotentiallyBroken {
-				suggestedString += nextLineGroups[3] + " "
+				suggestedString += nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]] + " "
+				endOfLineIndex += len(nextLine)
 			} else {
 				var endOfOpeningTag = strings.Index(nextLine, ">")
 
@@ -81,13 +78,13 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 }
 
 func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{}, originalToSuggested map[string]string) {
-	var subMatches = paragraphsWithDoubleQuotes.FindAllStringSubmatch(fileContent, -1)
+	var subMatches = paragraphsWithDoubleQuotes.FindAllStringSubmatchIndex(fileContent, -1)
 	if len(subMatches) == 0 {
 		return
 	}
 
 	for _, groups := range subMatches {
-		var currentLine = groups[0] + "\n"
+		var currentLine = fileContent[groups[0]:groups[1]] + "\n"
 		var doubleQuoteCount = strings.Count(currentLine, "\"")
 		if doubleQuoteCount%2 == 0 {
 			continue
@@ -101,20 +98,26 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 
 		addToParsedLines(parsedLines, currentLine)
 
-		var originalString = currentLine
-		var suggestedString = groups[1] + groups[3] + groups[4] + groups[5]
+		var (
+			originalString  = currentLine
+			suggestedString = fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + fileContent[groups[8]:groups[9]] + fileContent[groups[10]:groups[11]]
+		)
 		if !strings.HasSuffix(suggestedString, " ") {
 			suggestedString += " "
 		}
 
-		var i = 1
-		var nextLine = currentLine
+		var (
+			i              = 1
+			nextLine       = currentLine
+			endOfLineIndex = groups[1] + 1
+		)
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
 			i += 1
-			nextLine = getNextLine(fileContent, nextLine)
+			nextLine = getNextLine(fileContent, endOfLineIndex)
 			addToParsedLines(parsedLines, nextLine)
 			originalString += nextLine
 			doubleQuoteCount += strings.Count(nextLine, "\"")
+			endOfLineIndex += len(nextLine)
 
 			lineIsPotentiallyBroken = doubleQuoteCount%2 != 0 && nextLine != "" && i < maxQuoteLoops
 
@@ -146,13 +149,13 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 }
 
 func parseParagraphsStartingWithLowercaseLetters(fileContent string, parsedLines map[string]struct{}, originalToSuggested map[string]string) {
-	var subMatches = paragraphsStartingWithLowercaseLetter.FindAllStringSubmatch(fileContent, -1)
+	var subMatches = paragraphsStartingWithLowercaseLetter.FindAllStringSubmatchIndex(fileContent, -1)
 	if len(subMatches) == 0 {
 		return
 	}
 
 	for _, groups := range subMatches {
-		var currentLine = groups[0] + "\n"
+		var currentLine = fileContent[groups[0]:groups[1]] + "\n"
 
 		// May need to handle parsed lines to make it so that it does not conflict between the two options that get parsed
 		// but for now this should work just fine
@@ -161,8 +164,7 @@ func parseParagraphsStartingWithLowercaseLetters(fileContent string, parsedLines
 		}
 
 		addToParsedLines(parsedLines, currentLine)
-
-		var suggestedString = groups[3]
+		var suggestedString = fileContent[groups[6]:groups[7]]
 		if !strings.HasPrefix(suggestedString, " ") {
 			suggestedString = " " + suggestedString
 		}
@@ -201,13 +203,10 @@ func addToParsedLines(parsedLines map[string]struct{}, line string) {
 	parsedLines[strings.TrimSpace(line)] = struct{}{}
 }
 
-func getNextLine(fileContent, currentLine string) string {
-	var endOfLineIndex = strings.Index(fileContent, currentLine)
+func getNextLine(fileContent string, endOfLineIndex int) string {
 	if endOfLineIndex == -1 {
 		return ""
 	}
-
-	endOfLineIndex += len(currentLine)
 
 	var substring = fileContent[endOfLineIndex:]
 	var indexOfEndOfLine = strings.Index(substring, "\n")
@@ -219,8 +218,7 @@ func getNextLine(fileContent, currentLine string) string {
 	return substring[0 : indexOfEndOfLine+1]
 }
 
-func getPreviousLine(fileContent, currentLine string) string {
-	var startOfCurrentLine = strings.Index(fileContent, currentLine)
+func getPreviousLine(fileContent string, startOfCurrentLine int) string {
 	if startOfCurrentLine == -1 {
 		return ""
 	}

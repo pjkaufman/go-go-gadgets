@@ -169,6 +169,21 @@ var getPotentiallyBrokenLinesTestCases = map[string]getPotentiallyBrokenLinesTes
 		<p>Text here... here is a continuation of the previous line.</p>`,
 		},
 	},
+	"make sure that when a poem with repeating lines does not result in an infinite loop": {
+		inputText: `<p>First line.</p>
+		<p>Content is but as content is</p>
+		<p class="calibre1">How envious should I be</p>
+		<p>Content is but as content is</p>
+		<p class="calibre1">How envious should I be</p>`,
+		expectedSuggestions: map[string]string{
+			`
+		<p>Content is but as content is</p>
+		<p class="calibre1">How envious should I be</p>
+		<p>Content is but as content is</p>
+		<p class="calibre1">How envious should I be</p>`: `
+		<p>Content is but as content is How envious should I be Content is but as content is How envious should I be</p>`,
+		},
+	},
 }
 
 func TestGetPotentiallyBrokenLines(t *testing.T) {
