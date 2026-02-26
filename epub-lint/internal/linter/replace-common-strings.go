@@ -54,7 +54,12 @@ var commonReplaceWords = []ReplaceWords{
 	{
 		Search:   "...",
 		Replace:  "…",
-		Rational: "Proper ellipses should be used where possible as it keeps things clean and consistentReplace smart single quotes with straight single quotes",
+		Rational: "Proper ellipses should be used instead of 3 periods as it keeps things clean and consistent",
+	},
+	{
+		Search:   ". . .",
+		Replace:  "…",
+		Rational: "Proper ellipses should be used instead of 3 periods with spaces between them as it keeps things clean and consistent",
 	},
 }
 
