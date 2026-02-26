@@ -65,7 +65,7 @@ magnum series add -n "Demon Slayer" -r "C"
 
 #### check
 
-Checks the book release info for books that have been added to the list of series to track
+Checks the book release info for each series that has been added to the list of series to track
 
 ##### Flags
 
@@ -113,11 +113,11 @@ Edits the provided/selected book name
 
 ``` bash
 # To set the status, publisher, and/or series type of a series:
-magnum series edit -n "book_name" -i
+magnum series edit -n "series_name" -i
 This will result in being prompted for a status, publisher, and series type for the series.
 
-# To set the status of a book you know the name and status of without wanting to use any interactive prompt:
-magnum series edit -n "book_name" -s C
+# To set the status of a series you know the name and status of without wanting to use any interactive prompt:
+magnum series edit -n "series_name" -s C
 ```
 
 #### list

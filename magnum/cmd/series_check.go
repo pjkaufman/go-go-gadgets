@@ -31,7 +31,7 @@ var (
 // CheckCmd represents the check book info command
 var CheckCmd = &cobra.Command{
 	Use:   "check",
-	Short: "Checks the book release info for books that have been added to the list of series to track",
+	Short: "Checks the book release info for each series that has been added to the list of series to track",
 	Example: heredoc.Doc(`To get all of the release data for non-completed series:
 	magnum series check
 

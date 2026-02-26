@@ -19,11 +19,11 @@ var EditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edits the provided/selected book name",
 	Example: heredoc.Doc(`To set the status, publisher, and/or series type of a series:
-	magnum series edit -n "book_name" -i
+	magnum series edit -n "series_name" -i
 	This will result in being prompted for a status, publisher, and series type for the series.
 
-	To set the status of a book you know the name and status of without wanting to use any interactive prompt:
-	magnum series edit -n "book_name" -s C
+	To set the status of a series you know the name and status of without wanting to use any interactive prompt:
+	magnum series edit -n "series_name" -s C
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -68,9 +68,7 @@ var EditCmd = &cobra.Command{
 			logger.WriteErrorf("No series with the name %q is in the series list.\n", name)
 		}
 
-		// TODO: check each value and make updates if the values are either not empty
 		var changeMade bool
-
 		var (
 			status       = config.SeriesStatus(bookStatus)
 			updateStatus = interactiveMode || cmd.Flags().Changed("status")
