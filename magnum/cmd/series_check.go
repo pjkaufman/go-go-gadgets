@@ -20,6 +20,7 @@ var promptForSeries bool
 
 var (
 	handlersInitialized           = false
+	includeCompleted              bool
 	jNovelClubHandler             sitehandler.SiteHandler
 	sevenSeasEntertainmentHandler sitehandler.SiteHandler
 	wikipediaHandler              sitehandler.SiteHandler
@@ -38,10 +39,10 @@ var CheckCmd = &cobra.Command{
 	magnum series check -c
 
 	To get release data for a specific series:
-	magnum series check -s "Series Name"
+	magnum series check -n "Series Name"
 
 	To interactively select a series from a prompt:
-	magnum series check -p
+	magnum series check -i
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -84,7 +85,7 @@ func init() {
 
 	CheckCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
 	CheckCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
-	CheckCmd.Flags().StringVarP(&seriesName, "series", "s", "", "get info for just the specified series")
+	CheckCmd.Flags().StringVarP(&seriesName, "name", "n", "", "get info for just the specified series name")
 	CheckCmd.Flags().BoolVarP(&promptForSeries, "interactive", "i", false, "get info for a series that you will select from a prompt")
 }
 

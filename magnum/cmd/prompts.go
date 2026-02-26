@@ -40,7 +40,7 @@ func selectBookName(series []config.SeriesInfo, includeCompleted bool) string {
 	return result
 }
 
-func selectBookStatus() config.SeriesStatus {
+func selectBookStatus(currentStatus *config.SeriesStatus) config.SeriesStatus {
 	var statuses = []config.SeriesStatus{
 		config.Ongoing,
 		config.Hiatus,
@@ -51,8 +51,13 @@ func selectBookStatus() config.SeriesStatus {
 		seriesStatuses[i] = fmt.Sprintf("%s - %s", status, config.SeriesStatusToDisplayText(status))
 	}
 
+	var label = "Select Book Status"
+	if currentStatus != nil {
+		label += fmt.Sprintf(" (Currently %s)", config.SeriesStatusToDisplayText(*currentStatus))
+	}
+
 	prompt := promptui.Select{
-		Label: "Select Book Status",
+		Label: label,
 		Items: seriesStatuses,
 	}
 
@@ -64,7 +69,7 @@ func selectBookStatus() config.SeriesStatus {
 	return statuses[i]
 }
 
-func selectPublisher() config.PublisherType {
+func selectPublisher(currentPublisher *config.PublisherType) config.PublisherType {
 	var publishers = []config.PublisherType{
 		config.YenPress,
 		config.JNovelClub,
@@ -78,8 +83,13 @@ func selectPublisher() config.PublisherType {
 		publisherTypes[i] = fmt.Sprintf("%[1]s - %[1]s", publisherType)
 	}
 
+	var label = "Select Book Publisher"
+	if currentPublisher != nil {
+		label += fmt.Sprintf(" (Currently %s)", *currentPublisher)
+	}
+
 	prompt := promptui.Select{
-		Label: "Select Book Publisher",
+		Label: label,
 		Items: publisherTypes,
 	}
 
@@ -91,7 +101,7 @@ func selectPublisher() config.PublisherType {
 	return publishers[i]
 }
 
-func selectSeriesType() config.SeriesType {
+func selectSeriesType(currentType *config.SeriesType) config.SeriesType {
 	var types = []config.SeriesType{
 		config.WebNovel,
 		config.Manga,
@@ -102,8 +112,13 @@ func selectSeriesType() config.SeriesType {
 		seriesTypes[i] = fmt.Sprintf("%s - %s", seriesType, config.SeriesTypeToDisplayText(seriesType))
 	}
 
+	var label = "Select Series Type"
+	if currentType != nil {
+		label += fmt.Sprintf(" (Currently %s)", config.SeriesTypeToDisplayText(*currentType))
+	}
+
 	prompt := promptui.Select{
-		Label: "Select Series Type",
+		Label: label,
 		Items: seriesTypes,
 	}
 

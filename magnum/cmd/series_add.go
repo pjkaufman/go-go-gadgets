@@ -52,17 +52,17 @@ var AddCmd = &cobra.Command{
 
 		var publisher = config.PublisherType(seriesPublisher)
 		if strings.TrimSpace(seriesPublisher) == "" || !config.IsPublisherType(seriesPublisher) {
-			publisher = selectPublisher()
+			publisher = selectPublisher(nil)
 		}
 
 		var typeOfSeries = config.SeriesType(seriesType)
 		if strings.TrimSpace(seriesType) == "" || !config.IsSeriesType(seriesType) {
-			typeOfSeries = selectSeriesType()
+			typeOfSeries = selectSeriesType(nil)
 		}
 
 		var status = config.SeriesStatus(seriesStatus)
 		if strings.TrimSpace(seriesStatus) == "" || !config.IsSeriesStatus(seriesStatus) {
-			status = selectBookStatus()
+			status = selectBookStatus(nil)
 		}
 
 		var override *string
@@ -98,8 +98,8 @@ func init() {
 
 	AddCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "the publisher of the series")
 	AddCmd.Flags().StringVarP(&seriesType, "type", "t", "", "the series type")
-	AddCmd.Flags().StringVarP(&slugOverride, "slug", "s", "", "the slug for the series to use instead of the one based on the series name")
-	AddCmd.Flags().StringVarP(&seriesStatus, "status", "r", string(config.Ongoing), "the status of the series (defaults to Ongoing)")
+	AddCmd.Flags().StringVarP(&slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name")
+	AddCmd.Flags().StringVarP(&seriesStatus, "status", "s", string(config.Ongoing), "the status of the series (defaults to Ongoing)")
 	AddCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
 }
 

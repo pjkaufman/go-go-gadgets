@@ -66,5 +66,5 @@ func init() {
 	ListCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show the publisher and other info about the series")
 	ListCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "show series with the specified publisher")
 	ListCmd.Flags().StringVarP(&seriesType, "type", "t", "", "show series with the specified type")
-	ListCmd.Flags().StringVarP(&seriesStatus, "status", "r", "", "show series with the specified status")
+	ListCmd.Flags().StringVarP(&seriesStatus, "status", "s", "", "show series with the specified status")
 }

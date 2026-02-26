@@ -24,9 +24,9 @@ Magnum is a program that checks if the list of specified light novels has any up
 - [series](#series)
   - [add](#add)
   - [check](#check)
+  - [edit](#edit)
   - [list](#list)
   - [remove](#remove)
-  - [set-status](#set-status)
 - [upcoming](#upcoming)
 - [validate](#validate)
 
@@ -44,8 +44,8 @@ Adds the provided series info to the list of series to keep track of
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | n | name | the name of the series | string |  | true |  |
 | p | publisher | the publisher of the series | string |  | false |  |
-| s | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
-| r | status | the status of the series (defaults to Ongoing) | string | O | false |  |
+| r | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
+| s | status | the status of the series (defaults to Ongoing) | string | O | false |  |
 | t | type | the series type | string |  | false |  |
 | o | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
 
@@ -73,7 +73,7 @@ Checks the book release info for books that have been added to the list of serie
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | include-completed | get info for completed series |  | false | false |  |
 | i | interactive | get info for a series that you will select from a prompt |  | false | false |  |
-| s | series | get info for just the specified series | string |  | false |  |
+| n | name | get info for just the specified series name | string |  | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
 
 ##### Usage
@@ -86,10 +86,38 @@ magnum series check
 magnum series check -c
 
 # To get release data for a specific series:
-magnum series check -s "Series Name"
+magnum series check -n "Series Name"
 
 # To interactively select a series from a prompt:
-magnum series check -p
+magnum series check -i
+```
+
+#### edit
+
+Edits the provided/selected book name
+
+##### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| c | include-completed | include completed series in the books to search |  | false | false |  |
+| i | interactive | gets the name, publisher, series type, and series status interactively when not provided |  | false | false |  |
+| n | name | the name of the series to edit | string |  | false |  |
+| p | publisher | the publisher of the series | string |  | false |  |
+| r | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
+| s | status | status to set for the selected book (O/H/C) | string |  | false |  |
+| t | type | the series type | string |  | false |  |
+| o | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
+
+##### Usage
+
+``` bash
+# To set the status, publisher, and/or series type of a series:
+magnum series edit -n "book_name" -i
+This will result in being prompted for a status, publisher, and series type for the series.
+
+# To set the status of a book you know the name and status of without wanting to use any interactive prompt:
+magnum series edit -n "book_name" -s C
 ```
 
 #### list
@@ -101,7 +129,7 @@ Lists the names of each of the series that is currently being tracked
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | p | publisher | show series with the specified publisher | string |  | false |  |
-| r | status | show series with the specified status | string |  | false |  |
+| s | status | show series with the specified status | string |  | false |  |
 | t | type | show series with the specified type | string |  | false |  |
 | v | verbose | show the publisher and other info about the series |  | false | false |  |
 
@@ -130,35 +158,6 @@ Removes the provided series from the list of series to keep track of
 ``` bash
 # To remove a series use the following command:
 magnum series remove -n "Lady and the Tramp"
-```
-
-#### set-status
-
-Sets the status of the provided/selected book name
-
-##### Flags
-
-| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
-| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
-| c | include-completed | include completed series in the books to search |  | false | false |  |
-| n | name | name of the book to set the status for | string |  | false |  |
-| s | status | status to set for the selected book (O/H/C) | string |  | false |  |
-
-##### Usage
-
-``` bash
-# To set the status of a book you know the name of:
-magnum series set-status -n "book_name"
-This will result in being prompted for a status for that book.
-
-# To set the status of a book you know the name and status of:
-magnum series set-status -n "book_name" -s C
-
-# To set the status of a book by using the cli selection options:
-magnum series set-status
-
-# To set the status of a book and include the completed series:
-magnum series set-status -c
 ```
 
 ### upcoming
