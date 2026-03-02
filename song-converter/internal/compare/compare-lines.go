@@ -125,7 +125,7 @@ func CompareLines(pdfLines, htmlLines []string) (differences []Difference) {
 			continue
 		}
 
-		// TODO: decide if the below is how I want the mismatch handled, but for now it should do
+		// For now we will handle the following scenario as is, but in the future I may want to change this...
 		// If none of the above, log as a mismatch
 		differences = append(differences, Difference{
 			Message:  fmt.Sprintf("Line %d does not match:\n  HTML: %q\n  PDF:  %q", i+1, htmlLine, pdfLine),
