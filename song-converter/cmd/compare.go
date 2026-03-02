@@ -16,6 +16,7 @@ import (
 var (
 	pdfFile, htmlFile string
 	numJoinLines      int
+	ignoreToCLineNums bool
 	// wsCollapse        = regexp.MustCompile(`\s+`)
 	// tocCollapse       = regexp.MustCompile(`(.+?)  +(\d+)$`) // finds toc page numbers
 )
@@ -54,12 +55,7 @@ var CompareCmd = &cobra.Command{
 		}
 
 		pdfText := commandhandler.MustGetCommandOutput("pdftotext", "PDF extraction error", "-layout", pdfFile, "-")
-		pdfLines := converter.PdfTextCleanup(pdfText, numJoinLines)
-
-		// pdfLines, err := pdfToTextCleaned(pdfFile, numJoinLines)
-		// if err != nil {
-		// 	log.Fatalf("PDF extraction error: %v", err)
-		// }
+		pdfLines := converter.PdfTextCleanup(pdfText, numJoinLines, ignoreToCLineNums)
 
 		htmlContent, err := filehandler.ReadInFileContents(htmlFile)
 		if err != nil {
@@ -68,15 +64,11 @@ var CompareCmd = &cobra.Command{
 
 		htmlLines := converter.HtmlToText(htmlContent)
 
-		filehandler.WriteFileContents("pdf.txt", strings.Join(pdfLines, "\n"))
-		filehandler.WriteFileContents("html.txt", strings.Join(htmlLines, "\n"))
-
 		logger.WriteInfo("-- Alignment of PDF vs HTML lines --")
 		diffs := compare.CompareLines(pdfLines, htmlLines)
 		for _, diff := range diffs {
 			logger.WriteInfo(diff.ToDisplayText())
 		}
-		// detectMeaningfulLineDifferences(pdfLines, htmlLines)
 	},
 }
 
@@ -106,6 +98,7 @@ func init() {
 	}
 
 	CompareCmd.Flags().IntVarP(&numJoinLines, "join-lines", "", 0, "the number of lines at the start of the pdf to join together to help make the html and pdf content as similar as possible")
+	CompareCmd.Flags().BoolVarP(&ignoreToCLineNums, "ignore-page-numbers", "", false, "whether to ignore table of contents page numbers (this is for when the HTML or PDF will not have line numbers in the table of contents, but the other will)")
 }
 
 func ValidateCompareHtmlFlags(htmlFilePath, pdfFilePath string) error {
@@ -127,149 +120,3 @@ func ValidateCompareHtmlFlags(htmlFilePath, pdfFilePath string) error {
 
 	return nil
 }
-
-// Align PDF lines with HTML lines and detect explicit linebreaks vs wraps
-// TODO: convert this into a function that will return a list of lines responses that then get transformed into strings for output
-// func detectMeaningfulLineDifferences(pdfLines, htmlLines []string) {
-// 	if len(pdfLines) != len(htmlLines) {
-// 		logger.WriteInfof("[Likely Mismatch]: Line count mismatch for HTML and PDF file: expected %d but was %d\n", len(htmlLines), len(pdfLines))
-// 	}
-
-// 	var pdfIdx int
-// 	for i, htmlLine := range htmlLines {
-// 		if pdfIdx >= len(pdfLines) {
-// 			remainingCount := len(htmlLines) - i
-// 			lineText := "line"
-// 			if remainingCount != 1 {
-// 				lineText += "s"
-// 			}
-// 			logger.WriteInfof("[Definite Mismatch]: Ran out of lines in the PDF to compare to the HTML: had %d %s to go\n", remainingCount, lineText)
-// 			break
-// 		}
-
-// 		pdfLine := pdfLines[pdfIdx]
-// 		if htmlLine == pdfLine { // the lines match, so we can continue to the next line
-// 			pdfIdx++
-// 			continue
-// 		}
-
-// 		// Check if the lines have wrapped between PDF and HTML.
-// 		if strings.HasPrefix(htmlLine, pdfLine) {
-// 			// Try to concatenate additional PDF lines to see if together they match the HTML line
-// 			var (
-// 				combined    = pdfLine
-// 				nextIdx     = pdfIdx + 1
-// 				wrapped     = false
-// 				partialWrap = false
-// 			)
-// 			for nextIdx < len(pdfLines) {
-// 				if strings.HasSuffix(combined, "-") {
-// 					combined += pdfLines[nextIdx]
-// 				} else {
-// 					combined += " " + pdfLines[nextIdx]
-// 				}
-
-// 				if combined == htmlLine {
-// 					logger.WriteInfof("[Wrapped]: HTML line %d matches across %d PDF lines: %q\n", i+1, nextIdx-pdfIdx+1, htmlLine)
-// 					pdfIdx = nextIdx + 1
-// 					wrapped = true
-// 					break
-// 				}
-
-// 				// If still a prefix, keep going; otherwise stop
-// 				if !strings.HasPrefix(htmlLine, combined) {
-// 					break
-// 				}
-
-// 				partialWrap = true
-
-// 				nextIdx++
-// 			}
-
-// 			if wrapped {
-// 				continue
-// 			}
-
-// 			if partialWrap {
-// 				logger.WriteInfof("[Partially Wrapped]: HTML line %d partially across %d PDF lines: %q\n", i+1, nextIdx-pdfIdx+1, htmlLine)
-// 				pdfIdx = nextIdx
-// 				continue
-// 			}
-
-// 			// No real further match other than start of line, so check the remaining output
-// 		}
-
-// 		// Check for single whitespace difference
-// 		htmlNorm := strings.ReplaceAll(htmlLine, " ", "")
-// 		pdfNorm := strings.ReplaceAll(pdfLine, " ", "")
-// 		if htmlNorm == pdfNorm {
-// 			logger.WriteInfof("[Whitespace]: Line %d vs. %d differs only by whitespace (HTML: %q | PDF: %q)\n", i+1, pdfIdx+1, htmlLine, pdfLine)
-// 			pdfIdx++
-// 			continue
-// 		}
-
-// 		// TODO: decide if the below is how I want the mismatch handled, but for now it should do
-// 		// If none of the above, log as a mismatch
-// 		logger.WriteInfof("[Line Mismatch]: Line %d does not match:\n  HTML: %q\n  PDF:  %q\n", i+1, htmlLine, pdfLine)
-// 		pdfIdx++
-// 	}
-
-// 	if pdfIdx < len(pdfLines) {
-// 		remainingCount := len(pdfLines) - pdfIdx
-// 		lineText := "line"
-// 		if remainingCount != 1 {
-// 			lineText += "s"
-// 		}
-// 		logger.WriteInfof("[Definite Mismatch]: Ran out of lines in the HTML to compare to the PDF: had %d %s to go\n", remainingCount, lineText)
-// 	}
-// }
-
-// Extract and clean lines from PDF using pdftotext.
-// - combineN: if >0, combines the first N lines into a single line at the beginning of the result slice.
-// func pdfToTextCleaned(pdfPath string, combineN int) ([]string, error) {
-// TODO: update this to actually be run the way I run other cli tools in this repo...
-// out, err := exec.Command("pdftotext", "-layout", pdfPath, "-").Output()
-// if err != nil {
-// 	return nil, err
-// }
-
-// return converter.PdfTextCleanup(out, combineN), nil
-
-// var (
-// 	lines   = strings.Split(strings.ReplaceAll(string(out), "\f", ""), "\n")
-// 	cleaned []string
-// )
-
-// // Clean and filter lines
-// for _, origLine := range lines {
-// 	line := origLine
-// 	if strings.TrimSpace(line) == "" {
-// 		continue // skip blank
-// 	}
-// 	if _, err := strconv.Atoi(strings.TrimSpace(line)); err == nil {
-// 		continue // skip page numbers
-// 	}
-
-// 	if len(line) > 3 && strings.HasPrefix(line, "    ") { // 4+ spaces
-// 		line = wsCollapse.ReplaceAllString(line, " ")
-// 	}
-
-// 	line = strings.TrimLeft(line, " \t")
-
-// 	// Remove any spaces between text and a trailing number (if two or more spaces)
-// 	if m := tocCollapse.FindStringSubmatch(line); m != nil {
-// 		line = m[1] + m[2]
-// 	}
-
-// 	cleaned = append(cleaned, line)
-// }
-
-// // Optionally combine first N lines into the first result line
-// if combineN > 1 && len(cleaned) >= combineN {
-// 	combined := strings.Join(cleaned[:combineN], " ")
-// 	// Optionally collapse spaces in the combined line
-// 	combined = wsCollapse.ReplaceAllString(combined, " ")
-// 	cleaned = append([]string{combined}, cleaned[combineN:]...)
-// }
-// return cleaned, nil
-// }

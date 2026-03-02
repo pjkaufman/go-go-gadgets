@@ -13,7 +13,7 @@ var (
 
 // PdfTextCleanup Takes in the pdf text and then converts it to cleaned up text lines
 // - combineN: if >0, combines the first N lines into a single line at the beginning of the result slice.
-func PdfTextCleanup(pdfText string, combineN int) []string {
+func PdfTextCleanup(pdfText string, combineN int, stripTocLineNums bool) []string {
 	var (
 		lines   = strings.Split(strings.ReplaceAll(pdfText, "\f", ""), "\n")
 		cleaned []string
@@ -37,7 +37,11 @@ func PdfTextCleanup(pdfText string, combineN int) []string {
 
 		// Remove any spaces between text and a trailing number (if two or more spaces)
 		if m := tocCollapse.FindStringSubmatch(line); m != nil {
-			line = m[1] + m[2]
+			if stripTocLineNums {
+				line = m[1]
+			} else {
+				line = m[1] + m[2]
+			}
 		}
 
 		cleaned = append(cleaned, line)
