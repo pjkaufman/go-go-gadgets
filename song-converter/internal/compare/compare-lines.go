@@ -101,8 +101,13 @@ func CompareLines(pdfLines, htmlLines []string) (differences []Difference) {
 			}
 
 			if partialWrap {
+				var diff = nextIdx - pdfIdx + 1
+				if nextIdx >= len(pdfLines) {
+					diff--
+				}
+
 				differences = append(differences, Difference{
-					Message:  fmt.Sprintf("HTML line %d partially across %d PDF lines: %q", i+1, nextIdx-pdfIdx+1, htmlLine),
+					Message:  fmt.Sprintf("HTML line %d partially across %d PDF lines: %q", i+1, diff, htmlLine),
 					DiffType: PartiallyWrappedLine,
 				})
 				pdfIdx = nextIdx
