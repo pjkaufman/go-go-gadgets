@@ -163,10 +163,42 @@ var compareLinesTestCases = map[string]compareLinesTestCase{
 		pdfLines:  sampleLines,
 		htmlLines: sampleLines,
 	},
-	/**
-	Scenarios to test yet:
-	- difference where there are at least 2 line wraps, 3 partial line wraps, a whitespace character issue, and the last line not actually matching
-	*/
+	"When there are various differences between the HTML and PDF lines, they should all get reported": {
+		pdfLines:  []string{"Line 1", "This line", "is getting wrapped", "not same", "broken", "into", "words", "line", "Whitespace  diff", "partial", "wraps", "are weird 52617"},
+		htmlLines: []string{"Line 1", "This line is getting wrapped", "these lines differ", "broken into words line", "Whitespace diff", "partial wraps are weird"},
+		differences: []compare.Difference{
+			{
+				Message:  "Line count mismatch for HTML and PDF file: expected 6 but was 12",
+				DiffType: compare.LikelyMismatch,
+			},
+			{
+				Message:  `HTML line 2 matches across 2 PDF lines: "This line is getting wrapped"`,
+				DiffType: compare.WrappedLine,
+			},
+			{
+				Message: `Line 3 does not match:
+  HTML: "these lines differ"
+  PDF:  "not same"`,
+				DiffType: compare.Line,
+			},
+			{
+				Message:  `HTML line 4 matches across 4 PDF lines: "broken into words line"`,
+				DiffType: compare.WrappedLine,
+			},
+			{
+				Message:  `Line 5 vs. 9 differs only by whitespace (HTML: "Whitespace diff" | PDF: "Whitespace  diff")`,
+				DiffType: compare.Whitespace,
+			},
+			{
+				Message:  `HTML line 6 partially across 3 PDF lines: "partial wraps are weird"`,
+				DiffType: compare.PartiallyWrappedLine,
+			},
+			{
+				Message:  "Ran out of lines in the HTML to compare to the PDF: had 1 line to go",
+				DiffType: compare.DefiniteMismatch,
+			},
+		},
+	},
 }
 
 func TestCompareLines(t *testing.T) {
