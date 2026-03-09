@@ -10,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type BuildHtmlSongsTestCase struct {
-	InputMdInfo   []converter.MdFileInfo
-	ExpectedSongs []string
-	ExpectedHtml  string
-	ExpectError   bool
+type buildHtmlSongsTestCase struct {
+	inputMdInfo   []converter.MdFileInfo
+	expectedSongs []string
+	expectedHtml  string
+	expectError   bool
 }
 
 var multipleFileMdInfo = []converter.MdFileInfo{
@@ -36,17 +36,17 @@ var multipleFileMdInfo = []converter.MdFileInfo{
 	},
 }
 
-var BuildHtmlSongsTestCases = map[string]BuildHtmlSongsTestCase{
+var buildHtmlSongsTestCases = map[string]buildHtmlSongsTestCase{
 	"no files provided should just result in an empty string an no headers": {
-		ExpectedSongs: []string{},
+		expectedSongs: []string{},
 	},
 	"multiple files should be a new line character followed by each song with a new line character after it": {
-		InputMdInfo:   multipleFileMdInfo,
-		ExpectedSongs: []string{"above-it-all-there-stands-jesus", "be-thou-exalted", "behold-the-heavens", "he-is"},
-		ExpectedHtml:  fmt.Sprintf("%s\n%s\n%s\n%s\n", AboveItAllFileHtml, BeThouExaltedFileHtml, BeholdTheHeavensFileHtml, HeIsFileHtml),
+		inputMdInfo:   multipleFileMdInfo,
+		expectedSongs: []string{"above-it-all-there-stands-jesus", "be-thou-exalted", "behold-the-heavens", "he-is"},
+		expectedHtml:  fmt.Sprintf("%s\n%s\n%s\n%s\n", AboveItAllFileHtml, BeThouExaltedFileHtml, BeholdTheHeavensFileHtml, HeIsFileHtml),
 	},
 	"multiple headers with the same heading get broken into unique header ids": {
-		InputMdInfo: []converter.MdFileInfo{
+		inputMdInfo: []converter.MdFileInfo{
 			{
 				FilePath:     "Be Thou Exalted.md",
 				FileContents: BeThouExaltedFileMd,
@@ -56,23 +56,23 @@ var BuildHtmlSongsTestCases = map[string]BuildHtmlSongsTestCase{
 				FileContents: BeThouExaltedFileMd,
 			},
 		},
-		ExpectedSongs: []string{"be-thou-exalted", "be-thou-exalted-2"},
-		ExpectedHtml:  fmt.Sprintf("%s\n%s\n", BeThouExaltedFileHtml, BeThouExalted2FileHtml),
+		expectedSongs: []string{"be-thou-exalted", "be-thou-exalted-2"},
+		expectedHtml:  fmt.Sprintf("%s\n%s\n", BeThouExaltedFileHtml, BeThouExalted2FileHtml),
 	},
 }
 
 func TestBuildHtmlSongs(t *testing.T) {
-	for name, args := range BuildHtmlSongsTestCases {
+	for name, args := range buildHtmlSongsTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, actualSongIds, err := converter.BuildHtmlSongs(args.InputMdInfo, converter.Digital)
-			if args.ExpectError {
+			actual, actualSongIds, err := converter.BuildHtmlSongs(args.inputMdInfo, converter.Digital)
+			if args.expectError {
 				assert.NotNil(t, err)
 			} else {
 				assert.Nil(t, err)
 			}
 
-			assert.Equal(t, args.ExpectedHtml, actual)
-			assert.Equal(t, args.ExpectedSongs, actualSongIds)
+			assert.Equal(t, args.expectedHtml, actual)
+			assert.Equal(t, args.expectedSongs, actualSongIds)
 		})
 	}
 }

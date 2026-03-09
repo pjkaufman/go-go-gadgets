@@ -10,17 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type BuildCsvTestCase struct {
-	InputMdInfo []converter.MdFileInfo
-	ExpectedCsv string
+type buildCsvTestCase struct {
+	inputMdInfo []converter.MdFileInfo
+	expectedCsv string
 }
 
-var BuildCsvTestCases = map[string]BuildCsvTestCase{
+var buildCsvTestCases = map[string]buildCsvTestCase{
 	"no files provided should just result in the heading line plus a new line character": {
-		ExpectedCsv: converter.CsvHeading,
+		expectedCsv: converter.CsvHeading,
 	},
 	"multiple files should be added together with a new line character after it": {
-		InputMdInfo: []converter.MdFileInfo{
+		inputMdInfo: []converter.MdFileInfo{
 			{
 				FilePath:     "A Glorious Church.md",
 				FileName:     "A Glorious Church.md",
@@ -57,20 +57,20 @@ var BuildCsvTestCases = map[string]BuildCsvTestCase{
 				FileContents: HeIsLordFileMd,
 			},
 		},
-		ExpectedCsv: fmt.Sprintf("%s%s%s%s%s%s%s%s", converter.CsvHeading, AGloriousChurchFileCsv, AHymnOfPraiseFileCsvCleaned, BlessThisHouseFileCsv, BiggerThanAllOfMyProblemsFileCsv, FillMySoulWithThySpiritFileCsv, FlowThowRiverFileCsv, HeIsLordFileCsv),
+		expectedCsv: fmt.Sprintf("%s%s%s%s%s%s%s%s", converter.CsvHeading, AGloriousChurchFileCsv, AHymnOfPraiseFileCsvCleaned, BlessThisHouseFileCsv, BiggerThanAllOfMyProblemsFileCsv, FillMySoulWithThySpiritFileCsv, FlowThowRiverFileCsv, HeIsLordFileCsv),
 	},
 }
 
 func TestBuildCsv(t *testing.T) {
-	for name, args := range BuildCsvTestCases {
+	for name, args := range buildCsvTestCases {
 		t.Run(name, func(t *testing.T) {
 
-			actual, err := converter.BuildCsv(args.InputMdInfo)
+			actual, err := converter.BuildCsv(args.inputMdInfo)
 			if err != nil {
 				assert.Fail(t, "there should be no errors when parsing the YAML for the html UTs")
 			}
 
-			assert.Equal(t, args.ExpectedCsv, actual)
+			assert.Equal(t, args.expectedCsv, actual)
 		})
 	}
 }
