@@ -17,33 +17,23 @@ func CompressImage(filePath string, data []byte) ([]byte, error) {
 		return data, nil
 	}
 
-	var (
-		newData []byte
-		isPng   = strings.HasSuffix(filePath, ".png")
-		err     error
-	)
+	isPng := strings.HasSuffix(filePath, ".png")
+	_, width := image.GetImageDimensions(data)
+
+	// Skip resize if already smaller than desired for PNGs
+	widthToUse := desiredWidth
+	if width <= desiredWidth {
+		if isPng {
+			return data, nil
+		}
+
+		widthToUse = width
+	}
 	if isPng {
-		newData, err = image.PngRemoveExifData(data)
+		return image.PngResize(data, widthToUse)
 	} else {
-		newData, err = image.JpegRemoveExifData(data)
+		return image.JpegResize(data, widthToUse, &quality)
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	var widthToUse = desiredWidth
-	_, width := image.GetImageDimensions(newData)
-	if width < desiredWidth {
-		desiredWidth = width
-	}
-
-	if isPng && widthToUse == desiredWidth {
-		newData, err = image.PngResize(newData, widthToUse)
-	} else if !isPng {
-		newData, err = image.JpegResize(newData, widthToUse, &quality)
-	}
-
-	return newData, err
 }
 
 func isCompressableImage(imagePath string) bool {
