@@ -152,6 +152,28 @@ var autoFixValidationCmd = &cobra.Command{
 					}
 
 					nameToUpdatedContents[opfFilename] = updatedOpfContents
+
+					if epubInfo.NavFile != "" {
+						var filePath = filehandler.JoinPath(opfFolder, epubInfo.NavFile)
+						contents, err := getFileContentsByName(filePath)
+						if err != nil {
+							logger.WriteError(err.Error())
+						}
+
+						updatedNavContents := epubhandler.RemoveFileFromNav(contents, jnovelsFile)
+						nameToUpdatedContents[filePath] = updatedNavContents
+					}
+
+					if epubInfo.TocFile != "" && epubInfo.NavFile != epubInfo.TocFile {
+						var filePath = filehandler.JoinPath(opfFolder, epubInfo.TocFile)
+						contents, err := getFileContentsByName(filePath)
+						if err != nil {
+							logger.WriteError(err.Error())
+						}
+
+						updatedTocContents := epubhandler.RemoveFileFromNav(contents, jnovelsFile)
+						nameToUpdatedContents[filePath] = updatedTocContents
+					}
 				}
 
 				for _, filename := range basenameToFilePaths[jnovelsImage] {
