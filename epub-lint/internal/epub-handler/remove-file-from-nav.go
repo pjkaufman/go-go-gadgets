@@ -2,6 +2,33 @@ package epubhandler
 
 import "strings"
 
+// RemoveFileFromNav determines if the specified file is referenced in an href attribute in an anchor tag in a list item.
+// If it is, then it removes the list item and the anchor tag.
+//
+// For example the following is a clean version of a list item that would be removed when "remove.xhtml" is passed in:
+//
+//		 <ol>
+//		  <li>
+//	  	<a href="Text/cover.xhtml">Cover</a>
+//		  </li>
+//		  <li>
+//		  	<a href="Text/remove.xhtml">Remove Me</a>
+//		  </li>
+//		  <li>
+//		 	<a href="Text/prologue.xhtml">Prologue</a>
+//		 </li>
+//		</ol>
+//
+// This would result in:
+//
+//		 <ol>
+//		  <li>
+//	  	<a href="Text/cover.xhtml">Cover</a>
+//		  </li>
+//		  <li>
+//		 	<a href="Text/prologue.xhtml">Prologue</a>
+//		 </li>
+//		</ol>
 func RemoveFileFromNav(text, file string) string {
 	hrefAttributeEnd := strings.Index(text, file+`"`)
 	if hrefAttributeEnd == -1 {
