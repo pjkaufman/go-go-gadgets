@@ -176,7 +176,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 						i--
 					}
 				}
-			} else if message.Message == invalidPlayOrder {
+			} else if message.Message == invalidPlayOrder || message.Message == gapsInPlayOrder {
 				fileContent, err = getContentByFileName(ncxFilename)
 				if err != nil {
 					return err
