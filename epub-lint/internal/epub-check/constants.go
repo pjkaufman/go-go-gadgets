@@ -12,4 +12,5 @@ const (
 	missingImgAlt           = "Error while parsing file: element \"img\" missing required attribute \"alt\""
 	unexpectedSectionEl     = "Error while parsing file: element \"section\" not allowed here"
 	emptyTitleEl            = "Error while parsing file: Element \"title\" must not be empty."
+	noTitleEl               = "Warning while parsing file: The \"head\" element should have a \"title\" child element."
 )

@@ -45,8 +45,11 @@ var autoFixValidationCmd = &cobra.Command{
 		- Add div tags inside of blockquote elements that were not able to be parsed and do not have a blockquote inside of them
 		- Add an empty alt attribute to img elements that are missing them
 		- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
+		- Update empty title with the text of the first header in the file or the first paragraph if there is no header and there is a paragraph
 	- RSC-007: try to fix broken file links and remove
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
+	- RSC-017: seems to be a catch all error id, but the following are handled around it
+		- Add missing title element with the text of the first header or, if no header is present, the first paragraph present in the file 
 	- HTM-004: try to fix broken DOCTYPEs by replacing them with the expected DOCTYPE
 	`),
 	Example: heredoc.Doc(`
