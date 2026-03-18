@@ -11,4 +11,5 @@ const (
 	invalidBlockquote       = "Error while parsing file: element \"blockquote\" incomplete;"
 	missingImgAlt           = "Error while parsing file: element \"img\" missing required attribute \"alt\""
 	unexpectedSectionEl     = "Error while parsing file: element \"section\" not allowed here"
+	emptyTitleEl            = "Error while parsing file: Element \"title\" must not be empty."
 )

@@ -224,6 +224,17 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 				fileUpdated = message.FilePath
 				edits = rulefixes.FixSectionElementUnexpected(message.Location.Line, message.Location.Column, fileContent)
+			} else if message.Message == emptyTitleEl {
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
+				}
+
+				update := rulefixes.FixEmptyTitle(message.Location.Line, message.Location.Column, fileContent)
+				if !update.IsEmpty() {
+					fileUpdated = message.FilePath
+					edits = append(edits, update)
+				}
 			}
 		case "OPF-030":
 			id, foundId := getFirstQuotedValue(message.Message, len(missingUniqueIdentifier))

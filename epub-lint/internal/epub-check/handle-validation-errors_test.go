@@ -63,6 +63,10 @@ var (
 	htmlFixableBlockquoteOriginal string
 	//go:embed testdata/rsc-5/fixable-blockquote_updated.html
 	htmlFixableBlockquoteExpected string
+	//go:embed testdata/rsc-5/empty-title.html
+	htmlEmptyTitleElOriginal string
+	//go:embed testdata/rsc-5/empty-title_updated.html
+	htmlEmptyTitleElExpected string
 	//go:embed testdata/rsc-5/duplicate-play-order.ncx
 	ncxDuplicatePlayOrderOriginal string
 	//go:embed testdata/rsc-5/duplicate-play-order_updated.ncx
@@ -805,6 +809,41 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfInvalidManifestAttributeOriginal,
+		},
+	},
+	`RSC 5: When a file has an empty title and there is a header, it should have the title pulled from the first header present`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/nav.xhtml": htmlEmptyTitleElExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Error while parsing file: Element "title" must not be empty.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 10,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Error while parsing file: Element "title" must not be empty.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 10,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/nav.xhtml": htmlEmptyTitleElOriginal,
 		},
 	},
 	`RSC 12: When a link in an xhtml/html file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
