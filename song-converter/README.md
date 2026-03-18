@@ -21,6 +21,7 @@ Compares the provided html and pdf file to see if there are any potentially mean
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | f | file | the pdf file to compare with the html file | string |  | true | Should be a file with one of the following extensions: pdf |
+|  | ignore-page-numbers | whether to ignore table of contents page numbers (this is for when the HTML or PDF will not have line numbers in the table of contents, but the other will) |  | false | false |  |
 |  | join-lines | the number of lines at the start of the pdf to join together to help make the html and pdf content as similar as possible | int | 0 | false |  |
 | s | source | the html file that was used to generate the pdf file | string |  | true | Should be a file with one of the following extensions: html |
 
