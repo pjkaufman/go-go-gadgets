@@ -317,6 +317,19 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				fileUpdated = message.FilePath
 				edits = append(edits, update)
 			}
+		case "RSC-017":
+			if message.Message == noTitleEl {
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
+				}
+
+				update := rulefixes.AddMissingTitle(message.Location.Line, message.Location.Column, fileContent)
+				if !update.IsEmpty() {
+					fileUpdated = message.FilePath
+					edits = append(edits, update)
+				}
+			}
 		case "HTM-004":
 			fileContent, err = getContentByFileName(message.FilePath)
 			if err != nil {

@@ -87,6 +87,10 @@ var (
 	ncxNotFoundLinkOriginal string
 	//go:embed testdata/rsc-12/not-found-link_updated.ncx
 	ncxNotFoundLinkExpected string
+	//go:embed testdata/rsc-17/no-title.html
+	htmlNotTitleOriginal string
+	//go:embed testdata/rsc-17/no-title_updated.html
+	htmlNoTitleExpected string
 	//go:embed testdata/general/toc.ncx
 	generalNcxOriginal string
 	//go:embed testdata/general/toc_updated.ncx
@@ -950,6 +954,41 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/toc.ncx": ncxNotFoundLinkOriginal,
+		},
+	},
+	`RSC 17: When a head element is missing the title element and it has a heading element, the title added should be the first heading element's text`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/nav.xhtml": htmlNoTitleExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-017",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
+					Location: &epubcheck.Position{
+						Line:   4,
+						Column: 9,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-017",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
+					Location: &epubcheck.Position{
+						Line:   4,
+						Column: 9,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/nav.xhtml": htmlNotTitleOriginal,
 		},
 	},
 	`When multiple rules are at play across multiple files, the correct updates are made`: {
