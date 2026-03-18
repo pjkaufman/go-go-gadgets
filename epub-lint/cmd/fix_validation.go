@@ -187,6 +187,52 @@ var autoFixValidationCmd = &cobra.Command{
 					}
 
 					nameToUpdatedContents[opfFilename] = updatedOpfContents
+
+					if epubInfo.NavFile != "" && (epubInfo.TocFile != "" || epubInfo.CoverFile != "") {
+						var (
+							filePath      = filehandler.JoinPath(opfFolder, epubInfo.NavFile)
+							navFolderPath = filepath.Dir(filePath) // used instead of the file path as that results in an additional "../" being added
+						)
+						contents, err := getFileContentsByName(filePath)
+						if err != nil {
+							logger.WriteError(err.Error())
+						}
+
+						var relativeImagePath string
+						relativeImagePath, err = filepath.Rel(navFolderPath, filename)
+						if err != nil {
+							logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, filename, err)
+						}
+
+						var (
+							relativeCoverPath string
+							coverPath         string
+						)
+						if epubInfo.CoverFile != "" {
+							coverPath = filehandler.JoinPath(opfFolder, epubInfo.CoverFile)
+
+							relativeCoverPath, err = filepath.Rel(navFolderPath, coverPath)
+							if err != nil {
+								logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, coverPath, err)
+							}
+						}
+
+						var (
+							relativeTocPath string
+							tocPath         string
+						)
+						if epubInfo.TocFile != "" {
+							tocPath = filehandler.JoinPath(opfFolder, epubInfo.TocFile)
+
+							relativeTocPath, err = filepath.Rel(navFolderPath, tocPath)
+							if err != nil {
+								logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, tocPath, err)
+							}
+						}
+
+						updatedNavContents := epubhandler.UpdateLandmarks(contents, relativeImagePath, relativeCoverPath, relativeTocPath)
+						nameToUpdatedContents[filePath] = updatedNavContents
+					}
 				}
 			}
 

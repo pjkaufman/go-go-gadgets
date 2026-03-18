@@ -17,6 +17,7 @@ type EpubInfo struct {
 	NcxFile               string
 	NavFile               string
 	TocFile               string
+	CoverFile             string
 	OpfFile               string
 	Version               int
 	FilePathsInSpineOrder []string
@@ -143,13 +144,17 @@ func ParseOpfFile(text, opfFilename string) (EpubInfo, error) {
 
 	if opfInfo.Guide != nil {
 		for _, guideReference := range opfInfo.Guide.References {
-			if guideReference.Type == "toc" {
+			switch guideReference.Type {
+			case "toc":
 				epubInfo.TocFile, err = hrefToFile(guideReference.Href)
 				if err != nil {
 					return epubInfo, fmt.Errorf("failed to convert toc href %q to file path: %w", guideReference.Href, err)
 				}
-
-				break
+			case "cover":
+				epubInfo.CoverFile, err = hrefToFile(guideReference.Href)
+				if err != nil {
+					return epubInfo, fmt.Errorf("failed to convert cover href %q to file path: %w", guideReference.Href, err)
+				}
 			}
 		}
 	}

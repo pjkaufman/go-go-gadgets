@@ -412,10 +412,11 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			OtherFiles: map[string]struct{}{
 				"toc.ncx": {},
 			},
-			TocFile: "",
-			NavFile: "",
-			NcxFile: "toc.ncx",
-			Version: 2,
+			TocFile:   "",
+			NavFile:   "",
+			CoverFile: "titlepage.xhtml",
+			NcxFile:   "toc.ncx",
+			Version:   2,
 			FilePathsInSpineOrder: []string{
 				"titlepage.xhtml",
 				"images.xhtml",
@@ -487,10 +488,11 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			OtherFiles: map[string]struct{}{
 				"toc.ncx": {},
 			},
-			TocFile: "Text/TableOfContents.html",
-			NavFile: "nav.xhtml",
-			NcxFile: "toc.ncx",
-			Version: 3,
+			TocFile:   "Text/TableOfContents.html",
+			NavFile:   "nav.xhtml",
+			NcxFile:   "toc.ncx",
+			CoverFile: "Text/CoverPage.html",
+			Version:   3,
 			FilePathsInSpineOrder: []string{
 				"Text/CoverPage.html",
 				"Text/TableOfContents.html",
@@ -592,10 +594,11 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			OtherFiles: map[string]struct{}{
 				"toc.ncx": {},
 			},
-			TocFile: "Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html",
-			NavFile: "",
-			NcxFile: "toc.ncx",
-			Version: 2,
+			TocFile:   "Text/CR!7CKFN04Q4549HBHEWBBCHT72KYXP_split_006.html",
+			NavFile:   "",
+			NcxFile:   "toc.ncx",
+			CoverFile: "Text/titlepage.xhtml",
+			Version:   2,
 			FilePathsInSpineOrder: []string{
 
 				"Text/titlepage.xhtml",
