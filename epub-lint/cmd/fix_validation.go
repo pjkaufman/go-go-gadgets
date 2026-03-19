@@ -10,14 +10,10 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
+	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/jnovels"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
-)
-
-const (
-	jnovelsFile  = "jnovels.xhtml"
-	jnovelsImage = "1.png"
 )
 
 var (
@@ -147,98 +143,24 @@ var autoFixValidationCmd = &cobra.Command{
 			}
 
 			if removeJNovelInfo {
-				for _, filename := range basenameToFilePaths[jnovelsFile] {
-					handledFiles = append(handledFiles, filename)
-					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsFile)
-					if err != nil {
-						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
-					}
+				handledFiles, err = jnovels.CleanupJnovelsFiles(jnovels.JNovelsCleanupContext{
+					EpubInfo:            epubInfo,
+					OpfFolder:           opfFolder,
+					OpfFileName:         opfFilename,
+					NcxFileName:         ncxFilename,
+					FileBasenameMap:     basenameToFilePaths,
+					UpdatedFileContents: nameToUpdatedContents,
+					GetFileContents:     getFileContentsByName,
+				})
 
-					nameToUpdatedContents[opfFilename] = updatedOpfContents
-
-					if epubInfo.NavFile != "" {
-						var filePath = filehandler.JoinPath(opfFolder, epubInfo.NavFile)
-						contents, err := getFileContentsByName(filePath)
-						if err != nil {
-							logger.WriteError(err.Error())
-						}
-
-						updatedNavContents := epubhandler.RemoveFileFromNav(contents, jnovelsFile)
-						nameToUpdatedContents[filePath] = updatedNavContents
-					}
-
-					if epubInfo.TocFile != "" && epubInfo.NavFile != epubInfo.TocFile {
-						var filePath = filehandler.JoinPath(opfFolder, epubInfo.TocFile)
-						contents, err := getFileContentsByName(filePath)
-						if err != nil {
-							logger.WriteError(err.Error())
-						}
-
-						updatedTocContents := epubhandler.RemoveFileFromNav(contents, jnovelsFile)
-						nameToUpdatedContents[filePath] = updatedTocContents
-					}
-				}
-
-				for _, filename := range basenameToFilePaths[jnovelsImage] {
-					handledFiles = append(handledFiles, filename)
-					updatedOpfContents, err := epubhandler.RemoveFileFromOpf(nameToUpdatedContents[opfFilename], jnovelsImage)
-					if err != nil {
-						logger.WriteErrorf("Failed to remove file %q from the opf contents: %s", filename, err)
-					}
-
-					nameToUpdatedContents[opfFilename] = updatedOpfContents
-
-					if epubInfo.NavFile != "" && (epubInfo.TocFile != "" || epubInfo.CoverFile != "") {
-						var (
-							filePath      = filehandler.JoinPath(opfFolder, epubInfo.NavFile)
-							navFolderPath = filepath.Dir(filePath) // used instead of the file path as that results in an additional "../" being added
-						)
-						contents, err := getFileContentsByName(filePath)
-						if err != nil {
-							logger.WriteError(err.Error())
-						}
-
-						var relativeImagePath string
-						relativeImagePath, err = filepath.Rel(navFolderPath, filename)
-						if err != nil {
-							logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, filename, err)
-						}
-
-						var (
-							relativeCoverPath string
-							coverPath         string
-						)
-						if epubInfo.CoverFile != "" {
-							coverPath = filehandler.JoinPath(opfFolder, epubInfo.CoverFile)
-
-							relativeCoverPath, err = filepath.Rel(navFolderPath, coverPath)
-							if err != nil {
-								logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, coverPath, err)
-							}
-						}
-
-						var (
-							relativeTocPath string
-							tocPath         string
-						)
-						if epubInfo.TocFile != "" {
-							tocPath = filehandler.JoinPath(opfFolder, epubInfo.TocFile)
-
-							relativeTocPath, err = filepath.Rel(navFolderPath, tocPath)
-							if err != nil {
-								logger.WriteErrorf("Failed to determine relative path between nav file %q and file %q: %s", filePath, tocPath, err)
-							}
-						}
-
-						updatedNavContents := epubhandler.UpdateLandmarks(contents, relativeImagePath, relativeCoverPath, relativeTocPath)
-						nameToUpdatedContents[filePath] = updatedNavContents
-					}
+				if err != nil {
+					return nil, err
 				}
 			}
 
 			for filename, updatedContents := range nameToUpdatedContents {
 				var name = filepath.Base(filename)
-				if removeJNovelInfo && (name == jnovelsFile || name == jnovelsImage) {
+				if removeJNovelInfo && (name == jnovels.JnovelsFile || name == jnovels.JnovelsImage) {
 					continue
 				}
 
