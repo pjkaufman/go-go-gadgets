@@ -143,7 +143,7 @@ var autoFixValidationCmd = &cobra.Command{
 			}
 
 			if removeJNovelInfo {
-				handledFiles, err = jnovels.CleanupJnovelsFiles(jnovels.JNovelsCleanupContext{
+				handledFiles, err = jnovels.CleanupJNovelsFiles(jnovels.JNovelsCleanupContext{
 					EpubInfo:            epubInfo,
 					OpfFolder:           opfFolder,
 					OpfFileName:         opfFilename,

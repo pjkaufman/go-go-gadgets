@@ -88,9 +88,7 @@ var removeFileFromNcxTestCases = map[string]removeFileFromNxcTestCase{
 func TestRemoveFileFromNcx(t *testing.T) {
 	for name, tc := range removeFileFromNcxTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual, err := epubhandler.RemoveFileFromNcx(tc.input, tc.relativeFilePath, "OEBPS/toc.ncx")
-
-			assert.Nil(t, err)
+			actual := epubhandler.RemoveFileFromNcx(tc.input, tc.relativeFilePath)
 			assert.Equal(t, tc.expected, actual)
 		})
 	}

@@ -20,7 +20,7 @@ type JNovelsCleanupContext struct {
 	GetFileContents     func(string) (string, error)
 }
 
-func CleanupJnovelsFiles(ctx JNovelsCleanupContext) ([]string, error) {
+func CleanupJNovelsFiles(ctx JNovelsCleanupContext) ([]string, error) {
 	htmlHandledFiles, err := cleanupJNovelsXhtml(ctx)
 	if err != nil {
 		return nil, err
