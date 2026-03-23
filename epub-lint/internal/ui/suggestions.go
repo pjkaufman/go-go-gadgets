@@ -151,6 +151,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				}
 			case "ctrl+r":
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion)
+			case "ctrl+o":
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
 			}
 		} else {
 			switch msg.String() {

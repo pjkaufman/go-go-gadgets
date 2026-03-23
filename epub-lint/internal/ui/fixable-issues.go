@@ -252,6 +252,7 @@ func (m FixableIssuesModel) footerView() string {
 		if m.PotentiallyFixableIssuesInfo.isEditing {
 			controls = []string{
 				"Ctrl+R: Reset",
+				"Ctrl+O: Original content",
 				"Ctrl+E: Cancel edit",
 				"Ctrl+S: Accept",
 				"Esc: Quit",
