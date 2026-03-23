@@ -120,6 +120,10 @@ func moveTranslatorsNotes(epubFile string) error {
 		- Add tl_notes.xhtml to the nav
 		*/
 		if len(translatorNoteListItems) > 0 {
+			if opfFolder == "." {
+				opfFolder = ""
+			}
+
 			var (
 				pathParts      = strings.Split(fullFilePath, "/")
 				htmlFolderPath = opfFolder
@@ -130,10 +134,14 @@ func moveTranslatorsNotes(epubFile string) error {
 			}
 
 			if len(pathParts) > 2 {
-				relativePath = strings.Join(pathParts[1:len(pathParts)-1], "/")
+				relativePath = getFilePath(strings.Join(pathParts[1:len(pathParts)-1], "/"), tlNoteFileName)
 			}
 
-			var tlNotesFilePath = getFilePath(htmlFolderPath, tlNoteFileName)
+			var tlNotesFilePath = tlNoteFileName
+			if htmlFolderPath != "" {
+				tlNotesFilePath = getFilePath(htmlFolderPath, tlNoteFileName)
+			}
+
 			err = filehandler.WriteZipCompressedString(w, tlNotesFilePath, fmt.Sprintf(defaultTLNoteContents, strings.Join(translatorNoteListItems, "				")))
 			if err != nil {
 				return nil, err
@@ -146,8 +154,6 @@ func moveTranslatorsNotes(epubFile string) error {
 			if err != nil {
 				return nil, err
 			}
-
-			relativePath = getFilePath(relativePath, tlNoteFileName)
 
 			opfFileContents = epubhandler.AddFileToOpf(opfFileContents, relativePath, "tl_notes", "application/xhtml+xml")
 			err = filehandler.WriteZipCompressedString(w, epubInfo.OpfFile, opfFileContents)
