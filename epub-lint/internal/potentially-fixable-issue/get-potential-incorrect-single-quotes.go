@@ -91,6 +91,13 @@ func convertQuotes(input string) (string, bool, error) {
 				if startsWithSingleQuote {
 					_, ok = commonContractions[strings.ToLower(string(runes[start+1:end+1]))]
 					if ok {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[start] = '"'
+							updateMade = true
+						}
+
 						singleQuoteCount++
 
 						return end
@@ -101,6 +108,13 @@ func convertQuotes(input string) (string, bool, error) {
 				if endsWithSingleQuote {
 					_, ok = commonContractions[strings.ToLower(string(runes[start:end]))]
 					if ok {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[start] = '"'
+							updateMade = true
+						}
+
 						singleQuoteCount++
 
 						return end

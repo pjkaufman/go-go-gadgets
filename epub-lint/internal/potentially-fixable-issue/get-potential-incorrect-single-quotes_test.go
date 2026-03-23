@@ -110,6 +110,12 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 		inputText:           `<p><strong>"He said 'Boss' work is', before he left"</strong></p>`,
 		expectedSuggestions: map[string]string{},
 	},
+	"make sure that a single quote at the start of contraction that is not a part of a contraction gets properly converted to a double quote when it is not inside a double quote already": {
+		inputText: `<p class="block_10">'Don't mind it', I  replied her with a wry smile and move on from the topic.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p class="block_10">'Don't mind it', I  replied her with a wry smile and move on from the topic.</p>`: `<p class="block_10">"Don't mind it", I  replied her with a wry smile and move on from the topic.</p>`,
+		},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
