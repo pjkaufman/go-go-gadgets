@@ -402,7 +402,7 @@ func (m *FixableIssuesModel) moveToPreviousSuggestion() {
 }
 
 func (m FixableIssuesModel) createCustomBorder(modeIcon, modeName string, extraWidthPadding int) lipgloss.Style {
-	borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height+2, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width+2+extraWidthPadding) // +2 for border width/height
+	borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height+borderWidth, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width+borderWidth+extraWidthPadding) // +2 for border width/height
 	modeInfo := fmt.Sprintf("%s %s", modeIcon, modeName)
 	statusInfo := fmt.Sprintf("%d/%d", m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]))
 	borderConfig.SetInfoItems(modeInfo, statusInfo)
@@ -438,7 +438,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	m.PotentiallyFixableIssuesInfo.suggestionEdit.SetHeight(height)
 
 	var (
-		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - borderWidth*2
 		// this does not currently handle ansi code wrapping
 		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
 	)

@@ -16,7 +16,7 @@ import (
 var ErrUserKilledProgram = errors.New("user killed program")
 
 const (
-	columnPadding    = 3
+	borderWidth      = 2
 	scrollbarPadding = 3
 )
 
