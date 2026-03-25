@@ -93,6 +93,7 @@ Uses the provided epub and EPUBCheck output file to fix auto fixable auto fix is
 - OPF-015: remove scripted to the list of values in the properties attribute on the manifest item
 - OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 - OPF-074: remove duplicate manifest entries
+- OPF-096: make file content reachable by removing linear attribute
 - NCX-001: fix discrepancy in identifier between the OPF and NCX files
 - RSC-005: seems to be a catch all error id, but the following are handled around it
 	- Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore

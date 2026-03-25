@@ -131,6 +131,10 @@ var (
 	opfScriptRemovedOriginal string
 	//go:embed testdata/rsc-7/manifest_updated.opf
 	opfScriptRemovedExpected string
+	//go:embed testdata/opf-96/hidden-nav.opf
+	opfHiddenNavOriginal string
+	//go:embed testdata/opf-96/hidden-nav_updated.opf
+	opfHiddenNavExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -345,6 +349,41 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
+		},
+	},
+	"OPF 96: When there is a nav file that is unreachable in the OPF, it should have `linear=\"no\" removed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfHiddenNavExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-096",
+					FilePath: "OOPS/content.opf",
+					Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
+					Location: &epubcheck.Position{
+						Line:   44,
+						Column: 97,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-096",
+					FilePath: "OOPS/content.opf",
+					Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
+					Location: &epubcheck.Position{
+						Line:   44,
+						Column: 97,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfHiddenNavOriginal,
 		},
 	},
 	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
