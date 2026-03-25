@@ -90,6 +90,17 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			if err != nil {
 				return err
 			}
+		case "OPF-096":
+			fileContent, err = getContentByFileName(opfFilename)
+			if err != nil {
+				return err
+			}
+
+			update := rulefixes.FixUnreachableFile(message.Location.Line, message.Location.Column, fileContent)
+			if !update.IsEmpty() {
+				fileUpdated = opfFilename
+				edits = append(edits, update)
+			}
 		case "NCX-001":
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {
