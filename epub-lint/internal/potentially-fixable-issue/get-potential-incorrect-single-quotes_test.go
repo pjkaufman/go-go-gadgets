@@ -116,6 +116,24 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 			`<p class="block_10">'Don't mind it', I  replied her with a wry smile and move on from the topic.</p>`: `<p class="block_10">"Don't mind it", I  replied her with a wry smile and move on from the topic.</p>`,
 		},
 	},
+	"make sure that a possesive starting a set of single quotes is handled correctly": {
+		inputText: `<p>Haruto, who had been watching Orn and the others with his 'Bird's-Eye View' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>Haruto, who had been watching Orn and the others with his 'Bird's-Eye View' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`: `<p>Haruto, who had been watching Orn and the others with his "Bird's-Eye View" while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		},
+	},
+	"make sure that a possesive ending a set of single quotes is handled correctly": {
+		inputText: `<p>Haruto, who had been watching Orn and the others with his 'Hello Bird's' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>Haruto, who had been watching Orn and the others with his 'Hello Bird's' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`: `<p>Haruto, who had been watching Orn and the others with his "Hello Bird's" while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		},
+	},
+	"make sure that a possesive starting and ending a set of single quotes is handled correctly": {
+		inputText: `<p>Haruto, who had been watching Orn and the others with his 'Bird's' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>Haruto, who had been watching Orn and the others with his 'Bird's' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`: `<p>Haruto, who had been watching Orn and the others with his "Bird's" while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
+		},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {

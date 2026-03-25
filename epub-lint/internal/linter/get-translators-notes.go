@@ -68,7 +68,12 @@ func findNotesWithXML(text string) []noteMatch {
 			}
 
 			// Get inner content
-			innerContent, textOnlyContent := getInnerContent(decoder)
+			innerContent, textOnlyContent, encounteredPTag := getInnerContent(decoder)
+			// to avoid odd nesting scenarios, only handle the direct parent when possible
+			if encounteredPTag { // may want to revise this as there could be text in the div prior to the p tag, but this may handle things
+				innerContent, textOnlyContent, _ = getInnerContent(decoder)
+			}
+
 			indicator, tlNotePos := translatorNoteIndicatorPosInfo(innerContent)
 			if tlNotePos == -1 {
 				continue
@@ -91,7 +96,7 @@ func findNotesWithXML(text string) []noteMatch {
 	return matches
 }
 
-func getInnerContent(decoder *xml.Decoder) (string, string) {
+func getInnerContent(decoder *xml.Decoder) (string, string, bool) {
 	var (
 		content  strings.Builder
 		textOnly strings.Builder
@@ -109,6 +114,10 @@ func getInnerContent(decoder *xml.Decoder) (string, string) {
 
 		switch t := token.(type) {
 		case xml.StartElement:
+			if t.Name.Local == "p" {
+				return "", "", true
+			}
+
 			depth++
 			// Write the tag back
 			content.WriteString("<" + t.Name.Local)
@@ -127,7 +136,7 @@ func getInnerContent(decoder *xml.Decoder) (string, string) {
 		}
 	}
 
-	return content.String(), textOnly.String()
+	return content.String(), textOnly.String(), false
 }
 
 func translatorNoteIndicatorPosInfo(text string) (string, int) {

@@ -73,6 +73,24 @@ func convertQuotes(input string) (string, bool, error) {
 		singleQuoteCount                          = 0 // Only counts non-possesive, non-contraction, and non-plural or omission digit single quotes
 		potentialPossesiveCount                   = 0
 		updateMade                                = false
+		isPossessiveDigitScenarioOrBetweenLetters = func(startIndex int) bool {
+			var (
+				isPrevDigit  = startIndex > 0 && unicode.IsDigit(runes[startIndex-1])
+				isNextDigit  = startIndex < len(runes)-1 && unicode.IsDigit(runes[startIndex+1])
+				isPrevS      = startIndex > 0 && (runes[startIndex-1] == 's' || runes[startIndex-1] == 'S')
+				isNextS      = startIndex < len(runes)-1 && (runes[startIndex+1] == 's' || runes[startIndex+1] == 'S')
+				isPrevLetter = startIndex > 0 && unicode.IsLetter(runes[startIndex-1])
+				isNextLetter = startIndex < len(runes)-1 && unicode.IsLetter(runes[startIndex+1])
+				// is a plural, possesive, or omitted number scenario
+				isDigitScenarios = (isPrevDigit && isNextS) || (!isPrevLetter && isNextDigit)
+				// we will only handle regular possesives here and let other logic handle the ones in single quotes
+				isPossessive = (isPrevS || (isPrevLetter && isNextS)) && singleQuoteCount%2 == 0
+				// handles many names that have single quotes in them as well as many contractions
+				isBetweenLetters = isPrevLetter && isNextLetter
+			)
+
+			return isPossessive || isDigitScenarios || isBetweenLetters
+		}
 		checkForSpecialContractionsAndGetNewStart = func(startIndex int) int {
 			var start = startIndex
 			for start > 0 && (unicode.IsLetter(runes[start-1]) || runes[start-1] == '\'') {
@@ -85,11 +103,15 @@ func convertQuotes(input string) (string, bool, error) {
 			}
 
 			if _, ok := commonContractions[strings.ToLower(string(runes[start:end+1]))]; !ok {
-				var startsWithSingleQuote = runes[start] == '\''
-				var endsWithSingleQuote = runes[end] == '\''
+				var (
+					startsWithSingleQuote                                                              = runes[start] == '\''
+					endsWithSingleQuote                                                                = runes[end] == '\''
+					afterFirstSingleQuote, beforeLastSingleQuote, betweenStartingAndEndingSingleQuotes string
+				)
 				// remove starting single quote and see if the string matches a common contraction
 				if startsWithSingleQuote {
-					_, ok = commonContractions[strings.ToLower(string(runes[start+1:end+1]))]
+					afterFirstSingleQuote = string(runes[start+1 : end+1])
+					_, ok = commonContractions[strings.ToLower(afterFirstSingleQuote)]
 					if ok {
 						// this could be a problem down the road, but for now, I think this is fine
 						// we may need to better track the actual state versus the current state
@@ -106,8 +128,44 @@ func convertQuotes(input string) (string, bool, error) {
 
 				// remove ending single quote and see if the string matches a common contraction
 				if endsWithSingleQuote {
-					_, ok = commonContractions[strings.ToLower(string(runes[start:end]))]
+					beforeLastSingleQuote = string(runes[start:end])
+					_, ok = commonContractions[strings.ToLower(beforeLastSingleQuote)]
 					if ok {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[end] = '"'
+							updateMade = true
+						}
+
+						singleQuoteCount++
+
+						return end
+					}
+				}
+
+				// remove starting and ending single quote and see if the string matches a common contraction
+				if startsWithSingleQuote && endsWithSingleQuote && start+1 <= end {
+					betweenStartingAndEndingSingleQuotes = string(runes[start+1 : end])
+					_, ok = commonContractions[strings.ToLower(betweenStartingAndEndingSingleQuotes)]
+					if ok {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[end] = '"'
+							runes[start] = '"'
+							updateMade = true
+						}
+
+						singleQuoteCount += 2
+
+						return end
+					}
+				}
+
+				// check for other scenarios that might have exist
+				if startsWithSingleQuote && strings.Count(afterFirstSingleQuote, "'") == 1 {
+					if isPossessiveDigitScenarioOrBetweenLetters(strings.Index(afterFirstSingleQuote, "'") + 1 + start) {
 						// this could be a problem down the road, but for now, I think this is fine
 						// we may need to better track the actual state versus the current state
 						if !insideDoubleQuotes {
@@ -121,10 +179,31 @@ func convertQuotes(input string) (string, bool, error) {
 					}
 				}
 
-				// remove starting and ending single quote and see if the string matches a common contraction
-				if startsWithSingleQuote && endsWithSingleQuote && start+1 <= end {
-					_, ok = commonContractions[strings.ToLower(string(runes[start+1:end]))]
-					if ok {
+				if endsWithSingleQuote && strings.Count(beforeLastSingleQuote, "'") == 1 {
+					if isPossessiveDigitScenarioOrBetweenLetters(strings.Index(beforeLastSingleQuote, "'") + start) {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[end] = '"'
+							updateMade = true
+						}
+
+						singleQuoteCount++
+
+						return end
+					}
+				}
+
+				if startsWithSingleQuote && endsWithSingleQuote && strings.Count(betweenStartingAndEndingSingleQuotes, "'") == 1 {
+					if isPossessiveDigitScenarioOrBetweenLetters(strings.Index(betweenStartingAndEndingSingleQuotes, "'") + start + 1) {
+						// this could be a problem down the road, but for now, I think this is fine
+						// we may need to better track the actual state versus the current state
+						if !insideDoubleQuotes {
+							runes[end] = '"'
+							runes[start] = '"'
+							updateMade = true
+						}
+
 						singleQuoteCount += 2
 
 						return end
@@ -165,22 +244,7 @@ func convertQuotes(input string) (string, bool, error) {
 			insideDoubleQuotes = !insideDoubleQuotes
 			doubleQuoteCount++
 		} else if currentRune == '\'' {
-			var (
-				isPrevDigit  = i > 0 && unicode.IsDigit(runes[i-1])
-				isNextDigit  = i < len(runes)-1 && unicode.IsDigit(runes[i+1])
-				isPrevS      = i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
-				isNextS      = i < len(runes)-1 && (runes[i+1] == 's' || runes[i+1] == 'S')
-				isPrevLetter = i > 0 && unicode.IsLetter(runes[i-1])
-				isNextLetter = i < len(runes)-1 && unicode.IsLetter(runes[i+1])
-				// is a plural, possesive, or omitted number scenario
-				isDigitScenarios = (isPrevDigit && isNextS) || (!isPrevLetter && isNextDigit)
-				// we will only handle regular possesives here and let other logic handle the ones in single quotes
-				isPossessive = (isPrevS || (isPrevLetter && isNextS)) && singleQuoteCount%2 == 0
-				// handles many names that have single quotes in them as well as many contractions
-				isBetweenLetters = isPrevLetter && isNextLetter
-			)
-
-			if isPossessive || isDigitScenarios || isBetweenLetters {
+			if isPossessiveDigitScenarioOrBetweenLetters(i) {
 				continue
 			}
 
