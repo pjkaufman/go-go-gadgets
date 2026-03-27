@@ -1,13 +1,14 @@
 package epubcheck
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 )
 
-func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error)) error {
+func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error), spineOrder []string) error {
 	var (
 		err                         error
 		fileContent, ncxFileContent string
@@ -101,6 +102,14 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				fileUpdated = opfFilename
 				edits = append(edits, update)
 			}
+		case "NAV-011":
+			fileContent, err = getContentByFileName(message.FilePath)
+			if err != nil {
+				return err
+			}
+
+			fileUpdated = message.FilePath
+			edits = rulefixes.FixReadingOrder(spineOrder, fileContent, filepath.Dir(message.FilePath), opfFolder)
 		case "NCX-001":
 			fileContent, err = getContentByFileName(opfFilename)
 			if err != nil {

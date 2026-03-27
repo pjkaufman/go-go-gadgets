@@ -32,6 +32,7 @@ var autoFixValidationCmd = &cobra.Command{
 	- OPF-030: add the unique identifier id to the first dc:identifier element that does not have an id already
 	- OPF-074: remove duplicate manifest entries
 	- OPF-096: make file content reachable by removing linear attribute
+	- NAV-011: fix nav file's table of contents not being in the same order as the specified reading order
 	- NCX-001: fix discrepancy in identifier between the OPF and NCX files
 	- RSC-005: seems to be a catch all error id, but the following are handled around it
 		- Update ids/attributes to have valid xml ids that conform to the xml and epub spec by removing colons and any other invalid characters with an underscore
@@ -138,7 +139,7 @@ var autoFixValidationCmd = &cobra.Command{
 					return fileContents, nil
 				}
 			)
-			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName)
+			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName, epubInfo.FilePathsInSpineOrder)
 			if err != nil {
 				return nil, err
 			}

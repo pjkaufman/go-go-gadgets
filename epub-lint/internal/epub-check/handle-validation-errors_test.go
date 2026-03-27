@@ -18,6 +18,7 @@ type handleValidationErrorTestCase struct {
 	expectedErrorState                            epubcheck.ValidationErrors
 	expectedFileState, validFilesToInitialContent map[string]string // filename to content
 	basenameToFilePaths                           map[string][]string
+	spineOrder                                    []string
 }
 
 var (
@@ -135,6 +136,10 @@ var (
 	opfHiddenNavOriginal string
 	//go:embed testdata/opf-96/hidden-nav_updated.opf
 	opfHiddenNavExpected string
+	//go:embed testdata/nav-11/out-of-order-nav.xhtml
+	xhtmlOutOfOrderNavOriginal string
+	//go:embed testdata/nav-11/out-of-order-nav_updated.xhtml
+	xhtmlOutOfOrderNavExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -384,6 +389,66 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 		},
 		validFilesToInitialContent: map[string]string{
 			"OPS/content.opf": opfHiddenNavOriginal,
+		},
+	},
+	"NAV 11: When there is a discrepancy between the nav toc order and the OPF spine order, the nav toc should be updated to reflect the spine order": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NAV-011",
+					FilePath: "OPS/Text/nav.xhtml",
+					Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NAV-011",
+					FilePath: "OPS/Text/nav.xhtml",
+					Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavOriginal,
+		},
+		spineOrder: []string{
+			"Text/CoverPage.html",
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+			"Text/section-0003.html",
+			"Text/section-0004.html",
+			"Text/section-0005.html",
+			"Text/section-0006.html",
+			"Text/section-0007.html",
+			"Text/section-0008.html",
+			"Text/section-0009.html",
+			"Text/section-0010.html",
+			"Text/section-0011.html",
+			"Text/section-0012.html",
+			"Text/section-0013.html",
+			"Text/section-0014.html",
+			"Text/section-0015.html",
+			"Text/section-0016.html",
+			"Text/section-0017.html",
+			"Text/section-0018.html",
+			"Text/section-0019.html",
+			"Text/section-0020.html",
+			"Text/section-0021.html",
+			"Text/section-0022.html",
+			"Text/section-0023.html",
+			"Text/section-0024.html",
+			"Text/section-0025.html",
+			"Text/section-0026.html",
+			"Text/section-0027.html",
+			"Text/section-0028.html",
+			"Text/section-0029.html",
+			"Text/nav.xhtml",
 		},
 	},
 	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
@@ -1653,7 +1718,7 @@ func TestHandleValidationErrors(t *testing.T) {
 				tc.basenameToFilePaths = map[string][]string{}
 			}
 
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 
