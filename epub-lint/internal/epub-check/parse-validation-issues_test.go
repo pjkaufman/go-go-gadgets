@@ -82,6 +82,19 @@ ERROR(RSC-005): /home/user/Documents/Book.epub/OPS/section-0009.html(14,54): Err
 			},
 		},
 	},
+	"Validation issues for NAV-011 should get cut down to a singel error to precent running logic that has already been handled": {
+		input: `WARNING(NAV-011): file.epub/OEBPS/Text/nav.xhtml(23,47): "toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.
+WARNING(NAV-011): file.epub/OEBPS/Text/nav.xhtml(28,50): "toc" nav must be in reading order; link target "OEBPS/Text/section-0004.html" is before the previous link’s target in spine order.`,
+		expected: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NAV-011",
+					FilePath: "OEBPS/Text/nav.xhtml",
+					Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
+				},
+			},
+		},
+	},
 }
 
 func TestParseEPUBCheckOutput(t *testing.T) {

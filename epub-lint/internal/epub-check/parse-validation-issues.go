@@ -7,10 +7,12 @@ import (
 
 // ParseEPUBCheckOutput parses the contents of an EPUBCheck output from a string.
 func ParseEPUBCheckOutput(logContents string) (ValidationErrors, error) {
-	var validationErrors ValidationErrors
-	lines := strings.Split(logContents, "\n")
-
-	var fileToIdToError = map[string]map[string]ValidationError{}
+	var (
+		validationErrors       ValidationErrors
+		lines                  = strings.Split(logContents, "\n")
+		fileToIdToError        = map[string]map[string]ValidationError{}
+		alreadyAddedNav11Error bool
+	)
 	for _, line := range lines {
 		// Find the code (between first '(' and ')')
 		start := strings.Index(line, "(")
@@ -87,6 +89,15 @@ func ParseEPUBCheckOutput(logContents string) (ValidationErrors, error) {
 			}
 
 			continue
+		}
+
+		if code == "NAV-011" {
+			if alreadyAddedNav11Error {
+				continue
+			} else {
+				issue.Location = nil
+				alreadyAddedNav11Error = true
+			}
 		}
 
 		validationErrors.ValidationIssues = append(validationErrors.ValidationIssues, issue)
