@@ -218,9 +218,6 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 
 			return
 		}
-
-		// openCount := strings.Count(beforeIndicator, "(") - strings.Count(beforeIndicator, ")")
-		// return extractUntilBalancedParens(afterIndicator, openCount)
 	}
 
 	match.Start += indicatorPos
@@ -237,19 +234,4 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	match.Content = strings.TrimSpace(afterIndicator[:endIdx])
 
 	return
-}
-
-func extractUntilBalancedParens(s string, openCount int) string {
-	closeCount := 0
-	for i, ch := range s {
-		if ch == ')' {
-			closeCount++
-
-			if closeCount >= openCount {
-				return strings.TrimSpace(s[:i])
-			}
-		}
-	}
-
-	return strings.TrimSpace(s)
 }

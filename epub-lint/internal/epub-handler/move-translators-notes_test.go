@@ -114,7 +114,6 @@ var moveTranslatorsNotesTestCases = map[string]moveTranslatorsNotesTestCase{
 		},
 	},
 	/* Test cases to add:
-	3. Multiple translator's notes present get replaced with the proper references and corresponding tl_notes file is created
 	4. No OPF folder (i.e. the OPF file is at the base of the zip) when translator's notes are found generates the correct paths and content for the tl_notes, NCX, and OPF
 	5. Current bug scenario gets found and fixed (see #88)
 	6. See about the scenario where all of the body content is inside a div and there is a translator's note
