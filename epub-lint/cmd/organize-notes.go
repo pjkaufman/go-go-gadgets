@@ -155,7 +155,7 @@ func moveTranslatorsNotes(epubFile string) error {
 				return nil, err
 			}
 
-			if opfFolder == "" && relativePath == tlNoteFileName {
+			if opfFolder == "" {
 				relativePath = tlNotesFilePath
 			}
 			opfFileContents = epubhandler.AddFileToOpf(opfFileContents, relativePath, "tl_notes", "application/xhtml+xml")
