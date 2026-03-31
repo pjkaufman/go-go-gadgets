@@ -99,7 +99,12 @@ func moveTranslatorsNotes(epubFile string) error {
 			}
 		)
 
-		numberOfTranslatorsNotes, err := epubhandler.MoveTranslatorsNotes(epubInfo.FilePathsInSpineOrder, opfFolder, ncxFilename, epubInfo.OpfFile, nameToUpdatedContents, getFileContentsByName)
+		var navFilename = epubInfo.NavFile
+		if opfFolder != "." && opfFolder != "" {
+			navFilename = filepath.Join(opfFolder, navFilename)
+		}
+
+		numberOfTranslatorsNotes, err := epubhandler.MoveTranslatorsNotes(epubInfo.FilePathsInSpineOrder, opfFolder, ncxFilename, epubInfo.OpfFile, navFilename, nameToUpdatedContents, getFileContentsByName)
 		if err != nil {
 			return nil, err
 		}

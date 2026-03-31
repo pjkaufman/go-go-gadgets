@@ -1,13 +1,13 @@
 package rulefixes
 
 import (
-	"fmt"
 	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 type navItemPosInfo struct {
@@ -17,36 +17,10 @@ type navItemPosInfo struct {
 }
 
 func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string) (edits []positions.TextEdit) {
-	const tocEpubType = `epub:type="toc"`
-	epubTypeIndex := strings.Index(navContents, tocEpubType)
-	if epubTypeIndex == -1 {
+	endOfEl, endOfElIndex := epubhandler.GetNavTOCContentPositionInfo(navContents)
+	if endOfEl == -1 || endOfElIndex == -1 {
 		return
 	}
-
-	var (
-		startOfEl = strings.LastIndex(navContents[:epubTypeIndex], "<")
-		endOfEl   = strings.Index(navContents[epubTypeIndex:], ">")
-	)
-	if startOfEl == -1 || endOfEl == -1 {
-		return
-	}
-
-	endOfEl += 1 + epubTypeIndex
-
-	elNameEndIndex := strings.Index(navContents[startOfEl:], " ")
-	if elNameEndIndex == -1 {
-		return
-	}
-
-	elNameEndIndex += startOfEl
-	elName := navContents[startOfEl+1 : elNameEndIndex]
-
-	endOfElIndex := strings.Index(navContents[endOfEl:], fmt.Sprintf("</%s>", elName))
-	if endOfElIndex == -1 {
-		return
-	}
-
-	endOfElIndex += endOfEl
 
 	var (
 		startOfContent      = endOfEl
