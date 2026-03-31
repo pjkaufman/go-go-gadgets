@@ -26,6 +26,14 @@ var (
 	htmlSingleTranslatorNoteOriginal string
 	//go:embed testdata/move-translators-notes/html-file-with-single-translators-note_updated.html
 	htmlSingleTranslatorNoteExpected string
+	//go:embed testdata/move-translators-notes/first-multiple-translators-notes.html
+	htmlFirstMultipleTranslatorsNotesOriginal string
+	//go:embed testdata/move-translators-notes/first-multiple-translators-notes_updated.html
+	htmlFirstMultipleTranslatorsNotesExpected string
+	//go:embed testdata/move-translators-notes/second-multiple-translators-notes.html
+	htmlSecondMultipleTranslatorsNotesOriginal string
+	//go:embed testdata/move-translators-notes/second-multiple-translators-notes_updated.html
+	htmlSecondMultipleTranslatorsNotesExpected string
 	//go:embed testdata/move-translators-notes/simple.opf
 	opfSimpleOriginal string
 	//go:embed testdata/move-translators-notes/simple_updated.opf
@@ -36,6 +44,8 @@ var (
 	ncxSimpleExpected string
 	//go:embed testdata/move-translators-notes/translators-notes-simple.xhtml
 	xhtmlSimpleTranslatorsNotes string
+	//go:embed testdata/move-translators-notes/translators-notes-complex.xhtml
+	xhtmlComplexTranslatorsNotes string
 )
 
 var moveTranslatorsNotesTestCases = map[string]moveTranslatorsNotesTestCase{
@@ -76,6 +86,29 @@ var moveTranslatorsNotesTestCases = map[string]moveTranslatorsNotesTestCase{
 		validFilesToInitialContent: map[string]string{
 			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
 			"OPS/Text/section-0002.html": htmlSingleTranslatorNoteOriginal,
+			"OPS/toc.ncx":                ncxSimpleOriginal,
+			"OPS/content.opf":            opfSimpleOriginal,
+		},
+	},
+	"When multiple translator's notes are found, then they should be replaced with a reference and the corresponding changes should be made to the OPF and NCX files": {
+		opfFolder:   "OPS",
+		ncxFilename: "OPS/toc.ncx",
+		opfFilename: "OPS/content.opf",
+		spineOrder: []string{
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+		},
+		expectedTranslatorNoteCount: 4,
+		expectedFileState: map[string]string{
+			"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesExpected,
+			"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesExpected,
+			"OPS/toc.ncx":                ncxSimpleExpected,
+			"OPS/content.opf":            opfSimpleExpected,
+			"OPS/Text/tl_notes.xhtml":    xhtmlComplexTranslatorsNotes,
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesOriginal,
+			"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesOriginal,
 			"OPS/toc.ncx":                ncxSimpleOriginal,
 			"OPS/content.opf":            opfSimpleOriginal,
 		},

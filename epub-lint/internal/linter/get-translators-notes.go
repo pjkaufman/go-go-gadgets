@@ -6,6 +6,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"unicode"
 )
 
 // these values are lowercased because that makes the checks later on more performant since we don't need
@@ -84,12 +85,7 @@ func findNotesWithXML(text string) []noteMatch {
 				startPos = strings.Index(text, innerContent)
 				endPos   = startPos + len(innerContent)
 			)
-
-			matches = append(matches, noteMatch{
-				Start:   startPos,
-				End:     endPos,
-				Content: strings.TrimSpace(extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos)),
-			})
+			matches = append(matches, extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos, startPos, endPos))
 		}
 	}
 
@@ -154,11 +150,14 @@ func translatorNoteIndicatorPosInfo(text string) (string, int) {
 	return "", -1
 }
 
-func extractNoteContent(indicator, innerElContent, textOnlyContent string, indicatorPos int) string {
+func extractNoteContent(indicator, innerElContent, textOnlyContent string, indicatorPos, startPos, endPos int) (match noteMatch) {
 	var (
 		startOfNote     = indicatorPos + len(indicator)
 		startOfTextNote = strings.Index(strings.ToLower(textOnlyContent), indicator)
 	)
+
+	match.Start = startPos
+	match.End = endPos
 
 	// If indicator at start, return all
 	if startOfTextNote == 0 {
@@ -166,7 +165,9 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 			startOfNote++
 		}
 
-		return innerElContent[:indicatorPos] + innerElContent[startOfNote:]
+		match.Content = strings.TrimSpace(innerElContent[:indicatorPos] + innerElContent[startOfNote:])
+
+		return
 	}
 
 	beforeIndicator := innerElContent[:indicatorPos]
@@ -174,17 +175,68 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 
 	// Has opening paren?
 	if strings.Contains(beforeIndicator, "(") {
-		openCount := strings.Count(beforeIndicator, "(") - strings.Count(beforeIndicator, ")")
-		return extractUntilBalancedParens(afterIndicator, openCount)
+		var (
+			isInOpeningParen bool
+			char             rune
+			priorChars       = []rune(beforeIndicator)
+		)
+		for i := len(priorChars) - 1; i >= 0; i-- {
+			char = priorChars[i]
+			if char == '(' {
+				isInOpeningParen = true
+				match.Start += i
+				break
+			}
+
+			if !unicode.IsSpace(char) {
+				break
+			}
+		}
+
+		if isInOpeningParen {
+			var (
+				openCount  = 1
+				closeCount = 0
+			)
+			for i, ch := range afterIndicator {
+				switch ch {
+				case ')':
+					closeCount++
+
+					if closeCount >= openCount {
+						match.End = startPos + startOfNote + i + 1
+						match.Content = strings.TrimSpace(afterIndicator[:i])
+
+						return
+					}
+				case '(':
+					openCount++
+				}
+			}
+
+			match.Content = strings.TrimSpace(afterIndicator)
+
+			return
+		}
+
+		// openCount := strings.Count(beforeIndicator, "(") - strings.Count(beforeIndicator, ")")
+		// return extractUntilBalancedParens(afterIndicator, openCount)
 	}
+
+	match.Start += indicatorPos
 
 	// No paren - until next tag
 	endIdx := strings.Index(afterIndicator, "<")
 	if endIdx == -1 {
-		return strings.TrimSpace(afterIndicator)
+		match.End = startPos + startOfNote + endIdx
+		match.Content = strings.TrimSpace(afterIndicator)
+
+		return
 	}
 
-	return strings.TrimSpace(afterIndicator[:endIdx])
+	match.Content = strings.TrimSpace(afterIndicator[:endIdx])
+
+	return
 }
 
 func extractUntilBalancedParens(s string, openCount int) string {
