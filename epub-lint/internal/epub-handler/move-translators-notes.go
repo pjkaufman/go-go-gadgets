@@ -79,7 +79,7 @@ func MoveTranslatorsNotes(spineOrder []string, opfFolder, ncxFilename, opfFilena
 			return 0, err
 		}
 
-		if opfFolder == "" && relativePath == tlNoteFileName {
+		if opfFolder == "" {
 			relativePath = tlNotesFilePath
 		}
 		opfFileContents = AddFileToOpf(opfFileContents, relativePath, "tl_notes", "application/xhtml+xml")

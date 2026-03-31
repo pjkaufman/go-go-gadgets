@@ -42,6 +42,14 @@ var (
 	ncxSimpleOriginal string
 	//go:embed testdata/move-translators-notes/simple_updated.ncx
 	ncxSimpleExpected string
+	//go:embed testdata/move-translators-notes/no-opf-folder.opf
+	opfNoOpfFolderOriginal string
+	//go:embed testdata/move-translators-notes/no-opf-folder_updated.opf
+	opfNoOpfFolderExpected string
+	//go:embed testdata/move-translators-notes/no-opf-folder.ncx
+	ncxNoOpfFolderOriginal string
+	//go:embed testdata/move-translators-notes/no-opf-folder_updated.ncx
+	ncxNoOpfFolderExpected string
 	//go:embed testdata/move-translators-notes/translators-notes-simple.xhtml
 	xhtmlSimpleTranslatorsNotes string
 	//go:embed testdata/move-translators-notes/translators-notes-complex.xhtml
@@ -113,13 +121,29 @@ var moveTranslatorsNotesTestCases = map[string]moveTranslatorsNotesTestCase{
 			"OPS/content.opf":            opfSimpleOriginal,
 		},
 	},
-	/* Test cases to add:
-	4. No OPF folder (i.e. the OPF file is at the base of the zip) when translator's notes are found generates the correct paths and content for the tl_notes, NCX, and OPF
-	5. Current bug scenario gets found and fixed (see #88)
-	6. See about the scenario where all of the body content is inside a div and there is a translator's note
-	7. Make sure that it handles partial element translator's notes correctly
-	8. Make sure that it handles full element translator's notes correctly
-	*/
+	"When the OPF folder is the base of the zip file and translator's notes are found, the generated file paths for tl_notes, the NCX, and OPF files is correct": {
+		opfFolder:   ".", // for some reason it is represented by a period in the examples I have encountered
+		ncxFilename: "toc.ncx",
+		opfFilename: "content.opf",
+		spineOrder: []string{
+			"OPS/Text/section-0001.html",
+			"OPS/Text/section-0002.html",
+		},
+		expectedTranslatorNoteCount: 1,
+		expectedFileState: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": htmlSingleTranslatorNoteExpected,
+			"toc.ncx":                    ncxNoOpfFolderExpected,
+			"content.opf":                opfNoOpfFolderExpected,
+			"OPS/Text/tl_notes.xhtml":    xhtmlSimpleTranslatorsNotes,
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": htmlSingleTranslatorNoteOriginal,
+			"toc.ncx":                    ncxNoOpfFolderOriginal,
+			"content.opf":                opfNoOpfFolderOriginal,
+		},
+	},
 }
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
