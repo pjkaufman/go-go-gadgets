@@ -11,7 +11,7 @@ import (
 
 // these values are lowercased because that makes the checks later on more performant since we don't need
 // to lowercase them
-var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tl:", "author's note:", "note:"}
+var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tl:", "author's note:", "note:", "ed:"}
 
 func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int) {
 	matches := findNotesWithXML(text)

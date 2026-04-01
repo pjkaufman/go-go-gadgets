@@ -261,6 +261,7 @@ func (m FixableIssuesModel) footerView() string {
 		} else if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
 			controls = []string{
 				"← / → : Previous/Next Suggestion",
+				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
 				"C: Copy",
 				"Esc: Quit",
 				"Ctrl+C: Exit without saving",
@@ -268,6 +269,7 @@ func (m FixableIssuesModel) footerView() string {
 		} else {
 			controls = []string{
 				"← / → : Previous/Next Suggestion",
+				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
 				"E: Edit",
 				"C: Copy",
 				"Enter: Accept",
