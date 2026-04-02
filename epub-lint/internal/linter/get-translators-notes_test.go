@@ -3,6 +3,7 @@
 package linter_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
@@ -17,6 +18,7 @@ type getTranslatorsNotesTestCase struct {
 	expectedText   string
 	expectedNotes  []string
 	expectedNext   int
+	expectedError  error
 }
 
 var testCases = map[string]getTranslatorsNotesTestCase{
@@ -77,7 +79,7 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		},
 		expectedNext: 1,
 	},
-	`starting number is 0 and there is a single translator's note that makes up the entirety of the paragraph"`: {
+	`starting number is 0 and there is a single translator's note that makes up the entirety of the paragraph`: {
 		inputText:      `<p class="block_16"><span class="text_4">TL Note: This is a pun that I unfortunately couldn't properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span></p>`,
 		fileName:       "main.xhtml",
 		noteFileName:   "notes.xhtml",
@@ -89,12 +91,30 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		},
 		expectedNext: 1,
 	},
+	`a translator's note with an html entity in it causes an error`: {
+		inputText:      `<p class="block_16"><span class="text_4">TL Note: This is a pun that I unfortunately couldn&#8216;t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span></p>`,
+		fileName:       "main.xhtml",
+		noteFileName:   "notes.xhtml",
+		startingNumber: 0,
+		expectedText:   "",
+		expectedNotes:  []string{},
+		expectedNext:   0,
+		expectedError:  fmt.Errorf(`file %q had issues determining translator's notes: attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.`, "main.xhtml", `<span class="text_4">TL Note: This is a pun that I unfortunately couldn‘t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span>`),
+	},
 }
 
 func TestGetTranslatorsNotes(t *testing.T) {
 	for name, args := range testCases {
 		t.Run(name, func(t *testing.T) {
-			updatedText, notes, next := linter.GetTranslatorsNotes(args.inputText, args.fileName, args.noteFileName, args.startingNumber)
+			updatedText, notes, next, err := linter.GetTranslatorsNotes(args.inputText, args.fileName, args.noteFileName, args.startingNumber)
+
+			if args.expectedError != nil {
+				assert.NotNil(t, err)
+				assert.Equal(t, args.expectedError.Error(), err.Error(), "Expected and actual error text differ")
+			} else {
+				assert.Nil(t, err)
+			}
+
 			assert.Equal(t, args.expectedText, updatedText, "expected text output mismatch")
 			assert.Equal(t, args.expectedNotes, notes, "expected notes mismatch")
 			assert.Equal(t, args.expectedNext, next, "expected next note number mismatch")

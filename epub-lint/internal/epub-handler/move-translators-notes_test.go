@@ -61,70 +61,70 @@ var (
 )
 
 var moveTranslatorsNotesTestCases = map[string]moveTranslatorsNotesTestCase{
-	// "When no translator's notes are present in any files, no changes are made": {
-	// 	opfFolder:   "OPS",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	opfFilename: "OPS/content.opf",
-	// 	spineOrder: []string{
-	// 		"Text/section-0001.html",
-	// 		"Text/section-0002.html",
-	// 	},
-	// 	expectedTranslatorNoteCount: 0,
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
-	// 		"OPS/Text/section-0002.html": noTranslatorNotesXhtml,
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
-	// 		"OPS/Text/section-0002.html": noTranslatorNotesXhtml,
-	// 	},
-	// },
-	// "When a single translator's note is found, then it should be replaced with a reference and the corresponding changes should be made to the OPF and NCX files": {
-	// 	opfFolder:   "OPS",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	opfFilename: "OPS/content.opf",
-	// 	spineOrder: []string{
-	// 		"Text/section-0001.html",
-	// 		"Text/section-0002.html",
-	// 	},
-	// 	expectedTranslatorNoteCount: 1,
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
-	// 		"OPS/Text/section-0002.html": htmlSingleTranslatorNoteExpected,
-	// 		"OPS/toc.ncx":                ncxSimpleExpected,
-	// 		"OPS/content.opf":            opfSimpleExpected,
-	// 		"OPS/Text/tl_notes.xhtml":    xhtmlSimpleTranslatorsNotes,
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
-	// 		"OPS/Text/section-0002.html": htmlSingleTranslatorNoteOriginal,
-	// 		"OPS/toc.ncx":                ncxSimpleOriginal,
-	// 		"OPS/content.opf":            opfSimpleOriginal,
-	// 	},
-	// },
-	// "When multiple translator's notes are found, then they should be replaced with a reference and the corresponding changes should be made to the OPF and NCX files": {
-	// 	opfFolder:   "OPS",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	opfFilename: "OPS/content.opf",
-	// 	spineOrder: []string{
-	// 		"Text/section-0001.html",
-	// 		"Text/section-0002.html",
-	// 	},
-	// 	expectedTranslatorNoteCount: 4,
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesExpected,
-	// 		"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesExpected,
-	// 		"OPS/toc.ncx":                ncxSimpleExpected,
-	// 		"OPS/content.opf":            opfSimpleExpected,
-	// 		"OPS/Text/tl_notes.xhtml":    xhtmlComplexTranslatorsNotes,
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesOriginal,
-	// 		"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesOriginal,
-	// 		"OPS/toc.ncx":                ncxSimpleOriginal,
-	// 		"OPS/content.opf":            opfSimpleOriginal,
-	// 	},
-	// },
+	"When no translator's notes are present in any files, no changes are made": {
+		opfFolder:   "OPS",
+		ncxFilename: "OPS/toc.ncx",
+		opfFilename: "OPS/content.opf",
+		spineOrder: []string{
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+		},
+		expectedTranslatorNoteCount: 0,
+		expectedFileState: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": noTranslatorNotesXhtml,
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": noTranslatorNotesXhtml,
+		},
+	},
+	"When a single translator's note is found, then it should be replaced with a reference and the corresponding changes should be made to the OPF and NCX files": {
+		opfFolder:   "OPS",
+		ncxFilename: "OPS/toc.ncx",
+		opfFilename: "OPS/content.opf",
+		spineOrder: []string{
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+		},
+		expectedTranslatorNoteCount: 1,
+		expectedFileState: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": htmlSingleTranslatorNoteExpected,
+			"OPS/toc.ncx":                ncxSimpleExpected,
+			"OPS/content.opf":            opfSimpleExpected,
+			"OPS/Text/tl_notes.xhtml":    xhtmlSimpleTranslatorsNotes,
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/section-0001.html": noTranslatorNotesXhtml,
+			"OPS/Text/section-0002.html": htmlSingleTranslatorNoteOriginal,
+			"OPS/toc.ncx":                ncxSimpleOriginal,
+			"OPS/content.opf":            opfSimpleOriginal,
+		},
+	},
+	"When multiple translator's notes are found, then they should be replaced with a reference and the corresponding changes should be made to the OPF and NCX files": {
+		opfFolder:   "OPS",
+		ncxFilename: "OPS/toc.ncx",
+		opfFilename: "OPS/content.opf",
+		spineOrder: []string{
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+		},
+		expectedTranslatorNoteCount: 4,
+		expectedFileState: map[string]string{
+			"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesExpected,
+			"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesExpected,
+			"OPS/toc.ncx":                ncxSimpleExpected,
+			"OPS/content.opf":            opfSimpleExpected,
+			"OPS/Text/tl_notes.xhtml":    xhtmlComplexTranslatorsNotes,
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/section-0001.html": htmlFirstMultipleTranslatorsNotesOriginal,
+			"OPS/Text/section-0002.html": htmlSecondMultipleTranslatorsNotesOriginal,
+			"OPS/toc.ncx":                ncxSimpleOriginal,
+			"OPS/content.opf":            opfSimpleOriginal,
+		},
+	},
 	"When the OPF folder is the base of the zip file and translator's notes are found, the generated file paths for tl_notes, the NCX, Nav, and OPF files is correct": {
 		opfFolder:   ".", // for some reason it is represented by a period in the examples I have encountered
 		ncxFilename: "toc.ncx",

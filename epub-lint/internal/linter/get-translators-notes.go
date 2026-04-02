@@ -11,12 +11,16 @@ import (
 
 // these values are lowercased because that makes the checks later on more performant since we don't need
 // to lowercase them
-var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tl:", "author's note:", "note:", "ed:"}
+var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tln:", "tl:", "author's note:", "note:", "ed:"}
 
-func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int) {
-	matches := findNotesWithXML(text)
+func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int, error) {
+	matches, err := findNotesWithXML(text)
+	if err != nil {
+		return "", []string{}, 0, fmt.Errorf("file %q had issues determining translator's notes: %w", fileName, err)
+	}
+
 	if len(matches) == 0 {
-		return text, []string{}, startingNoteNumber
+		return text, []string{}, startingNoteNumber, nil
 	}
 
 	var tlNotes = make([]string, len(matches))
@@ -38,7 +42,7 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 	}
 
 	slices.Reverse(tlNotes)
-	return text, tlNotes, startingNoteNumber
+	return text, tlNotes, startingNoteNumber, nil
 }
 
 type noteMatch struct {
@@ -47,7 +51,7 @@ type noteMatch struct {
 	Content string
 }
 
-func findNotesWithXML(text string) []noteMatch {
+func findNotesWithXML(text string) ([]noteMatch, error) {
 	var matches []noteMatch
 	decoder := xml.NewDecoder(strings.NewReader(text))
 	decoder.Strict = false
@@ -85,11 +89,15 @@ func findNotesWithXML(text string) []noteMatch {
 				startPos = strings.Index(text, innerContent)
 				endPos   = startPos + len(innerContent)
 			)
+			if startPos == -1 {
+				return nil, fmt.Errorf("attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.", innerContent)
+			}
+
 			matches = append(matches, extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos, startPos, endPos))
 		}
 	}
 
-	return matches
+	return matches, nil
 }
 
 func getInnerContent(decoder *xml.Decoder) (string, string, bool) {

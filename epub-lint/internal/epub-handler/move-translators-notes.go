@@ -39,7 +39,11 @@ func MoveTranslatorsNotes(spineOrder []string, opfFolder, ncxFilename, opfFilena
 		}
 
 		var nameParts = strings.Split(file, "/")
-		contents, fileTranslatorNotes, startingNumber = linter.GetTranslatorsNotes(contents, nameParts[len(nameParts)-1], tlNoteFileName, startingNumber)
+		contents, fileTranslatorNotes, startingNumber, err = linter.GetTranslatorsNotes(contents, nameParts[len(nameParts)-1], tlNoteFileName, startingNumber)
+		if err != nil {
+			return 0, err
+		}
+
 		translatorNoteListItems = append(translatorNoteListItems, fileTranslatorNotes...)
 
 		nameToUpdatedContents[fullFilePath] = contents
