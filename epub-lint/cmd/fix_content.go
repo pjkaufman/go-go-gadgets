@@ -209,7 +209,7 @@ var contentCmd = &cobra.Command{
 			return handler.HandleCss()
 		})
 
-		if err != nil {
+		if err == nil {
 			successLog := handler.SuccessfulLog()
 
 			if successLog != "" {

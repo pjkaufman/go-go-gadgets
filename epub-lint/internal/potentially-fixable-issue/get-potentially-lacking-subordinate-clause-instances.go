@@ -3,7 +3,7 @@ package potentiallyfixableissue
 import "regexp"
 
 var (
-	subordinateClausesRegex        = regexp.MustCompile(`(?m)^[\r\t\f\v ]*?<p[^>]*?>[^\n]*?(?i:although|because|while)[^.!?\n]*?, (?:but|thus|therefore|furthermore|however)[^\n]*?</p>`)
+	subordinateClausesRegex        = regexp.MustCompile(`(?m)^[\r\t\f\v ]*?<p[^>]*?>[^\n]*?(?:Although|Because|While)[^.!?\n]*?, (?:but|thus|therefore|furthermore|however)[^\n]*?</p>`)
 	subordinateClausesReplaceRegex = regexp.MustCompile(`(.*?,)\s*?(?:but|thus|therefore|furthermore|however)(.*)`)
 )
 

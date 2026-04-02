@@ -93,6 +93,11 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 				return nil, fmt.Errorf("attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.", innerContent)
 			}
 
+			// check to make sure that the character prior to the tl note is not a letter to help filter out false positives for things like ed
+			if tlNotePos != 0 && unicode.IsLetter(rune(innerContent[tlNotePos-1])) {
+				continue
+			}
+
 			matches = append(matches, extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos, startPos, endPos))
 		}
 	}
