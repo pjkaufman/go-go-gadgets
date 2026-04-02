@@ -262,6 +262,7 @@ func (m FixableIssuesModel) footerView() string {
 			controls = []string{
 				"← / → : Previous/Next Suggestion",
 				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
+				"Ctrl+PgUp / Ctrl+PgDn: Previous/Next File",
 				"C: Copy",
 				"Esc: Quit",
 				"Ctrl+C: Exit without saving",
@@ -270,6 +271,7 @@ func (m FixableIssuesModel) footerView() string {
 			controls = []string{
 				"← / → : Previous/Next Suggestion",
 				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
+				"Ctrl+PgUp / Ctrl+PgDn: Previous/Next File",
 				"E: Edit",
 				"C: Copy",
 				"Enter: Accept",

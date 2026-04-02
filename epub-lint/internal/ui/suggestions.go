@@ -252,6 +252,17 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				cmds = append(cmds, cmd)
 			case "ctrl+u":
 				m.moveToPreviousIssue()
+			case "ctrl+pgdown":
+				cmd, err := m.moveToNextFile()
+				if err != nil {
+					m.Err = err
+
+					return tea.Quit
+				}
+
+				cmds = append(cmds, cmd)
+			case "ctrl+pgup":
+				m.moveToPreviousFile()
 			}
 		}
 	}
@@ -302,6 +313,7 @@ func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
 				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][0]
 				m.PotentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
+				m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
 				m.setSuggestionDisplay(true)
 
 				return nil, nil
@@ -389,10 +401,59 @@ func (m *FixableIssuesModel) moveToPreviousIssue() {
 			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = potentialFixableIssueIndex
 			m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
 			m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[potentialFixableIssueIndex].Name
+			m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Name
 			m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
 			m.setSuggestionDisplay(true)
 
 			return
+		}
+	}
+}
+
+func (m *FixableIssuesModel) moveToNextFile() (tea.Cmd, error) {
+	if m.PotentiallyFixableIssuesInfo.currentFileIndex+1 < len(m.PotentiallyFixableIssuesInfo.FileSuggestionData) {
+		m.PotentiallyFixableIssuesInfo.currentFileIndex++
+		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
+		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
+		m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
+		m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex].Name
+	} else {
+		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions)
+		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex])
+	}
+
+	return m.setupForNextSuggestions()
+}
+
+func (m *FixableIssuesModel) moveToPreviousFile() {
+	if m.PotentiallyFixableIssuesInfo.currentFileIndex == 0 {
+		return
+	}
+
+	var (
+		currentFileIndex           = m.PotentiallyFixableIssuesInfo.currentFileIndex
+		potentialFixableIssueIndex = m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex
+	)
+	for currentFileIndex != 0 {
+		currentFileIndex--
+		potentialFixableIssueIndex = 0
+		// skipping files forwards can cause a gap to happen in the potentially fixable issue data, but for now, we will ignore it
+		// since if the previous file had any suggestions the first one that has data should be present
+		// thus this should work fine, but if it does not we can tweak this
+		for potentialFixableIssueIndex < len(m.PotentiallyFixableIssuesInfo.suggestions) {
+			if len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex]) != 0 {
+				m.PotentiallyFixableIssuesInfo.currentFileIndex = currentFileIndex
+				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = potentialFixableIssueIndex
+				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
+				m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[potentialFixableIssueIndex].Name
+				m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Name
+				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+				m.setSuggestionDisplay(true)
+
+				return
+			}
+
+			potentialFixableIssueIndex++
 		}
 	}
 }
@@ -440,6 +501,7 @@ func (m *FixableIssuesModel) moveToPreviousSuggestion() {
 		if numSuggestions != 0 {
 			m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = numSuggestions - 1
 			m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+			m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
 			m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex].Name
 			m.setSuggestionDisplay(true)
 
