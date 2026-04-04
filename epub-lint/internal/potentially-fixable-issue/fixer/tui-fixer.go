@@ -100,10 +100,6 @@ func (t *TuiFixer) Run() error {
 	p := tea.NewProgram(&t.initialModel, tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err != nil {
-		model := finalModel.(ui.FixableIssuesModel)
-		if model.Err != nil {
-			logger.WriteInfo(err.Error())
-		}
 		return err
 	}
 
