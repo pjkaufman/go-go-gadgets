@@ -65,41 +65,16 @@ func RemoveFileFromNav(text, file string) string {
 
 	// it should be safe to just excise the content until the next `</li>` at this point
 	const endingListItem = "</li>"
-	endingTagIndex := strings.Index(text[startOfAttribute:], endingListItem)
-	if endingTagIndex == -1 {
+	tagEnd := strings.Index(text[startOfAttribute:], endingListItem)
+	if tagEnd == -1 {
 		return text
 	}
 
-	endingTagIndex += len(endingListItem) + startOfAttribute
+	tagEnd += len(endingListItem) + startOfAttribute
 
-	// check if line just has starting whitespace
-	startOfLine := strings.LastIndex(text[:tagStart], "\n")
-	if startOfLine == -1 {
-		startOfLine = 0
-	}
+	startOfContentToRemove, endOfContentToRemove := GetLineBoundsIfEmpty(text, tagStart, tagEnd)
 
-	var (
-		startOfRemoval            = tagStart
-		startingWhitespaceRemoved bool
-	)
-	if strings.TrimSpace(text[startOfLine:tagStart]) == "" {
-		startOfRemoval = startOfLine
-		startingWhitespaceRemoved = true
-	}
-
-	endOfLine := strings.Index(text[endingTagIndex:], "\n")
-	if endOfLine == -1 {
-		endOfLine = len(text)
-	} else {
-		endOfLine += endingTagIndex
-	}
-
-	var endOfRemoval = endingTagIndex
-	if startingWhitespaceRemoved && strings.TrimSpace(text[endingTagIndex:endOfLine]) == "" {
-		endOfRemoval = endOfLine
-	}
-
-	return text[:startOfRemoval] + text[endOfRemoval:]
+	return text[:startOfContentToRemove] + text[endOfContentToRemove:]
 }
 
 // getPreviousHtmlTagIfNotClosingTag gets the nearest prior opening html tag and the start of its position

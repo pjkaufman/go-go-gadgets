@@ -10,7 +10,6 @@ import (
 )
 
 type addFileToOpfTestCase struct {
-	name      string
 	inputText string
 	filename  string
 	id        string
@@ -18,20 +17,18 @@ type addFileToOpfTestCase struct {
 	expected  string
 }
 
-func TestAddFileToOpf(t *testing.T) {
-	tests := []addFileToOpfTestCase{
-		{
-			name: "manifest and spine present and empty",
-			inputText: `<package>
+var addFileToOpfTestCases = map[string]addFileToOpfTestCase{
+	"When manifest and spine are present and empty, the file is properly added to both": {
+		inputText: `<package>
   <manifest>
   </manifest>
   <spine>
   </spine>
 </package>`,
-			filename:  "test.xhtml",
-			id:        "test-id",
-			mediaType: "application/xhtml+xml",
-			expected: `<package>
+		filename:  "test.xhtml",
+		id:        "test-id",
+		mediaType: "application/xhtml+xml",
+		expected: `<package>
   <manifest>
     <item id="test-id" href="test.xhtml" media-type="application/xhtml+xml"/>
 </manifest>
@@ -39,29 +36,27 @@ func TestAddFileToOpf(t *testing.T) {
     <itemref idref="test-id"/>
 </spine>
 </package>`,
-		},
-		{
-			name:      "manifest is on a single line",
-			inputText: `<package><manifest></manifest><spine></spine></package>`,
-			filename:  "test.xhtml",
-			id:        "test-id",
-			mediaType: "application/xhtml+xml",
-			expected: `<package><manifest>  <item id="test-id" href="test.xhtml" media-type="application/xhtml+xml"/>
+	},
+	"When the manifest is on a single line, the file should be added and the ending manifest tag should now be on its own line": {
+		inputText: `<package><manifest></manifest><spine></spine></package>`,
+		filename:  "test.xhtml",
+		id:        "test-id",
+		mediaType: "application/xhtml+xml",
+		expected: `<package><manifest>  <item id="test-id" href="test.xhtml" media-type="application/xhtml+xml"/>
 </manifest><spine>  <itemref idref="test-id"/>
 </spine></package>`,
-		},
-		{
-			name: "spine is on a single line",
-			inputText: `<package>
+	},
+	"When the spine is on a single line, the file should be added and the ending spine tag should now be on its own line": {
+		inputText: `<package>
   <manifest>
     <item id="item1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
   </manifest>
   <spine></spine>
 </package>`,
-			filename:  "test.xhtml",
-			id:        "test-id",
-			mediaType: "application/xhtml+xml",
-			expected: `<package>
+		filename:  "test.xhtml",
+		id:        "test-id",
+		mediaType: "application/xhtml+xml",
+		expected: `<package>
   <manifest>
     <item id="item1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
     <item id="test-id" href="test.xhtml" media-type="application/xhtml+xml"/>
@@ -69,10 +64,9 @@ func TestAddFileToOpf(t *testing.T) {
   <spine>  <itemref idref="test-id"/>
 </spine>
 </package>`,
-		},
-		{
-			name: "manifest and spine each have entries on their own line",
-			inputText: `<package>
+	},
+	"When the manifest and spine each have entries on their own line, the file should be added correctly": {
+		inputText: `<package>
   <manifest>
     <item id="item1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
     <item id="item2" href="chapter2.xhtml" media-type="application/xhtml+xml"/>
@@ -82,10 +76,10 @@ func TestAddFileToOpf(t *testing.T) {
     <itemref idref="item2"/>
   </spine>
 </package>`,
-			filename:  "test.xhtml",
-			id:        "test-id",
-			mediaType: "application/xhtml+xml",
-			expected: `<package>
+		filename:  "test.xhtml",
+		id:        "test-id",
+		mediaType: "application/xhtml+xml",
+		expected: `<package>
   <manifest>
     <item id="item1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
     <item id="item2" href="chapter2.xhtml" media-type="application/xhtml+xml"/>
@@ -97,11 +91,12 @@ func TestAddFileToOpf(t *testing.T) {
     <itemref idref="test-id"/>
 </spine>
 </package>`,
-		},
-	}
+	},
+}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+func TestAddFileToOpf(t *testing.T) {
+	for name, tc := range addFileToOpfTestCases {
+		t.Run(name, func(t *testing.T) {
 			result := epubhandler.AddFileToOpf(tc.inputText, tc.filename, tc.id, tc.mediaType)
 			assert.Equal(t, tc.expected, result)
 		})

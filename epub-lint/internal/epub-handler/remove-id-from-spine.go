@@ -40,32 +40,24 @@ func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 
 	endItemRefIndex += 2
 
-	startOfLineIndex := strings.LastIndex(spineContent[:idRefIndex], "\n")
-	if startOfLineIndex == -1 {
-		startOfLineIndex = 0
-	}
-
-	if startItemRefIndex < startOfLineIndex {
-		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the start of itemref being on a different line from the itemref's href", fileId)
-	}
-
-	endOfLineIndex := strings.LastIndex(spineContent[idRefIndex:], "\n")
-	if endOfLineIndex == -1 {
-		endOfLineIndex = len(spineContent) - 1
-	}
-
-	if endItemRefIndex > endOfLineIndex {
-		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the end of itemref being on a different line from the itemref's href", fileId)
+	var (
+		startOfContentToRemove, endOfContentToRemove int
+		startOfEl                                    = startItemRefIndex
+		endOfEl                                      = idRefIndex + endItemRefIndex
+	)
+	startOfContentToRemove, endOfContentToRemove = GetLineBoundsIfEmpty(spineContent, startOfEl, endOfEl)
+	if strings.Contains(spineContent[startOfContentToRemove+1:endOfContentToRemove], "\n") { // adding one gets past the initial newline character
+		return edit, fmt.Errorf("failed to parse itemref line out of spine content for id %q due to the content having a newline in it somewhere", fileId)
 	}
 
 	var startPos, endPos positions.Position
-	if strings.TrimSpace(spineContent[startOfLineIndex:startItemRefIndex]+spineContent[idRefIndex+endItemRefIndex:idRefIndex+endOfLineIndex]) == "" {
+	if startOfContentToRemove != startOfEl || endOfContentToRemove != endOfEl {
 		// no other line content other than whitespace is on the line...
-		startPos = positions.IndexToPosition(opfContents, startIndex+startOfLineIndex)
-		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endOfLineIndex)
+		startPos = positions.IndexToPosition(opfContents, startIndex+startOfContentToRemove)
+		endPos = positions.IndexToPosition(opfContents, startIndex+endOfContentToRemove)
 	} else {
-		startPos = positions.IndexToPosition(opfContents, startIndex+startItemRefIndex)
-		endPos = positions.IndexToPosition(opfContents, startIndex+idRefIndex+endItemRefIndex)
+		startPos = positions.IndexToPosition(opfContents, startIndex+startOfEl)
+		endPos = positions.IndexToPosition(opfContents, startIndex+endOfEl)
 	}
 
 	edit.Range.Start = startPos

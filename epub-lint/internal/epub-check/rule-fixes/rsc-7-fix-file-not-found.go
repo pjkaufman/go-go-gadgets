@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 func FixFileNotFound(contents, referencedResource, currentFile string, line, column int, basenameToFilePaths map[string][]string) (positions.TextEdit, error) {
@@ -87,36 +88,9 @@ func FixFileNotFound(contents, referencedResource, currentFile string, line, col
 		endOfEl += len(closingEl) + offset
 	}
 
-	// check if line will be empty
-	var (
-		startOfLine = strings.LastIndex(contents[:startOfEl], "\n") + 1
-		endOfLine   = strings.Index(contents[endOfEl:], "\n")
-	)
-
-	if endOfLine == -1 {
-		endOfLine = len(contents) - 1
-	} else {
-		endOfLine += endOfEl
-	}
-
-	var (
-		lineContents = strings.Replace(contents[startOfLine:endOfLine], contents[startOfEl:endOfEl], "", 1)
-		beginReplace = startOfEl
-		endReplace   = endOfEl
-		removeLine   bool
-	)
-	if strings.TrimSpace(lineContents) == "" {
-		beginReplace = startOfLine
-		endReplace = endOfLine
-		removeLine = true
-	}
-
-	edit.Range.Start = positions.IndexToPosition(contents, beginReplace)
-	edit.Range.End = positions.IndexToPosition(contents, endReplace)
-	if removeLine {
-		edit.Range.End.Column = 1
-		edit.Range.End.Line += 1
-	}
+	startOfContentToRemove, endOfContentToRemove := epubhandler.GetLineBoundsIfEmpty(contents, startOfEl, endOfEl)
+	edit.Range.Start = positions.IndexToPosition(contents, startOfContentToRemove)
+	edit.Range.End = positions.IndexToPosition(contents, endOfContentToRemove)
 
 	return edit, nil
 }

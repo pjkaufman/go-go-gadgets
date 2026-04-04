@@ -10,7 +10,6 @@ import (
 )
 
 type addFileToNcxTestCase struct {
-	name      string
 	inputText string
 	filePath  string
 	title     string
@@ -18,11 +17,9 @@ type addFileToNcxTestCase struct {
 	expected  string
 }
 
-func TestAddFileToNcx(t *testing.T) {
-	testCases := []addFileToNcxTestCase{
-		{
-			name: "No navMap in ncx returns original string",
-			inputText: `<ncx>
+var addFileToNcxTestCases = map[string]addFileToNcxTestCase{
+	"When there is no navMap in ncx, no change should be made": {
+		inputText: `<ncx>
   <head>
     <meta name="dtb:uid" content="BookId"/>
   </head>
@@ -30,10 +27,10 @@ func TestAddFileToNcx(t *testing.T) {
     <text>Book Title</text>
   </docTitle>
 </ncx>`,
-			filePath: "chapter1.xhtml",
-			title:    "Chapter 1",
-			id:       "ch1",
-			expected: `<ncx>
+		filePath: "chapter1.xhtml",
+		title:    "Chapter 1",
+		id:       "ch1",
+		expected: `<ncx>
   <head>
     <meta name="dtb:uid" content="BookId"/>
   </head>
@@ -41,17 +38,16 @@ func TestAddFileToNcx(t *testing.T) {
     <text>Book Title</text>
   </docTitle>
 </ncx>`,
-		},
-		{
-			name: "No navPoints already results in 1 as the playOrder",
-			inputText: `<ncx>
+	},
+	"When there are no navPoints already, the playOrder of the add file should be 1": {
+		inputText: `<ncx>
   <navMap>
   </navMap>
 </ncx>`,
-			filePath: "chapter1.xhtml",
-			title:    "Chapter 1",
-			id:       "ch1",
-			expected: `<ncx>
+		filePath: "chapter1.xhtml",
+		title:    "Chapter 1",
+		id:       "ch1",
+		expected: `<ncx>
   <navMap>
     <navPoint id="ch1" playOrder="1">
     <navLabel>
@@ -61,10 +57,9 @@ func TestAddFileToNcx(t *testing.T) {
   </navPoint>
 </navMap>
 </ncx>`,
-		},
-		{
-			name: "6 navPoints means the play order is set to 3",
-			inputText: `<ncx>
+	},
+	"When there are 3 navPoints, the added file's playOrder should be 4": {
+		inputText: `<ncx>
   <navMap>
     <navPoint id="np1" playOrder="1">
       <navLabel><text>One</text></navLabel>
@@ -80,10 +75,10 @@ func TestAddFileToNcx(t *testing.T) {
     </navPoint>
   </navMap>
 </ncx>`,
-			filePath: "chapter4.xhtml",
-			title:    "Chapter 4",
-			id:       "ch4",
-			expected: `<ncx>
+		filePath: "chapter4.xhtml",
+		title:    "Chapter 4",
+		id:       "ch4",
+		expected: `<ncx>
   <navMap>
     <navPoint id="np1" playOrder="1">
       <navLabel><text>One</text></navLabel>
@@ -105,11 +100,12 @@ func TestAddFileToNcx(t *testing.T) {
   </navPoint>
 </navMap>
 </ncx>`,
-		},
-	}
+	},
+}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+func TestAddFileToNcx(t *testing.T) {
+	for name, tc := range addFileToNcxTestCases {
+		t.Run(name, func(t *testing.T) {
 			result := epubhandler.AddFileToNcx(tc.inputText, tc.filePath, tc.title, tc.id)
 			assert.Equal(t, tc.expected, result)
 		})
