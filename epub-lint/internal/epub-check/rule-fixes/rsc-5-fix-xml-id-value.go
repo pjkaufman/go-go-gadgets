@@ -5,6 +5,7 @@ import (
 	"unicode"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 func isValidStart(ch rune) bool {
@@ -52,27 +53,18 @@ func FixXmlIdValue(original string, lineNumber int, attribute string) (edit posi
 		return
 	}
 
-	line := lines[lineNumber-1] // lineNumber is 1-based
-	attributePrefix := attribute + `="`
-
-	startIndex := strings.Index(line, attributePrefix)
+	var (
+		line                               = lines[lineNumber-1] // lineNumber is 1-based
+		invalidId, startIndex, endIndex, _ = epubhandler.ExtractAttribute(line, attribute)
+	)
 	if startIndex != -1 {
-		startIndex += len(attributePrefix)
-		endIndex := startIndex
-		for endIndex < len(line) && line[endIndex] != '"' {
-			endIndex++
-		}
+		validId := convertToValidID(invalidId)
 
-		if endIndex < len(line) {
-			invalidID := line[startIndex:endIndex]
-			validID := convertToValidID(invalidID)
-			edit.Range.Start.Line = lineNumber
-			edit.Range.End.Line = lineNumber
-			edit.Range.Start.Column = positions.GetColumnForLine(line, startIndex)
-			edit.Range.End.Column = positions.GetColumnForLine(line, endIndex)
-
-			edit.NewText = validID
-		}
+		edit.Range.Start.Line = lineNumber
+		edit.Range.End.Line = lineNumber
+		edit.Range.Start.Column = positions.GetColumnForLine(line, startIndex)
+		edit.Range.End.Column = positions.GetColumnForLine(line, endIndex)
+		edit.NewText = validId
 	}
 
 	return

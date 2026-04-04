@@ -3,9 +3,10 @@ package rulefixes
 import (
 	"fmt"
 	"regexp"
-	"strings"
+	"strconv"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 var navPointRegex = regexp.MustCompile(`(?i)(<navPoint[^>]*)`)
@@ -24,11 +25,10 @@ func FixPlayOrder(fileContents string) (edits []positions.TextEdit) {
 		// for some reason the indexes for the groups are not present beyond the first, so I am going to just
 		// go ahead and string parse the nav point element
 		var (
-			playOrderAttr  = "playOrder="
-			match          = fileContents[navPointIndex[0]:navPointIndex[1]]
-			playOrderStart = strings.Index(match, "playOrder=")
+			match                                        = fileContents[navPointIndex[0]:navPointIndex[1]]
+			playOrder, playOrderStart, playOrderEnd, err = epubhandler.ExtractAttribute(match, "playOrder")
 		)
-		if playOrderStart == -1 {
+		if err != nil { // it is either malformed or not present, so we shall add it...
 			insertStartPos := positions.IndexToPosition(fileContents, navPointIndex[1])
 			edits = append(edits, positions.TextEdit{
 				Range: positions.Range{
@@ -38,22 +38,11 @@ func FixPlayOrder(fileContents string) (edits []positions.TextEdit) {
 				NewText: fmt.Sprintf(" playOrder=\"%d\"", i+1),
 			})
 		} else {
-			playOrderStart += len(playOrderAttr) + 1 // include whichever quote
+			var expectedPlayOrder = strconv.Itoa(i + 1)
 
-			var (
-				playOrderQuote    = string(match[playOrderStart-1])
-				playOrderEnd      = strings.Index(match[playOrderStart:], playOrderQuote)
-				expectedPlayOrder = fmt.Sprint(i + 1)
-			)
-
-			if playOrderEnd == -1 {
-				// something went wrong, we are not able to handle this scenario...
-				continue
-			}
-
-			if match[playOrderStart:playOrderStart+playOrderEnd] != expectedPlayOrder {
+			if playOrder != expectedPlayOrder {
 				insertStartPos := positions.IndexToPosition(fileContents, navPointIndex[0]+playOrderStart)
-				insertEndPos := positions.IndexToPosition(fileContents, navPointIndex[0]+playOrderStart+playOrderEnd)
+				insertEndPos := positions.IndexToPosition(fileContents, navPointIndex[0]+playOrderEnd)
 				edits = append(edits, positions.TextEdit{
 					Range: positions.Range{
 						Start: insertStartPos,

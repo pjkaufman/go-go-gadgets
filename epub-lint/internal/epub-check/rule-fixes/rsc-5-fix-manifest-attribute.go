@@ -1,10 +1,13 @@
 package rulefixes
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNameToNumber map[string]int) ([]positions.TextEdit, error) {
@@ -12,13 +15,13 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 	lineNum--
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {
-		return edits, fmt.Errorf("line number out of range")
+		return edits, errors.New("line number out of range")
 	}
 
 	// Find the target line
 	line := lines[lineNum]
 	if !strings.Contains(line, attribute) {
-		return edits, fmt.Errorf("attribute not found on the specified line")
+		return edits, errors.New("attribute not found on the specified line")
 	}
 
 	// Determine the element name
@@ -28,23 +31,14 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 	}
 	elementEnd := strings.Index(line[elementStart:], ">")
 	if elementEnd == -1 {
-		return edits, fmt.Errorf("malformed element")
+		return edits, errors.New("malformed element")
 	}
 	elementEnd += elementStart
 	element := line[elementStart : elementEnd+1]
 
 	// Determine the id
-	idAttr := ` id="`
-	idStart := strings.Index(line, idAttr)
-	var id string
-	if idStart != -1 {
-		idStart += len(idAttr)
-		idEnd := strings.Index(line[idStart:], `"`)
-		if idEnd == -1 {
-			return edits, fmt.Errorf("malformed id attribute")
-		}
-		id = line[idStart : idStart+idEnd]
-	} else {
+	id, _, _, err := epubhandler.ExtractAttribute(line, "id")
+	if err != nil { // we will assume that any parsing error means no id for now, we can amend this if that is not the case
 		var (
 			elementName = strings.TrimSuffix(strings.TrimPrefix(element, "<dc:"), ">")
 			num         = "1"
@@ -53,7 +47,7 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 		elementName = elementName[0:strings.Index(elementName, " ")]
 
 		if val, ok := elementNameToNumber[elementName]; ok {
-			num = fmt.Sprint(val)
+			num = strconv.Itoa(val)
 			elementNameToNumber[elementName] += 1
 		} else {
 			elementNameToNumber[elementName] = 2
@@ -73,29 +67,21 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 		})
 	}
 
-	// Parse out the value of the attribute
-	attrStart := strings.Index(line, attribute+`="`)
-	if attrStart == -1 {
-		return edits, fmt.Errorf("attribute not found")
+	attrValue, attrStart, attrEnd, err := epubhandler.ExtractAttribute(line, attribute)
+	if err != nil {
+		return edits, err
 	}
-
-	attrValueStart := attrStart + len(attribute) + 2
-	attrEnd := strings.Index(line[attrValueStart:], `"`)
-	if attrEnd == -1 {
-		return edits, fmt.Errorf("malformed attribute value")
-	}
-	attrValue := line[attrValueStart : attrValueStart+attrEnd]
 
 	// Remove the attribute from the line
 	edits = append(edits, positions.TextEdit{
 		Range: positions.Range{
 			Start: positions.Position{
 				Line:   lineNum + 1,
-				Column: positions.GetColumnForLine(line, attrStart-1),
+				Column: positions.GetColumnForLine(line, attrStart-len(attribute)-3), // account for "=", quote, and attribute name
 			},
 			End: positions.Position{
 				Line:   lineNum + 1,
-				Column: positions.GetColumnForLine(line, attrValueStart+attrEnd+1),
+				Column: positions.GetColumnForLine(line, attrEnd+1),
 			},
 		},
 	})

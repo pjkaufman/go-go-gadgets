@@ -1,11 +1,13 @@
 package rulefixes
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
+	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
 func FixIdentifierDiscrepancy(opfContents, ncxContents string) ([]positions.TextEdit, error) {
@@ -59,7 +61,7 @@ func getNcxIdentifier(ncxContents string) (string, error) {
 	startTag := `name="dtb:uid"`
 	startIndex := strings.Index(ncxContents, startTag)
 	if startIndex == -1 {
-		return "", fmt.Errorf("unique identifier not found in NCX")
+		return "", errors.New("unique identifier not found in NCX")
 	}
 
 	// Find the line containing the startTag
@@ -70,22 +72,13 @@ func getNcxIdentifier(ncxContents string) (string, error) {
 	} else {
 		lineEnd += startIndex
 	}
-	line := ncxContents[lineStart:lineEnd]
 
-	// Extract the content attribute value
-	contentAttr := `content="`
-	contentStart := strings.Index(line, contentAttr)
-	if contentStart == -1 {
-		return "", fmt.Errorf("content attribute not found in the line")
-	}
-	contentStart += len(contentAttr)
-	contentEnd := strings.Index(line[contentStart:], `"`)
-	if contentEnd == -1 {
-		return "", fmt.Errorf("content attribute value not found in the line")
-	}
-	content := line[contentStart : contentStart+contentEnd]
+	var (
+		line               = ncxContents[lineStart:lineEnd]
+		content, _, _, err = epubhandler.ExtractAttribute(line, "content")
+	)
 
-	return content, nil
+	return content, err
 }
 
 // getOpfIdentifier extracts the unique identifier from the OPF content.

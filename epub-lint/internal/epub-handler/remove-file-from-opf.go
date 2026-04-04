@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	hrefAttribute   = "href="
 	itemStartTag    = "<item"
 	itemRefStartTag = "<itemref"
 )
@@ -46,24 +45,22 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 				itemEndIndex = endOfItem + 2
 				itemEl       = lineSubset[startOfItem:itemEndIndex]
 			)
-			// to make sure we are only operating on the href
-			var startOfHref = strings.Index(itemEl, hrefAttribute)
-			if startOfHref == -1 {
+
+			if itemEl == "" { // make sure we skip any empty element content
 				lineSubset = lineSubset[itemEndIndex:]
 				continue
 			}
 
-			startOfHref += len(hrefAttribute)
-			var hrefQuote = itemEl[startOfHref : startOfHref+1]
-			startOfHref++
-
-			var endOfHrefIndex = strings.Index(itemEl[startOfHref:], hrefQuote)
-			if endOfHrefIndex == -1 {
-				lineSubset = lineSubset[itemEndIndex:]
-				continue // something went wrong, so we have to ignore the el...
+			hrefContent, _, _, err := ExtractAttribute(itemEl, "href")
+			if err != nil {
+				return "", fmt.Errorf("failed to get the href content out of %q: %w", itemEl, err)
 			}
 
-			var hrefContent = itemEl[startOfHref : startOfHref+endOfHrefIndex]
+			if hrefContent == "" { // the href seems to be empty, so we can skip it
+				lineSubset = lineSubset[itemEndIndex:]
+				continue
+			}
+
 			if !strings.HasSuffix(hrefContent, fileName) {
 				lineSubset = lineSubset[endOfItem:] // start over with any other items on this line
 				continue
@@ -72,18 +69,17 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 			hrefContent = strings.TrimSuffix(hrefContent, fileName)
 
 			// check for a false positive by checking that previous char is not a slash or a quote
-			var previousChar rune
-			if len(hrefContent) == 0 {
-				previousChar = rune(hrefQuote[0])
-			} else {
+			var previousChar = '"'
+			if len(hrefContent) != 0 {
 				previousChar = rune(hrefContent[len(hrefContent)-1])
 			}
+
 			if previousChar != '\'' && previousChar != '"' && previousChar != '\\' && previousChar != '/' {
 				lineSubset = lineSubset[endOfItem:]
 				continue
 			}
 
-			fileID = ExtractID(itemEl)
+			fileID, _, _, _ = ExtractAttribute(itemEl, "id")
 			line = strings.Replace(line, itemEl, "", 1)
 
 			if strings.TrimSpace(line) == "" {
@@ -113,20 +109,4 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 	}
 
 	return positions.ApplyEdits("", updatedOpfContents, []positions.TextEdit{edit})
-}
-
-func ExtractID(line string) string {
-	const idAttr = `id="`
-	startIndex := strings.Index(line, idAttr)
-	if startIndex == -1 {
-		return ""
-	}
-
-	startIndex += len(idAttr)
-	endIndex := strings.Index(line[startIndex:], `"`)
-	if endIndex == -1 {
-		return ""
-	}
-
-	return line[startIndex : startIndex+endIndex]
 }

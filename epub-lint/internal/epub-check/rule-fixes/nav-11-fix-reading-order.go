@@ -40,7 +40,6 @@ func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string
 	}
 
 	const (
-		hrefAttribute  = `href="`
 		anchorTagStart = "<a "
 		anchorTagEnd   = "</a>"
 	)
@@ -65,31 +64,14 @@ func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string
 
 		anchorEndIndex += anchorStartIndex + len(anchorTagEnd)
 
-		var (
-			anchorTag = remainingTocContent[anchorStartIndex:anchorEndIndex]
-			hrefIndex = strings.Index(anchorTag, hrefAttribute)
-		)
-		if hrefIndex == -1 {
+		anchorTag := remainingTocContent[anchorStartIndex:anchorEndIndex]
+		filePath, _, _, _ := epubhandler.ExtractAttribute(anchorTag, "href") // no need to account for the error here
+		if filePath == "" {
 			remainingTocContent = remainingTocContent[anchorEndIndex:]
 			startOfContent += anchorEndIndex
-			continue
 		}
 
-		hrefIndex += len(hrefAttribute)
-		endOfHref := strings.Index(anchorTag[hrefIndex:], `"`)
-		if endOfHref == -1 {
-			remainingTocContent = remainingTocContent[anchorEndIndex:]
-			startOfContent += anchorEndIndex
-			continue
-		}
-
-		endOfHref += hrefIndex
-
-		var (
-			filePath       = anchorTag[hrefIndex:endOfHref]
-			referenceIndex = strings.Index(filePath, "#")
-		)
-
+		referenceIndex := strings.Index(filePath, "#")
 		if referenceIndex != -1 {
 			filePath = filePath[:referenceIndex]
 		}

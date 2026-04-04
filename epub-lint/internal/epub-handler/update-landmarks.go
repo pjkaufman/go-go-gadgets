@@ -53,25 +53,16 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 		}
 
 		tagEnd += absoluteIndex + len(pathToFindHref)
-		tag := contents[tagStart : tagEnd+1]
-
-		epubTypeIdx := strings.Index(tag, `epub:type="`)
-		if epubTypeIdx == -1 {
-			currentActualIndex += nextRelativePathIndex + len(pathToFindHref)
-			remainingLandmarkContents = remainingLandmarkContents[nextRelativePathIndex+len(pathToFindHref):]
-			continue
-		}
 
 		var (
-			typeStart = epubTypeIdx + len(`epub:type="`)
-			typeEnd   = strings.Index(tag[typeStart:], `"`)
+			tag                 = contents[tagStart : tagEnd+1]
+			epubType, _, _, err = ExtractAttribute(tag, "epub:type")
 		)
-		if typeEnd == -1 {
+		if err != nil {
 			currentActualIndex += nextRelativePathIndex + len(pathToFindHref)
 			remainingLandmarkContents = remainingLandmarkContents[nextRelativePathIndex+len(pathToFindHref):]
 			continue
 		}
-		epubType := tag[typeStart : typeStart+typeEnd]
 
 		var replacement string
 		switch epubType {
