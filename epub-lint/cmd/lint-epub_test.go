@@ -3,13 +3,11 @@
 package cmd_test
 
 import (
-	"log"
 	"os"
 	"testing"
 
 	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,20 +57,15 @@ func TestLintEpub(t *testing.T) {
 
 			// This runs after the operation of LintEpub which leads to the linted file taking the place of the original.
 			// This means that we are able to assume that the original file's location should have data comparable to that found
-			// in the linted file.
-			equalityStatus, issue := filehandler.ZipsAreEqual(test.filename, originalFileDir, lintedFileDir, true)
-			assert.True(t, equalityStatus, issue)
+			// in the linted file. It will cause an error and write it if one happens
+			filehandler.ZipsAreEqual(t, test.filename, originalFileDir, lintedFileDir)
 
 			var originalEpubPath = originalFileDir + string(os.PathSeparator) + test.filename
 			err = os.RemoveAll(originalEpubPath)
-			if err != nil {
-				log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
-			}
+			require.NoErrorf(t, err, "failed to remove the result of lint epub %q", originalEpubPath)
 
 			err = os.Rename(originalEpubPath+".original", originalEpubPath)
-			if err != nil {
-				log.Fatalf("failed move original file back to its starting location for %q: %s", test.filename, err)
-			}
+			require.NoErrorf(t, err, "failed move original file back to its starting location for %q", test.filename)
 		})
 	}
 }
@@ -86,18 +79,12 @@ func BenchmarkLintEpub(b *testing.B) {
 	for b.Loop() {
 		var originalEpubPath = originalFileDir + string(os.PathSeparator) + filename
 		err := epub.LintEpub(originalFileDir, filename, compressImages, verbose, []string{})
-		if err != nil {
-			log.Fatalf("failed to lint epub %q: %s", originalEpubPath, err)
-		}
+		require.NoErrorf(b, err, "failed to lint epub %q", originalEpubPath)
 
 		err = os.RemoveAll(originalEpubPath)
-		if err != nil {
-			log.Fatalf("failed to remove the result of lint epub %q: %s", originalEpubPath, err)
-		}
+		require.NoErrorf(b, err, "failed to remove the result of lint epub %q", originalEpubPath)
 
 		err = os.Rename(originalEpubPath+".original", originalEpubPath)
-		if err != nil {
-			log.Fatalf("failed move original file back to its starting location for %q: %s", filename, err)
-		}
+		require.NoErrorf(b, err, "failed move original file back to its starting location for %q", filename)
 	}
 }

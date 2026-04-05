@@ -1,6 +1,7 @@
 package commandhandler
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 
@@ -21,7 +22,8 @@ func MustGetCommandOutputEvenIfExitError(programName, errorMsg string, args ...s
 	cmd := exec.Command(programName, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			return string(output)
 		}
 

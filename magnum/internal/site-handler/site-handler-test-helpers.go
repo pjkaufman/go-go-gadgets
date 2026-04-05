@@ -49,7 +49,10 @@ func createMockServerInstance(endpoints []MockedEndpoint) *httptest.Server {
 
 	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(robotsFile))
+		_, err := w.Write([]byte(robotsFile))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 
 	for _, endpoint := range endpoints {

@@ -32,11 +32,13 @@ func EnsureEPUBCheckIsInstalled(epubcheckDir string) error {
 		return err
 	}
 
-	resp, err := http.Get("https://api.github.com/repos/w3c/epubcheck/releases/latest")
+	const epubCheckLatestUrl = "https://api.github.com/repos/w3c/epubcheck/releases/latest"
+	//nolint:bodyclose // this body is being closed by try close, but the linter does not catch that
+	resp, err := http.Get(epubCheckLatestUrl)
 	if err != nil {
 		return fmt.Errorf("failed to get latest release info: %w", err)
 	}
-	defer resp.Body.Close()
+	defer filehandler.TryClose(fmt.Sprintf("%q response body", epubCheckLatestUrl), resp.Body)
 
 	var release githubRelease
 	if err = json.NewDecoder(resp.Body).Decode(&release); err != nil {
@@ -56,19 +58,26 @@ func EnsureEPUBCheckIsInstalled(epubcheckDir string) error {
 	}
 
 	logger.WriteInfof("Downloading EPUBCheck %s...\n", release.TagName)
+	//nolint:bodyclose // this body is being closed by try close, but the linter does not catch that
 	resp, err = http.Get(downloadURL)
 	if err != nil {
 		return fmt.Errorf("failed to download EPUBCheck: %w", err)
 	}
-	defer resp.Body.Close()
+	defer filehandler.TryClose(fmt.Sprintf("%q response body", downloadURL), resp.Body)
 
 	tmpFile, err := filehandler.CreateTemp("", "epubcheck-*.zip")
 	if err != nil {
 		return err
 	}
 
-	defer filehandler.DeleteFile(tmpFile.Name())
-	defer tmpFile.Close()
+	defer func() {
+		err = filehandler.DeleteFile(tmpFile.Name())
+		if err != nil {
+			logger.WriteWarnf("failed to delete %q: %s\n", tmpFile.Name(), err)
+		}
+	}()
+
+	defer filehandler.TryClose(tmpFile.Name(), tmpFile)
 
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
 		return fmt.Errorf("failed to save downloaded file: %w", err)

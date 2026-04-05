@@ -29,21 +29,24 @@ func EnsureEncodingIsPresent(text string) string {
 		return text[0:attributeEnd] + " " + encodingAttr + "\"utf-8\"" + text[attributeEnd:]
 	}
 
-	startOfAttr := encodingAttrIndex + len(encodingAttr)
-	endOfAttr := startOfAttr + 1
-	endingIndicator := xmlEl[startOfAttr:endOfAttr]
-	var encodingVal, char string
+	var (
+		startOfAttr     = encodingAttrIndex + len(encodingAttr)
+		endOfAttr       = startOfAttr + 1
+		endingIndicator = xmlEl[startOfAttr:endOfAttr]
+		encodingVal     strings.Builder
+		char            string
+	)
 	for endOfAttr < len(xmlEl) {
 		char = xmlEl[endOfAttr : endOfAttr+1]
 		if char == endingIndicator {
 			break
 		}
 
-		encodingVal += char
+		encodingVal.WriteString(char)
 		endOfAttr++
 	}
 
-	if strings.TrimSpace(encodingVal) == "" {
+	if strings.TrimSpace(encodingVal.String()) == "" {
 		return text[0:startOfAttr+1] + "utf-8" + text[endOfAttr:]
 	} else {
 		return text

@@ -41,7 +41,7 @@ func WriteZipCompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer TryClose(zipFile.Name, file)
 
 	return compressedWriteToZip(w, file, zipFile.Name)
 }
@@ -55,7 +55,7 @@ func WriteZipUncompressedFile(w *zip.Writer, zipFile *zip.File) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer TryClose(zipFile.Name, file)
 
 	return uncompressedWriteToZip(w, file, zipFile.Name)
 }
@@ -65,7 +65,7 @@ func ReadInZipFileContents(zipFile *zip.File) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer TryClose(zipFile.Name, file)
 
 	var fileBytes = &bytes.Buffer{}
 	_, err = io.Copy(fileBytes, file)
@@ -81,7 +81,7 @@ func ReadInZipFileBytes(zipFile *zip.File) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer TryClose(zipFile.Name, file)
 
 	var fileBytes = &bytes.Buffer{}
 	_, err = io.Copy(fileBytes, file)
@@ -120,7 +120,7 @@ func UnzipFile(zipFile *os.File, destDir string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open zip file: %w", err)
 	}
-	defer zipReader.Close()
+	defer TryClose(zipFile.Name(), zipReader)
 
 	if err := os.MkdirAll(destDir, folderPerms); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
@@ -152,13 +152,13 @@ func UnzipFile(zipFile *os.File, destDir string) error {
 
 		srcFile, err := file.Open()
 		if err != nil {
-			destFile.Close()
+			TryClose(destPath, destFile)
 			return fmt.Errorf("failed to open zip file %s: %w", file.Name, err)
 		}
 
 		_, err = io.Copy(destFile, srcFile)
-		srcFile.Close()
-		destFile.Close()
+		TryClose(file.Name, srcFile)
+		TryClose(destPath, destFile)
 		if err != nil {
 			return fmt.Errorf("failed to copy file contents from %s: %w", file.Name, err)
 		}

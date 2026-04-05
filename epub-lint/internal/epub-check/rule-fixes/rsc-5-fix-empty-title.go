@@ -75,12 +75,18 @@ func firstHeaderOrParagraphText(contents string) string {
 				se.Name.Local == "h3" || se.Name.Local == "h4" ||
 				se.Name.Local == "h5" || se.Name.Local == "h6" {
 				var h textNode
-				decoder.DecodeElement(&h, &se)
+				err = decoder.DecodeElement(&h, &se)
+				if err != nil { // for now we shall skip any that fail to parse
+					continue
+				}
 
 				return strings.TrimSpace(h.Text)
 			} else if se.Name.Local == "p" && isFirstParagraph {
 				var h textNode
-				decoder.DecodeElement(&h, &se)
+				err = decoder.DecodeElement(&h, &se)
+				if err != nil { // for now we shall skip any that fail to parse
+					continue
+				}
 
 				firstParagraphText = strings.TrimSpace(h.Text)
 				isFirstParagraph = false

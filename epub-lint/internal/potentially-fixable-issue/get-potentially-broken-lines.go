@@ -41,39 +41,44 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 		addToParsedLines(parsedLines, currentLine)
 
 		var (
-			originalString  = currentLine
-			suggestedString = fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + " "
-			nextLine        string
-			endOfLineIndex  = groups[1]
+			originalString, suggestedString strings.Builder
+			nextLine                        string
+			endOfLineIndex                  = groups[1]
 		)
+		originalString.WriteString(currentLine)
+		suggestedString.WriteString(fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + " ")
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
 			nextLine = getNextLine(fileContent, endOfLineIndex)
 
 			addToParsedLines(parsedLines, nextLine)
-			originalString += nextLine
+			originalString.WriteString(nextLine)
 
 			var nextLineGroups = unendedParagraphRegex.FindAllStringSubmatchIndex(nextLine, 1)
 			lineIsPotentiallyBroken = len(nextLineGroups) > 0
 			if lineIsPotentiallyBroken {
-				suggestedString += nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]] + " "
+				suggestedString.WriteString(nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]] + " ")
 				endOfLineIndex += len(nextLine)
 			} else {
 				var _, after, ok = strings.Cut(nextLine, ">")
 
 				if !ok {
-					suggestedString += nextLine
+					suggestedString.WriteString(nextLine)
 				} else {
-					suggestedString += after
+					suggestedString.WriteString(after)
 				}
 			}
 		}
 
 		// we included an ending newline character for the next lines that we pulled back
 		// we do not need them when it comes to the ending of the original and suggested strings
-		originalString = strings.TrimRight(originalString, "\n")
-		suggestedString = strings.TrimRight(suggestedString, "\n")
+		var (
+			original  = originalString.String()
+			suggested = suggestedString.String()
+		)
+		original = strings.TrimRight(original, "\n")
+		suggested = strings.TrimRight(suggested, "\n")
 
-		originalToSuggested[originalString] = suggestedString
+		originalToSuggested[original] = suggested
 	}
 }
 
@@ -98,12 +103,11 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 
 		addToParsedLines(parsedLines, currentLine)
 
-		var (
-			originalString  = currentLine
-			suggestedString = fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + fileContent[groups[8]:groups[9]] + fileContent[groups[10]:groups[11]]
-		)
-		if !strings.HasSuffix(suggestedString, " ") {
-			suggestedString += " "
+		var originalString, suggestedString strings.Builder
+		originalString.WriteString(currentLine)
+		suggestedString.WriteString(fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + fileContent[groups[8]:groups[9]] + fileContent[groups[10]:groups[11]])
+		if !strings.HasSuffix(suggestedString.String(), " ") {
+			suggestedString.WriteRune(' ')
 		}
 
 		var (
@@ -115,7 +119,7 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 			i += 1
 			nextLine = getNextLine(fileContent, endOfLineIndex)
 			addToParsedLines(parsedLines, nextLine)
-			originalString += nextLine
+			originalString.WriteString(nextLine)
 			doubleQuoteCount += strings.Count(nextLine, "\"")
 			endOfLineIndex += len(nextLine)
 
@@ -135,16 +139,20 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 				}
 			}
 
-			suggestedString += lineContent
+			suggestedString.WriteString(lineContent)
 		}
 
 		// we included an ending newline character for the next lines that we pulled back
 		// we do not need them when it comes to the ending of the original and suggested strings
-		originalString = strings.TrimRight(originalString, "\n")
-		suggestedString = strings.TrimRight(suggestedString, "\n")
-		suggestedString = strings.ReplaceAll(suggestedString, "  ", " ")
+		var (
+			original  = originalString.String()
+			suggested = suggestedString.String()
+		)
+		original = strings.TrimRight(original, "\n")
+		suggested = strings.TrimRight(suggested, "\n")
+		suggested = strings.ReplaceAll(suggested, "  ", " ")
 
-		originalToSuggested[originalString] = suggestedString
+		originalToSuggested[original] = suggested
 	}
 }
 

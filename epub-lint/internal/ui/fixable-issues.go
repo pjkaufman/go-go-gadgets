@@ -159,7 +159,9 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, tea.Quit
 		case "esc":
-			return m, m.exitOrMoveToCssSelection()
+			cmd = m.exitOrMoveToCssSelection()
+
+			return m, cmd
 		}
 	case tea.WindowSizeMsg:
 		m.ready = true

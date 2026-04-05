@@ -16,7 +16,12 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 		return fmt.Errorf("failed to get zip contents for %q: %w", src, err)
 	}
 
-	defer r.Close()
+	var alreadyClosedZip bool
+	defer func() {
+		if !alreadyClosedZip {
+			filehandler.TryClose(src, r)
+		}
+	}()
 
 	var tempZip = src + ".temp"
 	var runOperation = func() error {
@@ -25,10 +30,10 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 			return fmt.Errorf("failed to create temporary zip file %q for %q: %w", tempZip, src, err)
 		}
 
-		defer tempZipFile.Close()
+		defer filehandler.TryClose(tempZip, tempZipFile)
 
 		w := zip.NewWriter(tempZipFile)
-		defer w.Close()
+		defer filehandler.TryClose(tempZip+" zip writer", w)
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
 			err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
@@ -65,6 +70,7 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 	}
 
 	// we are closing this here to make sure that the operations run correctly, but it needed a defer for possible errors, so we ignore the error in the defer
+	alreadyClosedZip = true
 	err = r.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close zip reader: %w", err)

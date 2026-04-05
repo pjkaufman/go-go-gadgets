@@ -28,8 +28,8 @@ func (p pngChunk) String() string {
 func (p pngChunk) Bytes() []byte {
 	var buffer bytes.Buffer
 
-	binary.Write(&buffer, binary.BigEndian, p.Type)
-	buffer.Write(p.Data)
+	_ = binary.Write(&buffer, binary.BigEndian, p.Type)
+	_, _ = buffer.Write(p.Data)
 
 	return buffer.Bytes()
 }

@@ -34,25 +34,26 @@ func EnsureLanguageIsSet(text, lang string) string {
 	var (
 		regularLangAttrIsHandled, xmlLangAttributeIsHandled bool
 		startOfAttr, endOfAttr                              int
-		langVal, endingIndicator, char                      string
+		endingIndicator, char                               string
+		langVal                                             strings.Builder
 	)
 
 	handleLangAttribute := func() {
 		startOfAttr = langAttrIndex + len(langAttribute)
 		endOfAttr = startOfAttr + 1
 		endingIndicator = htmlEl[startOfAttr:endOfAttr]
-		langVal = ""
+		langVal.Reset()
 		for endOfAttr < len(htmlEl) {
 			char = htmlEl[endOfAttr : endOfAttr+1]
 			if char == endingIndicator {
 				break
 			}
 
-			langVal += char
+			langVal.WriteString(char)
 			endOfAttr++
 		}
 
-		if strings.TrimSpace(langVal) == "" {
+		if strings.TrimSpace(langVal.String()) == "" {
 			newHtmlEl.WriteString(htmlEl[langAttrIndex : startOfAttr+1])
 			newHtmlEl.WriteString(lang)
 			newHtmlEl.WriteString(endingIndicator)

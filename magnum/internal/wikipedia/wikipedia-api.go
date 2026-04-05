@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
@@ -60,12 +61,13 @@ func (wa *WikipediaApi) GetSectionInfo(pageTitle string) (*WikipediaSectionInfo,
 		logger.WriteInfof("calling out to %q to get the section info for %q", url, pageTitle)
 	}
 
+	//nolint:bodyclose // this body is being closed by try close, but the linter does not catch that
 	resp, err := client.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get section info for %q: %w", url, err)
 	}
 
-	defer resp.Body.Close()
+	defer filehandler.TryClose(fmt.Sprintf("%q response body", url), resp.Body)
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

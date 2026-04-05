@@ -174,9 +174,19 @@ var (
 
 					switch pageTitle {
 					case "List_of_The_Rising_of_the_Shield_Hero_volumes":
-						w.Write([]byte(risingOfTheShieldHeroApiResponse))
+						_, err := w.Write([]byte(risingOfTheShieldHeroApiResponse))
+						if err != nil {
+							http.Error(w, "Internal Error", http.StatusInternalServerError)
+
+							return
+						}
 					case "Rokka:_Braves_of_the_Six_Flowers":
-						w.Write([]byte(rokkaBravesOfTheSixFlowersApiResponse))
+						_, err := w.Write([]byte(rokkaBravesOfTheSixFlowersApiResponse))
+						if err != nil {
+							http.Error(w, "Internal Error", http.StatusInternalServerError)
+
+							return
+						}
 					default:
 						http.Error(w, "Not found", http.StatusNotFound)
 					}

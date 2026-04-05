@@ -20,30 +20,31 @@ import (
 var jpegs embed.FS
 
 func TestJpegExifDataRemoval(t *testing.T) {
-	fs.WalkDir(jpegs, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			log.Fatalf("failed to walk path: %s\n", err)
-		}
+	iterateAndTestImageExifDataRemoval(t, jpegs, getJpegExifData, image.JpegRemoveExifData)
+}
+
+func iterateAndTestImageExifDataRemoval(t *testing.T, files embed.FS, getExifData func([]byte) []byte, removeExifData func([]byte) ([]byte, error)) {
+	_ = fs.WalkDir(files, ".", func(path string, d fs.DirEntry, err error) error {
+		require.NoError(t, err, "failed to walk path")
 
 		if !d.IsDir() {
-			jpegFile, err := jpegs.ReadFile(path)
-			if err != nil {
-				log.Fatalf("failed to read file %q: %s\n", path, err)
-			}
+			imageFile, err := files.ReadFile(path)
+
+			require.NoErrorf(t, err, "failed to read file %q", path)
 
 			t.Run(fmt.Sprintf(`%q: exif data gets removed`, path), func(t *testing.T) {
-				existingTags := getJpegExifData(jpegFile)
-				newData, err := image.JpegRemoveExifData(jpegFile)
+				existingTags := getExifData(imageFile)
+				newData, err := removeExifData(imageFile)
 				require.NoError(t, err)
 
 				if len(existingTags) != 0 {
-					assert.NotEqual(t, jpegFile, newData)
+					assert.NotEqual(t, imageFile, newData)
 				} else {
-					assert.Equal(t, jpegFile, newData)
+					assert.Equal(t, imageFile, newData)
 				}
 
 				// validate that exif data was removed
-				newExifData := getJpegExifData(newData)
+				newExifData := getExifData(newData)
 
 				assert.Nil(t, newExifData)
 			})

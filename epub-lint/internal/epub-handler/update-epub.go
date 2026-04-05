@@ -18,7 +18,12 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 		return fmt.Errorf("failed to get zip contents for %q: %w", src, err)
 	}
 
-	defer r.Close()
+	var alreadyClosedZip bool
+	defer func() {
+		if !alreadyClosedZip {
+			filehandler.TryClose(src, r)
+		}
+	}()
 
 	var (
 		opfFilename string
@@ -54,10 +59,10 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 			return fmt.Errorf("failed to create temporary epub file %q for %q: %w", tempEpub, src, err)
 		}
 
-		defer tempEpubFile.Close()
+		defer filehandler.TryClose(tempEpub, tempEpubFile)
 
 		w := zip.NewWriter(tempEpubFile)
-		defer w.Close()
+		defer filehandler.TryClose(tempEpub+" zip writer", w)
 
 		if mimetypeFile, ok := zipFiles["mimetype"]; ok {
 			if mimetypeFile.UncompressedSize64 == uint64(len([]byte(defaultMimetypeContents))) {
@@ -108,6 +113,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 	}
 
 	// we are closing this here to make sure that the operations run correctly, but it needed a defer for possible errors, so we ignore the error in the defer
+	alreadyClosedZip = true
 	err = r.Close()
 	if err != nil {
 		return fmt.Errorf("failed to close zip reader: %w", err)

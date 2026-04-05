@@ -3,10 +3,11 @@ package linter
 import "strings"
 
 func ExtraStringReplace(text string, extraFindAndReplaces map[string]string, numHits map[string]int) string {
-	var newText = text
-
-	var stringsToReplace []string = make([]string, 2*len(extraFindAndReplaces))
-	var i = 0
+	var (
+		newText          = text
+		stringsToReplace = make([]string, 2*len(extraFindAndReplaces))
+		i                = 0
+	)
 	for search, replace := range extraFindAndReplaces {
 		if hits, ok := numHits[search]; ok {
 			numHits[search] = hits + strings.Count(newText, search)

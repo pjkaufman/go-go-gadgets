@@ -3,12 +3,15 @@ package filehandler
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
 const (
@@ -308,4 +311,15 @@ func DeleteFolder(path string) error {
 	}
 
 	return nil
+}
+
+// TryClose Tries to close the provided closer and if it fails to do so, logs a warning.
+// Ideally we would have a way to actually handle this, but I think most of the closing
+// logic doesn't have a good way to actually handle it. But logging it as a warning for now
+// should suffice.
+func TryClose(name string, closer io.Closer) {
+	err := closer.Close()
+	if err != nil {
+		logger.WriteWarnf("failed to close %q: %s\n", name, err)
+	}
 }

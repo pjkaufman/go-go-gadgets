@@ -155,7 +155,10 @@ func extractIdText(source, id string, lastFoundIdIndex int) (string, int) {
 		return "", index + lastFoundIdIndex
 	}
 
-	endIndex := strings.Index(source[index+endOfOpeningEl:], "</h1>")
+	var (
+		endingH1El = "</h1>"
+		endIndex   = strings.Index(source[index+endOfOpeningEl:], endingH1El)
+	)
 	if endIndex == -1 { // this should not happen, but just in case...
 		return "", index + lastFoundIdIndex
 	}
@@ -170,5 +173,5 @@ func extractIdText(source, id string, lastFoundIdIndex int) (string, int) {
 	h1Text = strings.Replace(h1Text, "</span>", "", 1)
 	h1Text = strings.Replace(h1Text, `<span class="other-title">`, "", 1)
 
-	return html.UnescapeString(h1Text), lastFoundIdIndex + endOfText + 5 // the end of the ending h1 el
+	return html.UnescapeString(h1Text), lastFoundIdIndex + endOfText + len(endingH1El) // the end of the ending h1 el
 }

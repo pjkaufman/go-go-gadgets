@@ -143,11 +143,13 @@ func createGoldenFile(url, out string, frozen, isJson bool) error {
 	req.Header.Set("User-Agent", userAgent)
 
 	client := &http.Client{}
+
+	//nolint:bodyclose // this body is being closed by try close, but the linter does not catch that
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error sending request for url %q: %w", url, err)
 	}
-	defer resp.Body.Close()
+	defer filehandler.TryClose(fmt.Sprintf("%q response body", url), resp.Body)
 
 	var fileFolder = filehandler.GetFileFolder(out)
 	err = filehandler.CreateFolderIfNotExists(fileFolder)
@@ -159,7 +161,7 @@ func createGoldenFile(url, out string, frozen, isJson bool) error {
 	if err != nil {
 		return fmt.Errorf("error creating file %q: %w", out, err)
 	}
-	defer file.Close()
+	defer filehandler.TryClose(out, file)
 
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {

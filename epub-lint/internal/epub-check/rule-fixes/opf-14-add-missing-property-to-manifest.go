@@ -21,7 +21,7 @@ func AddPropertyToManifest(opfContents, fileName, property string) (positions.Te
 	}
 
 	var (
-		href        = fmt.Sprintf(`href="%s"`, fileName)
+		href        = fmt.Sprintf(`href=%q`, fileName)
 		startOfHref = strings.Index(manifestContent, href)
 	)
 	if startOfHref == -1 {

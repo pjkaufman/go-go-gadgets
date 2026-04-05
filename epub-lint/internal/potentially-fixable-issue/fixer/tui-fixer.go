@@ -103,7 +103,7 @@ func (t *TuiFixer) Run() error {
 		return err
 	}
 
-	model := finalModel.(ui.FixableIssuesModel)
+	model, _ := finalModel.(ui.FixableIssuesModel) // this should be the model in question, if not we can deal with it at that time
 	if model.Err != nil {
 		if errors.Is(model.Err, ui.ErrUserKilledProgram) {
 			logger.WriteInfo("Quitting. User exited the program...")
@@ -144,6 +144,6 @@ func (t *TuiFixer) HandleCss() ([]string, error) {
 
 func (t *TuiFixer) Cleanup() {
 	if t.file != nil {
-		t.file.Close()
+		filehandler.TryClose(t.file.Name(), t.file)
 	}
 }

@@ -458,6 +458,6 @@ func TestGetPotentialAlthoughButInstances(t *testing.T) {
 }
 func BenchmarkRegexMatch(b *testing.B) {
 	for b.Loop() {
-		potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(smallSubordinatingClauseFile)
+		_, _ = potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(smallSubordinatingClauseFile)
 	}
 }

@@ -67,7 +67,7 @@ func CommonStringReplace(text string) string {
 	// Replace multiple spaces in a row between words with a single space since this can cause issues with replace strings
 	var newText = replaceTwoPlusSpacesBetweenWords(text)
 
-	var stringsToReplace []string = make([]string, 2*len(commonReplaceWords))
+	var stringsToReplace = make([]string, 2*len(commonReplaceWords))
 	for i, replaceWord := range commonReplaceWords {
 		stringsToReplace[2*i] = replaceWord.Search
 		stringsToReplace[2*i+1] = replaceWord.Replace

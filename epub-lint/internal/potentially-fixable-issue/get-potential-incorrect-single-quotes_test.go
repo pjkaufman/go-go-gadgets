@@ -274,6 +274,6 @@ const testFile = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http
 
 func BenchmarkGetPotentialIncorrectSingleQuotes(b *testing.B) {
 	for b.Loop() {
-		potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(testFile)
+		_, _ = potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(testFile)
 	}
 }

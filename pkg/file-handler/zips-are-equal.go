@@ -7,44 +7,38 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
+	"testing"
+
+	"github.com/pjkaufman/go-go-gadgets/pkg/tests"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // ZipsAreEqual compares two files with the same name in two separate directories to see if they are logically equivalent.
 // This is a test helper function and is not meant for use in non-testing code.
-func ZipsAreEqual(filename, originalFileDir, expectedFileDir string, firstFileMustBeMimetype bool) (bool, string) {
-	var originalCbzPath = JoinPath(originalFileDir, filename)
-	actualZip, err := zip.OpenReader(originalCbzPath)
-	if err != nil {
-		log.Fatalf("Failed to open zip file %q: %s", originalCbzPath, err)
-	}
-	defer actualZip.Close()
+func ZipsAreEqual(t *testing.T, filename, originalFileDir, expectedFileDir string) {
+	var originalPath = JoinPath(originalFileDir, filename)
+	actualZip, err := zip.OpenReader(originalPath)
+	require.NoErrorf(t, err, "Failed to open zip file %q", originalPath)
+
+	defer tests.MustClose(t, actualZip)
 
 	var expectedFilePath = JoinPath(expectedFileDir, filename)
 	expectedZip, err := zip.OpenReader(expectedFilePath)
-	if err != nil {
-		log.Fatalf("Failed to open zip file %q: %s", expectedFilePath, err)
-	}
-	defer expectedZip.Close()
+	require.NoErrorf(t, err, "Failed to open zip file %q", expectedFilePath)
 
-	if len(actualZip.File) != len(expectedZip.File) {
-		return false, fmt.Sprintf("expected %d files in zip, but got %d files", len(expectedZip.File), len(actualZip.File))
-	}
+	defer tests.MustClose(t, expectedZip)
 
-	if firstFileMustBeMimetype {
-		if actualZip.File[0].Name != "mimetype" {
-			return false, "actual zip should have the mimetype as the first file"
-		} else if expectedZip.File[0].Name != "mimetype" {
-			return false, "expected zip should have the mimetype as the first file"
-		}
-	}
+	assert.Lenf(t, actualZip.File, len(expectedZip.File), "expected %d files in zip, but got %d files", len(expectedZip.File), len(actualZip.File))
+	assert.Equalf(t, "mimetype", actualZip.File[0].Name, "actual zip should have the mimetype as the first file")
+	assert.Equalf(t, "mimetype", expectedZip.File[0].Name, "expected zip should have the mimetype as the first file")
 
 	for _, zipFile := range actualZip.File {
 		var found bool
 		for _, expectedZipFile := range expectedZip.File {
 			if zipFile.Name == expectedZipFile.Name {
-				if filesAreTheSame, issue := zipFilesAreEqual(zipFile, expectedZipFile); !filesAreTheSame {
-					return false, issue
+				if filesAreTheSame, issue := zipFilesAreEqual(t, zipFile, expectedZipFile); !filesAreTheSame {
+					assert.FailNow(t, issue)
 				}
 
 				found = true
@@ -56,42 +50,32 @@ func ZipsAreEqual(filename, originalFileDir, expectedFileDir string, firstFileMu
 			continue
 		}
 
-		return false, fmt.Sprintf("did not find file %q in the actual zip", zipFile.Name)
+		assert.FailNowf(t, "did not find file %q in the actual zip", zipFile.Name)
 	}
-
-	return true, ""
 }
 
-func zipFilesAreEqual(actual, expected *zip.File) (bool, string) {
+func zipFilesAreEqual(t *testing.T, actual, expected *zip.File) (bool, string) {
 	if actual.Method != expected.Method || actual.CompressedSize64 != expected.CompressedSize64 || actual.UncompressedSize64 != expected.UncompressedSize64 {
 		return false, fmt.Sprintf("%q has file metadata that does not match what is expected.\nMethod is %d and expected %d\nCompressedSize64 is %d and expected %d\nUncompressedSize64 is %d and expected %d", actual.Name, actual.Method, expected.Method, actual.CompressedSize64, expected.CompressedSize64, actual.UncompressedSize64, expected.UncompressedSize64)
 	}
 
 	actualReader, err := actual.Open()
-	if err != nil {
-		log.Fatalf("failed to open actual zip contents for %q: %s", actual.Name, err)
-	}
+	require.NoErrorf(t, err, "failed to open actual zip contents for %q", actual.Name)
 
-	defer actualReader.Close()
+	defer tests.MustClose(t, actualReader)
 
 	var actualContents = &bytes.Buffer{}
 	_, err = io.Copy(actualContents, actualReader)
-	if err != nil {
-		log.Fatalf("failed to read in actual zip contents for %q: %s", actual.Name, err)
-	}
+	require.NoErrorf(t, err, "failed to read in actual zip contents for %q", actual.Name)
 
 	expectedReader, err := actual.Open()
-	if err != nil {
-		log.Fatalf("failed to open expected zip contents for %q: %s", expected.Name, err)
-	}
+	require.NoErrorf(t, err, "failed to open expected zip contents for %q", expected.Name)
 
-	defer expectedReader.Close()
+	defer tests.MustClose(t, expectedReader)
 
 	var expectedContents = &bytes.Buffer{}
 	_, err = io.Copy(expectedContents, expectedReader)
-	if err != nil {
-		log.Fatalf("failed to read in expected zip contents for %q: %s", expected.Name, err)
-	}
+	require.NoErrorf(t, err, "failed to read in expected zip contents for %q", expected.Name)
 
 	return bytes.Equal(expectedContents.Bytes(), actualContents.Bytes()), fmt.Sprintf("%q does not have the expected bytes", actual.Name) // the message here will only be used when the bytes are not equal
 }

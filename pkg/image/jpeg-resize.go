@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -28,7 +29,11 @@ func JpegResize(data []byte, width int, quality *int) ([]byte, error) {
 	bounds := src.Bounds()
 	height := bounds.Max.Y * width / bounds.Max.X
 
-	dst := rgbaPool.Get().(*image.RGBA)
+	dst, ok := rgbaPool.Get().(*image.RGBA)
+	if !ok {
+		return nil, errors.New("failed to get RGBA image from the pool as it did not match the expected type")
+	}
+
 	if dst.Bounds().Dx() != width || dst.Bounds().Dy() != height {
 		*dst = *image.NewRGBA(image.Rect(0, 0, width, height))
 	}
@@ -36,7 +41,11 @@ func JpegResize(data []byte, width int, quality *int) ([]byte, error) {
 
 	draw.NearestNeighbor.Scale(dst, dst.Rect, src, bounds, draw.Over, nil)
 
-	buf := bufPool.Get().(*bytes.Buffer)
+	buf, ok := bufPool.Get().(*bytes.Buffer)
+	if !ok {
+		return nil, errors.New("failed to get image bytes from the pool as it did not match the expected type")
+	}
+
 	buf.Reset()
 	defer bufPool.Put(buf)
 
