@@ -55,7 +55,7 @@ func FixXmlIdValue(original string, lineNumber int, attribute string) (edit posi
 
 	var (
 		line                               = lines[lineNumber-1] // lineNumber is 1-based
-		invalidId, startIndex, endIndex, _ = epubhandler.ExtractAttribute(line, attribute)
+		invalidId, startIndex, endIndex, _ = epubhandler.GetAttributeValue(line, attribute)
 	)
 	if startIndex != -1 {
 		validId := convertToValidID(invalidId)

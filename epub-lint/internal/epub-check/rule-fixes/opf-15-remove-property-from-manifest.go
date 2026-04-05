@@ -43,7 +43,7 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (positio
 		removePropertiesStartPos, removePropertiesEndPos positions.Position
 	)
 
-	properties, startOfAttributeValue, attributeEnd, err = epubhandler.ExtractAttribute(element, propertiesAttr)
+	properties, startOfAttributeValue, attributeEnd, err = epubhandler.GetAttributeValue(element, propertiesAttr)
 	if err != nil {
 		return edit, nil // not found so we can ignore it
 	}

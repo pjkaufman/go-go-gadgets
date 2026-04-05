@@ -44,7 +44,7 @@ func AddPropertyToManifest(opfContents, fileName, property string) (positions.Te
 		insertPropertiesPos   positions.Position
 	)
 
-	_, startOfAttributeValue, _, err = epubhandler.ExtractAttribute(element, "properties")
+	_, startOfAttributeValue, _, err = epubhandler.GetAttributeValue(element, "properties")
 	if err == nil {
 		insertPropertiesPos = positions.IndexToPosition(opfContents, startIndex+startOfElement+startOfAttributeValue)
 

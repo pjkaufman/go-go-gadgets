@@ -32,7 +32,7 @@ func RemoveDuplicateManifestEntry(line, column int, opfContents string) ([]posit
 		},
 	})
 
-	fileId, _, _, _ := epubhandler.ExtractAttribute(duplicateEl, "id")
+	fileId, _, _, _ := epubhandler.GetAttributeValue(duplicateEl, "id")
 	if fileId == "" {
 		return edits, nil
 	}

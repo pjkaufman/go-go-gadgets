@@ -51,7 +51,7 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 				continue
 			}
 
-			hrefContent, _, _, err := ExtractAttribute(itemEl, "href")
+			hrefContent, _, _, err := GetAttributeValue(itemEl, "href")
 			if err != nil {
 				return "", fmt.Errorf("failed to get the href content out of %q: %w", itemEl, err)
 			}
@@ -79,7 +79,7 @@ func RemoveFileFromOpf(opfContents, fileName string) (string, error) {
 				continue
 			}
 
-			fileID, _, _, _ = ExtractAttribute(itemEl, "id")
+			fileID, _, _, _ = GetAttributeValue(itemEl, "id")
 			line = strings.Replace(line, itemEl, "", 1)
 
 			if strings.TrimSpace(line) == "" {

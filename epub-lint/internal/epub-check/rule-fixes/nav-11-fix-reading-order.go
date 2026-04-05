@@ -65,7 +65,7 @@ func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string
 		anchorEndIndex += anchorStartIndex + len(anchorTagEnd)
 
 		anchorTag := remainingTocContent[anchorStartIndex:anchorEndIndex]
-		filePath, _, _, _ := epubhandler.ExtractAttribute(anchorTag, "href") // no need to account for the error here
+		filePath, _, _, _ := epubhandler.GetAttributeValue(anchorTag, "href") // no need to account for the error here
 		if filePath == "" {
 			remainingTocContent = remainingTocContent[anchorEndIndex:]
 			startOfContent += anchorEndIndex

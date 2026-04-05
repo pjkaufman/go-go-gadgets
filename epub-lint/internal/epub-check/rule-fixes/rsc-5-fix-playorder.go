@@ -26,7 +26,7 @@ func FixPlayOrder(fileContents string) (edits []positions.TextEdit) {
 		// go ahead and string parse the nav point element
 		var (
 			match                                        = fileContents[navPointIndex[0]:navPointIndex[1]]
-			playOrder, playOrderStart, playOrderEnd, err = epubhandler.ExtractAttribute(match, "playOrder")
+			playOrder, playOrderStart, playOrderEnd, err = epubhandler.GetAttributeValue(match, "playOrder")
 		)
 		if err != nil { // it is either malformed or not present, so we shall add it...
 			insertStartPos := positions.IndexToPosition(fileContents, navPointIndex[1])

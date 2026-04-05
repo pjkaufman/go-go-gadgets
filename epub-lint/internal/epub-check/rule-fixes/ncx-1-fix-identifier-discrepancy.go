@@ -75,7 +75,7 @@ func getNcxIdentifier(ncxContents string) (string, error) {
 
 	var (
 		line               = ncxContents[lineStart:lineEnd]
-		content, _, _, err = epubhandler.ExtractAttribute(line, "content")
+		content, _, _, err = epubhandler.GetAttributeValue(line, "content")
 	)
 
 	return content, err

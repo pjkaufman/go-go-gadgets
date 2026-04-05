@@ -56,7 +56,7 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 
 		var (
 			tag                 = contents[tagStart : tagEnd+1]
-			epubType, _, _, err = ExtractAttribute(tag, "epub:type")
+			epubType, _, _, err = GetAttributeValue(tag, "epub:type")
 		)
 		if err != nil {
 			currentActualIndex += nextRelativePathIndex + len(pathToFindHref)

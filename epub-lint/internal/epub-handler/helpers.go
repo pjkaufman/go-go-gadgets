@@ -84,9 +84,9 @@ func GetLineBoundsIfEmpty(contents string, startOfEl, endOfEl int) (int, int) {
 	return startOfEl, endOfEl
 }
 
-// ExtractAttribute returns the attribute value in the specified text.
+// GetAttributeValue returns the attribute value in the specified text.
 // Note: text is meant to be a single line string and attribute is just the attribute name.
-func ExtractAttribute(text, attribute string) (string, int, int, error) {
+func GetAttributeValue(text, attribute string) (string, int, int, error) {
 	var (
 		attributeIndicator = attribute + "="
 		startOfAttribute   = strings.Index(text, attributeIndicator)
