@@ -33,10 +33,6 @@ func MustGetCommandOutputEvenIfExitError(programName, errorMsg string, args ...s
 	return string(output)
 }
 
-func GetCurrentDirectory() (string, error) {
-	return os.Getwd()
-}
-
 func MustGetUserConfigDir() string {
 	configDir, err := os.UserConfigDir()
 	if err != nil {

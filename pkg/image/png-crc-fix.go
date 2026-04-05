@@ -21,10 +21,6 @@ type pngChunk struct {
 	CRC    uint32
 }
 
-func (p pngChunk) String() string {
-	return fmt.Sprintf("%s@%x - %X - Valid CRC? %v", p.Type, p.Offset, p.CRC, p.CRCIsValid())
-}
-
 func (p pngChunk) Bytes() []byte {
 	var buffer bytes.Buffer
 
@@ -42,10 +38,6 @@ func (p pngChunk) CalculateCRC() uint32 {
 	crcTable := crc32.MakeTable(crc32.IEEE)
 
 	return crc32.Checksum(p.Bytes(), crcTable)
-}
-
-func (p pngChunk) CRCOffset() int64 {
-	return p.Offset + int64(8+p.Length)
 }
 
 func readPNGChunks(reader io.ReadSeeker) []pngChunk {

@@ -24,22 +24,6 @@ func (b *BorderConfig) SetInfoItems(infoItems ...string) {
 	b.infoItems = infoItems
 }
 
-func (b *BorderConfig) AreInfoItemsTruncated() bool {
-	cnt := len(b.infoItems)
-	if cnt == 0 {
-		return false
-	}
-	actualWidth := b.width - 2
-	// border.MiddleLeft <content> border.MiddleRight border.Bottom
-	availWidth := actualWidth/cnt - 3
-	for i := range b.infoItems {
-		if ansi.StringWidth(b.infoItems[i]) > availWidth {
-			return true
-		}
-	}
-	return false
-}
-
 // GetBorder border.Top with something that takes up more than 1 runewidth will not work, so
 // we only allow 1 runewidth for now, in the config. multiple things like
 // border corner characters must be single rune, or else it would break rendering.
