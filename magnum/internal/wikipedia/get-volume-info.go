@@ -53,11 +53,19 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 				sectionAfterLn = section
 				break
 			} else {
-				var heading = section.Heading
-				var htmlElEndIndicatorIndex = strings.Index(heading, ">")
+				var (
+					heading                 = section.Heading
+					htmlElEndIndicatorIndex = strings.Index(heading, ">")
+				)
 				if htmlElEndIndicatorIndex != -1 {
 					heading = heading[htmlElEndIndicatorIndex+1:]
-					heading = heading[:strings.Index(heading, "<")]
+
+					var htmlElEndStartIndicatorIndex = strings.Index(heading, "<")
+					if htmlElEndStartIndicatorIndex == -1 {
+						return nil, -1, fmt.Errorf("heading %q is missing %q in it", "heading", "<")
+					}
+
+					heading = heading[:htmlElEndStartIndicatorIndex]
 				}
 
 				subSectionTiles = append(subSectionTiles, heading)

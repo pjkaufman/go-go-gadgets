@@ -11,6 +11,7 @@ import (
 // If it needs to be more than 10, we can increase it. But for now, 10 works.
 const maxQuoteLoops = 10
 
+//nolint:gocritic // this regexp is meant to have the three different dashes
 var unendedParagraphRegex = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)([^\n]*(Dr\.|Esq\.|Hon\.|Jr\.|Mr\.|Mrs\.|Ms\.|Messrs\.|Mmes\.|Msgr\.|Prof\.|Rev\.|Sr\.|St\.|Capt\.|Lt\.|Mt\.|Mtn\.|Gen\.|Sen\.|[a-zA-z,\d%–-—])["']?)( ?)(</p>\n)`)
 var paragraphsWithDoubleQuotes = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)([^\n]*)(")([^\n]*)(</p>)`)
 var paragraphsStartingWithLowercaseLetter = regexp.MustCompile(`((^|\n)[ \t]*<p[^>]*>)(\s*[a-z][^\n]*</p>)`)

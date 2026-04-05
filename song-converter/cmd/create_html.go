@@ -63,115 +63,138 @@ var CreateHtmlCmd = &cobra.Command{
 	- Writes the content to the specified source
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := ValidateCreateHtmlFlags(stagingDir, coverInputFilePath)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		err = filehandler.FolderArgExists(stagingDir, "working-dir")
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
-		if isWritingToFile {
-			logger.WriteInfo("Converting file to html cover")
-		}
-		coverMd, err := filehandler.ReadInFileContents(coverInputFilePath)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		coverHtml := converter.BuildHtmlCover(coverMd, versionDescriptor, "", time.Now())
-
-		if isWritingToFile {
-			logger.WriteInfo("Finished creating html cover file")
-		}
-
-		if isWritingToFile {
-			logger.WriteInfo("Converting Markdown files to html")
-		}
-
-		files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		sort.Strings(files)
-
-		var mdInfo = make([]converter.MdFileInfo, len(files))
-
-		for i, fileName := range files {
-			var filePath = filehandler.JoinPath(stagingDir, fileName)
-			fileContents, err := filehandler.ReadInFileContents(filePath)
-			if err != nil {
-				logger.WriteError(err.Error())
-			}
-
-			mdInfo[i] = converter.MdFileInfo{
-				FilePath:     filePath,
-				FileName:     fileName,
-				FileContents: fileContents,
-			}
-		}
-
-		songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converter.Digital)
-		if err != nil {
-			logger.WriteError(err.Error())
-		}
-
-		writeToFileOrStdOut(fmt.Sprintf(fileFormat, coverHtml, buildListItems(headerIds), songsHtml), bodyHtmlOutputFile)
-
-		if isWritingToFile {
-			logger.WriteInfo("Finished converting Markdown files to html")
-		}
+		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, versionDescriptor, "", false)
 	},
+}
+
+func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, extraCss string, isBook bool) {
+	err := ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	err = filehandler.FolderArgExists(stagingDir, "working-dir")
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
+	if isWritingToFile {
+		logger.WriteInfo("Converting file to html cover")
+	}
+	coverMd, err := filehandler.ReadInFileContents(coverInputFilePath)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	coverHtml := converter.BuildHtmlCover(coverMd, bookType, extraCss, time.Now())
+
+	if isWritingToFile {
+		logger.WriteInfo("Finished creating html cover file")
+	}
+
+	if isWritingToFile {
+		logger.WriteInfo("Converting Markdown files to html")
+	}
+
+	files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	sort.Strings(files)
+
+	var mdInfo = make([]converter.MdFileInfo, len(files))
+
+	for i, fileName := range files {
+		var filePath = filehandler.JoinPath(stagingDir, fileName)
+		fileContents, err := filehandler.ReadInFileContents(filePath)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		mdInfo[i] = converter.MdFileInfo{
+			FilePath:     filePath,
+			FileName:     fileName,
+			FileContents: fileContents,
+		}
+	}
+
+	var converterType = converter.Digital
+	if isBook {
+		mdInfo, err = converter.FilterAndSortSongs(mdInfo, location)
+		if err != nil {
+			logger.WriteError(err.Error())
+		}
+
+		converterType = converter.Book
+	}
+
+	songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converterType)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
+
+	if isBook {
+		writeToFileOrStdOut(fmt.Sprintf(bookFormat, coverHtml, buildBookListItems(mdInfo), songsHtml), bodyHtmlOutputFile)
+	} else {
+		writeToFileOrStdOut(fmt.Sprintf(fileFormat, coverHtml, buildListItems(headerIds), songsHtml), bodyHtmlOutputFile)
+	}
+
+	if isWritingToFile {
+		logger.WriteInfo("Finished converting Markdown files to html")
+	}
 }
 
 func init() {
 	createCmd.AddCommand(CreateHtmlCmd)
 
-	CreateHtmlCmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
-	err := CreateHtmlCmd.MarkFlagRequired("working-dir")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as required on create html command: %v\n", err)
-	}
-
-	err = CreateHtmlCmd.MarkFlagDirname("working-dir")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as a directory on create html command: %v\n", err)
-	}
-
-	CreateHtmlCmd.Flags().StringVarP(&coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use")
-	err = CreateHtmlCmd.MarkFlagRequired("cover-file")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"cover-file\" as required on create html command: %v\n", err)
-	}
-
-	err = CreateHtmlCmd.MarkFlagFilename("cover-file", "md")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"cover-file\" as a looking for specific file types on create html command: %v\n", err)
-	}
-
-	CreateHtmlCmd.Flags().StringVarP(&bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to")
-	err = CreateHtmlCmd.MarkFlagFilename("output", "html")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"output\" as a looking for specific file types on create html command: %v\n", err)
-	}
+	createCommonHtmlAndBookFlags(CreateHtmlCmd)
 
 	CreateHtmlCmd.Flags().StringVarP(&versionDescriptor, "version-type", "v", "", "the version descriptor for the type of songs to generate (generally just abridged or unabridged)")
-	err = CreateHtmlCmd.MarkFlagRequired("version-type")
+	err := CreateHtmlCmd.MarkFlagRequired("version-type")
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"version-type\" as required on create html command: %v\n", err)
 	}
 }
 
-func ValidateCreateHtmlFlags(stagingDir, coverInputFilePath string) error {
+// createCommonHtmlAndBookFlags is meant to allow for de-duplicating the common flags for create html and create book
+func createCommonHtmlAndBookFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
+	err := cmd.MarkFlagRequired("working-dir")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"working-dir\" as required on create %s command: %v\n", cmd.Use, err)
+	}
+
+	err = cmd.MarkFlagDirname("working-dir")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"working-dir\" as a directory on create %s command: %v\n", cmd.Use, err)
+	}
+
+	cmd.Flags().StringVarP(&coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use")
+	err = cmd.MarkFlagRequired("cover-file")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"cover-file\" as required on create %s command: %v\n", cmd.Use, err)
+	}
+
+	err = cmd.MarkFlagFilename("cover-file", "md")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"cover-file\" as a looking for specific file types on create %s command: %v\n", cmd.Use, err)
+	}
+
+	cmd.Flags().StringVarP(&bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to")
+	err = cmd.MarkFlagFilename("output", "html")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"output\" as a looking for specific file types on create %s command: %v\n", cmd.Use, err)
+	}
+}
+
+func ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath string) error {
 	if strings.TrimSpace(stagingDir) == "" {
 		return errors.New(StagingDirArgEmpty)
 	}
@@ -194,7 +217,7 @@ func buildListItems(headerIds []string) string {
 
 	var listItems = strings.Builder{}
 	for _, headerId := range headerIds {
-		listItems.WriteString(fmt.Sprintf(`<li><a href="#%s"></a></li>`+"\n", headerId))
+		fmt.Fprintf(&listItems, `<li><a href="#%s"></a></li>`+"\n", headerId)
 	}
 
 	return listItems.String()

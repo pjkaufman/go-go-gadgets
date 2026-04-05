@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type ValidateCreateHtmlFlagsTestCase struct {
+type validateCreateHtmlAndBookFlagsTestCase struct {
 	InputCoverPath  string
 	InputStagingDir string
 	ExpectedError   string
 }
 
-var ValidateCreateHtmlFlagsTestCases = map[string]ValidateCreateHtmlFlagsTestCase{
+var validateCreateHtmlAndBookFlagsTestCases = map[string]validateCreateHtmlAndBookFlagsTestCase{
 	"make sure that an empty staging dir causes a validation error": {
 		InputStagingDir: "",
 		ExpectedError:   cmd.StagingDirArgEmpty,
@@ -39,9 +39,9 @@ var ValidateCreateHtmlFlagsTestCases = map[string]ValidateCreateHtmlFlagsTestCas
 }
 
 func TestValidateCreateHtmlFlags(t *testing.T) {
-	for name, args := range ValidateCreateHtmlFlagsTestCases {
+	for name, args := range validateCreateHtmlAndBookFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
-			err := cmd.ValidateCreateHtmlFlags(args.InputStagingDir, args.InputCoverPath)
+			err := cmd.ValidateCreateHtmlAndBookFlags(args.InputStagingDir, args.InputCoverPath)
 
 			var actualErrText string
 			if err != nil {

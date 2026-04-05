@@ -26,7 +26,13 @@ func (j *JNovelClub) GetVolumeInfo(seriesName string, options sitehandler.Scrapi
 		if strings.Contains(e.Text, "publishing") {
 			// this is a bit brittle, but seems to get the job done.
 			// it parses out the JSON object, then unquotes the logic since it is now JS instead of JSON
-			var jsonText = e.Text[strings.Index(e.Text, "{"):]
+
+			var jsonTextStartIndex = strings.Index(e.Text, "{")
+			if jsonTextStartIndex == -1 {
+				return
+			}
+
+			var jsonText = e.Text[jsonTextStartIndex:]
 			jsonText, _ = strings.CutSuffix(jsonText, "]\\n\"])")
 
 			var err error

@@ -21,6 +21,10 @@ func FixIdentifierDiscrepancy(opfContents, ncxContents string) ([]positions.Text
 	opfIdentifierEl, opfIdentifier, opfIdentifierID, opfIdentifierIndex := getOpfIdentifier(opfContents)
 
 	indexOfEndTag := strings.Index(opfContents, metadataEndTag)
+	if indexOfEndTag == -1 {
+		return edits, errors.New("no ending metadata indicator found")
+	}
+
 	textUntilEndTag := opfContents[:indexOfEndTag]
 	hasNcxIdentifier := strings.Contains(opfContents, ">"+ncxIdentifier+"<")
 
