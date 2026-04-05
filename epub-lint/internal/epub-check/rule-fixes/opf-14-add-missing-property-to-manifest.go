@@ -11,8 +11,10 @@ import (
 var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
 
 func AddPropertyToManifest(opfContents, fileName, property string) (positions.TextEdit, error) {
-	var edit positions.TextEdit
-	startIndex, _, manifestContent, err := epubhandler.GetManifestContents(opfContents)
+	var (
+		edit                                positions.TextEdit
+		startIndex, _, manifestContent, err = epubhandler.GetManifestContents(opfContents)
+	)
 	if err != nil {
 		return edit, err
 	}
@@ -36,15 +38,14 @@ func AddPropertyToManifest(opfContents, fileName, property string) (positions.Te
 	}
 
 	var (
-		propertiesAttr         = `properties="`
-		element                = manifestContent[startOfElement : startOfHref+endOfElement]
-		startOfPropertiesIndex = strings.Index(element, propertiesAttr)
-		newText                string
+		element               = manifestContent[startOfElement : startOfHref+endOfElement]
+		startOfAttributeValue int
+		newText               string
+		insertPropertiesPos   positions.Position
 	)
 
-	var insertPropertiesPos positions.Position
-	if startOfPropertiesIndex != -1 {
-		var startOfAttributeValue = startOfPropertiesIndex + len(propertiesAttr)
+	_, startOfAttributeValue, _, err = epubhandler.ExtractAttribute(element, "properties")
+	if err == nil {
 		insertPropertiesPos = positions.IndexToPosition(opfContents, startIndex+startOfElement+startOfAttributeValue)
 
 		if element[startOfAttributeValue] == '"' {
