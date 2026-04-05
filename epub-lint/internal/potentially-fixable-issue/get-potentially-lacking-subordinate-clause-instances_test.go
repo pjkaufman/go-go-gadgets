@@ -7,6 +7,7 @@ import (
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const smallSubordinatingClauseFile = `<?xml version="1.0" encoding="UTF-8"?>
@@ -450,13 +451,13 @@ func TestGetPotentialAlthoughButInstances(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(args.inputText)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}
 }
 func BenchmarkRegexMatch(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(smallSubordinatingClauseFile)
 	}
 }

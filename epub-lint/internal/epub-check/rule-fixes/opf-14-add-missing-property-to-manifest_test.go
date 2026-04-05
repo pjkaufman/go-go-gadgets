@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type addScriptedToManifest struct {
@@ -69,7 +69,7 @@ func TestAddPropertyToManifest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			edit, err := rulefixes.AddPropertyToManifest(args.inputText, args.inputPath, "scripted")
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			checkFinalOutputMatches(t, args.inputText, args.expectedOutput, edit)
 		})
 	}

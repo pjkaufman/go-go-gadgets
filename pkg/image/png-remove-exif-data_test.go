@@ -13,6 +13,7 @@ import (
 	pngstructure "github.com/dsoprea/go-png-image-structure"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/png/*.png
@@ -33,7 +34,7 @@ func TestPngExifDataRemoval(t *testing.T) {
 			t.Run(fmt.Sprintf(`%q: exif data gets removed`, path), func(t *testing.T) {
 				existingTags := getPngExifData(pngFile)
 				newData, err := image.PngRemoveExifData(pngFile)
-				assert.Nil(t, err)
+				require.NoError(t, err)
 
 				if len(existingTags) != 0 {
 					assert.NotEqual(t, pngFile, newData)

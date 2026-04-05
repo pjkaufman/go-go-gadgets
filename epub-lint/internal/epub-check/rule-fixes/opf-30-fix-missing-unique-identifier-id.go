@@ -1,7 +1,7 @@
 package rulefixes
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
@@ -12,7 +12,7 @@ const (
 	metadataEndTag   = "</metadata>"
 )
 
-var ErrNoMetadata = fmt.Errorf("metadata tag not found in OPF contents")
+var ErrNoMetadata = errors.New("metadata tag not found in OPF contents")
 
 func FixMissingUniqueIdentifierId(opfContents string, id string) (positions.TextEdit, error) {
 	var edit positions.TextEdit

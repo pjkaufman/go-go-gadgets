@@ -7,6 +7,7 @@ import (
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type getPotentialIncorrectSingleQuotesTestCase struct {
@@ -141,7 +142,7 @@ func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(args.inputText)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}
@@ -272,7 +273,7 @@ const testFile = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http
 </html>`
 
 func BenchmarkGetPotentialIncorrectSingleQuotes(b *testing.B) {
-	for n := 0; n < b.N; n++ {
+	for b.Loop() {
 		potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(testFile)
 	}
 }

@@ -12,21 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const tlNoteFileName = "tl_notes.xhtml"
-
-var defaultTLNoteContents = `<?xml version='1.0' encoding='utf-8'?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Translator's Notes</title>
-</head>
-<body>
-    <h3>Translator's Notes</h3>
-    <ol>
-				%s</ol>
-</body>
-</html>
-`
-
 // organizeNotesCmd represents the move translator's notes command
 var organizeNotesCmd = &cobra.Command{
 	Use:   "organize-notes",

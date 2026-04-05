@@ -193,7 +193,7 @@ func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFi
 		return epubhandler.RemoveUnusedFiles(handledFiles, zipFiles, manifestFiles, removableFileExts, verbose), nil
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update epub %q: %s", src, err)
+		return fmt.Errorf("failed to update epub %q: %w", src, err)
 	}
 
 	return nil

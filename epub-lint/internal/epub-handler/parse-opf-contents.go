@@ -163,12 +163,12 @@ func ParseOpfFile(text, opfFilename string) (EpubInfo, error) {
 }
 
 func hrefToFile(href string) (string, error) {
-	var poundIndex = strings.Index(href, "#")
-	if poundIndex == -1 {
+	var before, _, ok = strings.Cut(href, "#")
+	if !ok {
 		return url.QueryUnescape(href)
 	}
 
-	return url.QueryUnescape(href[0:poundIndex])
+	return url.QueryUnescape(before)
 }
 
 func versionTextToInt(versionText string) (int, error) {

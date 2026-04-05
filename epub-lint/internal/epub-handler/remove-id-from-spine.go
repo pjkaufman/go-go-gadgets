@@ -1,6 +1,7 @@
 package epubhandler
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -12,7 +13,7 @@ const (
 	spineEndTag   = "</spine>"
 )
 
-var ErrNoSpine = fmt.Errorf("spine tag not found in OPF contents")
+var ErrNoSpine = errors.New("spine tag not found in OPF contents")
 
 func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 	var edit positions.TextEdit
@@ -22,7 +23,7 @@ func RemoveIdFromSpine(opfContents, fileId string) (positions.TextEdit, error) {
 		return edit, err
 	}
 
-	idRef := fmt.Sprintf(`idref="%s"`, fileId)
+	idRef := fmt.Sprintf(`idref=%q`, fileId)
 	idRefIndex := strings.Index(spineContent, idRef)
 	if idRefIndex == -1 {
 		return edit, nil

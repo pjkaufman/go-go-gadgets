@@ -1,19 +1,19 @@
 package rulefixes
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/positions"
 )
 
 // RemoveEmptyOpfElement processes the specified element in the OPF contents
-func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string) (positions.TextEdit, bool, error) {
+func RemoveEmptyOpfElement(elementName string, lineNum int, opfContents string) (positions.TextEdit, bool, error) {
 	var edit positions.TextEdit
 	lineNum--
 	lines := strings.Split(opfContents, "\n")
 	if lineNum < 0 || lineNum >= len(lines) {
-		return edit, false, fmt.Errorf("line number out of range")
+		return edit, false, errors.New("line number out of range")
 	}
 
 	// Locate the specified line
@@ -25,14 +25,14 @@ func RemoveEmptyOpfElements(elementName string, lineNum int, opfContents string)
 	// Find the start of the element
 	startIndex := strings.Index(line, elementStart)
 	if startIndex == -1 {
-		return edit, false, fmt.Errorf("element not found on the given line")
+		return edit, false, errors.New("element not found on the given line")
 	}
 
 	endIndex := strings.Index(line[startIndex:], selfClosingIndicator)
 	if endIndex == -1 {
 		initialEndIndex := strings.Index(line[startIndex:], elementEnd)
 		if initialEndIndex == -1 {
-			return edit, false, fmt.Errorf("end of element not found on the given line")
+			return edit, false, errors.New("end of element not found on the given line")
 		}
 
 		endIndex = initialEndIndex + strings.Index(line[startIndex+initialEndIndex:], ">") + 1

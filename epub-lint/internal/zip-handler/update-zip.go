@@ -2,8 +2,10 @@ package ziphandler
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"os"
+	"slices"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 )
@@ -32,7 +34,7 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 			err = filehandler.WriteZipUncompressedFile(w, mimetypeFile)
 
 			if err != nil {
-				return fmt.Errorf("failed to copy mimetype to zip file")
+				return errors.New("failed to copy mimetype to zip file")
 			}
 		}
 
@@ -43,17 +45,8 @@ func UpdateZip(src string, operation func(map[string]*zip.File, *zip.Writer) ([]
 
 		filesHandled = append(filesHandled, "mimetype")
 
-		var handled bool
 		for filename, zipFile := range zipFiles {
-			handled = false
-			for _, handledFile := range filesHandled {
-				if filename == handledFile {
-					handled = true
-					break
-				}
-			}
-
-			if handled {
+			if slices.Contains(filesHandled, filename) {
 				continue
 			}
 

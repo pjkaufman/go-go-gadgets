@@ -64,7 +64,6 @@ var commonReplaceWords = []ReplaceWords{
 }
 
 func CommonStringReplace(text string) string {
-
 	// Replace multiple spaces in a row between words with a single space since this can cause issues with replace strings
 	var newText = replaceTwoPlusSpacesBetweenWords(text)
 

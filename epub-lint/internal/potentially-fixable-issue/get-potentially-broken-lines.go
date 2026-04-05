@@ -43,7 +43,7 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 		var (
 			originalString  = currentLine
 			suggestedString = fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + " "
-			nextLine        = currentLine
+			nextLine        string
 			endOfLineIndex  = groups[1]
 		)
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
@@ -58,12 +58,12 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 				suggestedString += nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]] + " "
 				endOfLineIndex += len(nextLine)
 			} else {
-				var endOfOpeningTag = strings.Index(nextLine, ">")
+				var _, after, ok = strings.Cut(nextLine, ">")
 
-				if endOfOpeningTag == -1 {
+				if !ok {
 					suggestedString += nextLine
 				} else {
-					suggestedString += nextLine[endOfOpeningTag+1:]
+					suggestedString += after
 				}
 			}
 		}
@@ -108,7 +108,7 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 
 		var (
 			i              = 1
-			nextLine       = currentLine
+			nextLine       string
 			endOfLineIndex = groups[1] + 1
 		)
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
@@ -121,10 +121,10 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 
 			lineIsPotentiallyBroken = doubleQuoteCount%2 != 0 && nextLine != "" && i < maxQuoteLoops
 
-			var endOfOpeningTag = strings.Index(nextLine, ">")
+			var _, after, ok = strings.Cut(nextLine, ">")
 			var lineContent = nextLine
-			if endOfOpeningTag != -1 {
-				lineContent = nextLine[endOfOpeningTag+1:]
+			if ok {
+				lineContent = after
 			}
 
 			if lineIsPotentiallyBroken {
@@ -172,15 +172,15 @@ func parseParagraphsStartingWithLowercaseLetters(fileContent string, parsedLines
 		var previousLine = getPreviousLine(fileContent, groups[0])
 		addToParsedLines(parsedLines, previousLine)
 
-		var endingTagStart = strings.Index(previousLine, "</p>")
+		var before, _, ok = strings.Cut(previousLine, "</p>")
 		// we cannot continue since the ending tag is missing, but we don't need to error out here
-		if endingTagStart == -1 {
+		if !ok {
 			logger.WriteWarnf(`failed to find ending paragraph tag for line %q\n`, previousLine)
 			continue
 		}
 
 		var originalString = previousLine + currentLine
-		suggestedString = previousLine[0:endingTagStart] + suggestedString
+		suggestedString = before + suggestedString
 
 		// we included an ending newline character for the next lines that we pulled back
 		// we do not need them when it comes to the ending of the original and suggested strings

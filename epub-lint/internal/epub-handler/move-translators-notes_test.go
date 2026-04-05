@@ -10,6 +10,7 @@ import (
 
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type moveTranslatorsNotesTestCase struct {
@@ -171,13 +172,13 @@ func TestMoveTranslatorsNotes(t *testing.T) {
 			var nameToUpdatedFileContents = map[string]string{}
 
 			actualTranslatorNoteCount, err := epubhandler.MoveTranslatorsNotes(tc.spineOrder, tc.opfFolder, tc.ncxFilename, tc.opfFilename, tc.navFilename, nameToUpdatedFileContents, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedTranslatorNoteCount, actualTranslatorNoteCount)
 
 			for name, expectedContents := range tc.expectedFileState {
 				actualContents, ok := nameToUpdatedFileContents[name]
-				assert.True(t, ok, fmt.Sprintf("expected file %q to be updated, but it was not", name))
-				assert.Equal(t, expectedContents, actualContents, fmt.Sprintf("expected file contents for %q did not match actual contents", name))
+				assert.True(t, ok, "expected file %q to be updated, but it was not", name)
+				assert.Equal(t, expectedContents, actualContents, "expected file contents for %q did not match actual contents", name)
 			}
 		})
 	}

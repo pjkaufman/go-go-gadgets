@@ -3,12 +3,12 @@
 package epubhandler_test
 
 import (
-	"errors"
 	"strings"
 	"testing"
 
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type parseOpfContentsTestCase struct {
@@ -668,9 +668,9 @@ func TestParseOpfContents(t *testing.T) {
 			actual, err := epubhandler.ParseOpfFile(args.inputText, opfFilename)
 
 			if !args.isSyntaxError {
-				assert.True(t, errors.Is(err, args.expectedErr))
+				require.ErrorIs(t, err, args.expectedErr)
 			} else {
-				assert.NotNil(t, err)
+				require.Error(t, err)
 				assert.True(t, strings.HasPrefix(err.Error(), epubhandler.ErrorParsingXmlMessageStart), "A syntax error must start with the syntax error prefix")
 			}
 

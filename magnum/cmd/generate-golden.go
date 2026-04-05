@@ -130,7 +130,7 @@ func createGoldenFile(url, out string, frozen, isJson bool) error {
 		}
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %w", err)
 	}

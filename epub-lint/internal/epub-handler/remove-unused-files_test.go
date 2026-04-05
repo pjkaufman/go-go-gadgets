@@ -19,7 +19,6 @@ func strSet(strs ...string) map[string]struct{} {
 }
 
 type removeUnusedFilesTestCase struct {
-	name              string
 	zipFiles          map[string]*zip.File
 	manifestFiles     map[string]struct{}
 	removableFileExts []string

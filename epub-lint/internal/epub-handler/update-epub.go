@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -42,7 +43,7 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 
 	epubInfo, err := ParseOpfFile(fileContents, opfFilename)
 	if err != nil {
-		return fmt.Errorf("failed to parse %q for %q: %s", opfFilename, src, err)
+		return fmt.Errorf("failed to parse %q for %q: %w", opfFilename, src, err)
 	}
 
 	var opfFolder = filehandler.GetFileFolder(opfFilename)
@@ -87,17 +88,8 @@ func UpdateEpub(src string, operation func(map[string]*zip.File, *zip.Writer, Ep
 
 		filesHandled = append(filesHandled, "mimetype")
 
-		var handled bool
 		for filename, zipFile := range zipFiles {
-			handled = false
-			for _, handledFile := range filesHandled {
-				if filename == handledFile {
-					handled = true
-					break
-				}
-			}
-
-			if handled {
+			if slices.Contains(filesHandled, filename) {
 				continue
 			}
 

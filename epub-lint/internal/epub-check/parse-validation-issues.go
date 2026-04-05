@@ -51,11 +51,11 @@ func ParseEPUBCheckOutput(logContents string) (ValidationErrors, error) {
 
 		// Message: after the final "):"
 		afterLoc := line[locStart+locEnd:]
-		colonIdx := strings.Index(afterLoc, ":")
-		if colonIdx == -1 {
+		_, after, ok := strings.Cut(afterLoc, ":")
+		if !ok {
 			continue
 		}
-		message := strings.TrimSpace(afterLoc[colonIdx+1:])
+		message := strings.TrimSpace(after)
 
 		var pos *Position
 		if lineNum != -1 && colNum != -1 {

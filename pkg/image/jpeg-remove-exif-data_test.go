@@ -13,6 +13,7 @@ import (
 	jpegstructure "github.com/dsoprea/go-jpeg-image-structure"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/jpeg/*.jpg
@@ -33,7 +34,7 @@ func TestJpegExifDataRemoval(t *testing.T) {
 			t.Run(fmt.Sprintf(`%q: exif data gets removed`, path), func(t *testing.T) {
 				existingTags := getJpegExifData(jpegFile)
 				newData, err := image.JpegRemoveExifData(jpegFile)
-				assert.Nil(t, err)
+				require.NoError(t, err)
 
 				if len(existingTags) != 0 {
 					assert.NotEqual(t, jpegFile, newData)

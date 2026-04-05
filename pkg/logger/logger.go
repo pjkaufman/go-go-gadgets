@@ -14,7 +14,7 @@ func WriteError(msg string) {
 	os.Exit(-1)
 }
 
-func WriteErrorf(format string, a ...interface{}) {
+func WriteErrorf(format string, a ...any) {
 	color.New(color.FgRed).Fprintf(os.Stderr, format, a...)
 	os.Exit(-1)
 }
@@ -23,7 +23,7 @@ func WriteInfo(msg string) {
 	fmt.Fprintln(os.Stdout, msg)
 }
 
-func WriteInfof(format string, a ...interface{}) {
+func WriteInfof(format string, a ...any) {
 	fmt.Fprintf(os.Stdout, format, a...)
 }
 
@@ -31,7 +31,7 @@ func WriteWarn(msg string) {
 	color.New(color.FgYellow).Fprintln(os.Stdout, msg)
 }
 
-func WriteWarnf(format string, a ...interface{}) {
+func WriteWarnf(format string, a ...any) {
 	color.New(color.FgYellow).Fprintf(os.Stdout, format, a...)
 }
 

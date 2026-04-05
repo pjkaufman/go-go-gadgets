@@ -45,7 +45,7 @@ func ParseVolumeInfo(series, contentHtml string, volume int) (*sitehandler.Volum
 	if releaseDateString != "" {
 		tempDate, err := time.Parse(releaseDateFormat, releaseDateString)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse %q to a date time value: %v", releaseDateString, err)
+			return nil, fmt.Errorf("failed to parse %q to a date time value: %w", releaseDateString, err)
 		}
 
 		releaseDate = &tempDate

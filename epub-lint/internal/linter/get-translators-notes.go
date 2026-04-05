@@ -2,6 +2,7 @@ package linter
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"slices"
@@ -32,9 +33,9 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 	for i, match := range matches {
 		refId := fmt.Sprintf("note_ref_%d", noteNum)
 		noteId := fmt.Sprintf("tl_note_%d", noteNum)
-		noteAnchor := fmt.Sprintf(`<a id="%s" href="%s#%s"><sup>%d</sup></a>`, refId, noteFileName, noteId, noteNum)
+		noteAnchor := fmt.Sprintf(`<a id=%q href="%s#%s"><sup>%d</sup></a>`, refId, noteFileName, noteId, noteNum)
 
-		tlNotes[i] = fmt.Sprintf(`<li id="%s">%s<br/><a href="%s#%s">Back to Reference</a></li>`+"\n",
+		tlNotes[i] = fmt.Sprintf(`<li id=%q>%s<br/><a href="%s#%s">Back to Reference</a></li>`+"\n",
 			noteId, match.Content, fileName, refId)
 
 		text = text[:match.Start] + noteAnchor + text[match.End:]
@@ -58,7 +59,7 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 
 	for {
 		token, err := decoder.Token()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -114,7 +115,7 @@ func getInnerContent(decoder *xml.Decoder) (string, string, bool) {
 
 	for depth > 0 {
 		token, err := decoder.Token()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

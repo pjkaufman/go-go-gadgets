@@ -9,6 +9,7 @@ import (
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type ParseWikipediaTableToVolumeInfoTestCase struct {
@@ -366,8 +367,8 @@ func TestParseWikipediaTableToVolumeInfo(t *testing.T) {
 	for name, args := range ParseWikipediaTableToVolumeInfoTestCases {
 		t.Run(name, func(t *testing.T) {
 			actualVolumeInfo, err := wikipedia.ParseWikipediaTableToVolumeInfo(args.InputNamePrefix, args.InputTableHtml)
-			assert.Nil(t, err)
-			assert.Equal(t, len(args.ExpectedVolumeInfo), len(actualVolumeInfo))
+			require.NoError(t, err)
+			assert.Len(t, actualVolumeInfo, len(args.ExpectedVolumeInfo))
 
 			for i, volume := range args.ExpectedVolumeInfo {
 				assert.Equal(t, volume.Name, actualVolumeInfo[i].Name)

@@ -1,6 +1,7 @@
 package wikipedia
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -71,7 +72,7 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 	}
 
 	if lnSection.Heading == "" {
-		return nil, -1, fmt.Errorf("failed to get light novel section")
+		return nil, -1, errors.New("failed to get light novel section")
 	}
 
 	var (
@@ -104,7 +105,7 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 
 		startIndexOfLnSection = strings.Index(contentHtml, lnHeadingHtml)
 		if startIndexOfLnSection == -1 {
-			firstErr = fmt.Errorf("failed to find light novel section")
+			firstErr = errors.New("failed to find light novel section")
 			e.Request.Abort()
 
 			return
@@ -112,7 +113,7 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 	})
 
 	var lnSectionAfterLnHtml string
-	var endIndexOfLnSection int = -1
+	var endIndexOfLnSection = -1
 	if sectionAfterLn.Heading != "" {
 		w.scrapper.OnHTML("#"+sectionAfterLn.Anchor, func(e *colly.HTMLElement) {
 			var parents = e.DOM.Parent()
@@ -127,7 +128,7 @@ func (w *Wikipedia) GetVolumeInfo(seriesName string, options sitehandler.Scrapin
 
 			endIndexOfLnSection = strings.Index(contentHtml, lnSectionAfterLnHtml)
 			if endIndexOfLnSection == -1 {
-				firstErr = fmt.Errorf("failed to find section after light novel section")
+				firstErr = errors.New("failed to find section after light novel section")
 				e.Request.Abort()
 			}
 		})

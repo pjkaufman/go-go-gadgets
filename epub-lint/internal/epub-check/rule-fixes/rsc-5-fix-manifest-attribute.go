@@ -63,7 +63,7 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 				Start: insertIdPos,
 				End:   insertIdPos,
 			},
-			NewText: fmt.Sprintf(` id="%s"`, id),
+			NewText: fmt.Sprintf(` id=%q`, id),
 		})
 	}
 
@@ -87,7 +87,7 @@ func FixManifestAttribute(opfContents, attribute string, lineNum int, elementNam
 	})
 
 	// Create the meta tag
-	metaTag := getLeadingWhitespace(line) + fmt.Sprintf(`<meta refines="#%s" property="%s">%s</meta>`, id, attribute[strings.Index(attribute, ":")+1:], attrValue) + "\n"
+	metaTag := getLeadingWhitespace(line) + fmt.Sprintf(`<meta refines="#%s" property=%q>%s</meta>`, id, attribute[strings.Index(attribute, ":")+1:], attrValue) + "\n"
 
 	newTagInsertPos := positions.Position{
 		Line:   lineNum + 2,

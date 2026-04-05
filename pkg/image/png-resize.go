@@ -10,7 +10,7 @@ import (
 	"golang.org/x/image/draw"
 )
 
-// originally based on https://roeber.dev/posts/resize-an-image-in-go/
+// PngResize originally based on https://roeber.dev/posts/resize-an-image-in-go/
 func PngResize(data []byte, width int) ([]byte, error) {
 	src, err := png.Decode(bytes.NewReader(data))
 	if err != nil {

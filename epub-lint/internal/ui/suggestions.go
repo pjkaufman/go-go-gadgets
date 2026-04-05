@@ -432,7 +432,7 @@ func (m *FixableIssuesModel) moveToPreviousFile() {
 
 	var (
 		currentFileIndex           = m.PotentiallyFixableIssuesInfo.currentFileIndex
-		potentialFixableIssueIndex = m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex
+		potentialFixableIssueIndex int
 	)
 	for currentFileIndex != 0 {
 		currentFileIndex--
@@ -552,6 +552,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	var (
 		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - borderWidth*2
 		// this does not currently handle ansi code wrapping
+		//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
 		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
 	)
 
@@ -563,6 +564,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 
 		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width
 		// this does not currently handle ansi code wrapping
+		//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
 		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
 
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)

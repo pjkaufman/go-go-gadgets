@@ -21,7 +21,6 @@ var (
 )
 
 func getCustomValues(generationDir string) (map[string]any, error) {
-
 	customValues := make(map[string]any)
 	customValues["novelsToAdd"] = novelsToAdd
 

@@ -3,11 +3,10 @@
 package cmd_test
 
 import (
-	"errors"
 	"testing"
 
 	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type validateReplaceFlagsTestCase struct {
@@ -49,9 +48,9 @@ func TestValidateReplaceFlags(t *testing.T) {
 			err := epub.ValidateReplaceFlags(args.inputEpubFile, args.inputExtraReplaceStringsPath)
 
 			if err != nil {
-				assert.True(t, errors.Is(err, args.expectedErr))
+				require.ErrorIs(t, err, args.expectedErr)
 			} else {
-				assert.Nil(t, args.expectedErr)
+				require.NoError(t, args.expectedErr)
 			}
 		})
 	}

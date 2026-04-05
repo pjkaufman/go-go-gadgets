@@ -97,7 +97,7 @@ func getOpfIdentifier(opfContents string) (string, string, string, int) {
 
 	// If uniqueId is found, try to find the corresponding dc:identifier element
 	if uniqueId != "" {
-		idTag := fmt.Sprintf(`id="%s"`, uniqueId)
+		idTag := fmt.Sprintf(`id=%q`, uniqueId)
 		idStart := strings.Index(opfContents, idTag)
 		if idStart != -1 {
 			// Find the start of the line containing the id
@@ -155,7 +155,7 @@ func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorT
 		identifierID = "pub-id"
 	}
 
-	identifierTag := fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, identifier)
+	identifierTag := fmt.Sprintf(`<dc:identifier id=%q>%s</dc:identifier>`, identifierID, identifier)
 
 	var insertText string
 	if strings.TrimSpace(metadataEndElPriorToEl) == "" {
@@ -185,7 +185,7 @@ func addOpfIdentifier(opfContents, identifier, identifierID, metadataEndElPriorT
 func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifierID, newIdentifier string, oldIdentifierElIndex int) []positions.TextEdit {
 	var edits []positions.TextEdit
 
-	idAttr := fmt.Sprintf(` id="%s"`, identifierID)
+	idAttr := fmt.Sprintf(` id=%q`, identifierID)
 	oldLeadingWS := getLeadingWhitespace(oldIdentifierEl)
 
 	// Remove id="..." from old element (minimal deletion)
@@ -201,7 +201,7 @@ func addOpfIdentifierAndUpdateExistingOne(oldIdentifierEl, opfContents, identifi
 	// Insert new identifier element after old one
 	var (
 		insertPoint = oldIdentifierElIndex + len(oldIdentifierEl)
-		newLine     = "\n" + oldLeadingWS + fmt.Sprintf(`<dc:identifier id="%s">%s</dc:identifier>`, identifierID, newIdentifier)
+		newLine     = "\n" + oldLeadingWS + fmt.Sprintf(`<dc:identifier id=%q>%s</dc:identifier>`, identifierID, newIdentifier)
 	)
 	if strings.Contains(oldIdentifierEl, metadataEndTag) {
 		insertPoint -= len(metadataEndTag)
@@ -242,7 +242,7 @@ func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifie
 
 	if oldIdentifierEl != "" {
 		var (
-			idAttribute            = fmt.Sprintf(` id="%s"`, uniqueId)
+			idAttribute            = fmt.Sprintf(` id=%q`, uniqueId)
 			indexOfOldIdentifierId = strings.Index(oldIdentifierEl, idAttribute)
 		)
 
@@ -273,7 +273,7 @@ func moveOrSetOpfIdentifierID(opfContents, ncxIdentifier, uniqueId, oldIdentifie
 				Start: ncxInsertPos,
 				End:   ncxInsertPos,
 			},
-			NewText: fmt.Sprintf(` id="%s"`, uniqueId),
+			NewText: fmt.Sprintf(` id=%q`, uniqueId),
 		})
 	} else {
 		// Replace the existing id attribute value with the uniqueId

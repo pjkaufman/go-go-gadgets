@@ -7,6 +7,7 @@ import (
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type getPotentialSquareBracketConversationInstancesTestCase struct {
@@ -51,7 +52,7 @@ func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := potentiallyfixableissue.GetPotentialSquareBracketConversationInstances(args.inputText)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.expectedSuggestions, actual)
 		})
 	}

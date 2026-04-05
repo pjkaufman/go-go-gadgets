@@ -10,14 +10,12 @@ import (
 func FixUnreachableFile(line, column int, contents string) (edit positions.TextEdit) {
 	offset := positions.GetPositionOffset(contents, line, column)
 	if offset == -1 {
-		fmt.Println("Fail 1")
 		return
 	}
 
 	const idAttribute = `id="`
 	idAttributeIndex := strings.LastIndex(contents[:offset], idAttribute)
 	if idAttributeIndex == -1 { // we should not hit this scenario, but it is possible single quotes were used instead...
-		fmt.Println("Fail 2")
 		return
 	}
 
@@ -25,18 +23,16 @@ func FixUnreachableFile(line, column int, contents string) (edit positions.TextE
 
 	endOfIdIndex := strings.Index(contents[idAttributeIndex:], "\"")
 	if endOfIdIndex == -1 {
-		fmt.Println("Fail 3")
 		return
 	}
 
 	endOfIdIndex += idAttributeIndex
 
 	var (
-		idref      = fmt.Sprintf(`idref="%s"`, contents[idAttributeIndex:endOfIdIndex])
+		idref      = fmt.Sprintf(`idref=%q`, contents[idAttributeIndex:endOfIdIndex])
 		idRefIndex = strings.Index(contents[offset:], idref)
 	)
 	if idRefIndex == -1 {
-		fmt.Println("No idref?")
 		return
 	}
 
@@ -47,7 +43,6 @@ func FixUnreachableFile(line, column int, contents string) (edit positions.TextE
 		endOfItemRef   = strings.Index(contents[idRefIndex:], "/>")
 	)
 	if startOfItemRef == -1 || endOfItemRef == -1 {
-		fmt.Println("No itemref?")
 		return
 	}
 
@@ -59,7 +54,6 @@ func FixUnreachableFile(line, column int, contents string) (edit positions.TextE
 		linearAttributeIndex = strings.Index(itemRefEl, linearAttribute)
 	)
 	if linearAttributeIndex == -1 {
-		fmt.Println("No linear?")
 		return
 	}
 

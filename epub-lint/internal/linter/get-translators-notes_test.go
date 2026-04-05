@@ -8,6 +8,7 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type getTranslatorsNotesTestCase struct {
@@ -109,10 +110,10 @@ func TestGetTranslatorsNotes(t *testing.T) {
 			updatedText, notes, next, err := linter.GetTranslatorsNotes(args.inputText, args.fileName, args.noteFileName, args.startingNumber)
 
 			if args.expectedError != nil {
-				assert.NotNil(t, err)
+				require.Error(t, err)
 				assert.Equal(t, args.expectedError.Error(), err.Error(), "Expected and actual error text differ")
 			} else {
-				assert.Nil(t, err)
+				require.NoError(t, err)
 			}
 
 			assert.Equal(t, args.expectedText, updatedText, "expected text output mismatch")

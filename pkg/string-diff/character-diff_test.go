@@ -7,6 +7,7 @@ import (
 
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type CharacterDiffTestCase struct {
@@ -46,9 +47,8 @@ var CharacterDiffTestCases = map[string]CharacterDiffTestCase{
 func TestCharacterDiff(t *testing.T) {
 	for name, args := range CharacterDiffTestCases {
 		t.Run(name, func(t *testing.T) {
-
 			actual, err := stringdiff.GetPrettyDiffString(args.InputOriginal, args.InputNew)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.ExpectedOutput, actual)
 		})
 	}

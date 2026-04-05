@@ -1,7 +1,6 @@
 package potentiallyfixableissue
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -52,10 +51,7 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) (map[string]string, e
 	}
 
 	for _, groups := range subMatches {
-		replacedSingleQuoteString, updateMade, err := convertQuotes(groups[2])
-		if err != nil {
-			return nil, fmt.Errorf("Failed to convert single quotes to double as needed on string %q: %s", groups[0], err)
-		}
+		replacedSingleQuoteString, updateMade := convertQuotes(groups[2])
 
 		if updateMade {
 			originalToSuggested[groups[0]] = groups[1] + replacedSingleQuoteString + groups[3]
@@ -65,7 +61,7 @@ func GetPotentialIncorrectSingleQuotes(fileContent string) (map[string]string, e
 	return originalToSuggested, nil
 }
 
-func convertQuotes(input string) (string, bool, error) {
+func convertQuotes(input string) (string, bool) {
 	var (
 		runes                                     = []rune(input)
 		insideDoubleQuotes                        = false
@@ -266,5 +262,5 @@ func convertQuotes(input string) (string, bool, error) {
 		}
 	}
 
-	return string(runes), updateMade, nil
+	return string(runes), updateMade
 }

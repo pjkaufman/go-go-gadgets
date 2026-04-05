@@ -178,7 +178,7 @@ var (
 					case "Rokka:_Braves_of_the_Six_Flowers":
 						w.Write([]byte(rokkaBravesOfTheSixFlowersApiResponse))
 					default:
-						http.Error(w, "Not found", 404)
+						http.Error(w, "Not found", http.StatusNotFound)
 					}
 				},
 			},

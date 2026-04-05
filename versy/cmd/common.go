@@ -99,11 +99,8 @@ var (
 )
 
 func htmlToPlaintext(htmlContent string) string {
-	// fmt.Println("Test: " + htmlContent)
 	// Remove all sup elements and their content
 	result := supRegex.ReplaceAllString(htmlContent, "")
-
-	// fmt.Println("Test: " + result)
 
 	// Remove all heading elements (h1-h6) and their content
 	result = headingRegex.ReplaceAllString(result, "")
@@ -147,5 +144,4 @@ func getAndDisplayBothVerses(reference, version1, version2 string, scrapper *col
 	}
 
 	logger.WriteInfo(secondVerse)
-
 }

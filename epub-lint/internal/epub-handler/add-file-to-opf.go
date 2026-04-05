@@ -6,8 +6,8 @@ import (
 )
 
 func AddFileToOpf(text, filename, id, mediaType string) string {
-	itemEntry := fmt.Sprintf(`<item id="%s" href="%s" media-type="%s"/>`, id, filename, mediaType)
-	itemrefEntry := fmt.Sprintf(`<itemref idref="%s"/>`, id)
+	itemEntry := fmt.Sprintf(`<item id=%q href=%q media-type=%q/>`, id, filename, mediaType)
+	itemrefEntry := fmt.Sprintf(`<itemref idref=%q/>`, id)
 
 	manifestClose := "</manifest>"
 	manifestIndex := strings.Index(text, manifestClose)

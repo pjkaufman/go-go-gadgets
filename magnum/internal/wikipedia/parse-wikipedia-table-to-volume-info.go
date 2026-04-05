@@ -68,7 +68,7 @@ func getEnglishReleaseDateFromRow(rowHtml string) (string, bool, error) {
 	}
 
 	var releaseDateColumn = rowHtml
-	for i := 0; i < expectedDateColumn; i++ {
+	for range expectedDateColumn {
 		releaseDateColumn = releaseDateColumn[strings.Index(releaseDateColumn, tableDataStartingElIndicator)+4:]
 	}
 

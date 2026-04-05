@@ -21,7 +21,7 @@ func GetManifestContents(opfContents string) (int, int, string, error) {
 	return startIndex + len(ManifestStartTag), endIndex, opfContents[startIndex+len(ManifestStartTag) : endIndex], nil
 }
 
-// Gets the start of the toc element contents up to and including the closing el
+// GetNavTOCContentPositionInfo gets the start of the toc element contents up to and including the closing el
 func GetNavTOCContentPositionInfo(navFileContents string) (int, int) {
 	const tocEpubType = `epub:type="toc"`
 	epubTypeIndex := strings.Index(navFileContents, tocEpubType)

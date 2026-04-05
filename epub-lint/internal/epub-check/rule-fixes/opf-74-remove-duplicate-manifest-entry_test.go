@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type removeDuplicateManifestEntryTestCase struct {
@@ -283,7 +283,7 @@ func TestRemoveDuplicateManifestEntry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			edits, err := rulefixes.RemoveDuplicateManifestEntry(args.line, args.column, args.opfContents)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edits...)
 		})
 	}

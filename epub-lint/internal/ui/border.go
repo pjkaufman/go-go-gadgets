@@ -40,7 +40,7 @@ func (b *BorderConfig) AreInfoItemsTruncated() bool {
 	return false
 }
 
-// border.Top with something that takes up more than 1 runewidth will not work, so
+// GetBorder border.Top with something that takes up more than 1 runewidth will not work, so
 // we only allow 1 runewidth for now, in the config. multiple things like
 // border corner characters must be single rune, or else it would break rendering.
 // This is all filled in one function to prevent passing around too many values
@@ -55,15 +55,19 @@ func (b *BorderConfig) GetBorder(borderStrings lipgloss.Border) lipgloss.Border 
 	if cnt > 0 && actualWidth >= cnt*4 {
 		// Max available width for each item's actual content
 		// border.MiddleLeft <content> border.MiddleRight border.Bottom
-		availWidth := actualWidth/cnt - 3
-		infoText := ""
+		var (
+			availWidth = actualWidth/cnt - 3
+			infoText   strings.Builder
+			info       string
+		)
 		for _, item := range b.infoItems {
 			item = ansi.Truncate(item, availWidth, "")
-			infoText += borderStrings.MiddleRight + item + borderStrings.MiddleLeft + borderStrings.Bottom
+			infoText.WriteString(borderStrings.MiddleRight + item + borderStrings.MiddleLeft + borderStrings.Bottom)
 		}
 		// Fill the rest with border char.
-		remainingWidth := actualWidth - ansi.StringWidth(infoText)
-		res.Bottom = strings.Repeat(borderStrings.Bottom, remainingWidth) + infoText
+		info = infoText.String()
+		remainingWidth := actualWidth - ansi.StringWidth(info)
+		res.Bottom = strings.Repeat(borderStrings.Bottom, remainingWidth) + info
 	}
 
 	return res

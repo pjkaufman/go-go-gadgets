@@ -10,7 +10,7 @@ func RemoveFileFromNcx(contents, relativeFilePath string) string {
 		remainingNcx           = contents
 		nextRelativePathIndex  int
 		currentActualIndex     int
-		pathToFindSrc          = fmt.Sprintf(`src="%s"`, relativeFilePath) // we may want to account for references to ids in the file as well, but for now this should work
+		pathToFindSrc          = fmt.Sprintf(`src=%q`, relativeFilePath) // we may want to account for references to ids in the file as well, but for now this should work
 		navPointStartIndicator = "<navPoint"
 		navPointEndIndicator   = "</navPoint>"
 	)

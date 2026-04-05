@@ -69,5 +69,4 @@ func TestCommonStringReplace(t *testing.T) {
 			assert.Equal(t, args.expected, actual)
 		})
 	}
-
 }

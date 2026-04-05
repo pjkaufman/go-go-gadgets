@@ -45,7 +45,7 @@ func (y *YenPress) GetVolumeInfo(seriesName string, options sitehandler.Scraping
 		}
 	})
 
-	var numVolumes int = -1
+	var numVolumes = -1
 	y.scrapper.OnHTML("body > div > div:nth-child(4) > div > section.content-heading.fade-in-container > div > h1 > sup", func(e *colly.HTMLElement) {
 		if strings.TrimSpace(e.Text) != "" {
 			val, err := strconv.Atoi(e.Text)

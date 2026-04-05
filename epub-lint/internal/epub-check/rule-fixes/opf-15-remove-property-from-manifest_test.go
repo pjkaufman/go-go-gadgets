@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type removeScriptedFromManifest struct {
@@ -56,7 +56,7 @@ func TestRemovePropertyFromManifest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			edit, err := rulefixes.RemovePropertyFromManifest(args.inputText, args.inputPath, args.property)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			checkFinalOutputMatches(t, args.inputText, args.expectedOutput, edit)
 		})
 	}

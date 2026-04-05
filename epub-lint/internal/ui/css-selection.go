@@ -24,7 +24,7 @@ func (m FixableIssuesModel) cssSelectionView() string {
 	return s.String()
 }
 
-func (m *FixableIssuesModel) handleCssSelectionMsgs(msg tea.Msg) tea.Cmd {
+func (m *FixableIssuesModel) handleCssSelectionMsgs(msg tea.Msg) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -42,6 +42,4 @@ func (m *FixableIssuesModel) handleCssSelectionMsgs(msg tea.Msg) tea.Cmd {
 			m.currentStage = finalStage
 		}
 	}
-
-	return nil
 }

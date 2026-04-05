@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Adds the specified file at the end of the nav contents
+// AddFileToNav adds the specified file at the end of the nav contents
 func AddFileToNav(navContents, filePath, title string) string {
 	endOfEl, endOfElIndex := GetNavTOCContentPositionInfo(navContents)
 	if endOfEl == -1 || endOfElIndex == -1 {
@@ -19,5 +19,5 @@ func AddFileToNav(navContents, filePath, title string) string {
 		return navContents
 	}
 
-	return navContents[:insertIndex] + fmt.Sprintf(`<li><a href="%s">%s</a></li>`, filePath, title) + "\n" + navContents[insertIndex:]
+	return navContents[:insertIndex] + fmt.Sprintf(`<li><a href=%q>%s</a></li>`, filePath, title) + "\n" + navContents[insertIndex:]
 }

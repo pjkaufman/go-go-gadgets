@@ -10,6 +10,7 @@ import (
 	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type lintEpubTestCase struct {
@@ -54,7 +55,7 @@ func TestLintEpub(t *testing.T) {
 	for name, test := range lintEpubTestCases {
 		t.Run(name, func(t *testing.T) {
 			err := epub.LintEpub(originalFileDir, test.filename, test.compressImages, test.verbose, test.removableFileExts)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			// This runs after the operation of LintEpub which leads to the linted file taking the place of the original.
 			// This means that we are able to assume that the original file's location should have data comparable to that found
@@ -82,7 +83,7 @@ func BenchmarkLintEpub(b *testing.B) {
 		compressImages, verbose = true, false
 	)
 
-	for n := 0; n < b.N; n++ {
+	for b.Loop() {
 		var originalEpubPath = originalFileDir + string(os.PathSeparator) + filename
 		err := epub.LintEpub(originalFileDir, filename, compressImages, verbose, []string{})
 		if err != nil {

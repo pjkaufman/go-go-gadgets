@@ -9,6 +9,7 @@ import (
 	"github.com/liut/jpegquality"
 	image_pkg "github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/jpeg/22-canon_tags.jpg
@@ -83,7 +84,7 @@ func TestJpegResize(t *testing.T) {
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")
 
 			newData, err := image_pkg.JpegResize(test.InputFileData, test.NewWidth, test.DesiredQuality)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			height, width = image_pkg.GetImageDimensions(newData)
 			assert.Equal(t, test.NewHeight, height, "height was not the expected value")
@@ -91,7 +92,7 @@ func TestJpegResize(t *testing.T) {
 
 			if test.DesiredQuality != nil {
 				qualityInfo, err := jpegquality.NewWithBytes(newData)
-				assert.Nil(t, err)
+				require.NoError(t, err)
 
 				assert.Equal(t, *test.DesiredQuality, qualityInfo.Quality(), "desired quality was different than the one used in the resize")
 			}

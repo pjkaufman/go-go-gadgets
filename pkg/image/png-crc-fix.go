@@ -96,7 +96,6 @@ func readPNGChunks(reader io.ReadSeeker) []pngChunk {
 
 	// Read the first chunk
 	for string(chunks[len(chunks)-1].Type[:]) != endChunk {
-
 		chunk, err := readChunk()
 		if err != nil {
 			break

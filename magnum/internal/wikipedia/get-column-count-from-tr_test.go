@@ -7,6 +7,7 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type GetColumnCountFromTrTestCase struct {
@@ -56,7 +57,7 @@ func TestGetColumnCountFromTr(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actualNumTds, actualColumnNum, err := wikipedia.GetColumnCountFromTr(args.InputTr)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.ExpectedActualCount, actualColumnNum, "actual column value was not the expected value")
 			assert.Equal(t, args.ExpectedTdCount, actualNumTds, "actual number of tds was not the expected value")
 		})

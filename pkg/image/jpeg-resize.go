@@ -18,7 +18,7 @@ var rgbaPool = sync.Pool{
 	New: func() any { return image.NewRGBA(image.Rect(0, 0, 0, 0)) },
 }
 
-// originally based on https://roeber.dev/posts/resize-an-image-in-go/
+// JpegResize originally based on https://roeber.dev/posts/resize-an-image-in-go/
 func JpegResize(data []byte, width int, quality *int) ([]byte, error) {
 	src, err := jpeg.Decode(bytes.NewReader(data))
 	if err != nil {

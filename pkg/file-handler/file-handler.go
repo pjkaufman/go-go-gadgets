@@ -28,7 +28,7 @@ func FileExists(path string) (bool, error) {
 			return false, nil
 		}
 
-		return false, fmt.Errorf(`could not verify that %q exists: %s`, path, err)
+		return false, fmt.Errorf(`could not verify that %q exists: %w`, path, err)
 	}
 
 	return true, nil
@@ -45,7 +45,7 @@ func FileArgExists(path, name string) error {
 			return fmt.Errorf("%s: %q must exist", name, path)
 		}
 
-		return fmt.Errorf(`could not verify that %q exists: %s`, path, err)
+		return fmt.Errorf(`could not verify that %q exists: %w`, path, err)
 	}
 
 	return nil
@@ -62,7 +62,7 @@ func FolderExists(path string) (bool, error) {
 			return false, nil
 		}
 
-		return false, fmt.Errorf(`could not verify that %q exists and is a directory: %s`, path, err)
+		return false, fmt.Errorf(`could not verify that %q exists and is a directory: %w`, path, err)
 	}
 
 	if !folderInfo.IsDir() {
@@ -233,7 +233,7 @@ func Rename(src, dest string) error {
 
 func GetFileSize(path string) (float64, error) {
 	if strings.TrimSpace(path) == "" {
-		return 0, fmt.Errorf("to get a file's size it must have a non-empty path")
+		return 0, errors.New("to get a file's size it must have a non-empty path")
 	}
 
 	f, err := os.Stat(path)
@@ -260,7 +260,7 @@ func CreateFolderIfNotExists(path string) error {
 
 	err = os.MkdirAll(path, folderPerms)
 	if err != nil {
-		return fmt.Errorf("failed to create folder(s) for path %q: %s", path, err)
+		return fmt.Errorf("failed to create folder(s) for path %q: %w", path, err)
 	}
 
 	return nil

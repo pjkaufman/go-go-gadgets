@@ -25,7 +25,7 @@ func CleanupHtmlSpacing(text string) string {
 }
 
 func removeStartingSpacing(text string) string {
-	for i := 0; i < len(text); i++ {
+	for i := range len(text) {
 		if !unicode.IsSpace(rune(text[i])) {
 			return text[i:]
 		}

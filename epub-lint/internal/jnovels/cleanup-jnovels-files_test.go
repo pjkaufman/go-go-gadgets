@@ -10,6 +10,7 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/jnovels"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -336,7 +337,7 @@ func TestCleanupJNovelsFiles(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			handledFiles, err := jnovels.CleanupJNovelsFiles(tc.input)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedHandledFiles, handledFiles)
 			for name, fileContent := range tc.expectedFileContent {
 				updatedContents, found := tc.input.UpdatedFileContents[name]

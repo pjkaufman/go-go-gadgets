@@ -185,8 +185,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = m.handleSuggestionMsgs(msg)
 		cmds = append(cmds, cmd)
 	case stageCssSelection:
-		cmd = m.handleCssSelectionMsgs(msg)
-		cmds = append(cmds, cmd)
+		m.handleCssSelectionMsgs(msg)
 	}
 
 	if m.currentStage == finalStage {

@@ -18,13 +18,13 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 
 	var (
 		startingElContent = contents[startOfEl+1 : landmarksIndicator]
-		endOfElName       = strings.Index(startingElContent, " ")
+		before, _, ok     = strings.Cut(startingElContent, " ")
 	)
-	if endOfElName == -1 { // this should not happen, but just in case, we will not make any changes
+	if !ok { // this should not happen, but just in case, we will not make any changes
 		return contents
 	}
 
-	endOfLandMarkEl := strings.Index(contents[landmarksIndicator:], fmt.Sprintf("</%s>", startingElContent[:endOfElName]))
+	endOfLandMarkEl := strings.Index(contents[landmarksIndicator:], fmt.Sprintf("</%s>", before))
 	if endOfLandMarkEl == -1 { // another scenario that should not happen
 		return contents
 	}
@@ -33,7 +33,7 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 		remainingLandmarkContents = contents[landmarksIndicator : landmarksIndicator+endOfLandMarkEl]
 		nextRelativePathIndex     int
 		currentActualIndex        = landmarksIndicator
-		pathToFindHref            = fmt.Sprintf(`href="%s"`, relativeFilePath)
+		pathToFindHref            = fmt.Sprintf(`href=%q`, relativeFilePath)
 	)
 	for nextRelativePathIndex != -1 {
 		nextRelativePathIndex = strings.Index(remainingLandmarkContents, pathToFindHref)
@@ -73,7 +73,7 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 				continue
 			}
 
-			replacement = fmt.Sprintf(`href="%s"`, relativeCoverPath)
+			replacement = fmt.Sprintf(`href=%q`, relativeCoverPath)
 		case "toc":
 			if relativeTocPath == "" {
 				currentActualIndex += nextRelativePathIndex + len(pathToFindHref)
@@ -81,7 +81,7 @@ func UpdateLandmarks(contents, relativeFilePath, relativeCoverPath, relativeTocP
 				continue
 			}
 
-			replacement = fmt.Sprintf(`href="%s"`, relativeTocPath)
+			replacement = fmt.Sprintf(`href=%q`, relativeTocPath)
 		default:
 			currentActualIndex += nextRelativePathIndex + len(pathToFindHref)
 			remainingLandmarkContents = remainingLandmarkContents[nextRelativePathIndex+len(pathToFindHref):]

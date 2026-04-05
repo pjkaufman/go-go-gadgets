@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -47,7 +48,6 @@ func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, [
 				} else {
 					nextPageNumber = mdData.PageNumbers[0]
 				}
-
 			}
 
 			// this is not needed for the last page, so we will use this for all pages except that one
@@ -83,18 +83,18 @@ func estimateCapacity(mdInfo []MdFileInfo) int {
 func extractAndUpdateH1Id(content string, headerIdMap map[string]int) (string, string, error) {
 	h1Start := strings.Index(content, "<h1")
 	if h1Start == -1 {
-		return "", "", fmt.Errorf("no h1 heading found")
+		return "", "", errors.New("no h1 heading found")
 	}
 
 	idStart := strings.Index(content[h1Start:], "id=\"")
 	if idStart == -1 {
-		return "", "", fmt.Errorf("no h1 heading id found")
+		return "", "", errors.New("no h1 heading id found")
 	}
 	idStart += h1Start + 4
 
 	idEnd := strings.IndexByte(content[idStart:], '"')
 	if idEnd == -1 {
-		return "", "", fmt.Errorf("malformed h1 heading id")
+		return "", "", errors.New("malformed h1 heading id")
 	}
 	idEnd += idStart
 

@@ -21,15 +21,15 @@ type JSONVolumeInfo struct {
 			CoverURL     string `json:"coverUrl"`
 			ThumbnailURL string `json:"thumbnailUrl"`
 		} `json:"cover"`
-		Following              bool        `json:"following"`
-		Catchup                bool        `json:"catchup"`
-		Status                 int         `json:"status"`
-		Rentals                bool        `json:"rentals"`
-		ID                     string      `json:"id"`
-		AgeRating              int         `json:"ageRating"`
-		Banner                 interface{} `json:"banner"`
-		ReaderStreamingSummary int         `json:"readerStreamingSummary"`
-		TopicID                int         `json:"topicId"`
+		Following              bool   `json:"following"`
+		Catchup                bool   `json:"catchup"`
+		Status                 int    `json:"status"`
+		Rentals                bool   `json:"rentals"`
+		ID                     string `json:"id"`
+		AgeRating              int    `json:"ageRating"`
+		Banner                 any    `json:"banner"`
+		ReaderStreamingSummary int    `json:"readerStreamingSummary"`
+		TopicID                int    `json:"topicId"`
 	} `json:"series"`
 	Volumes []struct {
 		Parts []struct {

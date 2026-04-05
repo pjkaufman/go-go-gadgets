@@ -10,6 +10,7 @@ import (
 
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type handleValidationErrorTestCase struct {
@@ -1719,13 +1720,13 @@ func TestHandleValidationErrors(t *testing.T) {
 			}
 
 			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 
 			for name, expectedContents := range tc.expectedFileState {
 				actualContents, ok := nameToUpdatedFileContents[name]
-				assert.True(t, ok, fmt.Sprintf("expected file %q to be updated, but it was not", name))
-				assert.Equal(t, expectedContents, actualContents, fmt.Sprintf("expected file contents for %q did not match actual contents", name))
+				assert.True(t, ok, "expected file %q to be updated, but it was not", name)
+				assert.Equal(t, expectedContents, actualContents, "expected file contents for %q did not match actual contents", name)
 			}
 		})
 	}

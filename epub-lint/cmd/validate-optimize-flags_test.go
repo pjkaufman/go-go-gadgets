@@ -3,11 +3,10 @@
 package cmd_test
 
 import (
-	"errors"
 	"testing"
 
 	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type validateCompressAndLintFlagsTestCase struct {
@@ -39,9 +38,9 @@ func TestValidateCompressAndLintFlags(t *testing.T) {
 			err := epub.ValidateOptimizeFlags(args.inputLintDir, args.inputLang)
 
 			if err != nil {
-				assert.True(t, errors.Is(err, args.expectedErr))
+				require.ErrorIs(t, err, args.expectedErr)
 			} else {
-				assert.Nil(t, args.expectedErr)
+				require.NoError(t, args.expectedErr)
 			}
 		})
 	}

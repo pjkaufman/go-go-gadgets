@@ -145,7 +145,7 @@ func extractIdText(source, id string, lastFoundIdIndex int) (string, int) {
 	if lastFoundIdIndex > 0 {
 		source = source[lastFoundIdIndex:]
 	}
-	index := strings.Index(source, fmt.Sprintf(`id="%s"`, id))
+	index := strings.Index(source, fmt.Sprintf(`id=%q`, id))
 	if index == -1 {
 		return "", lastFoundIdIndex
 	}

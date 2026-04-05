@@ -7,6 +7,7 @@ import (
 
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type parseEPUBCheckTestCase struct {
@@ -101,7 +102,7 @@ func TestParseEPUBCheckOutput(t *testing.T) {
 	for name, args := range parseEPUBCheckTestCases {
 		t.Run(name, func(t *testing.T) {
 			actual, err := epubcheck.ParseEPUBCheckOutput(args.input)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.expected, actual)
 		})
 	}

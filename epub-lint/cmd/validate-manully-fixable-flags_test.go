@@ -3,11 +3,10 @@
 package cmd_test
 
 import (
-	"errors"
 	"testing"
 
 	epub "github.com/pjkaufman/go-go-gadgets/epub-lint/cmd"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type validateManuallyFixableFlagsTestCase struct {
@@ -52,9 +51,9 @@ func TestValidateManuallyFixableFlags(t *testing.T) {
 			err := epub.ValidateManuallyFixableFlags(args.inputEpubFile, args.inputRunAll, args.inputRunBrokenLines, args.inputRunSectionBreak, args.inputRunPageBreak, args.inputRunOxfordCommas, args.inputRunAlthoughBut, args.inputRunThoughts, args.inputRunConversation, args.inputRunNecessaryWords, args.inputRunSingleQuotes)
 
 			if err != nil {
-				assert.True(t, errors.Is(err, args.expectedErr))
+				require.ErrorIs(t, err, args.expectedErr)
 			} else {
-				assert.Nil(t, args.expectedErr)
+				require.NoError(t, args.expectedErr)
 			}
 		})
 	}

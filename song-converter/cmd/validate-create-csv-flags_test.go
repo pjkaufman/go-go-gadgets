@@ -29,11 +29,13 @@ func TestValidateCreateCsvFlags(t *testing.T) {
 	for name, args := range ValidateCreateCsvFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
 			err := cmd.ValidateCreateCsvFlags(args.InputStagingDir)
+
+			var actualErrText string
 			if err != nil {
-				assert.Equal(t, args.ExpectedError, err.Error())
-			} else {
-				assert.Equal(t, args.ExpectedError, "")
+				actualErrText = err.Error()
 			}
+
+			assert.Equal(t, args.ExpectedError, actualErrText)
 		})
 	}
 }

@@ -18,7 +18,7 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (positio
 	}
 
 	var (
-		href        = fmt.Sprintf(`href="%s"`, fileName)
+		href        = fmt.Sprintf(`href=%q`, fileName)
 		startOfHref = strings.Index(manifestContent, href)
 	)
 	if startOfHref == -1 {
@@ -43,8 +43,8 @@ func RemovePropertyFromManifest(opfContents, fileName, property string) (positio
 		removePropertiesStartPos, removePropertiesEndPos positions.Position
 	)
 
-	properties, startOfAttributeValue, attributeEnd, err = epubhandler.GetAttributeValue(element, propertiesAttr)
-	if err != nil {
+	properties, startOfAttributeValue, attributeEnd, _ = epubhandler.GetAttributeValue(element, propertiesAttr)
+	if startOfAttributeValue == -1 {
 		return edit, nil // not found so we can ignore it
 	}
 

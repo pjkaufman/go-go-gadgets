@@ -14,8 +14,8 @@ var (
 )
 
 // GetPrettyDiffString gets the diff string of the 2 passed in values where removals have a red background and additions have a green background
-func GetPrettyDiffString(original, new string) (string, error) {
-	diffString := diff.CharacterDiff(original, new)
+func GetPrettyDiffString(original, updated string) (string, error) {
+	diffString := diff.CharacterDiff(original, updated)
 
 	var buff bytes.Buffer
 	var diffsLen = len(diffString)
@@ -70,13 +70,15 @@ func GetPrettyDiffString(original, new string) (string, error) {
 	return displayString, nil
 }
 
+const maxAsciiValue = 255
+
 // From https://go.dev/play/p/dBrx_ZmrsMN and https://stackoverflow.com/questions/13510458/golang-convert-iso8859-1-to-utf8
 // It seems that the latin1 text was not encoded correctly so we needed to look for any characters that were garbled and go
 // ahead and fix those specific characters.
 func repairLatin1(s string) (string, error) {
 	buf := make([]byte, 0, len(s))
 	for i, r := range s {
-		if r > 255 {
+		if r > maxAsciiValue {
 			return "", fmt.Errorf("character %q at index %d is not part of latin1", string(r), i)
 		}
 		buf = append(buf, byte(r))

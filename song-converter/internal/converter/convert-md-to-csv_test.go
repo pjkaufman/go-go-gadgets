@@ -51,7 +51,6 @@ var convertMdToCsvTestCases = map[string]convertMdToCsvTestCase{
 func TestConvertMdToCsv(t *testing.T) {
 	for name, args := range convertMdToCsvTestCases {
 		t.Run(name, func(t *testing.T) {
-
 			actual, err := converter.ConvertMdToCsv(args.inputFilePath, args.inputFilePath, args.inputFileContent)
 			if err != nil {
 				assert.Fail(t, "there should be no errors when parsing the YAML for the csv UTs")

@@ -42,11 +42,13 @@ func TestValidateCreateHtmlFlags(t *testing.T) {
 	for name, args := range ValidateCreateHtmlFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
 			err := cmd.ValidateCreateHtmlFlags(args.InputStagingDir, args.InputCoverPath)
+
+			var actualErrText string
 			if err != nil {
-				assert.Equal(t, args.ExpectedError, err.Error())
-			} else {
-				assert.Equal(t, args.ExpectedError, "")
+				actualErrText = err.Error()
 			}
+
+			assert.Equal(t, args.ExpectedError, actualErrText)
 		})
 	}
 }

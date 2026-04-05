@@ -30,7 +30,7 @@ func (d *Difference) ToDisplayText() string {
 	return fmt.Sprintf("[%s]: %s", differenceType, d.Message)
 }
 
-// Align PDF lines with HTML lines and detect explicit linebreaks vs wraps
+// CompareLines aligns PDF lines with HTML lines and detect explicit linebreaks vs wraps
 func CompareLines(pdfLines, htmlLines []string) (differences []Difference) {
 	if len(pdfLines) != len(htmlLines) {
 		differences = append(differences, Difference{

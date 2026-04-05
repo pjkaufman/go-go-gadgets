@@ -181,7 +181,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					}
 
 					var update positions.TextEdit
-					update, deletedLine, err = rulefixes.RemoveEmptyOpfElements(elementName, message.Location.Line, fileContent)
+					update, deletedLine, err = rulefixes.RemoveEmptyOpfElement(elementName, message.Location.Line, fileContent)
 					if err != nil {
 						return err
 					}
@@ -377,7 +377,6 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 				fileUpdated = message.FilePath
 				edits = append(edits, update)
 			}
-
 		}
 
 		if len(edits) != 0 {

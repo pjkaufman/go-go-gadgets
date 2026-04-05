@@ -51,7 +51,7 @@ func (wa *WikipediaApi) GetSectionInfo(pageTitle string) (*WikipediaSectionInfo,
 	url := GetWikipediaAPIUrl(wa.BaseURL, wa.ApiPath, pageTitle)
 
 	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build http request for section info for %q: %w", url, err)
 	}
@@ -64,6 +64,8 @@ func (wa *WikipediaApi) GetSectionInfo(pageTitle string) (*WikipediaSectionInfo,
 	if err != nil {
 		return nil, fmt.Errorf("failed to get section info for %q: %w", url, err)
 	}
+
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

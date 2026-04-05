@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type fixMissingUniqueIdentifierIdTestCase struct {
@@ -65,7 +65,7 @@ func TestFixMissingUniqueIdentifierId(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			edit, err := rulefixes.FixMissingUniqueIdentifierId(args.opfContents, args.id)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edit)
 		})
 	}

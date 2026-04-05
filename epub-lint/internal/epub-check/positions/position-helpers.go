@@ -13,7 +13,7 @@ func GetColumnFromIndex(contents string, line, index int) int {
 
 	// Calculate start-of-line byte offset
 	byteOffset := 0
-	for i := 0; i < line-1; i++ {
+	for i := range line - 1 {
 		byteOffset += len(lines[i]) + 1 // +1 for '\n'
 	}
 
@@ -95,7 +95,7 @@ func GetPositionOffset(contents string, line, column int) int {
 	}
 
 	byteOffset := 0
-	for i := 0; i < line-1; i++ {
+	for i := range line - 1 {
 		byteOffset += len(lines[i]) + 1
 	}
 

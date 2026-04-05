@@ -7,6 +7,7 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type convertMdToHtmlSongTestCase struct {
@@ -42,7 +43,7 @@ func TestConvertMdToHtmlSong(t *testing.T) {
 	for name, args := range convertMdToHtmlSongTestCases {
 		t.Run(name, func(t *testing.T) {
 			actual, err := converter.ConvertMdToHtmlSong(args.inputFilePath, args.inputContent, converter.Digital, false)
-			assert.Nil(t, err, "there should be no errors when parsing the song contents for the UTs")
+			require.NoError(t, err, "there should be no errors when parsing the song contents for the UTs")
 
 			assert.Equal(t, args.expectedHtml, actual)
 		})

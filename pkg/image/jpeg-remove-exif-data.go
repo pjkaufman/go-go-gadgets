@@ -12,7 +12,7 @@ import (
 
 var ErrNotJpeg = errors.New("the provided bytes do not look to pertain to a jpeg file")
 
-// Based on https://github.com/scottleedavis/go-exif-remove/blob/7e059d59340538e639ab516ea037dec825d5b662/exif_remove.go
+// JpegRemoveExifData is based on https://github.com/scottleedavis/go-exif-remove/blob/7e059d59340538e639ab516ea037dec825d5b662/exif_remove.go
 func JpegRemoveExifData(data []byte) ([]byte, error) {
 	if len(data) == 0 {
 		return data, nil

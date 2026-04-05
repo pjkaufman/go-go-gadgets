@@ -83,7 +83,6 @@ var (
 			IsEnabled:      &runThoughts,
 		},
 	}
-	// errors
 	ErrOneRunBoolArgMustBeEnabled = errors.New("at least one rule to run must be enabled")
 	ErrNoCssFiles                 = errors.New("the epub must have at least 1 css file in order to handle section or page breaks")
 )

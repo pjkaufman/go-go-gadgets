@@ -5,6 +5,7 @@ import (
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type removeEmptyOpfElementsTestCase struct {
@@ -91,9 +92,9 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 func TestRemoveEmptyOpfElements(t *testing.T) {
 	for name, tc := range removeEmptyOpfElementsTestCases {
 		t.Run(name, func(t *testing.T) {
-			edit, actualDelete, err := rulefixes.RemoveEmptyOpfElements(tc.elementName, tc.lineNum, tc.opfContents)
+			edit, actualDelete, err := rulefixes.RemoveEmptyOpfElement(tc.elementName, tc.lineNum, tc.opfContents)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedDelete, actualDelete)
 			checkFinalOutputMatches(t, tc.opfContents, tc.expectedOutput, edit)
 		})

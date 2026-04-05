@@ -8,6 +8,7 @@ import (
 
 	image_pkg "github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/png/exif.png
@@ -63,7 +64,7 @@ func TestPngResize(t *testing.T) {
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")
 
 			newData, err := image_pkg.PngResize(test.InputFileData, test.NewWidth)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 
 			height, width = image_pkg.GetImageDimensions(newData)
 			assert.Equal(t, test.NewHeight, height, "height was not the expected value")

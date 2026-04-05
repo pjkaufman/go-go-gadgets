@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -47,7 +48,7 @@ func createMockServerInstance(endpoints []MockedEndpoint) *httptest.Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(robotsFile))
 	})
 
@@ -68,7 +69,7 @@ func createMockServerInstance(endpoints []MockedEndpoint) *httptest.Server {
 			}
 		}
 
-		mux.HandleFunc(fmt.Sprintf("/%s", endpoint.Slug), handler)
+		mux.HandleFunc("/"+endpoint.Slug, handler)
 	}
 
 	return httptest.NewUnstartedServer(mux)
@@ -95,9 +96,9 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 
 			actualVolumes, actualCount, err := handler.GetVolumeInfo(args.SeriesName, scrapingOptions)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.ExpectedCount, actualCount)
-			assert.Equal(t, len(args.ExpectedVolumes), len(actualVolumes))
+			assert.Len(t, actualVolumes, len(args.ExpectedVolumes))
 
 			if len(args.ExpectedVolumes) == len(actualVolumes) {
 				for i, expectedVolume := range args.ExpectedVolumes {

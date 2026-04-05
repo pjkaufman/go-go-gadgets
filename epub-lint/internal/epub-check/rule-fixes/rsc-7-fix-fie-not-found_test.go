@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type fixFileNotFoundTestCase struct {
@@ -226,7 +226,7 @@ func TestFixFileNotFound(t *testing.T) {
 
 			edit, err := rulefixes.FixFileNotFound(args.contents, args.requestedResource, args.currentFile, args.line, args.column, args.basenameToFilePaths)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			checkFinalOutputMatches(t, args.contents, args.expectedOutput, edit)
 		})
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type parseTextReplacementsTestCase struct {
@@ -63,7 +64,7 @@ func TestParseTextReplacements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := linter.ParseTextReplacements(args.input)
 
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, args.expected, actual)
 		})
 	}

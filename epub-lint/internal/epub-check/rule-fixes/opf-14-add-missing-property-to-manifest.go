@@ -1,6 +1,7 @@
 package rulefixes
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -8,7 +9,7 @@ import (
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 )
 
-var ErrNoManifest = fmt.Errorf("manifest tag not found in OPF contents")
+var ErrNoManifest = errors.New("manifest tag not found in OPF contents")
 
 func AddPropertyToManifest(opfContents, fileName, property string) (positions.TextEdit, error) {
 	var (

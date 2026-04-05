@@ -8,6 +8,7 @@ import (
 
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type buildHtmlSongsTestCase struct {
@@ -66,9 +67,9 @@ func TestBuildHtmlSongs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, actualSongIds, err := converter.BuildHtmlSongs(args.inputMdInfo, converter.Digital)
 			if args.expectError {
-				assert.NotNil(t, err)
+				require.Error(t, err)
 			} else {
-				assert.Nil(t, err)
+				require.NoError(t, err)
 			}
 
 			assert.Equal(t, args.expectedHtml, actual)
@@ -78,7 +79,7 @@ func TestBuildHtmlSongs(t *testing.T) {
 }
 
 func BenchmarkBuildHtmlSongs(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		converter.BuildHtmlSongs(multipleFileMdInfo, converter.Digital)
+	for b.Loop() {
+		_, _, _ = converter.BuildHtmlSongs(multipleFileMdInfo, converter.Digital)
 	}
 }

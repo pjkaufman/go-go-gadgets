@@ -1,6 +1,7 @@
 package fixer
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -52,7 +53,7 @@ func (c *CliFixer) Setup() error {
 		*c.contextBreak = logger.GetInputString("What is the section break for the epub?:")
 
 		if strings.TrimSpace(*c.contextBreak) == "" {
-			return fmt.Errorf("please provide a non-whitespace section break")
+			return errors.New("please provide a non-whitespace section break")
 		}
 
 		/**
@@ -140,12 +141,14 @@ func (c *CliFixer) HandleCss() ([]string, error) {
 		return c.handledFiles, nil
 	}
 
-	var cssSelectionPrompt = "Please enter the number of the css file to append the css to:\n"
+	var cssSelectionPrompt strings.Builder
+	cssSelectionPrompt.WriteString("Please enter the number of the css file to append the css to:\n")
+
 	for i, file := range c.cssFiles {
-		cssSelectionPrompt += fmt.Sprintf("%d. %s\n", i, file)
+		fmt.Fprintf(&cssSelectionPrompt, "%d. %s\n", i, file)
 	}
 
-	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt)
+	var selectedCssFileIndex = logger.GetInputInt(cssSelectionPrompt.String())
 	if selectedCssFileIndex < 0 || selectedCssFileIndex >= len(c.cssFiles) {
 		return nil, fmt.Errorf("please select a valid css file value instead of \"%d\".\n", selectedCssFileIndex)
 	}
@@ -179,7 +182,7 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 			logger.WriteError(err.Error())
 		}
 
-		// Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
+		//nolint:gocritic // Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
 		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", diffString))
 		switch strings.ToLower(resp) {
 		case "y":
@@ -195,6 +198,6 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	return newText, valueReplaced, false
 }
 
-// For now this is empty as there is not really anything to cleanup here
+// Cleanup is empty for now as there is not really anything to cleanup here
 func (c *CliFixer) Cleanup() {
 }
