@@ -124,6 +124,13 @@ linters:
         - "-ST1023"
         - "-ST1005"
 
+  exclusions:
+    rules:
+      # the following paths both have a lot of duplicate test data and that is fine
+      - path: '(.+)(handle-validation-errors|validation-errors-sort)_test\.go'
+        linters:
+          - dupl 
+
 issues:
   # Setting to 0 to have all the results.
   max-issues-per-linter: 0
