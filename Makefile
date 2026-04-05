@@ -14,6 +14,8 @@ BUILD_CMD = CGO_ENABLED=0 GOOS=linux go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS
 # Bash completion directory with fallback
 BASH_COMPLETION_DIR := $(or $(BASH_COMPLETION_USER_DIR),$(HOME)/.bash_completion.d)
 
+GOLANG_CI_LINT_VERSION=v2.9.0
+
 test:
 	go test ./... -tags "unit"
 
@@ -23,7 +25,13 @@ cover:
 	go test -cover ./... -tags "unit"
 
 lint:
-	golangci-lint run ./...
+ifeq (,$(shell which golangci-lint))
+	@echo "Installing golangci-lint"
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANG_CI_LINT_VERSION)
+endif
+
+	@echo "Checking for lint issues..."
+	@golangci-lint run ./...
 
 bench:
 	go test ./... -bench=. -tags="unit" -count=20 -run=^$
