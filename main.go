@@ -60,7 +60,7 @@ func main() {
 		},
 	}
 
-	p := tea.NewProgram(&model)
+	p := tea.NewProgram(&model, tea.WithAltScreen())
 	_, err := p.Run()
 	if err != nil {
 		log.Fatal(err)
