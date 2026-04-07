@@ -593,36 +593,6 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 }
 
 func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
-	// this does not currently handle ansi code wrapping
 	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
-	var (
-		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, displayText), expectedSuggestionWidth))
-		lines      = strings.Split(suggestion, "\n")
-		width      int
-		// originalRuneWidth = runewidth.EastAsianWidth
-		widthReduction int
-	)
-
-	// runewidth.EastAsianWidth = true
-	for i, line := range lines {
-		widthReduction = 0
-		for _, character := range []rune(stripansi.Strip(line)) {
-			width = runewidth.RuneWidth(character)
-			if width > 1 {
-				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "%q is a multiwidth rune of size %d\n", string(character), width)
-				}
-			} else if runewidth.IsAmbiguousWidth(character) {
-				widthReduction++
-				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "%q is an ambiguous rune\n", string(character))
-				}
-			}
-		}
-
-		lines[i] = fillLine(line, expectedSuggestionWidth)
-	}
-	// runewidth.EastAsianWidth = originalRuneWidth
-
-	return strings.Join(lines, "\n")
+	return displayStyle.Width(expectedSuggestionWidth).Render(fmt.Sprintf(`"%s"`, displayText))
 }
