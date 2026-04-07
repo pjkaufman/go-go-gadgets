@@ -85,7 +85,7 @@ func moveTranslatorsNotes(epubFile string) error {
 		)
 
 		var navFilename = epubInfo.NavFile
-		if opfFolder != "." && opfFolder != "" {
+		if opfFolder != "." && opfFolder != "" && navFilename != "" {
 			navFilename = filepath.Join(opfFolder, navFilename)
 		}
 

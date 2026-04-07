@@ -2,14 +2,16 @@ package ui
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/davecgh/go-spew/spew"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
@@ -80,11 +82,12 @@ type SuggestionState struct {
 
 func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string) FixableIssuesModel {
 	ti := textinput.New()
-	ti.Width = 20
+	ti.SetWidth(20)
 	ti.CharLimit = 200
 	ti.Placeholder = "Section break"
 
 	ta := textarea.New()
+	ta.Prompt = ""
 	ta.Placeholder = "Enter an edited version of the original string"
 	ta.CharLimit = 10000
 	ta.ShowLineNumbers = false
@@ -96,7 +99,7 @@ func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFix
 		currentStage = suggestionsProcessing
 	}
 
-	v := viewport.New(80, 20)
+	v := viewport.New(viewport.WithWidth(80), viewport.WithHeight(20))
 	v.MouseWheelEnabled = true
 
 	sb := NewVertical()
@@ -134,6 +137,9 @@ func (m FixableIssuesModel) Init() tea.Cmd {
 }
 
 func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.logFile != nil {
+		spew.Fdump(m.logFile, msg)
+	}
 	if m.Err != nil {
 		return m, tea.Quit
 	}
@@ -168,8 +174,8 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.width = msg.Width
 
-		m.body.Width = m.width
-		m.body.Height = max(0, m.height-(m.headerHeight()+m.footerHeight()))
+		m.body.SetWidth(m.width)
+		m.body.SetHeight(max(0, m.height-(m.headerHeight()+m.footerHeight())))
 
 		m.setSuggestionDisplay(false)
 
@@ -199,7 +205,9 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m FixableIssuesModel) View() string {
+func (m FixableIssuesModel) View() tea.View {
+	view := tea.NewView("")
+	view.AltScreen = true
 	if m.ready {
 		var (
 			header = m.headerView()
@@ -207,10 +215,16 @@ func (m FixableIssuesModel) View() string {
 		)
 		m.body.SetContent(m.bodyView())
 
-		return lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
+		var content = lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
+
+		if m.logFile != nil {
+			fmt.Fprintf(m.logFile, "Suggestion content (%d, %d): %q\n", m.body.Width(), m.body.Height(), content)
+		}
+
+		view.SetContent(content)
 	}
 
-	return ""
+	return view
 }
 
 func (m FixableIssuesModel) headerView() string {
