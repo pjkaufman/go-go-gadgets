@@ -9,13 +9,8 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/acarl005/stripansi"
 	"github.com/atotto/clipboard"
-	"github.com/mattn/go-runewidth"
 	"github.com/muesli/reflow/wordwrap"
 )
-
-func init() {
-	runewidth.DefaultCondition.EastAsianWidth = false
-}
 
 const maxLeftStatusWidth = 40
 
@@ -594,5 +589,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 
 func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
 	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
-	return displayStyle.Width(expectedSuggestionWidth).Render(fmt.Sprintf(`"%s"`, displayText))
+	text := fmt.Sprintf(`"%s"`, displayText) // includes ANSI
+	rendered := displayStyle.Render(text)    // apply ANSI first
+	return lipgloss.NewStyle().Width(expectedSuggestionWidth).Render(rendered)
 }
