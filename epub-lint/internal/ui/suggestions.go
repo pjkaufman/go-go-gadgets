@@ -590,6 +590,5 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
 	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
 	text := fmt.Sprintf(`"%s"`, displayText) // includes ANSI
-	rendered := displayStyle.Render(text)    // apply ANSI first
-	return lipgloss.NewStyle().Width(expectedSuggestionWidth).Render(rendered)
+	return displayStyle.Width(expectedSuggestionWidth).Render(text)
 }
