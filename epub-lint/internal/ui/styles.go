@@ -11,6 +11,7 @@ var (
 	footerBorderStyle     = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("12"))
 	fileNameStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("#a6e3a1"))
 	suggestionNameStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#f5e0dc"))
+	warningStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFDE21"))
 	leftStatusBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("#74c7ec"))
 	suggestionBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true)
 	displayStyle          = lipgloss.NewStyle()

@@ -76,7 +76,7 @@ type CssSelectionStageInfo struct {
 }
 
 type SuggestionState struct {
-	isAccepted                                               bool
+	isAccepted, originallyHadHalfwidthCircleKatakana         bool
 	original, originalSuggestion, currentSuggestion, display string
 }
 

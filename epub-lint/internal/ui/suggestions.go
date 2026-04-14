@@ -54,8 +54,22 @@ func (m *FixableIssuesModel) leftStatusView() string {
 
 	suggestionStatus = strings.Join(lines, "\n")
 
+	var warningStatus = ""
+	if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
+		warningStatus = wordwrap.String(warningIcon+" "+warningStyle.Render(` At least one instance of "°" in the displayed text may be the Japanese handakuten.`), maxTextWidth)
+		lines = strings.Split(warningStatus, "\n")
+
+		var afterIcon = strings.Index(lines[0], " ") + 1
+		lines[0] = lines[0][:afterIcon] + warningStyle.Render(lines[0][afterIcon:])
+		for i := 1; i < len(lines); i++ {
+			lines[i] = warningStyle.Render(lines[i])
+		}
+
+		warningStatus = "\n" + strings.Join(lines, "\n")
+	}
+
 	var (
-		statusView      = fileStatus + "\n" + suggestionStatus
+		statusView      = fileStatus + "\n" + suggestionStatus + warningStatus
 		remainingHeight int
 		statusPadding   string
 	)
@@ -127,6 +141,11 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			switch msg.String() {
 			case "ctrl+s":
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.suggestionEdit.Value())
+				if m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
+					m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = undoReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+					m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = false
+				}
+
 				m.PotentiallyFixableIssuesInfo.isEditing = false
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.Blur()
 
@@ -153,9 +172,15 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 			case "ctrl+r":
-				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion)
+				var originalSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion
+				originalSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(originalSuggestion)
+
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(originalSuggestion)
 			case "ctrl+o":
-				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
+				var original = m.PotentiallyFixableIssuesInfo.currentSuggestionState.original
+				original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(original)
+
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(original)
 			}
 		} else {
 			switch msg.String() {
@@ -241,7 +266,10 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			case "e":
 				if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
 					m.PotentiallyFixableIssuesInfo.isEditing = true
-					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+					var currentSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion
+					currentSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(currentSuggestion)
+
+					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(currentSuggestion)
 
 					cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Focus()
 					cmds = append(cmds, cmd)
@@ -590,5 +618,22 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
 	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
 	text := fmt.Sprintf(`"%s"`, displayText) // includes ANSI
+	text, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(text)
 	return displayStyle.Width(expectedSuggestionWidth).Render(text)
+}
+
+func replaceBrokenDisplayCharacters(text string) (string, bool) {
+	// text with handakuten in them are not having their width calculated correctly, so I will just remove them
+	// and we can display a warning if need bee
+	if strings.Contains(text, "ﾟ") {
+		return strings.ReplaceAll(text, "ﾟ", "°"), true
+	}
+
+	return text, false
+}
+
+func undoReplaceBrokenDisplayCharacters(text string) string {
+	// replacing in reverse is not guaranteed to work correctly, but for now this works.
+	// This can be changed if necessary down the road.
+	return strings.ReplaceAll(text, "°", "ﾟ")
 }
