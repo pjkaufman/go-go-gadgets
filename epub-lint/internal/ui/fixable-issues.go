@@ -2,7 +2,6 @@ package ui
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"strings"
 
@@ -211,13 +210,7 @@ func (m FixableIssuesModel) View() tea.View {
 		)
 		m.body.SetContent(m.bodyView())
 
-		var content = lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer)
-
-		if m.logFile != nil {
-			fmt.Fprintf(m.logFile, "Suggestion content (%d, %d): %q\n", m.body.Width(), m.body.Height(), content)
-		}
-
-		view.SetContent(content)
+		view.SetContent(lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer))
 	}
 
 	return view

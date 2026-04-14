@@ -1,4 +1,4 @@
-// pulled from https://charm.land/bubbles/v2/pull/536
+// pulled from https://github.com/charmbracelet/bubbles/pull/536
 
 package ui
 
