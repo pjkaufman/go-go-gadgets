@@ -583,7 +583,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	m.PotentiallyFixableIssuesInfo.suggestionEdit.SetHeight(height)
 
 	var (
-		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width() //- borderWidth //- borderWidth*2
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()
 		suggestion              = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, expectedSuggestionWidth)
 	)
 
