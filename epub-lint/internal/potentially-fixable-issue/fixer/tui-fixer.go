@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
@@ -97,7 +97,7 @@ func (t *TuiFixer) Setup() error {
 }
 
 func (t *TuiFixer) Run() error {
-	p := tea.NewProgram(&t.initialModel, tea.WithAltScreen())
+	p := tea.NewProgram(&t.initialModel)
 	finalModel, err := p.Run()
 	if err != nil {
 		return err

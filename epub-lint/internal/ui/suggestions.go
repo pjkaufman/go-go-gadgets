@@ -5,9 +5,10 @@ import (
 	"sort"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/acarl005/stripansi"
 	"github.com/atotto/clipboard"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
 )
 
@@ -18,7 +19,7 @@ func (m *FixableIssuesModel) suggestionsView() string {
 }
 
 func (m FixableIssuesModel) getSuggestionWidth(statusWidth int) int {
-	return m.body.Width - (statusWidth + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
+	return m.body.Width() - (statusWidth + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
 }
 
 func (m FixableIssuesModel) getLeftStatusWidth() int {
@@ -53,13 +54,27 @@ func (m *FixableIssuesModel) leftStatusView() string {
 
 	suggestionStatus = strings.Join(lines, "\n")
 
+	var warningStatus = ""
+	if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
+		warningStatus = wordwrap.String(warningIcon+" "+warningStyle.Render(` At least one instance of "°" in the displayed text may be the Japanese handakuten.`), maxTextWidth)
+		lines = strings.Split(warningStatus, "\n")
+
+		var afterIcon = strings.Index(lines[0], " ") + 1
+		lines[0] = lines[0][:afterIcon] + warningStyle.Render(lines[0][afterIcon:])
+		for i := 1; i < len(lines); i++ {
+			lines[i] = warningStyle.Render(lines[i])
+		}
+
+		warningStatus = "\n" + strings.Join(lines, "\n")
+	}
+
 	var (
-		statusView      = fileStatus + "\n" + suggestionStatus
+		statusView      = fileStatus + "\n" + suggestionStatus + warningStatus
 		remainingHeight int
 		statusPadding   string
 	)
 
-	remainingHeight = m.body.Height - (lipgloss.Height(statusView) + leftStatusBorderStyle.GetVerticalBorderSize())
+	remainingHeight = m.body.Height() - (lipgloss.Height(statusView) + leftStatusBorderStyle.GetVerticalBorderSize())
 
 	if remainingHeight > 0 {
 		statusPadding = strings.Repeat("\n", remainingHeight)
@@ -90,7 +105,7 @@ func (m *FixableIssuesModel) suggestionView() string {
 
 			s.WriteString(customBorderStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top,
 				m.PotentiallyFixableIssuesInfo.suggestionDisplay.View(),
-				m.PotentiallyFixableIssuesInfo.scrollbar.View(),
+				m.PotentiallyFixableIssuesInfo.scrollbar.View().Content,
 			)))
 		} else {
 			var customBorderStyle = m.createCustomBorder(modeIcon, modeName, 0)
@@ -126,7 +141,13 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			switch msg.String() {
 			case "ctrl+s":
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.suggestionEdit.Value())
+				if m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
+					m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = undoReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+					m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = false
+				}
+
 				m.PotentiallyFixableIssuesInfo.isEditing = false
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.Blur()
 
 				var err error
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
@@ -141,6 +162,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				return tea.Batch(cmds...)
 			case "ctrl+e":
 				m.PotentiallyFixableIssuesInfo.isEditing = false
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.Blur()
 
 				var err error
 				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
@@ -150,9 +172,15 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 			case "ctrl+r":
-				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion)
+				var originalSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion
+				originalSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(originalSuggestion)
+
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(originalSuggestion)
 			case "ctrl+o":
-				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
+				var original = m.PotentiallyFixableIssuesInfo.currentSuggestionState.original
+				original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(original)
+
+				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(original)
 			}
 		} else {
 			switch msg.String() {
@@ -163,19 +191,21 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			case "esc":
 				return m.exitOrMoveToCssSelection()
 			case "up":
-				if m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset <= 0 {
-					m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset = 0
+				var yOffset = m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset()
+				if yOffset <= 0 {
+					m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(0)
 				} else {
-					m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset--
+					m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(yOffset - 1)
 				}
 			case "down":
+				var yOffset = m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset()
 				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "YOffset before update %d vs total lines %d for content %q\n", m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset, m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount(), m.PotentiallyFixableIssuesInfo.suggestionDisplay.View())
+					fmt.Fprintf(m.logFile, "YOffset before update %d vs total lines %d for content %q\n", yOffset, m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount(), m.PotentiallyFixableIssuesInfo.suggestionDisplay.View())
 				}
-				if m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset >= m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() {
-					m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset = m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount()
+				if yOffset >= m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() {
+					m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount())
 				} else {
-					m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset++
+					m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(yOffset + 1)
 				}
 			case "right":
 				cmd, err := m.moveToNextSuggestion()
@@ -236,7 +266,10 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			case "e":
 				if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
 					m.PotentiallyFixableIssuesInfo.isEditing = true
-					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
+					var currentSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion
+					currentSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(currentSuggestion)
+
+					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(currentSuggestion)
 
 					cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Focus()
 					cmds = append(cmds, cmd)
@@ -459,7 +492,7 @@ func (m *FixableIssuesModel) moveToPreviousFile() {
 }
 
 func (m *FixableIssuesModel) moveToNextSuggestion() (tea.Cmd, error) {
-	m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset = 0
+	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(0)
 	if m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1 < len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]) {
 		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex++
 		m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
@@ -514,7 +547,7 @@ func (m *FixableIssuesModel) moveToPreviousSuggestion() {
 }
 
 func (m FixableIssuesModel) createCustomBorder(modeIcon, modeName string, extraWidthPadding int) lipgloss.Style {
-	borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height+borderWidth, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width+borderWidth+extraWidthPadding) // +2 for border width/height
+	borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height()+borderWidth, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()+borderWidth+extraWidthPadding) // +2 for border width/height
 	modeInfo := fmt.Sprintf("%s %s", modeIcon, modeName)
 	statusInfo := fmt.Sprintf("%d/%d", m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]))
 	borderConfig.SetInfoItems(modeInfo, statusInfo)
@@ -532,11 +565,11 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	}
 
 	if resetYOffset {
-		m.PotentiallyFixableIssuesInfo.suggestionDisplay.YOffset = 0
+		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(0)
 	}
 
 	var (
-		height         = m.body.Height - leftStatusBorderStyle.GetVerticalBorderSize()
+		height         = m.body.Height() - leftStatusBorderStyle.GetVerticalBorderSize()
 		remainingWidth = m.getSuggestionWidth(m.getLeftStatusWidth())
 	)
 
@@ -544,37 +577,63 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 		fmt.Fprintf(m.logFile, "Status width %d, body width %d, and a height of %d\n", m.getLeftStatusWidth(), remainingWidth, height)
 	}
 
-	m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height = height
-	m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width = remainingWidth
+	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetHeight(height)
+	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetWidth(remainingWidth)
 	m.PotentiallyFixableIssuesInfo.suggestionEdit.SetWidth(remainingWidth)
 	m.PotentiallyFixableIssuesInfo.suggestionEdit.SetHeight(height)
 
 	var (
-		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width - borderWidth*2
-		// this does not currently handle ansi code wrapping
-		//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
-		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()
+		suggestion              = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, expectedSuggestionWidth)
 	)
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
 
 	// recalculate pertinent values if the scrollbar does indeed get displayed
 	if m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.PotentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
-		m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width -= scrollbarPadding
+		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetWidth(remainingWidth - scrollbarPadding)
 
-		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width
-		// this does not currently handle ansi code wrapping
-		//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
-		suggestion = displayStyle.Render(wordwrap.String(fmt.Sprintf(`"%s"`, m.PotentiallyFixableIssuesInfo.currentSuggestionState.display), expectedSuggestionWidth))
+		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()
+		suggestion = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, expectedSuggestionWidth)
 
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
 	}
 
 	if m.logFile != nil {
-		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d and a value of %q\n", expectedSuggestionWidth, suggestion)
+		var (
+			original = stripansi.Strip(suggestion)
+		)
+		fmt.Fprintf(m.logFile, "New suggestion getting set with width %d and a value of %q vs original %q\n", expectedSuggestionWidth, suggestion, original)
+		var lines = strings.Split(original, "\n")
+		for i, line := range lines {
+			fmt.Fprintf(m.logFile, "  Line %d: %q Size: %d\n", i+1, line, lipgloss.Width(line))
+		}
 	}
 
 	// the cmd here is always nil, so we never need to actually handle it
 	m.PotentiallyFixableIssuesInfo.scrollbar, _ = m.PotentiallyFixableIssuesInfo.scrollbar.Update(m.PotentiallyFixableIssuesInfo.suggestionDisplay)
-	m.PotentiallyFixableIssuesInfo.scrollbar, _ = m.PotentiallyFixableIssuesInfo.scrollbar.Update(HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height))
+	m.PotentiallyFixableIssuesInfo.scrollbar, _ = m.PotentiallyFixableIssuesInfo.scrollbar.Update(HeightMsg(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height()))
+}
+
+func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
+	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
+	text := fmt.Sprintf(`"%s"`, displayText) // includes ANSI
+	text, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(text)
+	return displayStyle.Width(expectedSuggestionWidth).Render(text)
+}
+
+func replaceBrokenDisplayCharacters(text string) (string, bool) {
+	// text with handakuten in them are not having their width calculated correctly, so I will just remove them
+	// and we can display a warning if need bee
+	if strings.Contains(text, "ﾟ") {
+		return strings.ReplaceAll(text, "ﾟ", "°"), true
+	}
+
+	return text, false
+}
+
+func undoReplaceBrokenDisplayCharacters(text string) string {
+	// replacing in reverse is not guaranteed to work correctly, but for now this works.
+	// This can be changed if necessary down the road.
+	return strings.ReplaceAll(text, "°", "ﾟ")
 }

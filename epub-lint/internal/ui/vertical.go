@@ -6,9 +6,9 @@ import (
 	"math"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // NewVertical create a new vertical scrollbar.
@@ -43,7 +43,7 @@ func (m Vertical) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case HeightMsg:
 		m.height = m.computeHeight(int(msg))
 	case viewport.Model:
-		m.thumbHeight, m.thumbOffset = m.computeThumb(msg.TotalLineCount(), msg.VisibleLineCount(), msg.YOffset)
+		m.thumbHeight, m.thumbOffset = m.computeThumb(msg.TotalLineCount(), msg.VisibleLineCount(), msg.YOffset())
 	}
 
 	return m, nil
@@ -63,13 +63,18 @@ func (m Vertical) computeThumb(total, visible, offset int) (int, int) {
 }
 
 // View renders the scrollbar to a string.
-func (m Vertical) View() string {
-	bar := strings.TrimRight(
-		strings.Repeat(m.TrackStyle.String()+"\n", m.thumbOffset)+
-			strings.Repeat(m.ThumbStyle.String()+"\n", m.thumbHeight)+
-			strings.Repeat(m.TrackStyle.String()+"\n", max(0, m.height-m.thumbOffset-m.thumbHeight)),
-		"\n",
+func (m Vertical) View() tea.View {
+	var (
+		view = tea.NewView("")
+		bar  = strings.TrimRight(
+			strings.Repeat(m.TrackStyle.String()+"\n", m.thumbOffset)+
+				strings.Repeat(m.ThumbStyle.String()+"\n", m.thumbHeight)+
+				strings.Repeat(m.TrackStyle.String()+"\n", max(0, m.height-m.thumbOffset-m.thumbHeight)),
+			"\n",
+		)
 	)
 
-	return m.Style.Render(bar)
+	view.SetContent(m.Style.Render(bar))
+
+	return view
 }
