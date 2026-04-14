@@ -11,7 +11,6 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/davecgh/go-spew/spew"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
@@ -137,9 +136,6 @@ func (m FixableIssuesModel) Init() tea.Cmd {
 }
 
 func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.logFile != nil {
-		spew.Fdump(m.logFile, msg)
-	}
 	if m.Err != nil {
 		return m, tea.Quit
 	}

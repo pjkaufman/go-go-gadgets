@@ -11,9 +11,7 @@ require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/atotto/clipboard v0.1.4
-	github.com/charmbracelet/x/ansi v0.11.7
 	github.com/charmbracelet/x/exp/term v0.0.0-20240814160751-e2dc8b53b604
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
@@ -38,12 +36,14 @@ require (
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260413225345-5027f0c48455 // indirect
+	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsoprea/go-iptc v0.0.0-20200610044640-bc9ca208b413 // indirect
 	github.com/dsoprea/go-logging v0.0.0-20200710184922-b02d349568dd // indirect
 	github.com/dsoprea/go-photoshop-info-format v0.0.0-20200610045659-121dd752914d // indirect
