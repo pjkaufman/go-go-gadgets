@@ -14,6 +14,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
+          args: --out-format=sarif
       
       - name: Get golangci-lint version
         id: golangci_version
