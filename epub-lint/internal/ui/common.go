@@ -18,7 +18,7 @@ var (
 	warningIcon  = string([]byte{0xE2, 0x9A, 0xA0})       // UTF-8 encoding for "⚠"
 )
 
-func unreachableCode() {
+func UnreachableCode() {
 	fmt.Println("Unreachable")
 }
 
