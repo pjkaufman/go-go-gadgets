@@ -14,7 +14,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          args: --out-format=sarif
       
       - name: Get golangci-lint version
         id: golangci_version
@@ -27,6 +26,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: ${{ steps.golangci_version.outputs.version }}
+          args: --out-format=sarif
       
       - name: Check for dead code
         run: make deadcode
