@@ -14,7 +14,7 @@ BUILD_CMD = CGO_ENABLED=0 GOOS=linux go build $(BUILDFLAGS) $(LDFLAGS) $(GCFLAGS
 # Bash completion directory with fallback
 BASH_COMPLETION_DIR := $(or $(BASH_COMPLETION_USER_DIR),$(HOME)/.bash_completion.d)
 
-GOLANG_CI_LINT_VERSION=v2.16.0
+GOLANG_CI_LINT_VERSION=v2.11.4
 
 test:
 	go test ./... -tags "unit"
