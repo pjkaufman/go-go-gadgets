@@ -1,0 +1,31 @@
+name: Change Validation
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  ci:
+    name: Change Validation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+      
+      - name: Get golangci-lint version
+        id: golangci_version
+        run: echo "version=$(grep GOLANG_CI_LINT_VERSION Makefile | cut -d= -f2)" >> $GITHUB_OUTPUT
+      
+      - name: Run tests
+        run: make test
+      
+      - name: Run linting
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: ${{ steps.golangci_version.outputs.version }}
+      
+      - name: Check for dead code
+        run: make deadcode
