@@ -16,7 +16,7 @@ func (m FixableIssuesModel) cssSelectionView() string {
 			cursor = ">"
 		}
 
-		s.WriteString(fmt.Sprintf("%s %d. %s\n", cursor, i+1, cssFile))
+		fmt.Fprintf(&s, "%s %d. %s\n", cursor, i+1, cssFile)
 	}
 
 	s.WriteString("\n")

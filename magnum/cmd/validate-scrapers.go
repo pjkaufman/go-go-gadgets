@@ -65,9 +65,9 @@ var ValidateScraperCmd = &cobra.Command{
 
 			scraperName = config.PublisherToDisplayString(series.Publisher)
 			if output.TotalVolumes == series.TotalVolumes && output.LatestVolume == series.LatestVolume {
-				validationResult.WriteString(fmt.Sprintf("- %s: working as expected\n", scraperName))
+				fmt.Fprintf(&validationResult, "- %s: working as expected\n", scraperName)
 			} else {
-				validationResult.WriteString(fmt.Sprintf("- %s: did not parse information correctly\n", scraperName))
+				fmt.Fprintf(&validationResult, "- %s: did not parse information correctly\n", scraperName)
 			}
 		}
 

@@ -106,7 +106,7 @@ func buildDigitalMetadataDiv(metadata *SongMetadata, songType SongGenerationType
 
 	var (
 		addRowEntry = func(value, class, nonEmptyValue string) {
-			metadataHtml.WriteString(fmt.Sprintf("<div><div class=%q>", class))
+			fmt.Fprintf(&metadataHtml, "<div><div class=%q>", class)
 
 			if strings.Trim(value, "") != "" {
 				metadataHtml.WriteString(nonEmptyValue)
