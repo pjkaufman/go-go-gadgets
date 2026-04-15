@@ -71,7 +71,7 @@ var ValidateScraperCmd = &cobra.Command{
 			}
 		}
 
-		validationResult.WriteString(fmt.Sprintf("- Wikipedia: not tested, but used for %s and %s", config.PublisherToDisplayString(config.HanashiMedia), config.PublisherToDisplayString(config.OnePeaceBooks)))
+		fmt.Fprintf(&validationResult, "- Wikipedia: not tested, but used for %s and %s", config.PublisherToDisplayString(config.HanashiMedia), config.PublisherToDisplayString(config.OnePeaceBooks))
 
 		logger.WriteInfo(validationResult.String())
 	},
