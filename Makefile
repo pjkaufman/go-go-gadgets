@@ -111,4 +111,8 @@ ifeq (,$(shell which deadcode))
 endif
 
 	@echo "Checking for dead code..."
-	@deadcode -tags "unit,generate_doc,generate_golden" -test ./...
+	@output=$$(deadcode -tags "unit,generate_doc,generate_golden" -test ./...); \
+	if [ -n "$$output" ]; then \
+		echo "$$output"; \
+		exit 1; \
+	fi
