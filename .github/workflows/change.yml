@@ -17,7 +17,7 @@ jobs:
       
       - name: Get golangci-lint version
         id: golangci_version
-        run: echo "version=$(grep GOLANG_CI_LINT_VERSION Makefile | cut -d= -f2)" >> $GITHUB_OUTPUT
+        run: echo "version=$(grep -m 1 GOLANG_CI_LINT_VERSION Makefile | cut -d= -f2)" >> $GITHUB_OUTPUT
       
       - name: Run tests
         run: make test
