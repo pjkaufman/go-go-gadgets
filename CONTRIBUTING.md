@@ -49,7 +49,7 @@ When adding a new CLI tool, go ahead and follow the code structure listed above 
 
 The CLI package used for writing the CLIs is [Cobra](https://github.com/spf13/cobra). It allows for easily setting up commands, flags, and subcommands. Make sure that when a command is created, it has a `Use` and `Short` value. The `Use` value is the name of the command. The `Short` is the short description of what it does. Where possible examples should be included in the `Example` property which should be a `heredoc.Doc` string to help cut out the starting whitespace in the multiline string.
 
-Try to keep the nesting of commands to 1 layer at most. So in the case of `epub-lint`, it has a `fix` subcommand which also has its own subcommands. That is what I mean by 1 layer. You should not have to type out more than three command names in order to get to the command you want to run.
+Try to keep the nesting of commands to at most 2 layers. So in the case of `epub-lint`, it has a `fix` subcommand which also has its own subcommands. You should not have to type out more than three command names in order to get to the command you want to run.
 
 Names for commands, subcommands, and flags should follow the pattern `NAME NOUN VERB` where possible.
 
