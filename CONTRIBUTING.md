@@ -75,7 +75,7 @@ Documentation can be found in 4 main places in this project:
 - The project [README](README.md)
 - The [Contributing Docs](CONTRIBUTING.md)
 - Each CLI tool's README/README.md.tmpl
-- EACH CLI tool's `generate.go` where TODOs and some other specific information can be setup
+- Each CLI tool's `generate.go` where TODOs and some other specific information can be setup
 
 As of right now there is really no other place for documentation to live in this project.
 
