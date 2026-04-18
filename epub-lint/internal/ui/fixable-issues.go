@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 
@@ -13,7 +14,10 @@ import (
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
-var ErrUserKilledProgram = errors.New("user killed program")
+var (
+	ErrUserKilledProgram    = errors.New("user killed program")
+	potentialFailedPasteMsg = "exit status 1"
+)
 
 const (
 	borderWidth      = 2
@@ -46,6 +50,8 @@ type FixableIssuesModel struct {
 type sectionBreakStageInfo struct {
 	input        textinput.Model
 	contextBreak *string
+	pasteFailed  bool
+	isPasting    bool // keep track of this so we know when to ignore an error that happens
 }
 
 type PotentiallyFixableStageInfo struct {
@@ -176,8 +182,16 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		cmds = append(cmds, tea.ClearScreen)
 	case error:
-		m.Err = msg
-		return m, tea.Quit
+		if m.logFile != nil {
+			fmt.Fprintf(m.logFile, "Unexpected error encountered %q. Stage is %d. Is pasting: %t. Is potential failed paste error: %t.\n", msg, m.currentStage, m.sectionBreakInfo.isPasting, potentialFailedPasteMsg == msg.Error())
+		}
+		if m.sectionBreakInfo.isPasting && potentialFailedPasteMsg == msg.Error() {
+			m.sectionBreakInfo.pasteFailed = true
+		} else {
+			m.Err = msg
+
+			return m, tea.Quit
+		}
 	}
 
 	switch m.currentStage {

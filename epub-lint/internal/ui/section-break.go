@@ -1,13 +1,19 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
 )
 
 func (m FixableIssuesModel) sectionBreakView() string {
-	return m.sectionBreakInfo.input.View()
+	var sectionBreakDisplay = m.sectionBreakInfo.input.View()
+	if !m.sectionBreakInfo.pasteFailed {
+		return sectionBreakDisplay
+	}
+
+	return warningStyle.Render(warningIcon+" The previous paste attempt failed. Please try again.") + "\n" + sectionBreakDisplay
 }
 
 func (m *FixableIssuesModel) handleSectionBreakMsgs(msg tea.Msg) tea.Cmd {
@@ -15,11 +21,23 @@ func (m *FixableIssuesModel) handleSectionBreakMsgs(msg tea.Msg) tea.Cmd {
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
+	oldValue := m.sectionBreakInfo.input.Value()
 	m.sectionBreakInfo.input, cmd = m.sectionBreakInfo.input.Update(msg)
+	newValue := m.sectionBreakInfo.input.Value()
 	cmds = append(cmds, cmd)
+
+	if oldValue != newValue { // only chide the warning once an actual change has been made to the text or another paste happens
+		m.sectionBreakInfo.pasteFailed = false
+	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.sectionBreakInfo.pasteFailed && m.logFile != nil {
+			fmt.Fprintln(m.logFile, "Next change after failed paste")
+		}
+
+		m.sectionBreakInfo.isPasting = false
+
 		switch msg.String() {
 		case "enter":
 			*m.sectionBreakInfo.contextBreak = strings.TrimSpace(m.sectionBreakInfo.input.Value())
@@ -35,6 +53,13 @@ func (m *FixableIssuesModel) handleSectionBreakMsgs(msg tea.Msg) tea.Cmd {
 
 				cmds = append(cmds, cmd)
 			}
+		case "ctrl+v":
+			if m.logFile != nil {
+				fmt.Fprintln(m.logFile, "Starting Paste")
+			}
+
+			m.sectionBreakInfo.pasteFailed = false
+			m.sectionBreakInfo.isPasting = true
 		}
 	}
 
