@@ -60,7 +60,6 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 			}
 
 			var b bytes.Buffer
-
 			err = tmpl.Execute(&b, TmplData{
 				CommandStrings: cmdtomd.RootToMd(rootCmd),
 				Todos:          todos,

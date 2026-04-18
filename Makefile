@@ -2,7 +2,6 @@
 
 # Tool definitions
 TOOLS := epub-lint song-converter cat-ascii magnum jp-proc versy
-GENERATE_TOOLS := epub-lint jp-proc magnum song-converter
 
 # Enhanced LDFLAGS for size reduction
 LDFLAGS := -ldflags="-s -w"
@@ -57,7 +56,7 @@ install:
 
 generate:
 	@echo "Generating documentation..."
-	@for tool in $(GENERATE_TOOLS); do \
+	@for tool in $(TOOLS); do \
 		echo "Generating docs for $$tool..."; \
 		go run --tags="generate_doc" ./$$tool/main.go generate -g ./$$tool/ || { \
 			echo "Error: Failed to generate docs for $$tool"; \
