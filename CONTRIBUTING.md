@@ -83,4 +83,6 @@ To generate updated documentation, run `make generate` at the base of the reposi
 
 ## Use of AI
 
-The use of AI for contributing to this repo is perfectly fine. However you are expected to make sure that the code works or the documentation is correct. You should be able to answer why you are making a change. Saying "The AI said so" is not a good enough answer for why you are making a change.
+The use of AI for contributing to this repo is perfectly fine. However you are expected to make sure that the code works or the documentation is correct. You should be able to answer why you are making a change. Saying "The AI said so" is not a good enough answer for why you are making a change. You should be able to explain in your own words why the change is happening.
+
+AI can be helpful with tasks like adding UTs, bouncing ideas off of it, doing some refactors, as well as other tasks. Use it with discernment if you use it.
