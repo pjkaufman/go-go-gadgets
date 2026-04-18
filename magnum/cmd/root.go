@@ -20,4 +20,6 @@ func Execute() {
 	}
 }
 
-func init() {}
+func init() {
+	rootCmd.SetOut(os.Stdout)
+}

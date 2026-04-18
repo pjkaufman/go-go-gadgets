@@ -23,6 +23,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.SetOut(os.Stdout)
 }
 
 func writeToFileOrStdOut(content, outputFile string) {

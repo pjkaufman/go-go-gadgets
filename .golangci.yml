@@ -124,6 +124,14 @@ linters:
         - "-ST1023"
         - "-ST1005"
 
+    govet:
+      settings:
+        printf:
+          funcs:
+            - (github.com/pjkaufman/go-go-gadgets/pkg/loggger).WriteInfof
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).WriteWarnf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).WriteErrorf
+
   exclusions:
     rules:
       # the following paths both have a lot of duplicate test data and that is fine
