@@ -26,7 +26,14 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 
 	builder.WriteString("\n\n")
 
-	var flags = cmd.Flags()
+	// This may look useless, but it pulls in persistent flags from the parent, so it is called here
+	// and then flags gets populated with both the inherited and regular flags.
+	// It claims it does not modify the current flags, but that is not what I am seeing.
+	cmd.InheritedFlags()
+
+	var (
+		flags = cmd.Flags()
+	)
 	if flags != nil && flags.HasFlags() {
 		builder.WriteString(strings.Repeat("#", level+1) + " Flags\n\n")
 		FlagsToMd(flags, builder)

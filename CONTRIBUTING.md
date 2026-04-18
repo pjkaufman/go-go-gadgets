@@ -43,7 +43,7 @@ There are also reusable packages as well. They are located in the `pkg` folder a
 
 ### Adding a New CLI Tool
 
-When adding a new CLI tool, go ahead and follow the code structure listed above in [CLI Tools](#cli-tools). Once that is done, you can add the name of the program to the `Makefile`, so it will get properly compiled and installed. Two things you will want to make sure you add it to are `TOOLS` and `GENERATE_TOOLS`. As of right now these lists are separate. But eventually the plan is to make all of the tools have READMEs and thus there will only be one variable that needs updating.
+When adding a new CLI tool, go ahead and follow the code structure listed above in [CLI Tools](#cli-tools). Once that is done, you can add the name of the program to the `Makefile`, so it will get properly compiled, installed, and have its README generated. One things you will want to make sure you add the new CLI's base folder name to is `TOOLS`.
 
 ### CLI Commands and Flags
 
