@@ -12,10 +12,15 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 	}
 
 	var (
+		isRootCmd       = !cmd.HasParent() // if a command has no parent it will be treated as the base command
 		name            = cmd.Name()
 		longDescription = cmd.Long
 		example         = cmd.Example
 	)
+
+	if isRootCmd {
+		name += " (base command)"
+	}
 
 	builder.WriteString(strings.Repeat("#", level) + " " + name + "\n\n")
 	if longDescription != "" {

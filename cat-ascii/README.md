@@ -6,25 +6,30 @@ This is a program that prints out cat ASCII to the terminal. Just calling `cat-a
 
 ## Commands
 
-- [list](#list)
-- [show](#show)
+- [cat-ascii](#cat-ascii-base-command)
+  - [list](#list)
+  - [show](#show)
 
-### list
+### cat-ascii (base command)
+
+A cat ascii art generator that displays a random cat ascii art on each invocation
+
+#### list
 
 Lists the names of all cat ascii options
 
-#### Usage
+##### Usage
 
 ``` bash
 # To list all of the names for the cat ascii art:
 cat-ascii list
 ```
 
-### show
+#### show
 
 Shows the cat ascii and info about the cat ascii that matches the provided name
 
-#### Usage
+##### Usage
 
 ``` bash
 # To list information about the cat ascii and the cat ascii itself:

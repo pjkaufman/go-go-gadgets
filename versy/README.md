@@ -6,13 +6,26 @@ This is a program that grabs the verse of the day or the specified verse(s) in t
 
 ## Commands
 
-- [show](#show)
+- [versy](#versy-base-command)
+  - [show](#show)
 
-### show
+### versy (base command)
+
+A verse of the day retriever for two translations
+
+#### Flags
+
+| Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
+| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+| v | verbose | show more info about what is going on |  | false | false |  |
+|  | version-one | gets the first instance of the verse in the specified version (default is ESV) | string | ESV | false |  |
+|  | version-two | gets the second instance of the verse in the specified version (default is NVI) | string | NVI | false |  |
+
+#### show
 
 Displays the specified verse reference in the two specified Bible versions
 
-#### Flags
+##### Flags
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
