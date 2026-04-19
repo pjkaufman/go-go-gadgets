@@ -65,7 +65,7 @@ How it works:
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
-| o | output-file | the file to write the csv to | string |  | false | Should be a file with one of the following extensions: csv |
+| o | output | the file to write the csv to | string |  | false | Should be a file with one of the following extensions: csv |
 | d | working-dir | the directory where the Markdown files are located | string |  | true | Should be a directory |
 
 ##### Usage

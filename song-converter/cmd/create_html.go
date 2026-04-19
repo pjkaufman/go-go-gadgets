@@ -170,19 +170,8 @@ func init() {
 
 // createCommonHtmlAndBookFlags is meant to allow for de-duplicating the common flags for create html and create book
 func createCommonHtmlAndBookFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
-	err := cmd.MarkFlagRequired("working-dir")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as required on create %s command: %v\n", cmd.Use, err)
-	}
-
-	err = cmd.MarkFlagDirname("working-dir")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as a directory on create %s command: %v\n", cmd.Use, err)
-	}
-
 	cmd.Flags().StringVarP(&coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use")
-	err = cmd.MarkFlagRequired("cover-file")
+	err := cmd.MarkFlagRequired("cover-file")
 	if err != nil {
 		logger.WriteErrorf("failed to mark flag \"cover-file\" as required on create %s command: %v\n", cmd.Use, err)
 	}

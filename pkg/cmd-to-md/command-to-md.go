@@ -31,6 +31,11 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 
 	builder.WriteString("\n\n")
 
+	if !cmd.Runnable() {
+		// don't generate flags if the command is not runnable
+		return
+	}
+
 	// This may look useless, but it pulls in persistent flags from the parent, so it is called here
 	// and then flags gets populated with both the inherited and regular flags.
 	// It claims it does not modify the current flags, but that is not what I am seeing.

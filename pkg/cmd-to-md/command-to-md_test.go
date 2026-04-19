@@ -49,8 +49,15 @@ cmd to md test --flag`,
 }
 
 func TestCommandToMd(t *testing.T) {
+	parent := cobra.Command{}
 	for name, args := range CommandToMdTestCases {
 		t.Run(name, func(t *testing.T) {
+			if args.Command != nil {
+				parent.AddCommand(args.Command) // makes sure the command is not registered as a root command
+
+				args.Command.Run = func(cmd *cobra.Command, args []string) {} // allows the command to be considered runnable
+			}
+
 			var actual strings.Builder
 			cmdtomd.CommandToMd(args.Command, &actual, 3)
 
