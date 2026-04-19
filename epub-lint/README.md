@@ -45,6 +45,7 @@ Potential things that can be fixed:
 |  | broken-lines | whether to run the logic for getting broken line suggestions |  | false | false |  |
 |  | conversation | whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation) |  | false | false |  |
 | f | file | the epub file to find manually fixable issues in | string |  | true | Should be a file with one of the following extensions: epub |
+| i | interactive | whether to use the terminal UI for suggesting fixes |  | false | false |  |
 |  | lacking-subordinate-clause | whether to run the logic for getting potentially lacking subordinate clause suggestions |  | false | false |  |
 |  | log-file | the place to write debug logs to when using the TUI | string |  | false |  |
 |  | necessary-words | whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence) |  | false | false |  |
@@ -53,7 +54,6 @@ Potential things that can be fixed:
 |  | section-breaks | whether to run the logic for getting section break suggestions (must be used with an epub with a css file) |  | false | false |  |
 |  | single-quotes | whether to run the logic for getting incorrect single quote suggestions |  | false | false |  |
 |  | thoughts | whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts) |  | false | false |  |
-| t | use-tui | whether to use the terminal UI for suggesting fixes |  | false | false |  |
 
 ##### Usage
 

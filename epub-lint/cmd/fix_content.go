@@ -27,7 +27,7 @@ var (
 	runConversation          bool
 	runNecessaryWords        bool
 	runSingleQuotes          bool
-	useTui                   bool
+	interactive              bool
 	logFile                  string
 	potentiallyFixableIssues = []potentiallyfixableissue.PotentiallyFixableIssue{
 		{
@@ -146,7 +146,7 @@ var contentCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		var handler fixer.Fixer
-		if useTui {
+		if interactive {
 			handler = &fixer.TuiFixer{}
 		} else {
 			handler = &fixer.CliFixer{}
@@ -239,7 +239,7 @@ func init() {
 	contentCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
 	contentCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
 	contentCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
-	contentCmd.Flags().BoolVarP(&useTui, "use-tui", "t", false, "whether to use the terminal UI for suggesting fixes")
+	contentCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "whether to use the terminal UI for suggesting fixes")
 	contentCmd.Flags().StringVarP(&logFile, "log-file", "", "", "the place to write debug logs to when using the TUI")
 	contentCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
 	err := contentCmd.MarkFlagRequired("file")
