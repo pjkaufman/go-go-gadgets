@@ -23,18 +23,22 @@ var organizeNotesCmd = &cobra.Command{
 	and moves any matches to their own file with bidirectional linking between the footnote and its reference location.
 	It also adds an entry to the TOC and spine of the epub so the "tl_notes.xhtml" file is at the end of the file's contents.
 `),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := validateCommonEpubFlags(epubFile)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
-		err = moveTranslatorsNotes(epubFile)
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		err := moveTranslatorsNotes(epubFile)
+
 		if err != nil {
 			logger.WriteError(err.Error())
 		}

@@ -11,14 +11,14 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "song-converter",
-	Short: "Some commands for converting songs from Markdown with YAML frontmatter over to html",
+	Use:           "song-converter",
+	Short:         "Some commands for converting songs from Markdown with YAML frontmatter over to html",
+	SilenceErrors: true, // avoids double printing of errors when thrown
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logger.WriteErrorf("Error: %v\n", err)
-		os.Exit(1)
 	}
 }
 

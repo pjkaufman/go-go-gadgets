@@ -131,17 +131,20 @@ var contentCmd = &cobra.Command{
 	- Possible instances of words in square brackets that may be necessary for the sentence (i.e. need to have the brackets removed)
 	- Possible instances of single quotes that should actually be double quotes (i.e. when a word is in single quotes, but is not inside of double quotes)
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords, runSingleQuotes)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		var handler fixer.Fixer
 		if useTui {
 			handler = &fixer.TuiFixer{}
@@ -154,6 +157,7 @@ var contentCmd = &cobra.Command{
 			logger.WriteInfo(initialLog)
 		}
 
+		var err error
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
 			err = validateFilesExist(opfFolder, epubInfo.HtmlFiles, zipFiles)
 			if err != nil {

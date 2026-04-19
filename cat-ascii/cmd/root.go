@@ -13,8 +13,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cat-ascii",
-	Short: "A cat ascii art generator that displays a random cat ascii art on each invocation",
+	Use:           "cat-ascii",
+	Short:         "A cat ascii art generator that displays a random cat ascii art on each invocation",
+	SilenceErrors: true, // avoids double printing of errors when thrown
 	Run: func(cmd *cobra.Command, args []string) {
 		displayRandomCatAscii()
 	},
@@ -52,7 +53,6 @@ func fitsInTerminal(art string, termWidth, termHeight int) bool {
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logger.WriteErrorf("Error: %v\n", err)
-		os.Exit(1)
 	}
 }
 

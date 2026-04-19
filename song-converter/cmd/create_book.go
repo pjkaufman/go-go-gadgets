@@ -45,6 +45,7 @@ var CreateBookCmd = &cobra.Command{
 	// - Converts each file into html
 	// - Writes the content to the specified source
 	// `),
+	PreRunE: validateCreateHtmlFile,
 	Run: func(cmd *cobra.Command, args []string) {
 		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", "font-size: 52pt;", true)
 	},

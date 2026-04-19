@@ -14,8 +14,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "versy",
-	Short: "A verse of the day retriever for two translations",
+	Use:           "versy",
+	Short:         "A verse of the day retriever for two translations",
+	SilenceErrors: true, // avoids double printing of errors when thrown
 	Run: func(cmd *cobra.Command, args []string) {
 		var scrapper = crawler.CreateNewCollyCrawler(userAgent, verbose, allowedDomains)
 
@@ -31,7 +32,6 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logger.WriteErrorf("Error: %v\n", err)
-		os.Exit(1)
 	}
 }
 

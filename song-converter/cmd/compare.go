@@ -38,22 +38,25 @@ var CompareCmd = &cobra.Command{
 	To compare a pdf and its html source where the first several lines of text are meant to be the heading on a single line:
 	song-converter compare -s songs.html -f songs.pdf --join-lines 4
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateCompareHtmlFlags(htmlFile, pdfFile)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(htmlFile, "source")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(pdfFile, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		pdfText := commandhandler.MustGetCommandOutput("pdftotext", "PDF extraction error", "-layout", pdfFile, "-")
 		pdfLines := converter.PdfTextCleanup(pdfText, numJoinLines, ignoreToCLineNums)
 

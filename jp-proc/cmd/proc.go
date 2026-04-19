@@ -23,17 +23,20 @@ var (
 var procCmd = &cobra.Command{
 	Use:   "proc",
 	Short: "Processes the provided image in the specified ways",
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateJpProcFlags(file)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(file, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		data, err := filehandler.ReadInBinaryFileContents(file)
 		if err != nil {
 			logger.WriteError(err.Error())

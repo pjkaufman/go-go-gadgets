@@ -3,11 +3,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -15,18 +17,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var goldenFilePath string
+var (
+	goldenFilePath         string
+	errGoldenFilePathEmpty = errors.New("output path is required")
+)
 
 // GenerateTestCmd represents the generate golden test file command
 var GenerateTestCmd = &cobra.Command{
 	Use:   "golden",
 	Short: "Gets a snapshot of the current html for several series to use for golden testing",
-	Run: func(cmd *cobra.Command, args []string) {
-		if goldenFilePath == "" {
-			logger.WriteErrorf("output path is required\n")
-			return
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if strings.TrimSpace(goldenFilePath) == "" {
+			return errGoldenFilePathEmpty
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		type goldenTestInfo struct {
 			url      string
 			filename string
@@ -116,6 +123,10 @@ func init() {
 	rootCmd.AddCommand(GenerateTestCmd)
 
 	GenerateTestCmd.Flags().StringVarP(&goldenFilePath, "out", "o", "", "the output path for where to store the resulting golden files for the tests which should point to magnum's internal folder")
+	err := GenerateTestCmd.MarkFlagRequired("out")
+	if err != nil {
+		logger.WriteErrorf("failed to mark flag \"out\" as required on generate-golden command: %v\n", err)
+	}
 }
 
 func createGoldenFile(url, out string, frozen, isJson bool) error {

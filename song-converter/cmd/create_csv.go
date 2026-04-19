@@ -32,16 +32,20 @@ var createCsvCmd = &cobra.Command{
 	- Converts each file into a CSV row
 	- Writes the content to the specified source
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateCreateCsvFlags(stagingDir)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FolderArgExists(stagingDir, "working-dir")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
+
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 
 		var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 		if isWritingToFile {

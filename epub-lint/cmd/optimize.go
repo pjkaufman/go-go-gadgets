@@ -46,12 +46,15 @@ var optimizeCmd = &cobra.Command{
 	- Adds language encoding specified if it is not present already (default is "en")
 	- Sets encoding on content files to utf-8 to prevent errors in some readers
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateOptimizeFlags(lintDir, lang)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Starting compression and linting for each epub\n")
 
 		epubs, err := filehandler.GetAllFilesWithExtInASpecificFolder(lintDir, ".epub")

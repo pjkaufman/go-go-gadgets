@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -17,12 +16,15 @@ var RemoveCmd = &cobra.Command{
 	Example: heredoc.Doc(`To remove a series use the following command:
 	magnum series remove -n "Lady and the Tramp"
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateRemoveSeriesFlags(seriesName)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
 		if !seriesInfo.RemoveSeriesIfExists(seriesName) {
 			logger.WriteInfo("The series does not exists in the list.")
@@ -48,7 +50,7 @@ func init() {
 
 func ValidateRemoveSeriesFlags(seriesName string) error {
 	if strings.TrimSpace(seriesName) == "" {
-		return errors.New(NameArgEmpty)
+		return errNameArgEmpty
 	}
 
 	return nil

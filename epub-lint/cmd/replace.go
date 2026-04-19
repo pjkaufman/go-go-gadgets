@@ -38,22 +38,25 @@ var replaceCmd = &cobra.Command{
 		...
 		| I am another issue to correct | the correction |
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateReplaceFlags(epubFile, extraReplacesFilePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(extraReplacesFilePath, "replacements")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Starting epub string replacement...\n")
 
 		var numHits = make(map[string]int)

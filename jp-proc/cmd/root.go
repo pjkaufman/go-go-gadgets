@@ -9,14 +9,14 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "jp-proc",
-	Short: "JPEG and PNG image processor",
+	Use:           "jp-proc",
+	Short:         "JPEG and PNG image processor",
+	SilenceErrors: true, // avoids double printing of errors when thrown
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		logger.WriteErrorf("Error: %v\n", err)
-		os.Exit(1)
 	}
 }
 

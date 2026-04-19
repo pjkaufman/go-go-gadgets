@@ -10,10 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	NameArgEmpty = "name must have a non-whitespace value"
-)
-
 var (
 	seriesName                     string
 	seriesType                     string
@@ -21,6 +17,7 @@ var (
 	slugOverride                   string
 	seriesStatus                   string
 	wikipediaTablesToParseOverride int
+	errNameArgEmpty                = errors.New("name must have a non-whitespace value")
 )
 
 // AddCmd represents the add book info command
@@ -37,11 +34,15 @@ var AddCmd = &cobra.Command{
 	To add a series that is not ongoing (for example Completed):
 	magnum series add -n "Demon Slayer" -r "C"
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateAddSeriesFlags(seriesName)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
+
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 
 		seriesInfo := config.GetConfig()
 		if seriesInfo.HasSeries(seriesName) {
@@ -105,7 +106,7 @@ func init() {
 
 func ValidateAddSeriesFlags(seriesName string) error {
 	if strings.TrimSpace(seriesName) == "" {
-		return errors.New(NameArgEmpty)
+		return errNameArgEmpty
 	}
 
 	return nil

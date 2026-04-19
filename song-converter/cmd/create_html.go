@@ -62,27 +62,13 @@ var CreateHtmlCmd = &cobra.Command{
 	- Converts each file into html
 	- Writes the content to the specified source
 	`),
+	PreRunE: validateCreateHtmlFile,
 	Run: func(cmd *cobra.Command, args []string) {
 		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, versionDescriptor, "", false)
 	},
 }
 
 func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, extraCss string, isBook bool) {
-	err := ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath)
-	if err != nil {
-		logger.WriteError(err.Error())
-	}
-
-	err = filehandler.FolderArgExists(stagingDir, "working-dir")
-	if err != nil {
-		logger.WriteError(err.Error())
-	}
-
-	err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
-	if err != nil {
-		logger.WriteError(err.Error())
-	}
-
 	var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 	if isWritingToFile {
 		logger.WriteInfo("Converting file to html cover")
@@ -149,6 +135,25 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 	if isWritingToFile {
 		logger.WriteInfo("Finished converting Markdown files to html")
 	}
+}
+
+func validateCreateHtmlFile(cmd *cobra.Command, args []string) error {
+	err := ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath)
+	if err != nil {
+		return err
+	}
+
+	err = filehandler.FolderArgExists(stagingDir, "working-dir")
+	if err != nil {
+		return err
+	}
+
+	err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func init() {

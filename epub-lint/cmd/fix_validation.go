@@ -59,22 +59,25 @@ var autoFixValidationCmd = &cobra.Command{
 		will read in the contents of the file and try to fix any of the fixable
 		validation issues as well as remove any jnovels specific files
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := ValidateAutoFixValidationFlags(epubFile, validationIssuesFilePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(epubFile, "file")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
 		err = filehandler.FileArgExists(validationIssuesFilePath, "issues")
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Starting epub validation fixes...")
 
 		validationOutput, err := filehandler.ReadInFileContents(validationIssuesFilePath)

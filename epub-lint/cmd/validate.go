@@ -22,12 +22,15 @@ var validateCmd = &cobra.Command{
 	epub-lint validate -f test.epub
 	will run EPUBCheck against the file specified.
 `),
-	Run: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := validateCommonEpubFlags(epubFile)
 		if err != nil {
-			logger.WriteError(err.Error())
+			return err
 		}
 
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		epubcheckDir, err := filehandler.GetDataDir("epubcheck")
 		if err != nil {
 			logger.WriteError(err.Error())
