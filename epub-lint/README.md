@@ -83,7 +83,7 @@ epub-lint fix content -f test.epub --lacking-subordinate-clause
 epub-lint fix content -f test.epub --thoughts
 
 # To run a combination of options:
-epub-lint fix content -f test.epub -oxford-commas --thoughts --necessary-words
+epub-lint fix content -f test.epub --oxford-commas --thoughts --necessary-words
 ```
 
 #### validation

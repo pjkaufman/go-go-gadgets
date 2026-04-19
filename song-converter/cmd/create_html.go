@@ -53,7 +53,7 @@ var CreateHtmlCmd = &cobra.Command{
 	song-converter create html -d working-dir -c cover.md -o songs.html
 
 	To write the output of converting the files in the specified folder to html to std out:
-	song-converter create html -d working-dir -s cover.md
+	song-converter create html -d working-dir -c cover.md
 	`),
 	Long: heredoc.Doc(`How it works:
 	- Reads in all of the files in the specified folder

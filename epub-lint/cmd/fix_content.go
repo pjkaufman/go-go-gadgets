@@ -116,7 +116,7 @@ var contentCmd = &cobra.Command{
 	epub-lint fix content -f test.epub --thoughts
 
 	To run a combination of options:
-	epub-lint fix content -f test.epub -oxford-commas --thoughts --necessary-words
+	epub-lint fix content -f test.epub --oxford-commas --thoughts --necessary-words
 	`),
 	Long: heredoc.Doc(`Goes through all of the content files and runs the specified fixable actions on them asking
 	for user input on each value found that matches the potential fix criteria.
