@@ -3,19 +3,20 @@ package logger
 import (
 	"bufio"
 	"fmt"
+	"image/color"
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
+	"charm.land/lipgloss/v2"
 )
 
 func WriteError(msg string) {
-	color.New(color.FgRed).Fprintln(os.Stderr, msg)
+	fmt.Fprintln(os.Stderr, errorStyle.Render(msg))
 	os.Exit(-1)
 }
 
 func WriteErrorf(format string, a ...any) {
-	color.New(color.FgRed).Fprintf(os.Stderr, format, a...)
+	fmt.Fprintf(os.Stderr, errorStyle.Render(format), a...)
 	os.Exit(-1)
 }
 
@@ -28,15 +29,15 @@ func WriteInfof(format string, a ...any) {
 }
 
 func WriteWarn(msg string) {
-	color.New(color.FgYellow).Fprintln(os.Stdout, msg)
+	fmt.Fprintln(os.Stdout, warningStyle.Render(msg))
 }
 
 func WriteWarnf(format string, a ...any) {
-	color.New(color.FgYellow).Fprintf(os.Stdout, format, a...)
+	fmt.Fprintf(os.Stdout, warningStyle.Render(format), a...)
 }
 
-func WriteInfoWithColor(msg string, displayColor color.Attribute) {
-	color.New(displayColor).Fprintln(os.Stdout, msg)
+func WriteInfoWithColor(msg string, displayColor color.Color) {
+	fmt.Fprintln(os.Stdout, lipgloss.NewStyle().Foreground(displayColor).Render(msg))
 }
 
 func GetInputString(prompt string) string {

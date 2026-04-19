@@ -11,11 +11,11 @@ require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/atotto/clipboard v0.1.4
+	github.com/charmbracelet/x/ansi v0.11.7
 	github.com/charmbracelet/x/exp/term v0.0.0-20240814160751-e2dc8b53b604
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
-	github.com/fatih/color v1.19.0
 	github.com/gomarkdown/markdown v0.0.0-20260412113850-134a5b2cce7f
 	github.com/liut/jpegquality v0.0.0-20240710065817-3f50304d6fdd
 	github.com/manifoldco/promptui v0.9.0
@@ -36,7 +36,6 @@ require (
 	github.com/bits-and-blooms/bitset v1.24.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260413225345-5027f0c48455 // indirect
-	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
@@ -79,8 +78,6 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/gocolly/colly/v2 v2.3.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/spf13/pflag v1.0.10
 	golang.org/x/sys v0.43.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

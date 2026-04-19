@@ -5,6 +5,7 @@ package stringdiff_test
 import (
 	"testing"
 
+	"github.com/charmbracelet/x/ansi"
 	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,7 +50,7 @@ func TestCharacterDiff(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := stringdiff.GetPrettyDiffString(args.InputOriginal, args.InputNew)
 			require.NoError(t, err)
-			assert.Equal(t, args.ExpectedOutput, actual)
+			assert.Equal(t, args.ExpectedOutput, ansi.Strip(actual))
 		})
 	}
 }

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"fmt"
 
+	"charm.land/lipgloss/v2"
 	"github.com/andreyvit/diff"
-	"github.com/fatih/color"
 )
 
 var (
-	red   = color.New(color.BgRed, color.FgBlack).SprintFunc()
-	green = color.New(color.BgGreen, color.FgBlack).SprintFunc()
+	redStyle   = lipgloss.NewStyle().Background(lipgloss.Red).Foreground(lipgloss.Black)
+	greenStyle = lipgloss.NewStyle().Background(lipgloss.Green).Foreground(lipgloss.Black)
 )
 
 // GetPrettyDiffString gets the diff string of the 2 passed in values where removals have a red background and additions have a green background
@@ -39,14 +39,14 @@ func GetPrettyDiffString(original, updated string) (string, error) {
 			}
 		} else if char == "~" && i+2 < diffsLen && string(diffString[i+1]) == "~" && string(diffString[i+2]) == ")" {
 			inSection = false
-			buff.WriteString(red(section))
+			buff.WriteString(redStyle.Render(section))
 			section = ""
 
 			i += 3
 			continue
 		} else if char == "+" && i+2 < diffsLen && string(diffString[i+1]) == "+" && string(diffString[i+2]) == ")" {
 			inSection = false
-			buff.WriteString(green(section))
+			buff.WriteString(greenStyle.Render(section))
 			section = ""
 
 			i += 3

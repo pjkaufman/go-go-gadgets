@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/fatih/color"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -80,9 +80,9 @@ var UpcomingCmd = &cobra.Command{
 
 			date := parseVolumeReleaseDate(unreleasedVolume.Name, unreleasedVolume.ReleaseDate)
 			if date.Before(oneWeekAgo) {
-				logger.WriteInfoWithColor(displayText, color.FgRed)
+				logger.WriteInfoWithColor(displayText, lipgloss.Red)
 			} else if date.Before(nextMonth) {
-				logger.WriteInfoWithColor(displayText, color.FgYellow)
+				logger.WriteInfoWithColor(displayText, lipgloss.Yellow)
 			} else {
 				logger.WriteInfo(displayText)
 			}
