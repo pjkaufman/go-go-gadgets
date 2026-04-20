@@ -47,7 +47,7 @@ Adds the provided series info to the list of series to keep track of
 | r | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
 | s | status | the status of the series (defaults to Ongoing) | string | O | false |  |
 | t | type | the series type | string |  | false |  |
-| o | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
+|  | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
 
 ##### Usage
 

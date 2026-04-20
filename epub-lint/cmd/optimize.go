@@ -31,10 +31,10 @@ var optimizeCmd = &cobra.Command{
 	Use:   "optimize",
 	Short: "Compresses and lints all of the epub files in the specified directory even compressing images using imgp if that option is specified.",
 	Example: heredoc.Doc(`To compress images and make general modifications to all epubs in a folder:
-	epub-lint optimize -d folder -i
+	epub-lint optimize -d folder -c
 	
 	To compress images and make general modifications to all epubs in the current directory:
-	epub-lint optimize -i
+	epub-lint optimize -c
 
 	To just make general modifications to all epubs in the current directory:
 	epub-lint optimize
@@ -105,7 +105,7 @@ func init() {
 	optimizeCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
 	optimizeCmd.Flags().StringVarP(&removableFileTypes, "remove-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
 	optimizeCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
-	optimizeCmd.Flags().BoolVarP(&runCompressImages, "compress", "i", false, "whether or not to also compress images which requires imgp to be installed")
+	optimizeCmd.Flags().BoolVarP(&runCompressImages, "compress", "c", false, "whether or not to also compress images")
 }
 
 func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFileExts []string) error {

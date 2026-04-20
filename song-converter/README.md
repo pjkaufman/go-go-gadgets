@@ -93,8 +93,8 @@ How it works:
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | cover-file | the markdown cover file to use | string |  | true | Should be a file with one of the following extensions: md |
+|  | format | the version descriptor for the type of songs to generate (generally just abridged or unabridged) | string |  | true |  |
 | o | output | the html file to write the output to | string |  | false | Should be a file with one of the following extensions: html |
-| v | version-type | the version descriptor for the type of songs to generate (generally just abridged or unabridged) | string |  | true |  |
 | d | working-dir | the directory where the Markdown files are located | string |  | true | Should be a directory |
 
 ##### Usage

@@ -17,9 +17,9 @@ A verse of the day retriever for two translations
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+|  | translation-a | gets the verse reference specified in this translation first (default is ESV) | string | ESV | false |  |
+|  | translation-b | gets the verse reference specified in this translation second (default is NVI) | string | NVI | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
-|  | version-one | gets the first instance of the verse in the specified version (default is ESV) | string | ESV | false |  |
-|  | version-two | gets the second instance of the verse in the specified version (default is NVI) | string | NVI | false |  |
 
 #### show
 
@@ -29,9 +29,9 @@ Displays the specified verse reference in the two specified Bible versions
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
+|  | translation-a | gets the verse reference specified in this translation first (default is ESV) | string | ESV | false |  |
+|  | translation-b | gets the verse reference specified in this translation second (default is NVI) | string | NVI | false |  |
 | v | verbose | show more info about what is going on |  | false | false |  |
 |  | verse | the Bible verse to get the two versions of | string |  | true |  |
-|  | version-one | gets the first instance of the verse in the specified version (default is ESV) | string | ESV | false |  |
-|  | version-two | gets the second instance of the verse in the specified version (default is NVI) | string | NVI | false |  |
 
 

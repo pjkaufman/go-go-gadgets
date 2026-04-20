@@ -14,9 +14,9 @@ import (
 const defaultQuality = 75
 
 var (
-	quiet, removeExif, overwrite bool
-	quality, width               int
-	file                         string
+	quiet, removeExif, updateExisting bool
+	quality, width                    int
+	file                              string
 )
 
 // procCmd represents the process command for processing an image
@@ -74,7 +74,7 @@ var procCmd = &cobra.Command{
 		}
 
 		if !bytes.Equal(data, newData) {
-			if overwrite {
+			if updateExisting {
 				err = filehandler.WriteBinaryFileContents(file, newData)
 			} else {
 				var newFile = strings.Split(file, ".")
@@ -107,10 +107,10 @@ func init() {
 	}
 
 	procCmd.Flags().BoolVarP(&removeExif, "remove-exif", "e", false, "whether or not to remove exif data from the image")
-	procCmd.Flags().BoolVarP(&quiet, "mute", "m", false, "whether or not to keep from printing out values to standard out")
-	procCmd.Flags().BoolVarP(&overwrite, "overwrite", "o", false, "whether or not to overwrite the original file when done")
+	procCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "whether or not to keep from printing out values to standard out")
+	procCmd.Flags().BoolVarP(&updateExisting, "update", "u", false, "whether or not to update the original file when done")
 
-	procCmd.Flags().IntVarP(&quality, "quality", "q", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)")
+	procCmd.Flags().IntVarP(&quality, "quality", "", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)")
 	procCmd.Flags().IntVarP(&width, "width", "w", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
 }
 

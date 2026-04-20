@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrEpubPathArgEmpty   = errors.New("epub-file must have a non-whitespace value")
-	ErrEpubPathArgNonEpub = errors.New("epub-file must be an Epub file")
+	ErrEpubPathArgEmpty   = errors.New("file must have a non-whitespace value")
+	ErrEpubPathArgNonEpub = errors.New("file must be an Epub file")
 )
 
 var epubFile string

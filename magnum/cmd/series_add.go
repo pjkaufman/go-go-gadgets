@@ -101,7 +101,7 @@ func init() {
 	AddCmd.Flags().StringVarP(&seriesType, "type", "t", "", "the series type")
 	AddCmd.Flags().StringVarP(&slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name")
 	AddCmd.Flags().StringVarP(&seriesStatus, "status", "s", string(config.Ongoing), "the status of the series (defaults to Ongoing)")
-	AddCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
+	AddCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
 }
 
 func ValidateAddSeriesFlags(seriesName string) error {

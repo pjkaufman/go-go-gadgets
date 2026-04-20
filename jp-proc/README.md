@@ -31,10 +31,10 @@ Processes the provided image in the specified ways
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | f | file | the image file to operate on | string |  | true | Should be a file with one of the following extensions: png, jpg, jpeg |
-| m | mute | whether or not to keep from printing out values to standard out |  | false | false |  |
-| o | overwrite | whether or not to overwrite the original file when done |  | false | false |  |
-| q | quality | the quality of the jpeg to use when encoding the image (default is 75) | int | 75 | false |  |
+|  | quality | the quality of the jpeg to use when encoding the image (default is 75) | int | 75 | false |  |
+| q | quiet | whether or not to keep from printing out values to standard out |  | false | false |  |
 | e | remove-exif | whether or not to remove exif data from the image |  | false | false |  |
+| u | update | whether or not to update the original file when done |  | false | false |  |
 | w | width | the width of the image to use when the image is resized (leave blank to keep original) | int | 0 | false |  |
 
 

@@ -147,7 +147,7 @@ Some of the things that the linting includes:
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
-| i | compress | whether or not to also compress images which requires imgp to be installed |  | false | false |  |
+| c | compress | whether or not to also compress images |  | false | false |  |
 | d | directory | the location to run the epub lint logic | string | . | false |  |
 | l | lang | the language to add to the xhtml, htm, or html files if the lang is not already specified | string | en | false |  |
 |  | remove-types | A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg') | string | .jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml | false |  |
@@ -157,10 +157,10 @@ Some of the things that the linting includes:
 
 ``` bash
 # To compress images and make general modifications to all epubs in a folder:
-epub-lint optimize -d folder -i
+epub-lint optimize -d folder -c
 
 # To compress images and make general modifications to all epubs in the current directory:
-epub-lint optimize -i
+epub-lint optimize -c
 
 # To just make general modifications to all epubs in the current directory:
 epub-lint optimize

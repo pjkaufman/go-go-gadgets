@@ -37,8 +37,8 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
-	rootCmd.PersistentFlags().StringVarP(&version1, "version-one", "", "ESV", "gets the first instance of the verse in the specified version (default is ESV)")
-	rootCmd.PersistentFlags().StringVarP(&version2, "version-two", "", "NVI", "gets the second instance of the verse in the specified version (default is NVI)")
+	rootCmd.PersistentFlags().StringVarP(&version1, "translation-a", "", "ESV", "gets the verse reference specified in this translation first (default is ESV)")
+	rootCmd.PersistentFlags().StringVarP(&version2, "translation-b", "", "NVI", "gets the verse reference specified in this translation second (default is NVI)")
 
 	rootCmd.SetOut(os.Stdout)
 }

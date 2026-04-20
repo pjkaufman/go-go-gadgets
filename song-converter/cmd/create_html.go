@@ -161,10 +161,10 @@ func init() {
 
 	createCommonHtmlAndBookFlags(CreateHtmlCmd)
 
-	CreateHtmlCmd.Flags().StringVarP(&versionDescriptor, "version-type", "v", "", "the version descriptor for the type of songs to generate (generally just abridged or unabridged)")
-	err := CreateHtmlCmd.MarkFlagRequired("version-type")
+	CreateHtmlCmd.Flags().StringVarP(&versionDescriptor, "format", "", "", "the version descriptor for the type of songs to generate (generally just abridged or unabridged)")
+	err := CreateHtmlCmd.MarkFlagRequired("format")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"version-type\" as required on create html command: %v\n", err)
+		logger.WriteErrorf("failed to mark flag \"format\" as required on create html command: %v\n", err)
 	}
 }
 
