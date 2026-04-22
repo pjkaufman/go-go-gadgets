@@ -22,6 +22,8 @@ var (
 const (
 	borderWidth      = 2
 	scrollbarPadding = 3
+	minWidth         = 75
+	minHeight        = 41
 )
 
 type stage int
@@ -218,6 +220,12 @@ func (m FixableIssuesModel) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 	if m.ready {
+		if m.height < minHeight || m.width < minWidth {
+			view.SetContent(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf("Terminal size is too small:\nWidth = %d Height = %d\n\nMinimum Needed:\nWidth = %d Height = %d", m.width, m.height, minWidth, minHeight)))
+
+			return view
+		}
+
 		var (
 			header = m.headerView()
 			footer = m.footerView()
