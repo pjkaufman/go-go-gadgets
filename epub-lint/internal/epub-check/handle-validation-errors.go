@@ -15,6 +15,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 		elementNameToNumber         = make(map[string]int)
 		fileToChanges               = make(map[string]positions.TextDocumentEdit)
 		fileToScriptTagsRemoved     = make(map[string]int)
+		hasHandledPlayOrder         bool
 	)
 	for i := 0; i < len(validationErrors.ValidationIssues); i++ {
 		var (
@@ -197,6 +198,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					}
 				}
 			} else if message.Message == invalidPlayOrder || message.Message == gapsInPlayOrder {
+				if hasHandledPlayOrder { // if we are already generating updates for the play order, we don't want to do so again
+					continue
+				}
+
+				hasHandledPlayOrder = true
+
 				fileContent, err = getContentByFileName(ncxFilename)
 				if err != nil {
 					return err
