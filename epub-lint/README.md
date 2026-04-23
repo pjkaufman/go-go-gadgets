@@ -2,7 +2,16 @@
 
 # Epub Linter
 
-This is a program that helps lint and make updates to epubs.
+This is a program that helps lint and make updates to epubs. The logic is designed to be broken into different functionality for each command, so a user does not have to use all functionality if they do not want to.
+
+## What Are Some Common Use Cases for Epub Linter?
+
+- Listing out the validation issues in an epub via [validate](#validate).
+- Fixing validation issues in an epub via [validation](#validation)
+- Optimizing image sizes and cleaning up an epub so it works better on e-readers via [optimize](#optimize)
+- Replacing one set of strings inside the epub with another (mostly just for fixing typos) via [replace](#replace)
+- Fixing common grammatical errors as well as fan translation errors that are present in many epubs via [content](#content)
+- Moving author's notes to the end of the epub and making sure that the notes are bidirectionally linked via [organize-notes](#organize-notes)
 
 ## TODOs
 - See about removing unused files and images when running epub linting
@@ -148,7 +157,7 @@ Some of the things that the linting includes:
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | compress | whether or not to also compress images |  | false | false |  |
-| d | directory | the location to run the epub lint logic | string | . | false |  |
+| d | directory | the location to run the epub linter logic | string | . | false |  |
 | l | lang | the language to add to the xhtml, htm, or html files if the lang is not already specified | string | en | false |  |
 |  | remove-types | A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg') | string | .jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml | false |  |
 | v | verbose | whether or not to show extra logs like what files were removed from the epub |  | false | false |  |

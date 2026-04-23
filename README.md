@@ -1,7 +1,6 @@
 # Go Go Gadgets
 
-This is a set of cli tools that I find useful for me. It helps me get things done more easily than I otherwise would
-be able to.
+This repository is full of CLI tools that I find useful. They are meant to help me with various tasks that I do. Some are more useful than others. But they are all gadgets that I have put together here in this repository. 
 
 ## Installation
 
@@ -15,13 +14,33 @@ This will install the CLI programs and their completions.
 
 ### Termux (Mobile)
 
-To install on mobile in Termux run the following command:
+To install on mobile in Termux run the following command which only installs `epub-lint` at this time:
 
 ``` bash
 make install-termux
 ```
 
-As of right now, that just installs `epub-lint`.
+## Uninstalling
+
+If you need to uninstall the packages, the simplest way is to run the following make rule:
+
+```bash
+make clean
+```
+
+## Testing
+
+To run the unit tests, you can go ahead and run the following:
+
+``` bash
+make test
+```
+
+This will run all of the unit tests and let you know if anything is broken.
+
+## Documentation
+
+The main documentation for the gadgets and this repository live in this README, each gadget's README, and the [CONTRIBUTING.md](CONTRIBUTING.md). A lot of the Gadget README files are generated, so keep that in mind if a change is needed.
 
 ## Available Gadgets
 
@@ -35,6 +54,7 @@ A versatile ebook management tool that helps maintain and improve your epubs.
 - Comprehensive EPUB linting and formatting
 - String replacement and content fixes
 - EPUB validation via W3C's EpubCheck program
+- Moving author's notes to their own file at the end of the EPUB
 
 #### Use Cases
 
@@ -90,9 +110,17 @@ An image processing utility focused on JPEG and PNG optimization.
 
 Useful for batch processing images, preparing photos for web use, or cleaning up image metadata.
 
-### Cat ASCII
+### [Cat ASCII](./cat-ascii/README.md)
 
 A tool to display nice little cat ASCII art.
+
+### [Versy](./versy/README.md)
+
+A tool for getting the verse of the day and specified verses in two translations (often one being in English and the other being in Spanish).
+
+## Contributing
+
+As with most, if not all, software there are always improvements that can be made. If you believe that something can be improved or you would like to contribute, look at [the contributing docs](CONTRIBUTING.md).
 
 ## Key Dependencies
 
@@ -104,8 +132,7 @@ A tool to display nice little cat ASCII art.
 ### User Interface
 - [bubbles](https://github.com/charmbracelet/bubbles) - TUI components
 - [bubbletea](https://github.com/charmbracelet/bubbletea) - TUI framework
-- [lipgloss](https://github.com/charmbracelet/lipgloss) - TUI styling
-- [color](https://github.com/fatih/color) - Terminal color output
+- [lipgloss](https://github.com/charmbracelet/lipgloss) - TUI styling and terminal color
 - [promptui](https://github.com/manifoldco/promptui) - Interactive prompt UI
 
 ### File Processing
@@ -123,5 +150,4 @@ A tool to display nice little cat ASCII art.
 
 ### System Integration
 - [clipboard](https://github.com/atotto/clipboard) - Clipboard interaction
-- [dbus](https://github.com/godbus/dbus) - D-Bus interface
 - [consolesize-go](https://github.com/nathan-fiscaletti/consolesize-go) - Console dimensions

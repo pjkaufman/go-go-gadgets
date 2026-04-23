@@ -101,7 +101,7 @@ var optimizeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(optimizeCmd)
 
-	optimizeCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub lint logic")
+	optimizeCmd.Flags().StringVarP(&lintDir, "directory", "d", ".", "the location to run the epub linter logic")
 	optimizeCmd.Flags().StringVarP(&lang, "lang", "l", "en", "the language to add to the xhtml, htm, or html files if the lang is not already specified")
 	optimizeCmd.Flags().StringVarP(&removableFileTypes, "remove-types", "", ".jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml", "A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg')")
 	optimizeCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "whether or not to show extra logs like what files were removed from the epub")
