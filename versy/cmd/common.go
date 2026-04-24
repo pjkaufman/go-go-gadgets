@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"html"
 	"net/url"
 	"regexp"
 	"strings"
@@ -67,7 +68,7 @@ func getVerse(reference, version string, scrapper *colly.Collector) (verse strin
 
 	referenceInLanguage = strings.Replace(referenceInLanguage, "-", " - ", 1)
 
-	return fmt.Sprintf(`%s %q (%s)`, referenceInLanguage, verseContent, version), nil
+	return fmt.Sprintf(`%s %q (%s)`, referenceInLanguage, html.UnescapeString(verseContent), version), nil
 }
 
 func getVerseOfTheDayReference(scrapper *colly.Collector) (reference string, err error) {
