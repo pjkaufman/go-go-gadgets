@@ -46,7 +46,7 @@ func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, [
 				if val, ok := pageNumberIndex[nextMdData.FileName]; ok {
 					nextPageNumber = nextMdData.PageNumbers[val]
 				} else {
-					nextPageNumber = mdData.PageNumbers[0]
+					nextPageNumber = nextMdData.PageNumbers[0]
 				}
 			}
 
