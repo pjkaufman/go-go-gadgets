@@ -18,6 +18,7 @@ type SongMetadata struct {
 	VerseReference string `yaml:"verse"`
 	BookLocation   string `yaml:"location"`
 	Copyright      string `yaml:"copyright"`
+	NoBreak        bool   `yaml:"no-break"`
 }
 
 type SongGenerationType int
@@ -36,7 +37,7 @@ const (
 	smallBookKeySize   = 5
 )
 
-var commonOrPotentialIssueFixer = strings.NewReplacer("\u00a0\u00a0\n", "<br>\n", "\\&", "&", "\n\n", "\n")
+var commonOrPotentialIssueFixer = strings.NewReplacer("\u00a0\u00a0\n", "<br>\n", "\\&", "&", "\n\n", "\n", "&amp;nbsp;", "&nbsp;")
 
 func ConvertMdToHtmlSong(filePath, fileContents string, songType SongGenerationType, isLastOnPage bool) (string, error) {
 	var metadata SongMetadata
@@ -53,11 +54,18 @@ func ConvertMdToHtmlSong(filePath, fileContents string, songType SongGenerationT
 	html = replaceOtherTitle(html)
 	html = strings.Replace(html, "</h1>\n", "</h1>\n"+metadataHtml, 1)
 
-	if songType == Book && isLastOnPage {
-		extraClass = " end-page"
+	var endingContent = "\n<br>"
+	if songType == Book {
+		if isLastOnPage {
+			extraClass = " end-page"
+		}
+
+		if metadata.NoBreak {
+			endingContent = ""
+		}
 	}
 
-	return fmt.Sprintf("<div class=\"keep-together%s\">\n%s</div>\n<br>", extraClass, commonOrPotentialIssueFixer.Replace(html)), nil
+	return fmt.Sprintf("<div class=\"keep-together%s\">\n%s</div>%s", extraClass, commonOrPotentialIssueFixer.Replace(html), endingContent), nil
 }
 
 func mdToHTML(md []byte) string {
