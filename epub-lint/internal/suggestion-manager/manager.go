@@ -42,16 +42,35 @@ type SuggestionState struct {
 }
 
 // NewSuggestionManager creates a new SuggestionManager instance.
+// filePathToText maps file paths to their cleaned/processed text content.
+// This allows the caller to handle file I/O, cleanup, and sorting before initialization.
 func NewSuggestionManager(
 	suggestions []potentiallyfixableissue.PotentiallyFixableIssue,
-	files []FileSuggestionInfo,
+	filePathToText map[string]string,
 	runAll bool,
 	skipCss bool,
 	logFile io.Writer,
 ) *SuggestionManager {
+	// Convert map to sorted FileSuggestionInfo slice
+	fileSuggestionData := make([]FileSuggestionInfo, 0, len(filePathToText))
+	numFixableIssues := len(suggestions)
+
+	for filePath, text := range filePathToText {
+		fileSuggestionData = append(fileSuggestionData, FileSuggestionInfo{
+			Name:        filePath,
+			Text:        text,
+			Suggestions: make([][]SuggestionState, numFixableIssues),
+		})
+	}
+
+	// Sort by file path to ensure consistent ordering
+	sort.Slice(fileSuggestionData, func(i, j int) bool {
+		return fileSuggestionData[i].Name < fileSuggestionData[j].Name
+	})
+
 	return &SuggestionManager{
 		suggestions:            suggestions,
-		fileSuggestionData:     files,
+		fileSuggestionData:     fileSuggestionData,
 		currentFileIndex:       0,
 		currentIssueIndex:      0,
 		currentSuggestionIndex: 0,
