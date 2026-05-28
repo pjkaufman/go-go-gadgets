@@ -22,7 +22,7 @@ var (
 const (
 	borderWidth                 = 2
 	scrollbarPadding            = 3
-	minHeight                   = 41
+	minHeight                   = 21
 	minWidth                    = 41
 	minLargeHeaderTextThreshold = 71
 )
