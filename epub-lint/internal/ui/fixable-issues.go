@@ -22,7 +22,6 @@ var (
 const (
 	borderWidth      = 2
 	scrollbarPadding = 3
-	minWidth         = 75
 	minHeight        = 41
 )
 
@@ -220,6 +219,7 @@ func (m FixableIssuesModel) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 	if m.ready {
+		var minWidth = m.headerWidth()
 		if m.height < minHeight || m.width < minWidth {
 			view.SetContent(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf("Terminal size is too small:\nWidth = %d Height = %d\n\nMinimum Needed:\nWidth = %d Height = %d", m.width, m.height, minWidth, minHeight)))
 
@@ -239,7 +239,11 @@ func (m FixableIssuesModel) View() tea.View {
 }
 
 func (m FixableIssuesModel) headerView() string {
-	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetHorizontalBorderSize()))
+	return headerBorderStyle.Render(fillLine(m.headerText(), m.width-headerBorderStyle.GetHorizontalBorderSize()))
+}
+
+func (m FixableIssuesModel) headerText() string {
+	return lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders())
 }
 
 func (m FixableIssuesModel) getStageHeaders() string {
@@ -369,4 +373,8 @@ func (m FixableIssuesModel) headerHeight() int {
 
 func (m FixableIssuesModel) footerHeight() int {
 	return lipgloss.Height(m.footerView()) + footerBorderStyle.GetBorderTopSize()
+}
+
+func (m FixableIssuesModel) headerWidth() int {
+	return lipgloss.Width(m.headerText()) + headerBorderStyle.GetBorderBottomSize()
 }
