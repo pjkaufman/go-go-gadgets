@@ -20,9 +20,11 @@ var (
 )
 
 const (
-	borderWidth      = 2
-	scrollbarPadding = 3
-	minHeight        = 41
+	borderWidth                 = 2
+	scrollbarPadding            = 3
+	minHeight                   = 41
+	minWidth                    = 41
+	minLargeHeaderTextThreshold = 71
 )
 
 type stage int
@@ -42,6 +44,7 @@ type FixableIssuesModel struct {
 	body                         viewport.Model
 	title                        string
 	stages                       []string
+	shortStages                  []string
 	runAll, skipCss, ready       bool
 	height, width                int
 	logFile                      io.Writer
@@ -133,6 +136,11 @@ func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFix
 			"Suggestions",
 			"Select CSS File",
 		},
+		shortStages: []string{
+			"Section",
+			"Suggestions",
+			"CSS",
+		},
 		title: "Manually Fixable Issues",
 	}
 }
@@ -219,7 +227,6 @@ func (m FixableIssuesModel) View() tea.View {
 	view := tea.NewView("")
 	view.AltScreen = true
 	if m.ready {
-		var minWidth = m.headerWidth()
 		if m.height < minHeight || m.width < minWidth {
 			view.SetContent(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, fmt.Sprintf("Terminal size is too small:\nWidth = %d Height = %d\n\nMinimum Needed:\nWidth = %d Height = %d", m.width, m.height, minWidth, minHeight)))
 
@@ -243,14 +250,23 @@ func (m FixableIssuesModel) headerView() string {
 }
 
 func (m FixableIssuesModel) headerText() string {
+	if m.height < minLargeHeaderTextThreshold {
+		return lipgloss.JoinVertical(lipgloss.Left, titleStyle.Render(m.title), m.getStageHeaders())
+	}
+
 	return lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders())
 }
 
 func (m FixableIssuesModel) getStageHeaders() string {
-	var stageHeaders = make([]string, len(m.stages))
+	var stages = m.stages
+	if m.height < minLargeHeaderTextThreshold {
+		stages = m.shortStages
+	}
+
+	var stageHeaders = make([]string, len(stages))
 
 	var style lipgloss.Style
-	for i, header := range m.stages {
+	for i, header := range stages {
 		if i == int(m.currentStage) {
 			style = activeStyle
 		} else {
