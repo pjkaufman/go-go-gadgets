@@ -84,8 +84,8 @@ var (
 				key.WithHelp("^U/^D", "Issue Type"),
 			),
 			PrevNextFile: key.NewBinding(
-				key.WithKeys("ctrl+pgup/ctrl+pgdn"),
-				key.WithHelp("^PgUp/^PgDn", "File"),
+				key.WithKeys("pgup/pgdn"),
+				key.WithHelp("PgUp/PgDn", "File"),
 			),
 			Edit: key.NewBinding(
 				key.WithKeys("e"),

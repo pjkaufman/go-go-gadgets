@@ -271,7 +271,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				cmds = append(cmds, cmd)
 			case "ctrl+u":
 				m.moveToPreviousIssue()
-			case "ctrl+pgdown":
+			case "pgdown":
 				cmd, err := m.moveToNextFile()
 				if err != nil {
 					m.Err = err
@@ -280,7 +280,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				}
 
 				cmds = append(cmds, cmd)
-			case "ctrl+pgup":
+			case "pgup":
 				m.moveToPreviousFile()
 			}
 		}
