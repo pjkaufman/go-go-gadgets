@@ -16,13 +16,13 @@ func (m *FixableIssuesModel) suggestionsView() string {
 	return m.suggestionView()
 }
 
-func (m FixableIssuesModel) getSuggestionWidth(statusWidth int) int {
+func (m FixableIssuesModel) getSuggestionWidth() int {
 	return m.body.Width() - (suggestionBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
 }
 
 func (m *FixableIssuesModel) suggestionHeaderView() string {
 	var (
-		maxTextWidth           = m.getSuggestionWidth(0)
+		maxTextWidth           = m.getSuggestionWidth()
 		fileName               = m.PotentiallyFixableIssuesInfo.currentFile
 		fileStatus             string
 		fileNumberInfo         = fmt.Sprintf("(%d/%d)", m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData))
@@ -556,7 +556,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 
 	var (
 		height         = max(m.body.Height()-leftStatusBorderStyle.GetVerticalBorderSize()-strings.Count(m.suggestionHeaderView(), "\n"), 0)
-		remainingWidth = m.getSuggestionWidth(0)
+		remainingWidth = m.getSuggestionWidth()
 	)
 
 	if m.logFile != nil {

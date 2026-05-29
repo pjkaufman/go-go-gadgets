@@ -3,143 +3,107 @@ package ui
 import (
 	"fmt"
 	"strings"
-
-	"charm.land/bubbles/v2/key"
 )
 
-type footerKeyMap struct {
-	PrevNextSuggestion key.Binding
-	PrevNextIssueType  key.Binding
-	PrevNextFile       key.Binding
-	Edit               key.Binding
-	Copy               key.Binding
-	Accept             key.Binding
-	Quit               key.Binding
-	ExitWithoutSaving  key.Binding
-	Reset              key.Binding
-	Original           key.Binding
-	CancelEdit         key.Binding
+type helpKeys struct {
+	prevNextSuggestion helpKey
+	prevNextIssueType  helpKey
+	prevNextFile       helpKey
+	edit               helpKey
+	copy               helpKey
+	accept             helpKey
+	quit               helpKey
+	exitWithoutSaving  helpKey
+	reset              helpKey
+	original           helpKey
+	cancelEdit         helpKey
 }
 
-type footerKeys struct {
-	Long  footerKeyMap
-	Short footerKeyMap
+type helpKey struct {
+	keys  string
+	short string
+	long  string
 }
 
 var (
-	masterKeyList = footerKeys{
-		Long: footerKeyMap{
-			PrevNextSuggestion: key.NewBinding(
-				key.WithKeys("left/right"),
-				key.WithHelp("←/→", "Previous/Next Suggestion"),
-			),
-			PrevNextIssueType: key.NewBinding(
-				key.WithKeys("ctrl+u/ctrl+d"),
-				key.WithHelp("^U/^D", "Previous/Next Issue Type"),
-			),
-			PrevNextFile: key.NewBinding(
-				key.WithKeys("pgup/pgdn"),
-				key.WithHelp("PgUp/PgDn", "Previous/Next File"),
-			),
-			Edit: key.NewBinding(
-				key.WithKeys("e"),
-				key.WithHelp("E", "Edit"),
-			),
-			Copy: key.NewBinding(
-				key.WithKeys("c"),
-				key.WithHelp("C", "Copy"),
-			),
-			Accept: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("Enter", "Accept"),
-			),
-			Quit: key.NewBinding(
-				key.WithKeys("esc"),
-				key.WithHelp("Esc", "Quit"),
-			),
-			ExitWithoutSaving: key.NewBinding(
-				key.WithKeys("ctrl+c"),
-				key.WithHelp("Ctrl+C", "Exit without saving"),
-			),
-			Reset: key.NewBinding(
-				key.WithKeys("ctrl+r"),
-				key.WithHelp("Ctrl+R", "Reset"),
-			),
-			Original: key.NewBinding(
-				key.WithKeys("ctrl+o"),
-				key.WithHelp("Ctrl+O", "Original content"),
-			),
-			CancelEdit: key.NewBinding(
-				key.WithKeys("ctrl+e"),
-				key.WithHelp("Ctrl+E", "Cancel edit"),
-			),
+	masterKeyList = helpKeys{
+		prevNextSuggestion: helpKey{
+			keys:  "←/→",
+			long:  "Previous/Next Suggestion",
+			short: "Suggestion",
 		},
-		Short: footerKeyMap{
-			PrevNextSuggestion: key.NewBinding(
-				key.WithKeys("left/right"),
-				key.WithHelp("←/→", "Suggestion"),
-			),
-			PrevNextIssueType: key.NewBinding(
-				key.WithKeys("ctrl+u/ctrl+d"),
-				key.WithHelp("^U/^D", "Issue Type"),
-			),
-			PrevNextFile: key.NewBinding(
-				key.WithKeys("pgup/pgdn"),
-				key.WithHelp("PgUp/PgDn", "File"),
-			),
-			Edit: key.NewBinding(
-				key.WithKeys("e"),
-				key.WithHelp("E", "Edit"),
-			),
-			Copy: key.NewBinding(
-				key.WithKeys("c"),
-				key.WithHelp("C", "Copy"),
-			),
-			Accept: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("Enter", "Accept"),
-			),
-			Quit: key.NewBinding(
-				key.WithKeys("esc"),
-				key.WithHelp("Esc", "Quit"),
-			),
-			ExitWithoutSaving: key.NewBinding(
-				key.WithKeys("ctrl+c"),
-				key.WithHelp("Ctrl+C", "Exit"),
-			),
-			Reset: key.NewBinding(
-				key.WithKeys("ctrl+r"),
-				key.WithHelp("Ctrl+R", "Reset"),
-			),
-			Original: key.NewBinding(
-				key.WithKeys("ctrl+o"),
-				key.WithHelp("Ctrl+O", "Original"),
-			),
-			CancelEdit: key.NewBinding(
-				key.WithKeys("ctrl+e"),
-				key.WithHelp("Ctrl+E", "Cancel"),
-			),
+		prevNextIssueType: helpKey{
+			keys:  "^U/^D",
+			long:  "Previous/Next Issue Type",
+			short: "Issue Type",
+		},
+		prevNextFile: helpKey{
+			keys:  "PgUp/PgDn",
+			long:  "Previous/Next File",
+			short: "File",
+		},
+		edit: helpKey{
+			keys:  "E",
+			long:  "Edit",
+			short: "Edit",
+		},
+		copy: helpKey{
+			keys:  "C",
+			long:  "Copy",
+			short: "Copy",
+		},
+		accept: helpKey{
+			keys:  "Enter",
+			long:  "Accept",
+			short: "Accept",
+		},
+		quit: helpKey{
+			keys:  "Esc",
+			long:  "Quit",
+			short: "Quit",
+		},
+		exitWithoutSaving: helpKey{
+			keys:  "Ctrl+C",
+			long:  "Exit without saving",
+			short: "Exit",
+		},
+		reset: helpKey{
+			keys:  "Ctrl+R",
+			long:  "Reset",
+			short: "Reset",
+		},
+		original: helpKey{
+			keys:  "Ctrl+O",
+			long:  "Original content",
+			short: "Original",
+		},
+		cancelEdit: helpKey{
+			keys:  "Ctrl+E",
+			long:  "Cancel edit",
+			short: "Cancel",
 		},
 	}
 )
 
 func (m FixableIssuesModel) footerView() string {
 	var (
-		keys     = masterKeyList.Long
 		maxWidth = m.width - footerBorderStyle.GetHorizontalBorderSize()
+		useShort = maxWidth < minLargeLayoutThreshold
 	)
-	if maxWidth < minLargeLayoutThreshold {
-		keys = masterKeyList.Short
-	}
 
 	var (
-		s    strings.Builder
-		line strings.Builder
-		help string
+		s          strings.Builder
+		line       strings.Builder
+		help, desc string
 	)
 	s.WriteString(fillLine(controlsStyle.Render("Controls:"), maxWidth) + "\n")
-	for _, key := range m.currentFooterBindings(keys) {
-		help = fmt.Sprintf("%s: %s", key.Help().Key, key.Help().Desc)
+	for _, key := range m.currentFooterBindings(masterKeyList) {
+		desc = key.long
+		if useShort {
+			desc = key.short
+		}
+
+		help = fmt.Sprintf("%s: %s", key.keys, desc)
 		if line.Len() == 0 {
 			line.WriteString(help)
 			s.WriteString(help)
@@ -160,56 +124,55 @@ func (m FixableIssuesModel) footerView() string {
 	return footerBorderStyle.Render(s.String())
 }
 
-func (m FixableIssuesModel) currentFooterBindings(keys footerKeyMap) []key.Binding {
+func (m FixableIssuesModel) currentFooterBindings(keys helpKeys) []helpKey {
 	switch m.currentStage {
 	case sectionBreak:
-		return []key.Binding{
-			keys.Accept,
-			keys.Quit,
-			keys.ExitWithoutSaving,
+		return []helpKey{
+			keys.accept,
+			keys.quit,
+			keys.exitWithoutSaving,
 		}
 
 	case suggestionsProcessing:
 		if m.PotentiallyFixableIssuesInfo.isEditing {
-			return []key.Binding{
-				keys.Reset,
-				keys.Original,
-				keys.CancelEdit,
-				keys.Accept,
-				keys.Quit,
-				keys.ExitWithoutSaving,
+			return []helpKey{
+				keys.reset,
+				keys.original,
+				keys.cancelEdit,
+				keys.accept,
+				keys.quit,
+				keys.exitWithoutSaving,
 			}
 		}
 
 		if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil &&
 			m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
-
-			return []key.Binding{
-				keys.PrevNextSuggestion,
-				keys.PrevNextIssueType,
-				keys.PrevNextFile,
-				keys.Copy,
-				keys.Quit,
-				keys.ExitWithoutSaving,
+			return []helpKey{
+				keys.prevNextSuggestion,
+				keys.prevNextIssueType,
+				keys.prevNextFile,
+				keys.copy,
+				keys.quit,
+				keys.exitWithoutSaving,
 			}
 		}
 
-		return []key.Binding{
-			keys.PrevNextSuggestion,
-			keys.PrevNextIssueType,
-			keys.PrevNextFile,
-			keys.Edit,
-			keys.Copy,
-			keys.Accept,
-			keys.Quit,
-			keys.ExitWithoutSaving,
+		return []helpKey{
+			keys.prevNextSuggestion,
+			keys.prevNextIssueType,
+			keys.prevNextFile,
+			keys.edit,
+			keys.copy,
+			keys.accept,
+			keys.quit,
+			keys.exitWithoutSaving,
 		}
 
 	case stageCssSelection:
-		return []key.Binding{
-			keys.PrevNextSuggestion,
-			keys.Accept,
-			keys.ExitWithoutSaving,
+		return []helpKey{
+			keys.prevNextSuggestion,
+			keys.accept,
+			keys.exitWithoutSaving,
 		}
 	}
 
