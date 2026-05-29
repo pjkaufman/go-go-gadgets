@@ -20,10 +20,11 @@ var (
 )
 
 const (
-	borderWidth      = 2
-	scrollbarPadding = 3
-	minWidth         = 75
-	minHeight        = 41
+	borderWidth             = 2
+	scrollbarPadding        = 3
+	minHeight               = 21
+	minWidth                = 41
+	minLargeLayoutThreshold = 73
 )
 
 type stage int
@@ -177,10 +178,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.width = msg.Width
 
-		m.body.SetWidth(m.width)
-		m.body.SetHeight(max(0, m.height-(m.headerHeight()+m.footerHeight())))
-
-		m.setSuggestionDisplay(false)
+		m.recalculateElementSizes(false)
 
 		cmds = append(cmds, tea.ClearScreen)
 	case error:
@@ -232,17 +230,32 @@ func (m FixableIssuesModel) View() tea.View {
 		)
 		m.body.SetContent(m.bodyView())
 
-		view.SetContent(lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer))
+		view.SetContent(lipgloss.JoinVertical(lipgloss.Left, header, m.body.View(), footer))
 	}
 
 	return view
 }
 
+func (m *FixableIssuesModel) recalculateElementSizes(resetSuggestionYOffset bool) {
+	m.body.SetWidth(m.width)
+	m.body.SetHeight(max(0, m.height-(m.headerHeight()+m.footerHeight())))
+
+	m.setSuggestionDisplay(resetSuggestionYOffset)
+}
+
 func (m FixableIssuesModel) headerView() string {
-	return headerBorderStyle.Render(fillLine(lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders()), m.width-headerBorderStyle.GetHorizontalBorderSize()))
+	return headerBorderStyle.Render(fillLine(m.headerText(), m.width-headerBorderStyle.GetHorizontalBorderSize()))
+}
+
+func (m FixableIssuesModel) headerText() string {
+	return lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders())
 }
 
 func (m FixableIssuesModel) getStageHeaders() string {
+	if m.width < minLargeLayoutThreshold {
+		return activeStyle.Render(m.stages[min(int(m.currentStage), len(m.stages)-1)])
+	}
+
 	var stageHeaders = make([]string, len(m.stages))
 
 	var style lipgloss.Style
@@ -257,82 +270,6 @@ func (m FixableIssuesModel) getStageHeaders() string {
 	}
 
 	return strings.Join(stageHeaders, inactiveStyle.Render(" > "))
-}
-
-func (m FixableIssuesModel) footerView() string {
-	var (
-		s        strings.Builder
-		maxWidth = m.width - footerBorderStyle.GetHorizontalBorderSize()
-	)
-	s.WriteString(fillLine(controlsStyle.Render("Controls:"), maxWidth) + "\n")
-
-	var controls []string
-	switch m.currentStage {
-	case sectionBreak:
-		controls = []string{
-			"Enter: Accept",
-			"Esc: Quit",
-			"Ctrl+C: Exit without saving",
-		}
-	case suggestionsProcessing:
-		if m.PotentiallyFixableIssuesInfo.isEditing {
-			controls = []string{
-				"Ctrl+R: Reset",
-				"Ctrl+O: Original content",
-				"Ctrl+E: Cancel edit",
-				"Ctrl+S: Accept",
-				"Esc: Quit",
-				"Ctrl+C: Exit without saving",
-			}
-		} else if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
-			controls = []string{
-				"← / → : Previous/Next Suggestion",
-				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
-				"Ctrl+PgUp / Ctrl+PgDn: Previous/Next File",
-				"C: Copy",
-				"Esc: Quit",
-				"Ctrl+C: Exit without saving",
-			}
-		} else {
-			controls = []string{
-				"← / → : Previous/Next Suggestion",
-				"Ctrl+U / Ctrl+D: Previous/Next Potential Issue Type",
-				"Ctrl+PgUp / Ctrl+PgDn: Previous/Next File",
-				"E: Edit",
-				"C: Copy",
-				"Enter: Accept",
-				"Esc: Quit",
-				"Ctrl+C: Exit without saving",
-			}
-		}
-	case stageCssSelection:
-		controls = []string{
-			"↑ / ↓ : Previous/Next Suggestion",
-			"Enter: Accept",
-			"Ctrl+C: Exit without saving",
-		}
-	}
-
-	var (
-		line strings.Builder
-	)
-	for _, help := range controls {
-		if line.Len() == 0 {
-			line.WriteString(help)
-			s.WriteString(help)
-		} else if line.Len()+len(help)+3 <= maxWidth {
-			s.WriteString(" • " + help)
-			line.WriteString(" • " + help)
-		} else {
-			s.WriteString("\n")
-			line.Reset()
-
-			line.WriteString(help)
-			s.WriteString(help)
-		}
-	}
-
-	return footerBorderStyle.Render(s.String())
 }
 
 func (m FixableIssuesModel) bodyView() string {

@@ -12,23 +12,17 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-const maxLeftStatusWidth = 40
-
 func (m *FixableIssuesModel) suggestionsView() string {
-	return lipgloss.JoinHorizontal(lipgloss.Left, m.leftStatusView(), m.suggestionView())
+	return m.suggestionView()
 }
 
-func (m FixableIssuesModel) getSuggestionWidth(statusWidth int) int {
-	return m.body.Width() - (statusWidth + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
+func (m FixableIssuesModel) getSuggestionWidth() int {
+	return m.body.Width() - (suggestionBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
 }
 
-func (m FixableIssuesModel) getLeftStatusWidth() int {
-	return min(lipgloss.Width(m.leftStatusView()), maxLeftStatusWidth)
-}
-
-func (m *FixableIssuesModel) leftStatusView() string {
+func (m *FixableIssuesModel) suggestionHeaderView() string {
 	var (
-		maxTextWidth           = maxLeftStatusWidth - leftStatusBorderStyle.GetHorizontalBorderSize()
+		maxTextWidth           = m.getSuggestionWidth()
 		fileName               = m.PotentiallyFixableIssuesInfo.currentFile
 		fileStatus             string
 		fileNumberInfo         = fmt.Sprintf("(%d/%d)", m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData))
@@ -68,53 +62,50 @@ func (m *FixableIssuesModel) leftStatusView() string {
 		warningStatus = "\n" + strings.Join(lines, "\n")
 	}
 
-	var (
-		statusView      = fileStatus + "\n" + suggestionStatus + warningStatus
-		remainingHeight int
-		statusPadding   string
-	)
-
-	remainingHeight = m.body.Height() - (lipgloss.Height(statusView) + leftStatusBorderStyle.GetVerticalBorderSize())
-
-	if remainingHeight > 0 {
-		statusPadding = strings.Repeat("\n", remainingHeight)
-	}
-
-	return leftStatusBorderStyle.Render(statusView + statusPadding)
+	return fmt.Sprintf("%s\n%s%s\n%s\n", fileStatus, suggestionStatus, warningStatus, hrStyle.Render(strings.Repeat("─", maxTextWidth)))
 }
 
 func (m *FixableIssuesModel) suggestionView() string {
-	var s strings.Builder
-
 	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
-		s.WriteString("\nNo current file is selected. Something may have gone wrong...\n\n")
-	} else {
-		modeIcon := viewIcon
-		modeName := "View"
-		if m.PotentiallyFixableIssuesInfo.isEditing {
-			modeIcon = editIcon
-			modeName = "Edit"
-		}
-
-		if m.PotentiallyFixableIssuesInfo.isEditing {
-			var customBorderStyle = m.createCustomBorder(modeIcon, modeName, 0)
-
-			s.WriteString(customBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionEdit.View()) + "\n\n")
-		} else if m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.PotentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
-			var customBorderStyle = m.createCustomBorder(modeIcon, modeName, scrollbarPadding)
-
-			s.WriteString(customBorderStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top,
-				m.PotentiallyFixableIssuesInfo.suggestionDisplay.View(),
-				m.PotentiallyFixableIssuesInfo.scrollbar.View().Content,
-			)))
-		} else {
-			var customBorderStyle = m.createCustomBorder(modeIcon, modeName, 0)
-
-			s.WriteString(customBorderStyle.Render(m.PotentiallyFixableIssuesInfo.suggestionDisplay.View()))
-		}
+		return "\nNo current file is selected. Something may have gone wrong...\n\n"
 	}
 
-	return s.String()
+	var (
+		modeIcon = viewIcon
+		modeName = "View"
+		s        strings.Builder
+	)
+	if m.PotentiallyFixableIssuesInfo.isEditing {
+		modeIcon = editIcon
+		modeName = "Edit"
+	}
+
+	var (
+		customBorderPadding = 0
+		customBorderStyle   lipgloss.Style
+		isUsingScrollbar    bool
+	)
+	if !m.PotentiallyFixableIssuesInfo.isEditing && m.PotentiallyFixableIssuesInfo.suggestionDisplay.TotalLineCount() > m.PotentiallyFixableIssuesInfo.suggestionDisplay.VisibleLineCount() {
+		isUsingScrollbar = true
+		customBorderPadding = scrollbarPadding
+	}
+
+	s.WriteString(m.suggestionHeaderView())
+
+	customBorderStyle = m.createCustomBorder(modeIcon, modeName, customBorderPadding)
+
+	if m.PotentiallyFixableIssuesInfo.isEditing {
+		s.WriteString(m.PotentiallyFixableIssuesInfo.suggestionEdit.View())
+	} else if isUsingScrollbar {
+		s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top,
+			m.PotentiallyFixableIssuesInfo.suggestionDisplay.View(),
+			m.PotentiallyFixableIssuesInfo.scrollbar.View().Content,
+		))
+	} else {
+		s.WriteString(m.PotentiallyFixableIssuesInfo.suggestionDisplay.View())
+	}
+
+	return customBorderStyle.Render(s.String())
 }
 
 func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
@@ -157,7 +148,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
-				m.setSuggestionDisplay(true)
+				m.recalculateElementSizes(true)
 
 				return tea.Batch(cmds...)
 			case "ctrl+e":
@@ -171,6 +162,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 
 					return tea.Quit
 				}
+
+				m.recalculateElementSizes(false)
 			case "ctrl+r":
 				var originalSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion
 				originalSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(originalSuggestion)
@@ -219,15 +212,6 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			case "left":
 				m.moveToPreviousSuggestion()
 			case "c":
-				// Copy original value to the clipboard
-				// original, err := repairUnicode(m.currentFileState.original)
-				// if err != nil {
-				// 	m.Err = err
-
-				// 	return m, tea.Quit
-				// }
-
-				// err = clipboard.WriteAll(original)
 				// TODO: make sure values are utf-8 compliant
 				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
 				if err != nil {
@@ -273,6 +257,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 
 					cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Focus()
 					cmds = append(cmds, cmd)
+
+					m.recalculateElementSizes(false)
 				}
 			case "ctrl+d":
 				cmd, err := m.moveToNextIssue()
@@ -285,7 +271,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				cmds = append(cmds, cmd)
 			case "ctrl+u":
 				m.moveToPreviousIssue()
-			case "ctrl+pgdown":
+			case "pgdown":
 				cmd, err := m.moveToNextFile()
 				if err != nil {
 					m.Err = err
@@ -294,7 +280,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				}
 
 				cmds = append(cmds, cmd)
-			case "ctrl+pgup":
+			case "pgup":
 				m.moveToPreviousFile()
 			}
 		}
@@ -451,7 +437,7 @@ func (m *FixableIssuesModel) moveToNextFile() (tea.Cmd, error) {
 		m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
 		m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex].Name
 	} else {
-		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions)
+		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions) - 1
 		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex])
 	}
 
@@ -569,12 +555,12 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	}
 
 	var (
-		height         = m.body.Height() - leftStatusBorderStyle.GetVerticalBorderSize()
-		remainingWidth = m.getSuggestionWidth(m.getLeftStatusWidth())
+		height         = max(m.body.Height()-leftStatusBorderStyle.GetVerticalBorderSize()-strings.Count(m.suggestionHeaderView(), "\n"), 0)
+		remainingWidth = m.getSuggestionWidth()
 	)
 
 	if m.logFile != nil {
-		fmt.Fprintf(m.logFile, "Status width %d, body width %d, and a height of %d\n", m.getLeftStatusWidth(), remainingWidth, height)
+		fmt.Fprintf(m.logFile, "Status width %d, body width %d, and a height of %d\n", 0, remainingWidth, height)
 	}
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetHeight(height)

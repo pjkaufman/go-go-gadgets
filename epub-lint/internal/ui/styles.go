@@ -15,4 +15,5 @@ var (
 	leftStatusBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true).BorderForeground(lipgloss.Color("#74c7ec"))
 	suggestionBorderStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder(), true)
 	displayStyle          = lipgloss.NewStyle()
+	hrStyle               = lipgloss.NewStyle().Foreground(lipgloss.BrightWhite)
 )
