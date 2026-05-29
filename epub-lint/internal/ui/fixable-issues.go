@@ -24,7 +24,7 @@ const (
 	scrollbarPadding            = 3
 	minHeight                   = 21
 	minWidth                    = 41
-	minLargeHeaderTextThreshold = 71
+	minLargeHeaderTextThreshold = 73
 )
 
 type stage int
@@ -239,7 +239,7 @@ func (m FixableIssuesModel) View() tea.View {
 		)
 		m.body.SetContent(m.bodyView())
 
-		view.SetContent(lipgloss.JoinVertical(lipgloss.Center, header, m.body.View(), footer))
+		view.SetContent(lipgloss.JoinVertical(lipgloss.Left, header, m.body.View(), footer))
 	}
 
 	return view
@@ -250,23 +250,18 @@ func (m FixableIssuesModel) headerView() string {
 }
 
 func (m FixableIssuesModel) headerText() string {
-	if m.height < minLargeHeaderTextThreshold {
-		return lipgloss.JoinVertical(lipgloss.Left, titleStyle.Render(m.title), m.getStageHeaders())
-	}
-
 	return lipgloss.JoinHorizontal(lipgloss.Center, titleStyle.Render(m.title), " | ", m.getStageHeaders())
 }
 
 func (m FixableIssuesModel) getStageHeaders() string {
-	var stages = m.stages
-	if m.height < minLargeHeaderTextThreshold {
-		stages = m.shortStages
+	if m.width < minLargeHeaderTextThreshold {
+		return activeStyle.Render(m.stages[min(int(m.currentStage), len(m.stages)-1)])
 	}
 
-	var stageHeaders = make([]string, len(stages))
+	var stageHeaders = make([]string, len(m.stages))
 
 	var style lipgloss.Style
-	for i, header := range stages {
+	for i, header := range m.stages {
 		if i == int(m.currentStage) {
 			style = activeStyle
 		} else {
