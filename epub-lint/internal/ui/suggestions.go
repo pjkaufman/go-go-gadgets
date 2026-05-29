@@ -12,77 +12,12 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 )
 
-const maxLeftStatusWidth = 40
-
 func (m *FixableIssuesModel) suggestionsView() string {
-	// return lipgloss.JoinHorizontal(lipgloss.Left, m.leftStatusView(), m.suggestionView())
 	return m.suggestionView()
 }
 
 func (m FixableIssuesModel) getSuggestionWidth(statusWidth int) int {
 	return m.body.Width() - (suggestionBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
-	// return m.body.Width() - (statusWidth + leftStatusBorderStyle.GetBorderLeftSize() + suggestionBorderStyle.GetBorderRightSize())
-}
-
-// func (m FixableIssuesModel) getLeftStatusWidth() int {
-// 	return min(lipgloss.Width(m.leftStatusView()), maxLeftStatusWidth)
-// }
-
-func (m *FixableIssuesModel) leftStatusView() string {
-	var (
-		maxTextWidth           = maxLeftStatusWidth - leftStatusBorderStyle.GetHorizontalBorderSize()
-		fileName               = m.PotentiallyFixableIssuesInfo.currentFile
-		fileStatus             string
-		fileNumberInfo         = fmt.Sprintf("(%d/%d)", m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData))
-		remainingFileNameWidth = maxTextWidth - (lipgloss.Width(documentIcon) + 2 + lipgloss.Width(fileNumberInfo) + lipgloss.Width(m.PotentiallyFixableIssuesInfo.currentFile))
-	)
-
-	// truncate file name
-	if remainingFileNameWidth < 0 {
-		fileName = "..." + fileName[remainingFileNameWidth*-1+3:]
-		fileStatus = documentIcon + " " + fileNameStyle.Render(fileName+" "+fileNumberInfo)
-	} else {
-		fileStatus = fillLine(documentIcon+" "+fileNameStyle.Render(fileName+" "+fileNumberInfo), maxTextWidth)
-	}
-
-	var suggestionStatus = wordwrap.String(sectionIcon+" "+m.PotentiallyFixableIssuesInfo.currentSuggestionName+fmt.Sprintf(" (%d/%d)", m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions)), maxTextWidth)
-	var lines = strings.Split(suggestionStatus, "\n")
-
-	var afterIcon = strings.Index(lines[0], " ") + 1
-	lines[0] = lines[0][:afterIcon] + suggestionNameStyle.Render(lines[0][afterIcon:])
-	for i := 1; i < len(lines); i++ {
-		lines[i] = suggestionNameStyle.Render(lines[i])
-	}
-
-	suggestionStatus = strings.Join(lines, "\n")
-
-	var warningStatus = ""
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
-		warningStatus = wordwrap.String(warningIcon+" "+warningStyle.Render(` At least one instance of "°" in the displayed text may be the Japanese handakuten.`), maxTextWidth)
-		lines = strings.Split(warningStatus, "\n")
-
-		var afterIcon = strings.Index(lines[0], " ") + 1
-		lines[0] = lines[0][:afterIcon] + warningStyle.Render(lines[0][afterIcon:])
-		for i := 1; i < len(lines); i++ {
-			lines[i] = warningStyle.Render(lines[i])
-		}
-
-		warningStatus = "\n" + strings.Join(lines, "\n")
-	}
-
-	var (
-		statusView      = fileStatus + "\n" + suggestionStatus + warningStatus
-		remainingHeight int
-		statusPadding   string
-	)
-
-	remainingHeight = m.body.Height() - (lipgloss.Height(statusView) + leftStatusBorderStyle.GetVerticalBorderSize())
-
-	if remainingHeight > 0 {
-		statusPadding = strings.Repeat("\n", remainingHeight)
-	}
-
-	return leftStatusBorderStyle.Render(statusView + statusPadding)
 }
 
 func (m *FixableIssuesModel) suggestionHeaderView() string {
@@ -213,7 +148,7 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
-				m.setSuggestionDisplay(true)
+				m.recalculateElementSizes(true)
 
 				return tea.Batch(cmds...)
 			case "ctrl+e":
@@ -227,6 +162,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 
 					return tea.Quit
 				}
+
+				m.recalculateElementSizes(false)
 			case "ctrl+r":
 				var originalSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion
 				originalSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(originalSuggestion)
@@ -275,15 +212,6 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 			case "left":
 				m.moveToPreviousSuggestion()
 			case "c":
-				// Copy original value to the clipboard
-				// original, err := repairUnicode(m.currentFileState.original)
-				// if err != nil {
-				// 	m.Err = err
-
-				// 	return m, tea.Quit
-				// }
-
-				// err = clipboard.WriteAll(original)
 				// TODO: make sure values are utf-8 compliant
 				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
 				if err != nil {
@@ -329,6 +257,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 
 					cmd = m.PotentiallyFixableIssuesInfo.suggestionEdit.Focus()
 					cmds = append(cmds, cmd)
+
+					m.recalculateElementSizes(false)
 				}
 			case "ctrl+d":
 				cmd, err := m.moveToNextIssue()
