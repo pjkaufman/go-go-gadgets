@@ -1,5 +1,3 @@
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . PotentiallyFixableIssue
-
 package suggestionmanager
 
 import (
@@ -220,25 +218,25 @@ func (sm *SuggestionManager) MoveToNextIssue() bool {
 
 	for sm.currentIssueIndex < len(sm.suggestions) {
 		issue := &sm.suggestions[sm.currentIssueIndex]
-		sm.log("Checking issue %q (index %d)", issue.Name, sm.currentIssueIndex)
+		sm.logf("Checking issue %q (index %d)", issue.Name, sm.currentIssueIndex)
 
 		// Skip disabled issues if not running all
 		if !sm.runAll && (issue.IsEnabled == nil || *issue.IsEnabled) {
-			sm.log("Skipping issue %q because it is disabled", issue.Name)
+			sm.logf("Skipping issue %q because it is disabled", issue.Name)
 			sm.currentIssueIndex++
 			continue
 		}
 
 		// Skip CSS-related issues if skipCss is set
 		if sm.skipCss && (issue.AddCssPageBreakIfMissing || issue.AddCssSectionBreakIfMissing) {
-			sm.log("Skipping issue %q because CSS-related rules are to be skipped", issue.Name)
+			sm.logf("Skipping issue %q because CSS-related rules are to be skipped", issue.Name)
 			sm.currentIssueIndex++
 			continue
 		}
 
 		// Check if we already have suggestions for this issue
 		if len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex]) > 0 {
-			sm.log("Found existing suggestions for issue %q", issue.Name)
+			sm.logf("Found existing suggestions for issue %q", issue.Name)
 			sm.currentSuggestionName = issue.Name
 			return true
 		}
@@ -246,13 +244,13 @@ func (sm *SuggestionManager) MoveToNextIssue() bool {
 		// Generate new suggestions
 		suggestions, err := issue.GetSuggestions(sm.fileSuggestionData[sm.currentFileIndex].Text)
 		if err != nil {
-			sm.log("Error generating suggestions for issue %q: %v", issue.Name, err)
+			sm.logf("Error generating suggestions for issue %q: %v", issue.Name, err)
 			sm.currentIssueIndex++
 			continue
 		}
 
 		if len(suggestions) > 0 {
-			sm.log("Generated %d suggestions for issue %q", len(suggestions), issue.Name)
+			sm.logf("Generated %d suggestions for issue %q", len(suggestions), issue.Name)
 			sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex] = sm.createSuggestionStates(suggestions)
 			sm.currentSuggestionName = issue.Name
 			sort.Slice(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex], func(i, j int) bool {
@@ -378,8 +376,8 @@ func (sm *SuggestionManager) createSuggestionStates(suggestions map[string]strin
 	return states
 }
 
-// log logs a message to the configured log file if one exists.
-func (sm *SuggestionManager) log(format string, args ...interface{}) {
+// logf logs a message to the configured logf file if one exists.
+func (sm *SuggestionManager) logf(format string, args ...any) {
 	if sm.logFile != nil {
 		fmt.Fprintf(sm.logFile, format+"\n", args...)
 	}
