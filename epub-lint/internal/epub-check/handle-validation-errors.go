@@ -14,7 +14,6 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 		fileContent, ncxFileContent string
 		elementNameToNumber         = make(map[string]int)
 		fileToChanges               = make(map[string]positions.TextDocumentEdit)
-		fileToScriptTagsRemoved     = make(map[string]int)
 		hasHandledPlayOrder         bool
 	)
 	for i := 0; i < len(validationErrors.ValidationIssues); i++ {
@@ -309,28 +308,23 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 			if !update.IsEmpty() {
 				fileUpdated = message.FilePath
-				edits = append(edits, update)
+				// applied immediately because of how some of the other rules work.
+				// We want this to go ahead and update things before some of the rules that affect wide areas
+				// like fixing the play order
+				fileContent, err = positions.ApplyEdits(fileUpdated, fileContent, []positions.TextEdit{update})
+				if err != nil {
+					return err
+				}
 
-				if strings.HasSuffix(resource, ".js") {
-					var (
-						numberOfExistingScriptTags = strings.Count(fileContent, "<script")
-						numberOfRemovedScriptTags  = 1
-					)
+				nameToUpdatedContents[fileUpdated] = fileContent
 
-					if updateCount, ok := fileToScriptTagsRemoved[message.FilePath]; ok {
-						numberOfRemovedScriptTags += updateCount
-						fileToScriptTagsRemoved[message.FilePath] = numberOfRemovedScriptTags
-					} else {
-						fileToScriptTagsRemoved[message.FilePath] = numberOfRemovedScriptTags
-					}
-
-					if numberOfRemovedScriptTags == numberOfExistingScriptTags { // remove the scripted tag from the OPF for the file if all scripted tags have been removed
-						validationErrors.ValidationIssues = append(validationErrors.ValidationIssues, ValidationError{
-							Code:     "OPF-015",
-							FilePath: message.FilePath,
-							Message:  `The property "scripted" should not be declared in the OPF file.`,
-						})
-					}
+				if strings.HasSuffix(resource, ".js") && strings.Count(fileContent, "<script") == 0 {
+					// remove the scripted tag from the OPF for the file if all scripted tags have been removed
+					validationErrors.ValidationIssues = append(validationErrors.ValidationIssues, ValidationError{
+						Code:     "OPF-015",
+						FilePath: message.FilePath,
+						Message:  `The property "scripted" should not be declared in the OPF file.`,
+					})
 				}
 			}
 		case "RSC-012":
