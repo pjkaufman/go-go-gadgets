@@ -86,6 +86,8 @@ var removeFileFromNcxTestCases = map[string]removeFileFromNxcTestCase{
 }
 
 func TestRemoveFileFromNcx(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range removeFileFromNcxTestCases {
 		t.Parallel()
 
