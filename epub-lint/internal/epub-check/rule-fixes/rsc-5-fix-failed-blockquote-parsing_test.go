@@ -66,6 +66,7 @@ var fixFailedBlockquoteParsingTestCases = map[string]fixFailedBlockquoteParsingT
 func TestFixFailedBlockquoteParsing(t *testing.T) {
 	for name, args := range fixFailedBlockquoteParsingTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits := rulefixes.FixFailedBlockquoteParsing(args.line, args.column, args.input)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edits...)

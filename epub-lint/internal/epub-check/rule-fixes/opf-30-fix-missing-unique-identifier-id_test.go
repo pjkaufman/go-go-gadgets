@@ -63,6 +63,7 @@ var fixMissingUniqueIdentifierIdTestCases = map[string]fixMissingUniqueIdentifie
 func TestFixMissingUniqueIdentifierId(t *testing.T) {
 	for name, args := range fixMissingUniqueIdentifierIdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit, err := rulefixes.FixMissingUniqueIdentifierId(args.opfContents, args.id)
 
 			require.NoError(t, err)

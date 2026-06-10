@@ -74,6 +74,7 @@ var fixMissingImageAltTestCases = map[string]fixMissingImageAltTestCase{
 func TestFixMissingImageAlt(t *testing.T) {
 	for name, args := range fixMissingImageAltTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.FixMissingImageAlt(args.line, args.column, args.input)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edit)

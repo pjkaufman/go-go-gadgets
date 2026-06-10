@@ -67,6 +67,7 @@ var handleDuplicateIDTestCases = map[string]handleDuplicateIDTestCase{
 func TestHandleDuplicateID(t *testing.T) {
 	for _, args := range handleDuplicateIDTestCases {
 		t.Run(args.name, func(t *testing.T) {
+			t.Parallel()
 			edits := rulefixes.UpdateDuplicateIds(args.contents, args.id)
 
 			checkFinalOutputMatches(t, args.contents, args.expected, edits...)

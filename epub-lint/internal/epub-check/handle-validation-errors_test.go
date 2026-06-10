@@ -1714,6 +1714,7 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 func TestHandleValidationErrors(t *testing.T) {
 	for name, tc := range handleValidationErrorTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var nameToUpdatedFileContents = map[string]string{}
 			if tc.basenameToFilePaths == nil {
 				tc.basenameToFilePaths = map[string][]string{}

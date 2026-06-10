@@ -128,6 +128,7 @@ var fixEmptyTitleTestCases = map[string]fixEmptyTitleTestCase{
 func TestFixEmptyTitle(t *testing.T) {
 	for name, args := range fixEmptyTitleTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.FixEmptyTitle(args.line, args.column, args.input)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edit)

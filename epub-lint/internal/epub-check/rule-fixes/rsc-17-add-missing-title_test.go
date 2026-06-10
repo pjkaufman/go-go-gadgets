@@ -128,6 +128,7 @@ var addMissingTitleTestCases = map[string]addMissingTitleTestCase{
 func TestAddMissingTitle(t *testing.T) {
 	for name, args := range addMissingTitleTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.AddMissingTitle(args.line, args.column, args.input)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edit)

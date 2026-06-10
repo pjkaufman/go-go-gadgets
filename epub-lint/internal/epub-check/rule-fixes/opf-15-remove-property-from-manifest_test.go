@@ -54,6 +54,7 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 func TestRemovePropertyFromManifest(t *testing.T) {
 	for name, args := range removeScriptedFromManifestTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit, err := rulefixes.RemovePropertyFromManifest(args.inputText, args.inputPath, args.property)
 
 			require.NoError(t, err)

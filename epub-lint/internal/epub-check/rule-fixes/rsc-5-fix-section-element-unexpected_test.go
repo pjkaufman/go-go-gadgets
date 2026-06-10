@@ -76,6 +76,7 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 func TestFixSectionElementUnexpected(t *testing.T) {
 	for name, args := range fixSectionElementUnexpectedTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits := rulefixes.FixSectionElementUnexpected(args.line, args.column, args.contents)
 
 			checkFinalOutputMatches(t, args.contents, args.expectedOutput, edits...)

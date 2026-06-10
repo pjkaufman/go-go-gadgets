@@ -281,6 +281,7 @@ var removeDuplicateUniqueIdentifierIdTestCases = map[string]removeDuplicateManif
 func TestRemoveDuplicateManifestEntry(t *testing.T) {
 	for name, args := range removeDuplicateUniqueIdentifierIdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits, err := rulefixes.RemoveDuplicateManifestEntry(args.line, args.column, args.opfContents)
 
 			require.NoError(t, err)

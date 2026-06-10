@@ -190,6 +190,7 @@ var fixUnreachableFileTestCases = map[string]fixUnreachableFileTestCase{
 func TestFixUnreachableFile(t *testing.T) {
 	for name, args := range fixUnreachableFileTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.FixUnreachableFile(args.line, args.column, args.opfContents)
 
 			checkFinalOutputMatches(t, args.opfContents, args.expectedOutput, edit)

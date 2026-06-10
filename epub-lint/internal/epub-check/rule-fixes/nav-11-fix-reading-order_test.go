@@ -202,6 +202,7 @@ var fixReadingOrderTestCases = map[string]fixReadingOrderTestCase{
 func TestFixReadingOrder(t *testing.T) {
 	for name, args := range fixReadingOrderTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits := rulefixes.FixReadingOrder(args.spineOrder, args.input, args.navPath, args.opfFolder)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edits...)

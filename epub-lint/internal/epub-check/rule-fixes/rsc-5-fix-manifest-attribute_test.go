@@ -77,6 +77,7 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 func TestFixManifestAttribute(t *testing.T) {
 	for name, args := range fixManifestAttributeTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits, err := rulefixes.FixManifestAttribute(args.opfContents, args.attribute, args.line, args.attributeNameToNumber)
 
 			require.NoError(t, err)

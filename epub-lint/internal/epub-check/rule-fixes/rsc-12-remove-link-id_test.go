@@ -73,6 +73,7 @@ line3`,
 func TestRemoveLinkId(t *testing.T) {
 	for name, args := range removeLinkIDTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.RemoveLinkId(args.fileContents, args.lineToUpdate, args.startOfFragment)
 
 			checkFinalOutputMatches(t, args.fileContents, args.expected, edit)

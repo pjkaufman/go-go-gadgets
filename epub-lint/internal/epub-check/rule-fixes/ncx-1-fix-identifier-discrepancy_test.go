@@ -233,6 +233,7 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 func TestFixIdentifiers(t *testing.T) {
 	for name, args := range fixIdentifierTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits, err := rulefixes.FixIdentifierDiscrepancy(args.opfContents, args.ncxContents)
 
 			require.NoError(t, err)

@@ -92,6 +92,7 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 func TestRemoveEmptyOpfElements(t *testing.T) {
 	for name, tc := range removeEmptyOpfElementsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit, actualDelete, err := rulefixes.RemoveEmptyOpfElement(tc.elementName, tc.lineNum, tc.opfContents)
 
 			require.NoError(t, err)

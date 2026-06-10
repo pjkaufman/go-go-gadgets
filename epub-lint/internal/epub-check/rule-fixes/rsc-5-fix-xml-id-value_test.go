@@ -222,6 +222,7 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 func TestFixXmlIdValue(t *testing.T) {
 	for name, args := range fixXmlIdValueTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.FixXmlIdValue(args.inputText, args.lineNumber, args.attribute)
 
 			checkFinalOutputMatches(t, args.inputText, args.expectedOutput, edit)

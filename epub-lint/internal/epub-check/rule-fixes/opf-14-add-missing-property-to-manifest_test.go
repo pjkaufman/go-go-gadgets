@@ -67,6 +67,7 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 func TestAddPropertyToManifest(t *testing.T) {
 	for name, args := range addScriptedToManifestTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit, err := rulefixes.AddPropertyToManifest(args.inputText, args.inputPath, "scripted")
 
 			require.NoError(t, err)

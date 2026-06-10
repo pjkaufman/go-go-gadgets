@@ -97,6 +97,7 @@ var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
 func TestFixPlayOrder(t *testing.T) {
 	for name, tc := range updatePlayOrderTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edits := rulefixes.FixPlayOrder(tc.input)
 
 			checkFinalOutputMatches(t, tc.input, tc.expectedOutput, edits...)
