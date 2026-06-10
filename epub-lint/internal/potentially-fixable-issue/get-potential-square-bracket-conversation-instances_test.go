@@ -6,16 +6,9 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type getPotentialSquareBracketConversationInstancesTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentialSquareBracketConversationInstancesTestCases = map[string]getPotentialSquareBracketConversationInstancesTestCase{
+var getPotentialSquareBracketConversationInstancesTestCases = map[string]suggesterTestCase{
 	"make sure that a file with no square brackets gives no suggestions": {
 		inputText: `<p>Here is some content.</p>
 <p>Here is some more content</p>`,
@@ -48,15 +41,5 @@ var getPotentialSquareBracketConversationInstancesTestCases = map[string]getPote
 }
 
 func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentialSquareBracketConversationInstancesTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentialSquareBracketConversationInstances(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentialSquareBracketConversationInstancesTestCases, potentiallyfixableissue.GetPotentialSquareBracketConversationInstances)
 }

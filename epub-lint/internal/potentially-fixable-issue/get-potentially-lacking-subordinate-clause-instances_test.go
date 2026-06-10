@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const smallSubordinatingClauseFile = `<?xml version="1.0" encoding="UTF-8"?>
@@ -283,12 +281,7 @@ const smallSubordinatingClauseFile = `<?xml version="1.0" encoding="UTF-8"?>
 </body>
 </html>`
 
-type getPotentialAlthoughButInstancesTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentialAlthoughButInstancesTestCases = map[string]getPotentialAlthoughButInstancesTestCase{
+var getPotentialAlthoughButInstancesTestCases = map[string]suggesterTestCase{
 	"make sure that a file with no subordinate clause issues does not get a suggestion": {
 		inputText: `<p>Here is some content.</p>
 <p>Here is some more content</p>`,
@@ -447,17 +440,7 @@ var getPotentialAlthoughButInstancesTestCases = map[string]getPotentialAlthoughB
 }
 
 func TestGetPotentialAlthoughButInstances(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentialAlthoughButInstancesTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentialAlthoughButInstancesTestCases, potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances)
 }
 func BenchmarkRegexMatch(b *testing.B) {
 	for b.Loop() {

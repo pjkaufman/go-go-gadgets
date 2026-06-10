@@ -6,16 +6,9 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type getPotentialThoughtInstancesTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentialThoughtInstancesTestCases = map[string]getPotentialThoughtInstancesTestCase{
+var getPotentialThoughtInstancesTestCases = map[string]suggesterTestCase{
 	"make sure that a file with no parentheses gives no suggestions": {
 		inputText: `<p>Here is some content.</p>
 <p>Here is some more content</p>`,
@@ -45,15 +38,5 @@ var getPotentialThoughtInstancesTestCases = map[string]getPotentialThoughtInstan
 }
 
 func TestGetPotentialThoughtInstances(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentialThoughtInstancesTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentialThoughtInstances(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentialThoughtInstancesTestCases, potentiallyfixableissue.GetPotentialThoughtInstances)
 }

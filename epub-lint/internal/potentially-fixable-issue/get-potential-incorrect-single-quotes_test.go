@@ -6,16 +6,9 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type getPotentialIncorrectSingleQuotesTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrectSingleQuotesTestCase{
+var getPotentialIncorrectSingleQuotesTestCases = map[string]suggesterTestCase{
 	"make sure that a file with single quoted words outside of double quotes should have its values updated": {
 		inputText: `<p>He said 'hello' and 'goodbye'</p>`,
 		expectedSuggestions: map[string]string{
@@ -138,17 +131,7 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentialIncorrectSingleQuotesTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentialIncorrectSingleQuotesTestCases, potentiallyfixableissue.GetPotentialIncorrectSingleQuotes)
 }
 
 const testFile = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">

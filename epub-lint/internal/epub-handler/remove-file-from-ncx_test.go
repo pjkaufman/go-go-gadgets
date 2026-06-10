@@ -89,8 +89,6 @@ func TestRemoveFileFromNcx(t *testing.T) {
 	t.Parallel()
 
 	for name, tc := range removeFileFromNcxTestCases {
-		t.Parallel()
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			actual := epubhandler.RemoveFileFromNcx(tc.input, tc.relativeFilePath)

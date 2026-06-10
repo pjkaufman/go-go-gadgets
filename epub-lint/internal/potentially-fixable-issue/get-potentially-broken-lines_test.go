@@ -6,16 +6,9 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type getPotentiallyBrokenLinesTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentiallyBrokenLinesTestCases = map[string]getPotentiallyBrokenLinesTestCase{
+var getPotentiallyBrokenLinesTestCases = map[string]suggesterTestCase{
 	"make sure that a file with no potentially broken paragraphs gives no suggestions": {
 		inputText: `<p>Here is some content.</p>
 	<p>Here is some more content</p>`,
@@ -188,15 +181,5 @@ var getPotentiallyBrokenLinesTestCases = map[string]getPotentiallyBrokenLinesTes
 }
 
 func TestGetPotentiallyBrokenLines(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentiallyBrokenLinesTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentiallyBrokenLines(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentiallyBrokenLinesTestCases, potentiallyfixableissue.GetPotentiallyBrokenLines)
 }

@@ -6,16 +6,9 @@ import (
 	"testing"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type getPotentialPageBreaksTestCase struct {
-	inputText           string
-	expectedSuggestions map[string]string
-}
-
-var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
+var getPotentialPageBreaksTestCases = map[string]suggesterTestCase{
 	"make sure that a file with no empty div or paragraph elements gives no suggestions": {
 		inputText: `<p>Here is some content.</p>
 <p>Here is some more content</p>`,
@@ -42,15 +35,5 @@ var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
 }
 
 func TestGetPotentialPageBreaks(t *testing.T) {
-	t.Parallel()
-
-	for name, args := range getPotentialPageBreaksTestCases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			actual, err := potentiallyfixableissue.GetPotentialPageBreaks(args.inputText)
-
-			require.NoError(t, err)
-			assert.Equal(t, args.expectedSuggestions, actual)
-		})
-	}
+	testSuggesterNoError(t, getPotentialPageBreaksTestCases, potentiallyfixableissue.GetPotentialPageBreaks)
 }
