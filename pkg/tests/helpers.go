@@ -10,5 +10,7 @@ import (
 )
 
 func MustClose(t testing.TB, closer io.Closer) {
+	t.Helper()
+
 	require.NoError(t, closer.Close())
 }

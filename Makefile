@@ -18,6 +18,9 @@ GOLANG_CI_LINT_VERSION=v2.11.4
 test:
 	go test ./... -tags "unit"
 
+test-race:
+	go test -race ./... -tags "unit" 
+
 # this is just meant to give an idea whether or not something has tests in it.
 # It is not meant to be used for 100% test coverage. Some folders will be better tested than others.
 cover:
