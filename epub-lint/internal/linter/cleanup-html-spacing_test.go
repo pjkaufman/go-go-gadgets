@@ -94,8 +94,11 @@ var cleanupHtmlSpacingTestCases = map[string]cleanupHtmlSpacingTestCase{
 }
 
 func TestCleanupHtmlSpacing(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range cleanupHtmlSpacingTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := linter.CleanupHtmlSpacing(args.inputText)
 
 			assert.Equal(t, args.expectedText, actual, "output text doesn't match")

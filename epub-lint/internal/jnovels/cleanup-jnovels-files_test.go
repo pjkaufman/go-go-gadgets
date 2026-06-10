@@ -333,8 +333,11 @@ var cleanupJNovelsFilesTestCases = map[string]cleanupJNovelsFilesTestCase{
 }
 
 func TestCleanupJNovelsFiles(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range cleanupJNovelsFilesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			handledFiles, err := jnovels.CleanupJNovelsFiles(tc.input)
 
 			require.NoError(t, err)

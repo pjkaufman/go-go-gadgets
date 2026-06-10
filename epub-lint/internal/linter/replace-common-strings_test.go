@@ -62,8 +62,11 @@ var commonStringReplaceTestCases = map[string]commonStringReplaceTestCase{
 }
 
 func TestCommonStringReplace(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range commonStringReplaceTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := linter.CommonStringReplace(args.input)
 
 			assert.Equal(t, args.expected, actual)

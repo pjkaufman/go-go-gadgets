@@ -188,8 +188,11 @@ var getPotentiallyBrokenLinesTestCases = map[string]getPotentiallyBrokenLinesTes
 }
 
 func TestGetPotentiallyBrokenLines(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentiallyBrokenLinesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentiallyBrokenLines(args.inputText)
 
 			require.NoError(t, err)

@@ -41,8 +41,11 @@ var fixEncodingTestCases = map[string]fixEncodingTestCase{
 }
 
 func TestFixEncoding(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixEncodingTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := linter.EnsureEncodingIsPresent(args.input)
 
 			assert.Equal(t, args.expected, actual)

@@ -95,8 +95,11 @@ var addFileToOpfTestCases = map[string]addFileToOpfTestCase{
 }
 
 func TestAddFileToOpf(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range addFileToOpfTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			result := epubhandler.AddFileToOpf(tc.inputText, tc.filename, tc.id, tc.mediaType)
 			assert.Equal(t, tc.expected, result)
 		})

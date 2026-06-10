@@ -9,6 +9,7 @@ import (
 )
 
 func checkFinalOutputMatches(t *testing.T, input, expectedOutput string, edits ...positions.TextEdit) {
+	t.Helper()
 	transformedOutput, err := positions.ApplyEdits("", input, edits)
 
 	require.NoError(t, err)

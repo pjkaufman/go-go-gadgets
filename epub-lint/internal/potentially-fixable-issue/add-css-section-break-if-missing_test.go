@@ -61,8 +61,11 @@ height: 10px,
 }
 
 func TestAddCssSectionBreakIfMissing(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range addCssSectionBreakIfMissingTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := potentiallyfixableissue.AddCssSectionBreakIfMissing(args.inputText, args.inputContextBreak)
 
 			assert.Equal(t, args.expectedOutput, actual)

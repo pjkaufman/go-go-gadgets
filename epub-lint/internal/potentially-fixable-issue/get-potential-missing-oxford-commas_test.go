@@ -38,8 +38,11 @@ var getPotentialMissingOxfordCommasTestCases = map[string]getPotentialMissingOxf
 }
 
 func TestGetPotentialMissingOxfordCommas(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialMissingOxfordCommasTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialMissingOxfordCommas(args.InputText)
 
 			require.NoError(t, err)

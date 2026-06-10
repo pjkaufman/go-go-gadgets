@@ -45,8 +45,11 @@ height: 10px,
 }
 
 func TestAddCssPageBreakIfMissing(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range addCssPageBreakIfMissingTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := potentiallyfixableissue.AddCssPageBreakIfMissing(args.input)
 
 			assert.Equal(t, args.expectedOutput, actual)

@@ -138,8 +138,11 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]getPotentialIncorrec
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialIncorrectSingleQuotesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialIncorrectSingleQuotes(args.inputText)
 
 			require.NoError(t, err)

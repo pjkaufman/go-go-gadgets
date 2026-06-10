@@ -170,8 +170,11 @@ var updateLandmarksTestCases = map[string]updateLandmarksTestCase{
 }
 
 func TestUpdateLandmarks(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range updateLandmarksTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := epubhandler.UpdateLandmarks(args.navText, args.relativePathToReplace, args.relativePathToCover, args.relativePathToToc)
 
 			assert.Equal(t, args.expectedOutput, actual)

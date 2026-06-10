@@ -167,8 +167,11 @@ func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, cu
 }
 
 func TestMoveTranslatorsNotes(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range moveTranslatorsNotesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var nameToUpdatedFileContents = map[string]string{}
 
 			actualTranslatorNoteCount, err := epubhandler.MoveTranslatorsNotes(tc.spineOrder, tc.opfFolder, tc.ncxFilename, tc.opfFilename, tc.navFilename, nameToUpdatedFileContents, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents))

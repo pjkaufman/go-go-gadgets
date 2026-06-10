@@ -53,8 +53,11 @@ var getPotentialSquareBracketNecessaryWordsTestCases = map[string]getPotentialSq
 }
 
 func TestGetPotentialSquareBracketNecessaryWords(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialSquareBracketNecessaryWordsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialSquareBracketNecessaryWords(args.inputText)
 
 			require.NoError(t, err)

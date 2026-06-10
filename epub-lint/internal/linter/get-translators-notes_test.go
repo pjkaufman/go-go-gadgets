@@ -105,8 +105,11 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 }
 
 func TestGetTranslatorsNotes(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range testCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			updatedText, notes, next, err := linter.GetTranslatorsNotes(args.inputText, args.fileName, args.noteFileName, args.startingNumber)
 
 			if args.expectedError != nil {

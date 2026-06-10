@@ -298,8 +298,11 @@ var addFileToNavTestCases = map[string]addFileToNavTestCase{
 }
 
 func TestAddFileToNav(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range addFileToNavTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := epubhandler.AddFileToNav(args.inputText, args.inputPath, args.inputTitle)
 
 			assert.Equal(t, args.expectedOutput, actual)

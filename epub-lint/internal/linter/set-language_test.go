@@ -101,8 +101,11 @@ var setLanguageTestCases = map[string]setLanguageTestCase{
 }
 
 func TestSetLanguage(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range setLanguageTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := linter.EnsureLanguageIsSet(args.inputText, args.inputLang)
 			assert.Equal(t, args.expectedText, actual)
 		})

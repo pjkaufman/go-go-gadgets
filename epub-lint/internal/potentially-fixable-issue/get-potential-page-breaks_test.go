@@ -42,8 +42,11 @@ var getPotentialPageBreaksTestCases = map[string]getPotentialPageBreaksTestCase{
 }
 
 func TestGetPotentialPageBreaks(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialPageBreaksTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialPageBreaks(args.inputText)
 
 			require.NoError(t, err)

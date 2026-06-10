@@ -447,8 +447,11 @@ var getPotentialAlthoughButInstancesTestCases = map[string]getPotentialAlthoughB
 }
 
 func TestGetPotentialAlthoughButInstances(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialAlthoughButInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances(args.inputText)
 
 			require.NoError(t, err)

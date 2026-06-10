@@ -48,8 +48,11 @@ var getPotentialSquareBracketConversationInstancesTestCases = map[string]getPote
 }
 
 func TestGetPotentialSquareBracketConversationInstances(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialSquareBracketConversationInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialSquareBracketConversationInstances(args.inputText)
 
 			require.NoError(t, err)

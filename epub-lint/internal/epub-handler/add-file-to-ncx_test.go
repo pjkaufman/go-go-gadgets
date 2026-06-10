@@ -104,8 +104,11 @@ var addFileToNcxTestCases = map[string]addFileToNcxTestCase{
 }
 
 func TestAddFileToNcx(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range addFileToNcxTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			result := epubhandler.AddFileToNcx(tc.inputText, tc.filePath, tc.title, tc.id)
 			assert.Equal(t, tc.expected, result)
 		})

@@ -45,8 +45,11 @@ var getPotentialThoughtInstancesTestCases = map[string]getPotentialThoughtInstan
 }
 
 func TestGetPotentialThoughtInstances(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialThoughtInstancesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialThoughtInstances(args.inputText)
 
 			require.NoError(t, err)

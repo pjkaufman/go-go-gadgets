@@ -46,8 +46,11 @@ var validateManuallyFixableFlagsTestCases = map[string]validateManuallyFixableFl
 }
 
 func TestValidateManuallyFixableFlags(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range validateManuallyFixableFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			err := epub.ValidateManuallyFixableFlags(args.inputEpubFile, args.inputRunAll, args.inputRunBrokenLines, args.inputRunSectionBreak, args.inputRunPageBreak, args.inputRunOxfordCommas, args.inputRunAlthoughBut, args.inputRunThoughts, args.inputRunConversation, args.inputRunNecessaryWords, args.inputRunSingleQuotes)
 
 			if err != nil {

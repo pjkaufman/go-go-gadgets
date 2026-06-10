@@ -663,8 +663,11 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 }
 
 func TestParseOpfContents(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range parseOpfContentsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := epubhandler.ParseOpfFile(args.inputText, opfFilename)
 
 			if !args.isSyntaxError {

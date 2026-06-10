@@ -38,8 +38,11 @@ var getPotentialSectionBreaksTestCases = map[string]getPotentialSectionBreaksTes
 }
 
 func TestGetPotentialSectionBreaks(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range getPotentialSectionBreaksTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := potentiallyfixableissue.GetPotentialSectionBreaks(args.inputText, args.inputContextBreak)
 
 			require.NoError(t, err)

@@ -408,8 +408,11 @@ var removeFileFromOpfTestCases = map[string]removeFileFromOpfTestCase{
 }
 
 func TestRemoveFileFromOpf(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range removeFileFromOpfTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := epubhandler.RemoveFileFromOpf(args.inputText, args.inputPath)
 
 			assert.Equal(t, args.expectedError, err)

@@ -43,8 +43,11 @@ var validateReplaceFlagsTestCases = map[string]validateReplaceFlagsTestCase{
 }
 
 func TestValidateReplaceFlags(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range validateReplaceFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			err := epub.ValidateReplaceFlags(args.inputEpubFile, args.inputExtraReplaceStringsPath)
 
 			if err != nil {

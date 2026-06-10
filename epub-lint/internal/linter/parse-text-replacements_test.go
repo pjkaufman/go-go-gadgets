@@ -60,8 +60,11 @@ var parseTextReplacementsTestCases = map[string]parseTextReplacementsTestCase{
 }
 
 func TestParseTextReplacements(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range parseTextReplacementsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := linter.ParseTextReplacements(args.input)
 
 			require.NoError(t, err)

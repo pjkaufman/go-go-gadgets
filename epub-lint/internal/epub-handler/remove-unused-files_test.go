@@ -26,6 +26,8 @@ type removeUnusedFilesTestCase struct {
 }
 
 func TestRemoveUnusedFiles(t *testing.T) {
+	t.Parallel()
+
 	tests := map[string]removeUnusedFilesTestCase{
 		"When dealing with mimetype, it should be left alone": {
 			zipFiles: map[string]*zip.File{
@@ -194,10 +196,11 @@ func TestRemoveUnusedFiles(t *testing.T) {
 		},
 	}
 
-	for name, tc := range tests {
+	for name, args := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := epubhandler.RemoveUnusedFiles(nil, tc.zipFiles, tc.manifestFiles, tc.removableFileExts, false)
-			assert.ElementsMatch(t, tc.expectedHandled, got)
+			t.Parallel()
+			actual := epubhandler.RemoveUnusedFiles(nil, args.zipFiles, args.manifestFiles, args.removableFileExts, false)
+			assert.ElementsMatch(t, args.expectedHandled, actual)
 		})
 	}
 }

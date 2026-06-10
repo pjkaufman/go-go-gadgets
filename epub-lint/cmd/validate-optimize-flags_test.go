@@ -33,8 +33,11 @@ var ValidateCompressAndLintFlagsTestCases = map[string]validateCompressAndLintFl
 }
 
 func TestValidateCompressAndLintFlags(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range ValidateCompressAndLintFlagsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			err := epub.ValidateOptimizeFlags(args.inputLintDir, args.inputLang)
 
 			if err != nil {

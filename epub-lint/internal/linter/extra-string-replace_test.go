@@ -84,8 +84,11 @@ var extraStringReplaceTestCases = map[string]extraStringReplaceTestCase{
 }
 
 func TestExtraStringReplace(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range extraStringReplaceTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := linter.ExtraStringReplace(args.inputText, args.inputFindsAndReplaces, args.inputHits)
 
 			assert.Equal(t, args.expectedText, actual, "output text doesn't match")

@@ -45,8 +45,11 @@ var filesSizeSummaryTestCases = map[string]filesSizeSummaryTestCase{
 }
 
 func TestFilesSizeSummary(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range filesSizeSummaryTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var expected = fmt.Sprintf(filesize.FilesSummaryTemplate, filesize.CliLineSeparator, args.expectedBeforeSize, args.expectedAfterString)
 			actual := filesize.FilesSizeSummary(args.inputBeforeKbSize, args.inputAfterKbSize)
 
