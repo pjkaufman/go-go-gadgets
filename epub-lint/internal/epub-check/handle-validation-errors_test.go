@@ -1712,6 +1712,8 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 }
 
 func TestHandleValidationErrors(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range handleValidationErrorTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

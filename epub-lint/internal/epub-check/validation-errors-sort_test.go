@@ -296,8 +296,11 @@ var sortValidationErrorsTestCases = map[string]sortValidationErrorsTestCase{
 }
 
 func TestSortValidationErrors(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range sortValidationErrorsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			input := args.input
 			input.Sort()
 

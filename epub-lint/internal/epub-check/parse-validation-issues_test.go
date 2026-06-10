@@ -99,9 +99,13 @@ WARNING(NAV-011): file.epub/OEBPS/Text/nav.xhtml(28,50): "toc" nav must be in re
 }
 
 func TestParseEPUBCheckOutput(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range parseEPUBCheckTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := epubcheck.ParseEPUBCheckOutput(args.input)
+
 			require.NoError(t, err)
 			assert.Equal(t, args.expected, actual)
 		})

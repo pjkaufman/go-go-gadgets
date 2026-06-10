@@ -61,6 +61,8 @@ var fixMissingUniqueIdentifierIdTestCases = map[string]fixMissingUniqueIdentifie
 }
 
 func TestFixMissingUniqueIdentifierId(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixMissingUniqueIdentifierIdTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

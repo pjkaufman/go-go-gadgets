@@ -65,6 +65,8 @@ var addScriptedToManifestTestCases = map[string]addScriptedToManifest{
 }
 
 func TestAddPropertyToManifest(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range addScriptedToManifestTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

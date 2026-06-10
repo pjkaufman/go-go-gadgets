@@ -231,6 +231,8 @@ var fixIdentifierTestCases = map[string]identifierTestCase{
 }
 
 func TestFixIdentifiers(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixIdentifierTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

@@ -95,6 +95,8 @@ var updatePlayOrderTestCases = map[string]updatePlayOrderTestCase{
 }
 
 func TestFixPlayOrder(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range updatePlayOrderTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

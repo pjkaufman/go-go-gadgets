@@ -71,6 +71,8 @@ line3`,
 }
 
 func TestRemoveLinkId(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range removeLinkIDTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

@@ -126,6 +126,8 @@ var addMissingTitleTestCases = map[string]addMissingTitleTestCase{
 }
 
 func TestAddMissingTitle(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range addMissingTitleTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

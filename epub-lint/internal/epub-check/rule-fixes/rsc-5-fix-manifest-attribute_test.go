@@ -75,6 +75,8 @@ var fixManifestAttributeTestCases = map[string]fixManifestAttributeTestCase{
 }
 
 func TestFixManifestAttribute(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixManifestAttributeTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

@@ -74,6 +74,8 @@ var fixSectionElementUnexpectedTestCases = map[string]fixSectionElementUnexpecte
 }
 
 func TestFixSectionElementUnexpected(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixSectionElementUnexpectedTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

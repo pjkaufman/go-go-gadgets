@@ -188,6 +188,8 @@ var fixUnreachableFileTestCases = map[string]fixUnreachableFileTestCase{
 }
 
 func TestFixUnreachableFile(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixUnreachableFileTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

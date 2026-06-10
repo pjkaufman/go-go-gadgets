@@ -220,6 +220,8 @@ var fixXmlIdValueTestCases = map[string]fixXmlIdValueTestCase{
 }
 
 func TestFixXmlIdValue(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixXmlIdValueTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

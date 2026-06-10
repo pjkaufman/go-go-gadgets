@@ -47,8 +47,11 @@ var fixIrregularDoctypeTestCases = map[string]fixIrregularDoctypeTestCase{
 }
 
 func TestFixIrregularDoctype(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixIrregularDoctypeTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			edit := rulefixes.FixIrregularDoctype(args.input, args.expectedDoctype)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edit)

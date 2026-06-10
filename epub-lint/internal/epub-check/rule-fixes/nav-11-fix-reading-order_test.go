@@ -200,6 +200,8 @@ var fixReadingOrderTestCases = map[string]fixReadingOrderTestCase{
 }
 
 func TestFixReadingOrder(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixReadingOrderTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

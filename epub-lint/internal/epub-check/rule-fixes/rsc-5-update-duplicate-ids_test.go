@@ -65,6 +65,8 @@ var handleDuplicateIDTestCases = map[string]handleDuplicateIDTestCase{
 }
 
 func TestHandleDuplicateID(t *testing.T) {
+	t.Parallel()
+
 	for _, args := range handleDuplicateIDTestCases {
 		t.Run(args.name, func(t *testing.T) {
 			t.Parallel()

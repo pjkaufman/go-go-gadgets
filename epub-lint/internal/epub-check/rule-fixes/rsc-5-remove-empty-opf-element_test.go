@@ -90,6 +90,8 @@ var removeEmptyOpfElementsTestCases = map[string]removeEmptyOpfElementsTestCase{
 }
 
 func TestRemoveEmptyOpfElements(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range removeEmptyOpfElementsTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

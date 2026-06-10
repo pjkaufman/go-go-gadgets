@@ -218,6 +218,8 @@ var fixFileNotFoundTestCases = map[string]fixFileNotFoundTestCase{
 }
 
 func TestFixFileNotFound(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range fixFileNotFoundTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()

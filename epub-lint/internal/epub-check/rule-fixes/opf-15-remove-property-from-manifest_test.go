@@ -52,6 +52,8 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 }
 
 func TestRemovePropertyFromManifest(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range removeScriptedFromManifestTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
