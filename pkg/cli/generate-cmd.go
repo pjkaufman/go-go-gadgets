@@ -1,4 +1,4 @@
-package cmdhandler
+package cli
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/MakeNowJust/heredoc"
-	cmdtomd "github.com/pjkaufman/go-go-gadgets/pkg/cmd-to-md"
+	markdown "github.com/pjkaufman/go-go-gadgets/pkg/cli/markdown"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -61,7 +61,7 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 
 			var b bytes.Buffer
 			err = tmpl.Execute(&b, TmplData{
-				CommandStrings: cmdtomd.RootToMd(rootCmd),
+				CommandStrings: markdown.RootToMd(rootCmd),
 				Todos:          todos,
 				Description:    description,
 				Title:          title,

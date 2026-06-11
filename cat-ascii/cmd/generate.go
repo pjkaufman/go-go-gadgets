@@ -2,9 +2,7 @@
 
 package cmd
 
-import (
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/pkg/cmd-handler"
-)
+import "github.com/pjkaufman/go-go-gadgets/pkg/cli"
 
 const (
 	title       = "Cat ASCII"
@@ -12,5 +10,5 @@ const (
 )
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, []string{}, nil)
+	cli.AddGenerateCmd(rootCmd, title, description, []string{}, nil)
 }

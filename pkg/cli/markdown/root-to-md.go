@@ -1,4 +1,4 @@
-package cmdtomd
+package markdown
 
 import (
 	"strings"

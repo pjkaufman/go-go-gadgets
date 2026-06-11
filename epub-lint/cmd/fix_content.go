@@ -8,6 +8,7 @@ import (
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue/fixer"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -85,6 +86,23 @@ var (
 	}
 	ErrOneRunBoolArgMustBeEnabled = errors.New("at least one rule to run must be enabled")
 	ErrNoCssFiles                 = errors.New("the epub must have at least 1 css file in order to handle section or page breaks")
+	contentFlags                  = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewBoolFlag(false, false, &runAll, "all", "a", false, "whether to run all of the fixable suggestions"),
+			flags.NewBoolFlag(false, false, &runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions"),
+			flags.NewBoolFlag(false, false, &runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with an epub with a css file)"),
+			flags.NewBoolFlag(false, false, &runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with an epub with a css file)"),
+			flags.NewBoolFlag(false, false, &runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions"),
+			flags.NewBoolFlag(false, false, &runLackingClause, "lacking-subordinate-clause", "", false, "whether to run the logic for getting potentially lacking subordinate clause suggestions"),
+			flags.NewBoolFlag(false, false, &runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)"),
+			flags.NewBoolFlag(false, false, &runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)"),
+			flags.NewBoolFlag(false, false, &runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)"),
+			flags.NewBoolFlag(false, false, &runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions"),
+			flags.NewBoolFlag(false, false, &interactive, "interactive", "i", false, "whether to use the terminal UI for suggesting fixes"),
+			flags.NewStringFlag(false, false, &logFile, "log-file", "", "", "the place to write debug logs to when using the TUI"),
+			flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to find manually fixable issues in", []string{"epub"}, true),
+		},
+	}
 )
 
 // contentCmd represents the fix content command
@@ -132,14 +150,13 @@ var contentCmd = &cobra.Command{
 	- Possible instances of single quotes that should actually be double quotes (i.e. when a word is in single quotes, but is not inside of double quotes)
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateManuallyFixableFlags(epubFile, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runLackingClause, runThoughts, runConversation, runNecessaryWords, runSingleQuotes)
+		err := contentFlags.Validate()
 		if err != nil {
 			return err
 		}
 
-		err = filehandler.FileArgExists(epubFile, "file")
-		if err != nil {
-			return err
+		if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runLackingClause && !runConversation && !runThoughts && !runNecessaryWords && !runSingleQuotes {
+			return ErrOneRunBoolArgMustBeEnabled
 		}
 
 		return nil
@@ -229,27 +246,9 @@ var contentCmd = &cobra.Command{
 func init() {
 	fixCmd.AddCommand(contentCmd)
 
-	contentCmd.Flags().BoolVarP(&runAll, "all", "a", false, "whether to run all of the fixable suggestions")
-	contentCmd.Flags().BoolVarP(&runBrokenLines, "broken-lines", "", false, "whether to run the logic for getting broken line suggestions")
-	contentCmd.Flags().BoolVarP(&runSectionBreak, "section-breaks", "", false, "whether to run the logic for getting section break suggestions (must be used with an epub with a css file)")
-	contentCmd.Flags().BoolVarP(&runPageBreak, "page-breaks", "", false, "whether to run the logic for getting page break suggestions (must be used with an epub with a css file)")
-	contentCmd.Flags().BoolVarP(&runOxfordCommas, "oxford-commas", "", false, "whether to run the logic for getting oxford comma suggestions")
-	contentCmd.Flags().BoolVarP(&runLackingClause, "lacking-subordinate-clause", "", false, "whether to run the logic for getting potentially lacking subordinate clause suggestions")
-	contentCmd.Flags().BoolVarP(&runThoughts, "thoughts", "", false, "whether to run the logic for getting thought suggestions (words in parentheses may be instances of a person's thoughts)")
-	contentCmd.Flags().BoolVarP(&runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)")
-	contentCmd.Flags().BoolVarP(&runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)")
-	contentCmd.Flags().BoolVarP(&runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions")
-	contentCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "whether to use the terminal UI for suggesting fixes")
-	contentCmd.Flags().StringVarP(&logFile, "log-file", "", "", "the place to write debug logs to when using the TUI")
-	contentCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to find manually fixable issues in")
-	err := contentCmd.MarkFlagRequired("file")
+	err := contentFlags.AddToCmd(contentCmd)
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as required on fix content command: %v\n`, err)
-	}
-
-	err = contentCmd.MarkFlagFilename("file", "epub")
-	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on fix content command: %v\n`, err)
+		logger.WriteError(err.Error())
 	}
 }
 

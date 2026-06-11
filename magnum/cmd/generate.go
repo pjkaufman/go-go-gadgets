@@ -4,7 +4,7 @@ package cmd
 
 import (
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/pkg/cmd-handler"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli"
 )
 
 const (
@@ -38,7 +38,7 @@ func getCustomValues(generationDir string) (map[string]any, error) {
 }
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, []string{
+	cli.AddGenerateCmd(rootCmd, title, description, []string{
 		"Add more unit tests and validation for commands and parsing logic to make sure it works as intended and is easier to refactor down the road since breaking changes should be easier to catch",
 	}, getCustomValues)
 }
