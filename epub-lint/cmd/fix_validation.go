@@ -2,15 +2,14 @@ package cmd
 
 import (
 	"archive/zip"
-	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/jnovels"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -19,7 +18,13 @@ import (
 var (
 	validationIssuesFilePath string
 	removeJNovelInfo         bool
-	ErrIssueFileArgEmpty     = errors.New("issues must have a non-whitespace value")
+	autoFixValidationFlags   = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewBoolFlag(false, false, &removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present"),
+			flags.NewFileFlag(true, false, &validationIssuesFilePath, "issues", "", "", "the path to the file with the validation issues", nil, true),
+			flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to replace strings in", []string{"epub"}, true),
+		},
+	}
 )
 
 // autoFixValidationCmd represents the auto fix validation command
@@ -60,22 +65,7 @@ var autoFixValidationCmd = &cobra.Command{
 		validation issues as well as remove any jnovels specific files
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateAutoFixValidationFlags(epubFile, validationIssuesFilePath)
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(epubFile, "file")
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(validationIssuesFilePath, "issues")
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return autoFixValidationFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Starting epub validation fixes...")
@@ -190,34 +180,8 @@ var autoFixValidationCmd = &cobra.Command{
 func init() {
 	fixCmd.AddCommand(autoFixValidationCmd)
 
-	autoFixValidationCmd.Flags().BoolVarP(&removeJNovelInfo, "cleanup-jnovels", "", false, "whether or not to remove JNovels info if it is present")
-	autoFixValidationCmd.Flags().StringVarP(&validationIssuesFilePath, "issues", "", "", "the path to the file with the validation issues")
-	err := autoFixValidationCmd.MarkFlagRequired("issues")
+	err := autoFixValidationFlags.AddToCmd(autoFixValidationCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"issues\" as required on validation fix command: %v\n", err)
+		logger.WriteError(err.Error())
 	}
-
-	autoFixValidationCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in")
-	err = autoFixValidationCmd.MarkFlagRequired("file")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as required on validation fix command: %v\n", err)
-	}
-
-	err = autoFixValidationCmd.MarkFlagFilename("file", "epub")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validation fix command: %v\n", err)
-	}
-}
-
-func ValidateAutoFixValidationFlags(epubPath, validationIssuesPath string) error {
-	err := validateCommonEpubFlags(epubPath)
-	if err != nil {
-		return err
-	}
-
-	if strings.TrimSpace(validationIssuesPath) == "" {
-		return ErrIssueFileArgEmpty
-	}
-
-	return nil
 }

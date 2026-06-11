@@ -251,16 +251,3 @@ func init() {
 		logger.WriteError(err.Error())
 	}
 }
-
-func ValidateManuallyFixableFlags(epubPath string, runAll, runBrokenLines, runSectionBreak, runPageBreak, runOxfordCommas, runAlthoughBut, runThoughts, runConversation, runNecessaryWords, runSingleQuotes bool) error {
-	err := validateCommonEpubFlags(epubPath)
-	if err != nil {
-		return err
-	}
-
-	if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runAlthoughBut && !runConversation && !runThoughts && !runNecessaryWords && !runSingleQuotes {
-		return ErrOneRunBoolArgMustBeEnabled
-	}
-
-	return nil
-}

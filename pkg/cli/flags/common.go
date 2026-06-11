@@ -47,7 +47,7 @@ func markAsDirectory(cmd *cobra.Command, isPersistent bool, name string) error {
 
 func markAsFileTypes(cmd *cobra.Command, isPersistent bool, name string, extensions []string) error {
 	if len(extensions) == 0 {
-		return fmt.Errorf("failed to mark flag %q as looking for specific file types on %s command: needs at least one file extension", name, cmd.Name())
+		return nil
 	}
 
 	var err error
