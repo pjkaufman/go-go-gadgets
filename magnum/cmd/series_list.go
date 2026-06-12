@@ -5,9 +5,19 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
+
+var seriesListFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewBoolFlag(false, false, &verbose, "verbose", "v", false, "show the publisher and other info about the series"),
+		flags.NewEnumFlag(false, false, &seriesPublisher, "publisher", "p", "", "show series with the specified publisher", config.AllPublisherTypes()),
+		flags.NewEnumFlag(false, false, &seriesType, "type", "t", "", "show series with the specified type", config.AllSeriesTypes()),
+		flags.NewEnumFlag(false, false, &seriesStatus, "status", "s", "", "show series with the specified status", config.AllStatuses()),
+	},
+}
 
 // ListCmd represents the add book info command
 var ListCmd = &cobra.Command{
@@ -19,6 +29,9 @@ var ListCmd = &cobra.Command{
 	To include information like publisher, status, series, etc.:
 	magnum series list -v
 	`),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return seriesListFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
 
@@ -63,8 +76,8 @@ var ListCmd = &cobra.Command{
 func init() {
 	seriesCmd.AddCommand(ListCmd)
 
-	ListCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show the publisher and other info about the series")
-	ListCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "show series with the specified publisher")
-	ListCmd.Flags().StringVarP(&seriesType, "type", "t", "", "show series with the specified type")
-	ListCmd.Flags().StringVarP(&seriesStatus, "status", "s", "", "show series with the specified status")
+	err := seriesListFlags.AddToCmd(ListCmd)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 }

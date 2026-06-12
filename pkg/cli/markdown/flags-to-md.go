@@ -3,6 +3,7 @@ package markdown
 import (
 	"strings"
 
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -12,15 +13,15 @@ const (
 	Separator   = `| ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |`
 )
 
-func FlagsToMd(flags *pflag.FlagSet, builder *strings.Builder) {
-	if flags == nil {
+func FlagsToMd(cliFlags *pflag.FlagSet, builder *strings.Builder) {
+	if cliFlags == nil {
 		return
 	}
 
 	builder.WriteString(TableHeader + "\n")
 	builder.WriteString(Separator)
 
-	flags.VisitAll(func(flag *pflag.Flag) {
+	cliFlags.VisitAll(func(flag *pflag.Flag) {
 		if flag.Hidden {
 			return
 		}
@@ -49,9 +50,13 @@ func FlagsToMd(flags *pflag.FlagSet, builder *strings.Builder) {
 		builder.WriteString(" | ")
 
 		if val, ok := flag.Annotations[cobra.BashCompFilenameExt]; ok && len(val) > 0 {
-			builder.WriteString("Should be a file with one of the following extensions: " + strings.Join(val, ", "))
+			builder.WriteString("Should be a file with one of the following extensions: ")
+			builder.WriteString(strings.Join(val, ", "))
 		} else if _, ok := flag.Annotations[cobra.BashCompSubdirsInDir]; ok {
 			builder.WriteString("Should be a directory")
+		} else if val, ok := flag.Annotations[flags.CustomEnumValuesFlagAnnotation]; ok && len(val) > 0 {
+			builder.WriteString("Should be a one of the following: ")
+			builder.WriteString(strings.Join(val, ", "))
 		}
 
 		builder.WriteString(" |")

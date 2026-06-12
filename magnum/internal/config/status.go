@@ -39,3 +39,7 @@ func SeriesStatusToDisplayText(val SeriesStatus) string {
 		return ""
 	}
 }
+
+func AllStatuses() []string {
+	return []string{string(Ongoing), string(Hiatus), string(Completed)}
+}

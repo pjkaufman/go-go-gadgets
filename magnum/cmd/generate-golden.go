@@ -3,23 +3,26 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
 var (
-	goldenFilePath         string
-	errGoldenFilePathEmpty = errors.New("output path is required")
+	goldenFilePath    string
+	generateTestFlags = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(true, false, &goldenFilePath, "out", "o", "", "the output path for where to store the resulting golden files for the tests which should point to magnum's internal folder", nil, true),
+		},
+	}
 )
 
 // GenerateTestCmd represents the generate golden test file command
@@ -27,11 +30,7 @@ var GenerateTestCmd = &cobra.Command{
 	Use:   "golden",
 	Short: "Gets a snapshot of the current html for several series to use for golden testing",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if strings.TrimSpace(goldenFilePath) == "" {
-			return errGoldenFilePathEmpty
-		}
-
-		return nil
+		return generateTestFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		type goldenTestInfo struct {
@@ -122,10 +121,9 @@ var GenerateTestCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(GenerateTestCmd)
 
-	GenerateTestCmd.Flags().StringVarP(&goldenFilePath, "out", "o", "", "the output path for where to store the resulting golden files for the tests which should point to magnum's internal folder")
-	err := GenerateTestCmd.MarkFlagRequired("out")
+	err := generateTestFlags.AddToCmd(GenerateTestCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"out\" as required on generate-golden command: %v\n", err)
+		logger.WriteError(err.Error())
 	}
 }
 

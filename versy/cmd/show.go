@@ -1,16 +1,32 @@
 package cmd
 
 import (
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/crawler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
-var verseReference string
+var (
+	verseReference string
+	showFlags      = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewStringFlag(true, false, &verseReference, "verse", "", "", "the Bible verse to get the two versions of"),
+		},
+	}
+)
 
 var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Displays the specified verse reference in the two specified Bible versions",
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		err := rootFlags.Validate()
+		if err != nil {
+			return err
+		}
+
+		return showFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		var scrapper = crawler.CreateNewCollyCrawler(userAgent, verbose, allowedDomains)
 
@@ -21,9 +37,8 @@ var showCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(showCmd)
 
-	showCmd.Flags().StringVarP(&verseReference, "verse", "", "", "the Bible verse to get the two versions of")
-	err := showCmd.MarkFlagRequired("verse")
+	err := showFlags.AddToCmd(showCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"verse\" as required on show command: %v\n", err)
+		logger.WriteError(err.Error())
 	}
 }

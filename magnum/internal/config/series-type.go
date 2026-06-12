@@ -39,3 +39,7 @@ func SeriesTypeToDisplayText(val SeriesType) string {
 		return ""
 	}
 }
+
+func AllSeriesTypes() []string {
+	return []string{string(WebNovel), string(Manga), string(LightNovel)}
+}

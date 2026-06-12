@@ -43,10 +43,10 @@ Adds the provided series info to the list of series to keep track of
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | n | name | the name of the series | string |  | true |  |
-| p | publisher | the publisher of the series | string |  | false |  |
+| p | publisher | the publisher of the series | string |  | false | Should be a one of the following: YenPress, JNovelClub, SevenSeasEntertainment, OnePeaceBooks, VizMedia, HanashiMedia |
 | r | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
-| s | status | the status of the series (defaults to Ongoing) | string | O | false |  |
-| t | type | the series type | string |  | false |  |
+| s | status | the status of the series (defaults to Ongoing) | string | O | false | Should be a one of the following: O, H, C |
+| t | type | the series type | string |  | false | Should be a one of the following: WN, MN, LN |
 |  | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
 
 ##### Usage
@@ -103,10 +103,10 @@ Edits the provided/selected book name
 | c | include-completed | include completed series in the books to search |  | false | false |  |
 | i | interactive | gets the name, publisher, series type, and series status interactively when not provided |  | false | false |  |
 | n | name | the name of the series to edit | string |  | false |  |
-| p | publisher | the publisher of the series | string |  | false |  |
+| p | publisher | the publisher of the series | string |  | false | Should be a one of the following: YenPress, JNovelClub, SevenSeasEntertainment, OnePeaceBooks, VizMedia, HanashiMedia |
 | r | slug | the slug for the series to use instead of the one based on the series name | string |  | false |  |
-| s | status | status to set for the selected book (O/H/C) | string |  | false |  |
-| t | type | the series type | string |  | false |  |
+| s | status | status to set for the selected book (O/H/C) | string |  | false | Should be a one of the following: O, H, C |
+| t | type | the series type | string |  | false | Should be a one of the following: WN, MN, LN |
 | o | wikipedia-table-parse-override | the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them | int | 0 | false |  |
 
 ##### Usage
@@ -128,9 +128,9 @@ Lists the names of each of the series that is currently being tracked
 
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
-| p | publisher | show series with the specified publisher | string |  | false |  |
-| s | status | show series with the specified status | string |  | false |  |
-| t | type | show series with the specified type | string |  | false |  |
+| p | publisher | show series with the specified publisher | string |  | false | Should be a one of the following: YenPress, JNovelClub, SevenSeasEntertainment, OnePeaceBooks, VizMedia, HanashiMedia |
+| s | status | show series with the specified status | string |  | false | Should be a one of the following: O, H, C |
+| t | type | show series with the specified type | string |  | false | Should be a one of the following: WN, MN, LN |
 | v | verbose | show the publisher and other info about the series |  | false | false |  |
 
 ##### Usage

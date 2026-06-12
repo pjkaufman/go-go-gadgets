@@ -22,7 +22,10 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 		name += " (base command)"
 	}
 
-	builder.WriteString(strings.Repeat("#", level) + " " + name + "\n\n")
+	builder.WriteString(strings.Repeat("#", level))
+	builder.WriteString(" ")
+	builder.WriteString(name)
+	builder.WriteString("\n\n")
 	if longDescription != "" {
 		builder.WriteString(longDescription)
 	} else {
@@ -45,13 +48,15 @@ func CommandToMd(cmd *cobra.Command, builder *strings.Builder, level int) {
 		flags = cmd.Flags()
 	)
 	if flags != nil && flags.HasFlags() {
-		builder.WriteString(strings.Repeat("#", level+1) + " Flags\n\n")
+		builder.WriteString(strings.Repeat("#", level+1))
+		builder.WriteString(" Flags\n\n")
 		FlagsToMd(flags, builder)
 		builder.WriteString("\n\n")
 	}
 
 	if example != "" {
-		builder.WriteString(strings.Repeat("#", level+1) + " Usage\n\n``` bash\n")
+		builder.WriteString(strings.Repeat("#", level+1))
+		builder.WriteString(" Usage\n\n``` bash\n")
 		builder.WriteString(strings.TrimRight(strings.ReplaceAll(example, "To ", "# To "), "\n"))
 		builder.WriteString("\n```\n\n")
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -12,6 +13,18 @@ import (
 var (
 	interactiveMode bool
 	bookStatus      string
+	seriesEditFlags = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewStringFlag(false, false, &seriesName, "name", "n", "", "the name of the series to edit"),
+			flags.NewEnumFlag(false, false, &seriesPublisher, "publisher", "p", "", "the publisher of the series", config.AllPublisherTypes()),
+			flags.NewEnumFlag(false, false, &seriesType, "type", "t", "", "the series type", config.AllSeriesTypes()),
+			flags.NewEnumFlag(false, false, &seriesStatus, "status", "s", "", "status to set for the selected book (O/H/C)", config.AllStatuses()),
+			flags.NewStringFlag(false, false, &slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name"),
+			flags.NewIntFlag(false, false, &wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them"),
+			flags.NewBoolFlag(false, false, &interactiveMode, "interactive", "i", false, "gets the name, publisher, series type, and series status interactively when not provided"),
+			flags.NewBoolFlag(false, false, &includeCompleted, "include-completed", "c", false, "include completed series in the books to search"),
+		},
+	}
 )
 
 // EditCmd represents the edit series command
@@ -25,6 +38,9 @@ var EditCmd = &cobra.Command{
 	To set the status of a series you know the name and status of without wanting to use any interactive prompt:
 	magnum series edit -n "series_name" -s C
 	`),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return seriesEditFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
 
@@ -169,12 +185,8 @@ var EditCmd = &cobra.Command{
 func init() {
 	seriesCmd.AddCommand(EditCmd)
 
-	EditCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series to edit")
-	EditCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "the publisher of the series")
-	EditCmd.Flags().StringVarP(&seriesType, "type", "t", "", "the series type")
-	EditCmd.Flags().StringVarP(&seriesStatus, "status", "s", "", "status to set for the selected book (O/H/C)")
-	EditCmd.Flags().StringVarP(&slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name")
-	EditCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
-	EditCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "gets the name, publisher, series type, and series status interactively when not provided")
-	EditCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "include completed series in the books to search")
+	err := seriesEditFlags.AddToCmd(EditCmd)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 }

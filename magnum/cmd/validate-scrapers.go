@@ -6,9 +6,16 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
+
+var validateScraperFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewBoolFlag(false, false, &verbose, "verbose", "v", false, "show more info about what is going on"),
+	},
+}
 
 var validationSeries = []config.SeriesInfo{
 	{ // Yen Press
@@ -51,6 +58,9 @@ var ValidateScraperCmd = &cobra.Command{
 	Short: "Runs the web scraper logic for a single series on each scraper with an already known result to determine if the scraper is still functioning or if it needs an update.",
 	Example: heredoc.Doc(`To test all of the scrapers used:
 	magnum validate`),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return validateScraperFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Validating scrapers...")
 
@@ -80,5 +90,8 @@ var ValidateScraperCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(ValidateScraperCmd)
 
-	ValidateScraperCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
+	err := validateScraperFlags.AddToCmd(ValidateScraperCmd)
+	if err != nil {
+		logger.WriteError(err.Error())
+	}
 }

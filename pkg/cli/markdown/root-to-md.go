@@ -13,7 +13,11 @@ func RootToMd(rootCmd *cobra.Command) string {
 
 	var level = baseLevel
 	if rootCmd.Runnable() {
-		commandToc.WriteString("- [" + rootCmd.Name() + "](#" + rootCmd.Name() + "-base-command)\n")
+		commandToc.WriteString("- [")
+		commandToc.WriteString(rootCmd.Name())
+		commandToc.WriteString("](#")
+		commandToc.WriteString(rootCmd.Name())
+		commandToc.WriteString("-base-command)\n")
 		CommandToMd(rootCmd, &commandMd, level)
 
 		level++

@@ -48,3 +48,7 @@ func PublisherToDisplayString(val PublisherType) string {
 		return ""
 	}
 }
+
+func AllPublisherTypes() []string {
+	return []string{string(YenPress), string(JNovelClub), string(SevenSeasEntertainment), string(OnePeaceBooks), string(VizMedia), string(HanashiMedia)}
+}
