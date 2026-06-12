@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
@@ -43,10 +43,21 @@ var (
 	coverInputFilePath string
 	versionDescriptor  string
 	location           string
+	commonBookFlags    = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(true, false, &coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use", []string{"md"}, true),
+			flags.NewFileFlag(false, false, &bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to", []string{"html"}, false),
+		},
+	}
+	createHtmlFlags = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewEnumFlag(true, false, &versionDescriptor, "format", "", "", "the version descriptor for the type of songs to generate (Abridged or Unabridged)", []string{"Abridged", "Unabridged"}),
+		},
+	}
 )
 
-// CreateHtmlCmd represents the CreateSongs command
-var CreateHtmlCmd = &cobra.Command{
+// createHtmlCmd represents the CreateSongs command
+var createHtmlCmd = &cobra.Command{
 	Use:   "html",
 	Short: "Converts the cover and all Markdown files in the specified folder into html in alphabetical order generating three sections: the cover, table of contents, and songs",
 	Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
@@ -62,7 +73,14 @@ var CreateHtmlCmd = &cobra.Command{
 	- Converts each file into html
 	- Writes the content to the specified source
 	`),
-	PreRunE: validateCreateHtmlFile,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		err := validateCreateHtmlFile()
+		if err != nil {
+			return err
+		}
+
+		return createHtmlFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, versionDescriptor, "", false)
 	},
@@ -137,18 +155,13 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 	}
 }
 
-func validateCreateHtmlFile(cmd *cobra.Command, args []string) error {
-	err := ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath)
+func validateCreateHtmlFile() error {
+	err := createFlags.Validate()
 	if err != nil {
 		return err
 	}
 
-	err = filehandler.FolderArgExists(stagingDir, "working-dir")
-	if err != nil {
-		return err
-	}
-
-	err = filehandler.FileArgExists(coverInputFilePath, "cover-file")
+	err = commonBookFlags.Validate()
 	if err != nil {
 		return err
 	}
@@ -157,51 +170,17 @@ func validateCreateHtmlFile(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	createCmd.AddCommand(CreateHtmlCmd)
+	createCmd.AddCommand(createHtmlCmd)
 
-	createCommonHtmlAndBookFlags(CreateHtmlCmd)
-
-	CreateHtmlCmd.Flags().StringVarP(&versionDescriptor, "format", "", "", "the version descriptor for the type of songs to generate (generally just abridged or unabridged)")
-	err := CreateHtmlCmd.MarkFlagRequired("format")
+	err := commonBookFlags.AddToCmd(createHtmlCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"format\" as required on create html command: %v\n", err)
+		logger.WriteError(err.Error())
 	}
-}
 
-// createCommonHtmlAndBookFlags is meant to allow for de-duplicating the common flags for create html and create book
-func createCommonHtmlAndBookFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&coverInputFilePath, "cover-file", "c", "", "the markdown cover file to use")
-	err := cmd.MarkFlagRequired("cover-file")
+	err = createHtmlFlags.AddToCmd(createHtmlCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"cover-file\" as required on create %s command: %v\n", cmd.Use, err)
+		logger.WriteError(err.Error())
 	}
-
-	err = cmd.MarkFlagFilename("cover-file", "md")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"cover-file\" as a looking for specific file types on create %s command: %v\n", cmd.Use, err)
-	}
-
-	cmd.Flags().StringVarP(&bodyHtmlOutputFile, "output", "o", "", "the html file to write the output to")
-	err = cmd.MarkFlagFilename("output", "html")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"output\" as a looking for specific file types on create %s command: %v\n", cmd.Use, err)
-	}
-}
-
-func ValidateCreateHtmlAndBookFlags(stagingDir, coverInputFilePath string) error {
-	if strings.TrimSpace(stagingDir) == "" {
-		return errors.New(StagingDirArgEmpty)
-	}
-
-	if strings.TrimSpace(coverInputFilePath) == "" {
-		return errors.New(CoverPathArgEmpty)
-	}
-
-	if !strings.HasSuffix(coverInputFilePath, ".md") {
-		return errors.New(CoverPathNotMdFile)
-	}
-
-	return nil
 }
 
 func buildListItems(headerIds []string) string {

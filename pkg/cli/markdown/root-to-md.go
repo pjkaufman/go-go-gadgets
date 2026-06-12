@@ -34,7 +34,12 @@ func handleSubCommands(cmd *cobra.Command, commandMd, commandToc *strings.Builde
 			continue
 		}
 
-		commandToc.WriteString(strings.Repeat(" ", (level-baseLevel)*2) + "- [" + subCmd.Name() + "](#" + subCmd.Name() + ")\n")
+		commandToc.WriteString(strings.Repeat(" ", (level-baseLevel)*2))
+		commandToc.WriteString("- [")
+		commandToc.WriteString(subCmd.Name())
+		commandToc.WriteString("](#")
+		commandToc.WriteString(subCmd.Name())
+		commandToc.WriteString(")\n")
 
 		CommandToMd(subCmd, commandMd, level)
 
