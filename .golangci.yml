@@ -130,7 +130,7 @@ linters:
           funcs:
             - (github.com/pjkaufman/go-go-gadgets/pkg/loggger).WriteInfof
             - (github.com/golangci/golangci-lint/pkg/logutils.Log).WriteWarnf
-            - (github.com/golangci/golangci-lint/pkg/logutils.Log).WriteErrorf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).WriteFatalf
 
   exclusions:
     rules:
