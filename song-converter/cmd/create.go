@@ -23,6 +23,6 @@ func init() {
 
 	err := createFlags.AddToCmd(createCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

@@ -37,7 +37,7 @@ var organizeNotesCmd = &cobra.Command{
 		err := moveTranslatorsNotes(epubFile)
 
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 	},
 }
@@ -47,7 +47,7 @@ func init() {
 
 	err := organizeNotesFlags.AddToCmd(organizeNotesCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 

@@ -50,12 +50,12 @@ var replaceCmd = &cobra.Command{
 		var numHits = make(map[string]int)
 		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
@@ -118,7 +118,7 @@ var replaceCmd = &cobra.Command{
 			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteErrorf("failed to replace strings in %q: %s", epubFile, err)
+			logger.WriteFatalf("failed to replace strings in %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("\nFinished epub string replacement...")
@@ -130,6 +130,6 @@ func init() {
 
 	err := replaceFlags.AddToCmd(replaceCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

@@ -53,7 +53,7 @@ var EditCmd = &cobra.Command{
 		var name = seriesName
 		if strings.TrimSpace(name) == "" {
 			if !interactiveMode {
-				logger.WriteError("No series name was provided and interactive was not specified, so no series change could be made.")
+				logger.WriteFatal("No series name was provided and interactive was not specified, so no series change could be made.")
 			}
 
 			name = selectBookName(seriesInfo.Series, includeCompleted)
@@ -81,7 +81,7 @@ var EditCmd = &cobra.Command{
 		}
 
 		if !foundSeriesToUpdate {
-			logger.WriteErrorf("No series with the name %q is in the series list.\n", name)
+			logger.WriteFatalf("No series with the name %q is in the series list.\n", name)
 		}
 
 		var changeMade bool
@@ -187,6 +187,6 @@ func init() {
 
 	err := seriesEditFlags.AddToCmd(EditCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

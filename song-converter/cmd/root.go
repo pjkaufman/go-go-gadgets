@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.WriteErrorf("Error: %v\n", err)
+		logger.WriteFatalf("Error: %v\n", err)
 	}
 }
 
@@ -31,7 +31,7 @@ func writeToFileOrStdOut(content, outputFile string) {
 		err := filehandler.WriteFileContents(outputFile, content)
 
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 	} else {
 		logger.WriteInfo(content)

@@ -53,7 +53,7 @@ var createCsvCmd = &cobra.Command{
 
 		files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		sort.Strings(files)
@@ -64,7 +64,7 @@ var createCsvCmd = &cobra.Command{
 			var filePath = filehandler.JoinPath(stagingDir, fileName)
 			contents, err := filehandler.ReadInFileContents(filePath)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			mdInfo[i] = converter.MdFileInfo{
@@ -76,7 +76,7 @@ var createCsvCmd = &cobra.Command{
 
 		csvFile, err := converter.BuildCsv(mdInfo)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		writeToFileOrStdOut(csvFile, outputFile)
@@ -92,6 +92,6 @@ func init() {
 
 	err := createCsvFlags.AddToCmd(createCsvCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

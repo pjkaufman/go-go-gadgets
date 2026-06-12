@@ -34,7 +34,7 @@ func selectBookName(series []config.SeriesInfo, includeCompleted bool) string {
 
 	_, result, err := prompt.Run()
 	if err != nil {
-		logger.WriteErrorf("Book name prompt failed %v\n", err)
+		logger.WriteFatalf("Book name prompt failed %v\n", err)
 	}
 
 	return result
@@ -63,7 +63,7 @@ func selectBookStatus(currentStatus *config.SeriesStatus) config.SeriesStatus {
 
 	i, _, err := prompt.Run()
 	if err != nil {
-		logger.WriteErrorf("Book status prompt failed %v\n", err)
+		logger.WriteFatalf("Book status prompt failed %v\n", err)
 	}
 
 	return statuses[i]
@@ -95,7 +95,7 @@ func selectPublisher(currentPublisher *config.PublisherType) config.PublisherTyp
 
 	i, _, err := prompt.Run()
 	if err != nil {
-		logger.WriteErrorf("Book publisher prompt failed %v\n", err)
+		logger.WriteFatalf("Book publisher prompt failed %v\n", err)
 	}
 
 	return publishers[i]
@@ -124,7 +124,7 @@ func selectSeriesType(currentType *config.SeriesType) config.SeriesType {
 
 	i, _, err := prompt.Run()
 	if err != nil {
-		logger.WriteErrorf("Book series type prompt failed %v\n", err)
+		logger.WriteFatalf("Book series type prompt failed %v\n", err)
 	}
 
 	return types[i]

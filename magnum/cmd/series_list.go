@@ -78,6 +78,6 @@ func init() {
 
 	err := seriesListFlags.AddToCmd(ListCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

@@ -112,7 +112,7 @@ var GenerateTestCmd = &cobra.Command{
 			err := createGoldenFile(test.url, filepath.Join(goldenFilePath, test.filename), test.frozen, test.isJson)
 
 			if err != nil {
-				logger.WriteErrorf("failed to create golden file for %s: %v", test.url, err)
+				logger.WriteFatalf("failed to create golden file for %s: %v", test.url, err)
 			}
 		}
 	},
@@ -123,7 +123,7 @@ func init() {
 
 	err := generateTestFlags.AddToCmd(GenerateTestCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 

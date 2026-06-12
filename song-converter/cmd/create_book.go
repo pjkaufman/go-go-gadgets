@@ -71,12 +71,12 @@ func init() {
 
 	err := commonBookFlags.AddToCmd(createBookCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	err = createBookFlags.AddToCmd(createBookCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 

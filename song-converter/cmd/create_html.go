@@ -93,7 +93,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 	}
 	coverMd, err := filehandler.ReadInFileContents(coverInputFilePath)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	coverHtml := converter.BuildHtmlCover(coverMd, bookType, extraCss, time.Now())
@@ -108,7 +108,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 
 	files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	sort.Strings(files)
@@ -119,7 +119,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		var filePath = filehandler.JoinPath(stagingDir, fileName)
 		fileContents, err := filehandler.ReadInFileContents(filePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		mdInfo[i] = converter.MdFileInfo{
@@ -133,7 +133,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 	if isBook {
 		mdInfo, err = converter.FilterAndSortSongs(mdInfo, location)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		converterType = converter.Book
@@ -141,7 +141,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 
 	songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converterType)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	if isBook {
@@ -174,12 +174,12 @@ func init() {
 
 	err := commonBookFlags.AddToCmd(createHtmlCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	err = createHtmlFlags.AddToCmd(createHtmlCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 

@@ -92,6 +92,6 @@ func init() {
 
 	err := validateScraperFlags.AddToCmd(ValidateScraperCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

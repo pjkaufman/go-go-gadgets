@@ -61,7 +61,7 @@ var optimizeCmd = &cobra.Command{
 
 		epubs, err := filehandler.GetAllFilesWithExtInASpecificFolder(lintDir, ".epub")
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		var removableFileExts []string
@@ -75,18 +75,18 @@ var optimizeCmd = &cobra.Command{
 
 			err = LintEpub(lintDir, epub, runCompressImages, verbose, removableFileExts)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			var originalFile = epub + ".original"
 			newKbSize, err := filehandler.GetFileSize(epub)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			oldKbSize, err := filehandler.GetFileSize(originalFile)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			logger.WriteInfo(filesize.FileSizeSummary(originalFile, epub, oldKbSize, newKbSize))
@@ -105,7 +105,7 @@ func init() {
 
 	err := optimizeFlags.AddToCmd(optimizeCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 

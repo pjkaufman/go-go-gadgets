@@ -72,12 +72,12 @@ var autoFixValidationCmd = &cobra.Command{
 
 		validationOutput, err := filehandler.ReadInFileContents(validationIssuesFilePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		validationErrors, err := epubcheck.ParseEPUBCheckOutput(validationOutput)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		validationErrors.Sort()
@@ -170,7 +170,7 @@ var autoFixValidationCmd = &cobra.Command{
 			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteErrorf("failed to fix validation issues in %q: %s", epubFile, err)
+			logger.WriteFatalf("failed to fix validation issues in %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("Finished fixing epub validation issues.")
@@ -182,6 +182,6 @@ func init() {
 
 	err := autoFixValidationFlags.AddToCmd(autoFixValidationCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

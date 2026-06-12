@@ -35,12 +35,12 @@ var validateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		epubcheckDir, err := filehandler.GetDataDir("epubcheck")
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		err = epubcheck.EnsureEPUBCheckIsInstalled(epubcheckDir)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		jarPath := filehandler.JoinPath(epubcheckDir, "epubcheck.jar")
@@ -52,7 +52,7 @@ var validateCmd = &cobra.Command{
 			err = filehandler.WriteFileContents(outputToFile, output)
 
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 		} else {
 			logger.WriteInfo(output)
@@ -65,6 +65,6 @@ func init() {
 
 	err := validateFlag.AddToCmd(validateCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

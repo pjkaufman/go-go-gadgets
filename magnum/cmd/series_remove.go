@@ -43,6 +43,6 @@ func init() {
 
 	err := seriesRemoveFlags.AddToCmd(RemoveCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

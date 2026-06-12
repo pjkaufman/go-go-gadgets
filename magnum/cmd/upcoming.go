@@ -97,7 +97,7 @@ func init() {
 func parseVolumeReleaseDate(name, releaseDate string) time.Time {
 	date, err := time.Parse(releaseDateFormat, releaseDate)
 	if err != nil {
-		logger.WriteErrorf("failed to parse release date %q for %q: %s\n", name, releaseDate, err)
+		logger.WriteFatalf("failed to parse release date %q for %q: %s\n", name, releaseDate, err)
 	}
 
 	return date

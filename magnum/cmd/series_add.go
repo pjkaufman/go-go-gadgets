@@ -96,6 +96,6 @@ func init() {
 
 	err := seriesAddFlags.AddToCmd(AddCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

@@ -179,7 +179,7 @@ func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]stri
 	for original, suggestion := range suggestions {
 		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		//nolint:gocritic // Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal

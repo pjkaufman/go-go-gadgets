@@ -45,7 +45,7 @@ var compareCmd = &cobra.Command{
 
 		htmlContent, err := filehandler.ReadInFileContents(htmlFile)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		htmlLines := converter.HtmlToText(htmlContent)
@@ -63,6 +63,6 @@ func init() {
 
 	err := compareFlags.AddToCmd(compareCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

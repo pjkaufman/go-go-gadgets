@@ -39,7 +39,7 @@ var procCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := filehandler.ReadInBinaryFileContents(file)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		var isPng = strings.HasSuffix(file, ".png")
@@ -56,7 +56,7 @@ var procCmd = &cobra.Command{
 			newData, err = image.JpegRemoveExifData(data)
 		}
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		var resizeImage = width != 0
@@ -70,7 +70,7 @@ var procCmd = &cobra.Command{
 			newData, err = image.JpegResize(newData, width, &quality)
 		}
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		if !bytes.Equal(data, newData) {
@@ -86,7 +86,7 @@ var procCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 		}
 	},
@@ -97,6 +97,6 @@ func init() {
 
 	err := procFlags.AddToCmd(procCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

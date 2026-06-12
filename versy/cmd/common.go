@@ -133,7 +133,7 @@ func htmlToPlaintext(htmlContent string) string {
 func getAndDisplayBothVerses(reference, version1, version2 string, scrapper *colly.Collector) {
 	firstVerse, err := getVerse(reference, version1, scrapper)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	logger.WriteInfo(firstVerse)
@@ -141,7 +141,7 @@ func getAndDisplayBothVerses(reference, version1, version2 string, scrapper *col
 
 	secondVerse, err := getVerse(reference, version2, scrapper.Clone())
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	logger.WriteInfo(secondVerse)

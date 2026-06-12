@@ -238,7 +238,7 @@ var contentCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			logger.WriteErrorf("failed to fix manually fixable content issues for %q: %s", epubFile, err)
+			logger.WriteFatalf("failed to fix manually fixable content issues for %q: %s", epubFile, err)
 		}
 	},
 }
@@ -248,6 +248,6 @@ func init() {
 
 	err := contentFlags.AddToCmd(contentCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }

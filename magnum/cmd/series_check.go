@@ -96,7 +96,7 @@ func init() {
 
 	err := seriesCheckFlags.AddToCmd(CheckCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
 
@@ -175,11 +175,11 @@ func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler siteha
 		TablesToParseOverride: seriesInfo.WikipediaTablesToParseOverride,
 	})
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	if len(volumes) == -1 {
-		logger.WriteErrorf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+		logger.WriteFatalf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
 	}
 
 	if numVolumes == 0 {

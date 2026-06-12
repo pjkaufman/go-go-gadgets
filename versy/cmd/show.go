@@ -39,6 +39,6 @@ func init() {
 
 	err := showFlags.AddToCmd(showCmd)
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 }
