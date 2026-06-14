@@ -2,6 +2,8 @@ package flags
 
 import (
 	"fmt"
+	"path/filepath"
+	"slices"
 	"strings"
 
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
@@ -37,6 +39,13 @@ func (s FileFlag) Validate() error {
 	if s.IsRequired {
 		if s.Value == nil || strings.TrimSpace(*s.Value) == "" {
 			return fmt.Errorf("%s must have a non-whitespace value", s.Name)
+		}
+	}
+
+	if len(s.Extensions) != 0 && s.Value != nil {
+		var ext = strings.TrimPrefix(filepath.Ext(strings.TrimSpace(*s.Value)), ".")
+		if !slices.Contains(s.Extensions, ext) {
+			return fmt.Errorf("%s has extension %q, must have one of the following extensions: %s", s.Name, ext, strings.Join(s.Extensions, ", "))
 		}
 	}
 

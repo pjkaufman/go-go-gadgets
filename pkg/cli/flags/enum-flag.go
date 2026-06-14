@@ -34,6 +34,10 @@ func NewEnumFlag(isRequired, isPersistent bool, p *string, name, shorthand, valu
 }
 
 func (f EnumFlag) AddToCmd(cmd *cobra.Command) error {
+	if len(f.Allowed) == 0 {
+		return fmt.Errorf("failed to add flag %q on command %s because no allowed values were provided.", f.Name, cmd.Name())
+	}
+
 	err := f.StringFlag.AddToCmd(cmd)
 	if err != nil {
 		return err
@@ -63,7 +67,7 @@ func (f EnumFlag) Validate() error {
 		return err
 	}
 
-	if slices.Contains(f.Allowed, *f.Value) {
+	if f.Value == nil || strings.TrimSpace(*f.Value) == "" || slices.Contains(f.Allowed, *f.Value) {
 		return nil
 	}
 

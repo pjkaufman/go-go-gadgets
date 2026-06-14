@@ -72,8 +72,11 @@ var removeFileFromNavTestCases = map[string]removeFileFromNavTestCase{
 }
 
 func TestRemoveFileFromNav(t *testing.T) {
+	t.Parallel()
+
 	for name, tc := range removeFileFromNavTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := epubhandler.RemoveFileFromNav(tc.input, tc.file)
 			assert.Equal(t, tc.expected, actual)
 		})
