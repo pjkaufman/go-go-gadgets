@@ -77,8 +77,11 @@ var JpegResizeTestCases = map[string]JpegResizeTestCase{
 }
 
 func TestJpegResize(t *testing.T) {
+	t.Parallel()
+
 	for name, test := range JpegResizeTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			height, width := image_pkg.GetImageDimensions(test.InputFileData)
 			assert.Equal(t, test.OriginalHeight, height, "original height was not the expected value")
 			assert.Equal(t, test.OriginalWidth, width, "original width was not the expected value")

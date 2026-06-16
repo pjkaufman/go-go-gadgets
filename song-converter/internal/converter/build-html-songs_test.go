@@ -63,8 +63,11 @@ var buildHtmlSongsTestCases = map[string]buildHtmlSongsTestCase{
 }
 
 func TestBuildHtmlSongs(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range buildHtmlSongsTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, actualSongIds, err := converter.BuildHtmlSongs(args.inputMdInfo, converter.Digital)
 			if args.expectError {
 				require.Error(t, err)

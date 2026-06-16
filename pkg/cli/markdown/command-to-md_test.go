@@ -49,9 +49,12 @@ cmd to md test --flag`,
 }
 
 func TestCommandToMd(t *testing.T) {
+	t.Parallel()
+
 	parent := cobra.Command{}
 	for name, args := range CommandToMdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if args.Command != nil {
 				parent.AddCommand(args.Command) // makes sure the command is not registered as a root command
 

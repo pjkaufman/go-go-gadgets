@@ -62,8 +62,11 @@ var buildCsvTestCases = map[string]buildCsvTestCase{
 }
 
 func TestBuildCsv(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range buildCsvTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := converter.BuildCsv(args.inputMdInfo)
 			if err != nil {
 				assert.Fail(t, "there should be no errors when parsing the YAML for the html UTs")

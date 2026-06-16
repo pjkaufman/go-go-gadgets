@@ -114,8 +114,11 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 }
 
 func TestFlagsToMd(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range FlagsToMdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var actual strings.Builder
 			markdown.FlagsToMd(args.CreateFlags(), &actual)
 

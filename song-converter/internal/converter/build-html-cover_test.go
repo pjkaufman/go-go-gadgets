@@ -42,8 +42,11 @@ var buildHtmlCoverTestCases = map[string]buildHtmlCoverTestCase{
 }
 
 func TestBuildHtmlCover(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range buildHtmlCoverTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := converter.BuildHtmlCover(args.inputCoverMd, args.coverType, args.extraStyleCss, args.dateCreated)
 
 			assert.Equal(t, args.expectedHtml, actual)

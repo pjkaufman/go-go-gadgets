@@ -20,10 +20,14 @@ import (
 var jpegs embed.FS
 
 func TestJpegExifDataRemoval(t *testing.T) {
+	t.Parallel()
+
 	iterateAndTestImageExifDataRemoval(t, jpegs, getJpegExifData, image.JpegRemoveExifData)
 }
 
 func iterateAndTestImageExifDataRemoval(t *testing.T, files embed.FS, getExifData func([]byte) []byte, removeExifData func([]byte) ([]byte, error)) {
+	t.Helper()
+
 	_ = fs.WalkDir(files, ".", func(path string, d fs.DirEntry, err error) error {
 		require.NoError(t, err, "failed to walk path")
 
@@ -33,6 +37,7 @@ func iterateAndTestImageExifDataRemoval(t *testing.T, files embed.FS, getExifDat
 			require.NoErrorf(t, err, "failed to read file %q", path)
 
 			t.Run(fmt.Sprintf(`%q: exif data gets removed`, path), func(t *testing.T) {
+				t.Parallel()
 				existingTags := getExifData(imageFile)
 				newData, err := removeExifData(imageFile)
 				require.NoError(t, err)
