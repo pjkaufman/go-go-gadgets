@@ -10,10 +10,10 @@ import (
 )
 
 type parseVolumeInfoTestCase struct {
-	InputHtml          string
-	InputSeriesName    string
-	ExpectedVolumeInfo *yenpress.VolumeInfo
-	ExpectError        bool
+	inputHtml          string
+	inputSeriesName    string
+	expectedVolumeInfo *yenpress.VolumeInfo
+	expectError        bool
 }
 
 const (
@@ -41,48 +41,51 @@ const (
 
 var parseVolumeInfoTestCases = map[string]parseVolumeInfoTestCase{
 	"a volume that has \"collector's edition\" in the name should be ignored": {
-		InputHtml:          danmachiColectorsEdition,
-		InputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
-		ExpectedVolumeInfo: nil,
+		inputHtml:          danmachiColectorsEdition,
+		inputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
+		expectedVolumeInfo: nil,
 	},
 	"a simple volume with a relative link and name is properly parsed": {
-		InputHtml:       danmachi19,
-		InputSeriesName: "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
-		ExpectedVolumeInfo: &yenpress.VolumeInfo{
+		inputHtml:       danmachi19,
+		inputSeriesName: "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
+		expectedVolumeInfo: &yenpress.VolumeInfo{
 			Name:         "Is It Wrong to Try to Pick Up Girls in a Dungeon?, Vol. 19 (light novel)",
 			RelativeLink: "/titles/9781975393403-is-it-wrong-to-try-to-pick-up-girls-in-a-dungeon-vol-19-light-novel",
 		},
 	},
 	"if a volume is missing the name, an error will be thrown": {
-		InputHtml:          noTitle,
-		InputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
-		ExpectedVolumeInfo: nil,
-		ExpectError:        true,
+		inputHtml:          noTitle,
+		inputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
+		expectedVolumeInfo: nil,
+		expectError:        true,
 	},
 	"if a volume has is missing the relative link, an error will be thrown": {
-		InputHtml:          noRelativeLink,
-		InputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
-		ExpectedVolumeInfo: nil,
-		ExpectError:        true,
+		inputHtml:          noRelativeLink,
+		inputSeriesName:    "Is It Wrong to Try to Pick Up Girls in a Dungeon? (light novel)",
+		expectedVolumeInfo: nil,
+		expectError:        true,
 	},
 	"a volume that has \"omnibus edition\" in the name should be ignored": {
-		InputHtml:          aCertainMagicalIndexOmnibusEdition,
-		InputSeriesName:    "A Certain Magical Index (light novel)",
-		ExpectedVolumeInfo: nil,
+		inputHtml:          aCertainMagicalIndexOmnibusEdition,
+		inputSeriesName:    "A Certain Magical Index (light novel)",
+		expectedVolumeInfo: nil,
 	},
 }
 
 func TestParseWikipediaTableToVolumeInfo(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range parseVolumeInfoTestCases {
 		t.Run(name, func(t *testing.T) {
-			actualVolumeInfo, err := yenpress.ParseVolumeInfo(args.InputSeriesName, args.InputHtml)
+			t.Parallel()
+			actualVolumeInfo, err := yenpress.ParseVolumeInfo(args.inputSeriesName, args.inputHtml)
 
-			assert.Equal(t, err != nil, args.ExpectError)
-			assert.Equal(t, args.ExpectedVolumeInfo != nil, actualVolumeInfo != nil)
+			assert.Equal(t, err != nil, args.expectError)
+			assert.Equal(t, args.expectedVolumeInfo != nil, actualVolumeInfo != nil)
 
-			if !args.ExpectError && args.ExpectedVolumeInfo != nil {
-				assert.Equal(t, args.ExpectedVolumeInfo.Name, actualVolumeInfo.Name)
-				assert.Equal(t, args.ExpectedVolumeInfo.RelativeLink, actualVolumeInfo.RelativeLink)
+			if !args.expectError && args.expectedVolumeInfo != nil {
+				assert.Equal(t, args.expectedVolumeInfo.Name, actualVolumeInfo.Name)
+				assert.Equal(t, args.expectedVolumeInfo.RelativeLink, actualVolumeInfo.RelativeLink)
 			}
 		})
 	}

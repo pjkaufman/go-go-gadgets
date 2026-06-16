@@ -42,8 +42,11 @@ var GetSeriesSlugFromNameTestCases = map[string]GetSeriesSlugFromNameTestCase{
 }
 
 func TestGetSeriesSlugFromName(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range GetSeriesSlugFromNameTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actualSlug := slug.GetSeriesSlugFromName(args.SeriesName)
 
 			assert.Equal(t, args.ExpectedSlug, actualSlug)

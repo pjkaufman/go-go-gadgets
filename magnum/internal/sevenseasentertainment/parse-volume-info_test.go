@@ -107,8 +107,11 @@ var ParseVolumeInfoTestCases = map[string]ParseVolumeInfoTestCase{
 }
 
 func TestParseWikipediaTableToVolumeInfo(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range ParseVolumeInfoTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actualVolumeInfo, err := sevenseasentertainment.ParseVolumeInfo(args.InputSeriesName, args.InputHtml, args.InputVolumeNum)
 
 			assert.Equal(t, err != nil, args.ExpectError)

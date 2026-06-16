@@ -127,8 +127,11 @@ var ParseVolumeHtmlTestCases = map[string]ParseVolumeHtmlTestCase{
 }
 
 func TestParseVolumeHtml(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range ParseVolumeHtmlTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actualName, actualRedirectLink, actualIsReleased, err := vizmedia.ParseVolumeHtml(args.InputHtml, args.InputSeriesName, 0)
 
 			assert.Equal(t, err != nil, args.ExpectError)

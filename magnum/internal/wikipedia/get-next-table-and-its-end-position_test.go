@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type GetNextTableAndItsEndPositionTestCase struct {
-	InputHtml         string
-	ExpectedTableHtml string
-	ExpectedStopIndex int
+type getNextTableAndItsEndPositionTestCase struct {
+	inputHtml         string
+	expectedTableHtml string
+	expectedStopIndex int
 }
 
 const (
@@ -639,36 +639,39 @@ const (
 
 // Note: the math does seem off when it comes to how the expected stop index is calculated, but it logically works:
 // ExpectedStopIndex = strings.Index(args.InputHtml, args.ExpectedTable) + len(args.ExpectedTable)
-var GetNextTableAndItsEndPositionTestCases = map[string]GetNextTableAndItsEndPositionTestCase{
+var getNextTableAndItsEndPositionTestCases = map[string]getNextTableAndItsEndPositionTestCase{
 	"a section with a simple table should be properly recognized and pulled out": {
-		InputHtml:         theWrongWayToUseHealingMagicLightNovelSection,
-		ExpectedTableHtml: theWrongWayToUseHealingMagicLightNovelTable,
-		ExpectedStopIndex: 11764,
+		inputHtml:         theWrongWayToUseHealingMagicLightNovelSection,
+		expectedTableHtml: theWrongWayToUseHealingMagicLightNovelTable,
+		expectedStopIndex: 11764,
 	},
 	"a section with a table with nested tables in it should be properly recognized and pulled out": {
-		InputHtml:         theRisingOfTheShieldHereLightNovelSection,
-		ExpectedTableHtml: theRisingOfTheShieldHereLightNovelTable,
-		ExpectedStopIndex: 68247,
+		inputHtml:         theRisingOfTheShieldHereLightNovelSection,
+		expectedTableHtml: theRisingOfTheShieldHereLightNovelTable,
+		expectedStopIndex: 68247,
 	},
 	"a section with no table should come back with an empty string and -1 for the stop value": {
-		InputHtml:         "<h1>This is a title<h1>",
-		ExpectedTableHtml: "",
-		ExpectedStopIndex: -1,
+		inputHtml:         "<h1>This is a title<h1>",
+		expectedTableHtml: "",
+		expectedStopIndex: -1,
 	},
 	"a section with a table that lacks a closing table tag should come back with everything after the starting table tag": {
-		InputHtml:         `<h1>This is a title<h1> <table class="wikitable"><tbody></tbody>`,
-		ExpectedTableHtml: `<table class="wikitable"><tbody></tbody>`,
-		ExpectedStopIndex: 64,
+		inputHtml:         `<h1>This is a title<h1> <table class="wikitable"><tbody></tbody>`,
+		expectedTableHtml: `<table class="wikitable"><tbody></tbody>`,
+		expectedStopIndex: 64,
 	},
 }
 
 func TestGetNextTableAndItsEndPosition(t *testing.T) {
-	for name, args := range GetNextTableAndItsEndPositionTestCases {
-		t.Run(name, func(t *testing.T) {
-			actualTableHtml, actualStopPosition := wikipedia.GetNextTableAndItsEndPosition(args.InputHtml)
+	t.Parallel()
 
-			assert.Equal(t, args.ExpectedTableHtml, actualTableHtml, "actual html was not the expected value")
-			assert.Equal(t, args.ExpectedStopIndex, actualStopPosition, "actual stop position of the table was not the expected value")
+	for name, args := range getNextTableAndItsEndPositionTestCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			actualTableHtml, actualStopPosition := wikipedia.GetNextTableAndItsEndPosition(args.inputHtml)
+
+			assert.Equal(t, args.expectedTableHtml, actualTableHtml, "actual html was not the expected value")
+			assert.Equal(t, args.expectedStopIndex, actualStopPosition, "actual stop position of the table was not the expected value")
 		})
 	}
 }
