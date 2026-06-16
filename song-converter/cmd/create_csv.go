@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"sort"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
@@ -13,7 +13,12 @@ import (
 )
 
 var (
-	outputFile string
+	outputFile     string
+	createCsvFlags = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(false, false, &outputFile, "output", "o", "", "the file to write the csv to", []string{"csv"}, false),
+		},
+	}
 )
 
 // createCsvCmd represents the createCsv command
@@ -33,20 +38,14 @@ var createCsvCmd = &cobra.Command{
 	- Writes the content to the specified source
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateCreateCsvFlags(stagingDir)
+		err := createFlags.Validate()
 		if err != nil {
 			return err
 		}
 
-		err = filehandler.FolderArgExists(stagingDir, "working-dir")
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return createCsvFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
 		var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 		if isWritingToFile {
 			logger.WriteInfo("Converting Markdown files to csv")
@@ -54,7 +53,7 @@ var createCsvCmd = &cobra.Command{
 
 		files, err := filehandler.GetAllFilesWithExtInASpecificFolder(stagingDir, ".md")
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		sort.Strings(files)
@@ -65,7 +64,7 @@ var createCsvCmd = &cobra.Command{
 			var filePath = filehandler.JoinPath(stagingDir, fileName)
 			contents, err := filehandler.ReadInFileContents(filePath)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			mdInfo[i] = converter.MdFileInfo{
@@ -77,7 +76,7 @@ var createCsvCmd = &cobra.Command{
 
 		csvFile, err := converter.BuildCsv(mdInfo)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		writeToFileOrStdOut(csvFile, outputFile)
@@ -91,17 +90,8 @@ var createCsvCmd = &cobra.Command{
 func init() {
 	createCmd.AddCommand(createCsvCmd)
 
-	createCsvCmd.Flags().StringVarP(&outputFile, "output", "o", "", "the file to write the csv to")
-	err := createCsvCmd.MarkFlagFilename("output", "csv")
+	err := createCsvFlags.AddToCmd(createCsvCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"output\" as looking for specific file types on create csv command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-}
-
-func ValidateCreateCsvFlags(stagingDir string) error {
-	if strings.TrimSpace(stagingDir) == "" {
-		return errors.New(StagingDirArgEmpty)
-	}
-
-	return nil
 }

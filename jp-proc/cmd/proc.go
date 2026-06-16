@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/image"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -17,6 +17,16 @@ var (
 	quiet, removeExif, updateExisting bool
 	quality, width                    int
 	file                              string
+	procFlags                         = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(true, false, &file, "file", "f", "", "the image file to operate on", []string{"png", "jpg", "jpeg"}, true),
+			flags.NewBoolFlag(false, false, &removeExif, "remove-exif", "e", false, "whether or not to remove exif data from the image"),
+			flags.NewBoolFlag(false, false, &quiet, "quiet", "q", false, "whether or not to keep from printing out values to standard out"),
+			flags.NewBoolFlag(false, false, &updateExisting, "update", "u", false, "whether or not to update the original file when done"),
+			flags.NewIntFlag(false, false, &quality, "quality", "", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)"),
+			flags.NewIntFlag(false, false, &width, "width", "w", 0, "the width of the image to use when the image is resized (leave blank to keep original)"),
+		},
+	}
 )
 
 // procCmd represents the process command for processing an image
@@ -24,22 +34,12 @@ var procCmd = &cobra.Command{
 	Use:   "proc",
 	Short: "Processes the provided image in the specified ways",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateJpProcFlags(file)
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(file, "file")
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return procFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := filehandler.ReadInBinaryFileContents(file)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		var isPng = strings.HasSuffix(file, ".png")
@@ -56,7 +56,7 @@ var procCmd = &cobra.Command{
 			newData, err = image.JpegRemoveExifData(data)
 		}
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		var resizeImage = width != 0
@@ -70,7 +70,7 @@ var procCmd = &cobra.Command{
 			newData, err = image.JpegResize(newData, width, &quality)
 		}
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		if !bytes.Equal(data, newData) {
@@ -86,7 +86,7 @@ var procCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 		}
 	},
@@ -95,33 +95,8 @@ var procCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(procCmd)
 
-	procCmd.Flags().StringVarP(&file, "file", "f", "", "the image file to operate on")
-	err := procCmd.MarkFlagRequired("file")
+	err := procFlags.AddToCmd(procCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as required on root command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-
-	err = procCmd.MarkFlagFilename("file", "png", "jpg", "jpeg")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on root command: %v\n", err)
-	}
-
-	procCmd.Flags().BoolVarP(&removeExif, "remove-exif", "e", false, "whether or not to remove exif data from the image")
-	procCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "whether or not to keep from printing out values to standard out")
-	procCmd.Flags().BoolVarP(&updateExisting, "update", "u", false, "whether or not to update the original file when done")
-
-	procCmd.Flags().IntVarP(&quality, "quality", "", defaultQuality, "the quality of the jpeg to use when encoding the image (default is 75)")
-	procCmd.Flags().IntVarP(&width, "width", "w", 0, "the width of the image to use when the image is resized (leave blank to keep original)")
-}
-
-func ValidateJpProcFlags(file string) error {
-	if strings.TrimSpace(file) == "" {
-		return errors.New(`file cannot be empty`)
-	}
-
-	if !strings.HasSuffix(file, ".jpg") && !strings.HasSuffix(file, ".jpeg") && !strings.HasSuffix(file, ".png") {
-		return errors.New(`file must be a jpeg or png file`)
-	}
-
-	return nil
 }

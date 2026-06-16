@@ -16,6 +16,8 @@ import (
 var pngs embed.FS
 
 func TestPngExifDataRemoval(t *testing.T) {
+	t.Parallel()
+
 	iterateAndTestImageExifDataRemoval(t, pngs, getPngExifData, image.PngRemoveExifData)
 }
 

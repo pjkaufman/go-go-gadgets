@@ -2,9 +2,7 @@
 
 package cmd
 
-import (
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/pkg/cmd-handler"
-)
+import "github.com/pjkaufman/go-go-gadgets/pkg/cli"
 
 const (
 	title       = "Epub Linter"
@@ -12,7 +10,7 @@ const (
 )
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, []string{
+	cli.AddGenerateCmd(rootCmd, title, description, []string{
 		"See about removing unused files and images when running epub linting",
 	}, nil)
 }

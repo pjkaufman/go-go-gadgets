@@ -1,6 +1,6 @@
 //go:build unit
 
-package cmdtomd_test
+package markdown_test
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	cmdtomd "github.com/pjkaufman/go-go-gadgets/pkg/cmd-to-md"
+	markdown "github.com/pjkaufman/go-go-gadgets/pkg/cli/markdown"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +37,7 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 
 			return flagSet
 		},
-		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", cmdtomd.TableHeader, cmdtomd.Separator, "| b | boolean | A boolean flag |  | false | false |  |\n| i | integer | An integer flag | int | 0 | false |  |\n| s | string | A string flag | string | default | false |  |"),
+		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", markdown.TableHeader, markdown.Separator, "| b | boolean | A boolean flag |  | false | false |  |\n| i | integer | An integer flag | int | 0 | false |  |\n| s | string | A string flag | string | default | false |  |"),
 	},
 	"make sure that required flags are properly listed as required in the generated table": {
 		CreateFlags: func() *pflag.FlagSet {
@@ -52,7 +52,7 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 
 			return flagSet
 		},
-		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", cmdtomd.TableHeader, cmdtomd.Separator, "| b | required boolean | A required boolean flag |  | false | true |  |"),
+		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", markdown.TableHeader, markdown.Separator, "| b | required boolean | A required boolean flag |  | false | true |  |"),
 	},
 	"make sure that specific file extension flags have their other notes properly list their possible extensions in the generated table": {
 		CreateFlags: func() *pflag.FlagSet {
@@ -73,7 +73,7 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 
 			return flagSet
 		},
-		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", cmdtomd.TableHeader, cmdtomd.Separator, "| c | cover-file | The cover file to use | string |  | false | Should be a file with one of the following extensions: md |\n| i | image | The image to use | string |  | false | Should be a file with one of the following extensions: jpg, png, jpeg |"),
+		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", markdown.TableHeader, markdown.Separator, "| c | cover-file | The cover file to use | string |  | false | Should be a file with one of the following extensions: md |\n| i | image | The image to use | string |  | false | Should be a file with one of the following extensions: jpg, png, jpeg |"),
 	},
 	"make sure that directory flags have their other notes properly list that they are for directories in the generated table": {
 		CreateFlags: func() *pflag.FlagSet {
@@ -88,7 +88,7 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 
 			return flagSet
 		},
-		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", cmdtomd.TableHeader, cmdtomd.Separator, "| w | working-dir | The directory to do operations in | string | . | false | Should be a directory |"),
+		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", markdown.TableHeader, markdown.Separator, "| w | working-dir | The directory to do operations in | string | . | false | Should be a directory |"),
 	},
 	"make sure that hidden flags are not included in the generated table": {
 		CreateFlags: func() *pflag.FlagSet {
@@ -109,15 +109,18 @@ var FlagsToMdTestCases = map[string]FlagsToMdTestCase{
 
 			return flagSet
 		},
-		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", cmdtomd.TableHeader, cmdtomd.Separator, "| b | required boolean | A required boolean flag |  | false | true |  |"),
+		ExpectedOutput: fmt.Sprintf("%s\n%s\n%s", markdown.TableHeader, markdown.Separator, "| b | required boolean | A required boolean flag |  | false | true |  |"),
 	},
 }
 
 func TestFlagsToMd(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range FlagsToMdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			var actual strings.Builder
-			cmdtomd.FlagsToMd(args.CreateFlags(), &actual)
+			markdown.FlagsToMd(args.CreateFlags(), &actual)
 
 			assert.Equal(t, args.ExpectedOutput, actual.String())
 		})

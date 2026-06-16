@@ -36,7 +36,7 @@ func GetNextTableAndItsEndPosition(sectionHtml string) (string, int) {
 		attemptNum++
 
 		if attemptNum > maxAttempts {
-			logger.WriteErrorf("something went wrong trying to parse out the table from %s, as there were only %d instances of table endings and we are trying to find the %d table ending\n", sectionHtml, maxAttempts, attemptNum)
+			logger.WriteFatalf("something went wrong trying to parse out the table from %s, as there were only %d instances of table endings and we are trying to find the %d table ending\n", sectionHtml, maxAttempts, attemptNum)
 		}
 	}
 

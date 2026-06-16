@@ -1,13 +1,18 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
+
+var seriesRemoveFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewStringFlag(true, false, &seriesName, "name", "n", "", "the name of the series"),
+	},
+}
 
 // RemoveCmd represents the remove book info command
 var RemoveCmd = &cobra.Command{
@@ -17,12 +22,7 @@ var RemoveCmd = &cobra.Command{
 	magnum series remove -n "Lady and the Tramp"
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateRemoveSeriesFlags(seriesName)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return seriesRemoveFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
@@ -41,17 +41,8 @@ var RemoveCmd = &cobra.Command{
 func init() {
 	seriesCmd.AddCommand(RemoveCmd)
 
-	RemoveCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
-	err := RemoveCmd.MarkFlagRequired("name")
+	err := seriesRemoveFlags.AddToCmd(RemoveCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"name\" as required on remove command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-}
-
-func ValidateRemoveSeriesFlags(seriesName string) error {
-	if strings.TrimSpace(seriesName) == "" {
-		return errNameArgEmpty
-	}
-
-	return nil
 }

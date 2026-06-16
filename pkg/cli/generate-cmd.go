@@ -1,4 +1,4 @@
-package cmdhandler
+package cli
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/MakeNowJust/heredoc"
-	cmdtomd "github.com/pjkaufman/go-go-gadgets/pkg/cmd-to-md"
+	markdown "github.com/pjkaufman/go-go-gadgets/pkg/cli/markdown"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
@@ -37,17 +37,17 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 		Run: func(cmd *cobra.Command, args []string) {
 			err := ValidateGenerateFlags(generationDir)
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			err = filehandler.FolderArgExists(generationDir, "generation-dir")
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			tmpl, err := template.ParseFiles(filehandler.JoinPath(generationDir, "README.md.tmpl"))
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			var customValues = make(map[string]any)
@@ -55,25 +55,25 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 				customValues, err = getCustomValues(generationDir)
 
 				if err != nil {
-					logger.WriteError(err.Error())
+					logger.WriteFatal(err.Error())
 				}
 			}
 
 			var b bytes.Buffer
 			err = tmpl.Execute(&b, TmplData{
-				CommandStrings: cmdtomd.RootToMd(rootCmd),
+				CommandStrings: markdown.RootToMd(rootCmd),
 				Todos:          todos,
 				Description:    description,
 				Title:          title,
 				CustomValues:   customValues,
 			})
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 
 			err = filehandler.WriteFileContents(filehandler.JoinPath(generationDir, "README.md"), b.String())
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 		},
 	}
@@ -83,7 +83,7 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 	generateCmd.Flags().StringVarP(&generationDir, "generation-dir", "g", "", "the path to the base folder of the "+rootCmd.Use+" program source code")
 	err := generateCmd.MarkFlagRequired("generation-dir")
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"generation-dir\" as required on generate command: %v\n", err)
+		logger.WriteFatalf("failed to mark flag \"generation-dir\" as required on generate command: %v\n", err)
 	}
 
 	// keep from showing up in the output of the command generation

@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/MakeNowJust/heredoc"
 	epubcheck "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	commandhandler "github.com/pjkaufman/go-go-gadgets/pkg/command-handler"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
@@ -11,6 +12,12 @@ import (
 
 var (
 	outputToFile string
+	validateFlag = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to validate", []string{"epub"}, true),
+			flags.NewFileFlag(false, false, &outputToFile, "out", "", "", "specifies that the validation output should be in the specified file", nil, false),
+		},
+	}
 )
 
 var validateCmd = &cobra.Command{
@@ -23,22 +30,17 @@ var validateCmd = &cobra.Command{
 	will run EPUBCheck against the file specified.
 `),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := validateCommonEpubFlags(epubFile)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return validateFlag.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		epubcheckDir, err := filehandler.GetDataDir("epubcheck")
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		err = epubcheck.EnsureEPUBCheckIsInstalled(epubcheckDir)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		jarPath := filehandler.JoinPath(epubcheckDir, "epubcheck.jar")
@@ -50,7 +52,7 @@ var validateCmd = &cobra.Command{
 			err = filehandler.WriteFileContents(outputToFile, output)
 
 			if err != nil {
-				logger.WriteError(err.Error())
+				logger.WriteFatal(err.Error())
 			}
 		} else {
 			logger.WriteInfo(output)
@@ -61,16 +63,8 @@ var validateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(validateCmd)
 
-	validateCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to validate")
-	err := validateCmd.MarkFlagRequired("file")
+	err := validateFlag.AddToCmd(validateCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as required on validate command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-
-	err = validateCmd.MarkFlagFilename("file", "epub")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on validate command: %v\n", err)
-	}
-
-	validateCmd.Flags().StringVarP(&outputToFile, "out", "", "", "specifies that the validation output should be in the specified file")
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
 	"github.com/spf13/cobra"
@@ -28,8 +29,15 @@ const (
 </html>`
 )
 
-// CreateBookCmd represents the CreateSongs command
-var CreateBookCmd = &cobra.Command{
+var createBookFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewStringFlag(true, false, &location, "location", "l", "", "the specific book to recreate by filtering songs down to just that book location"),
+		// TODO: add a sort type for alphabetical and a sort type for in order for the TOC order...
+	},
+}
+
+// createBookCmd represents the CreateSongs command
+var createBookCmd = &cobra.Command{
 	Use: "book",
 	// Short: "Converts the cover and all Markdown files in the specified folder into html in alphabetical order generating three sections: the cover, table of contents, and songs",
 	// Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
@@ -45,23 +53,31 @@ var CreateBookCmd = &cobra.Command{
 	// - Converts each file into html
 	// - Writes the content to the specified source
 	// `),
-	PreRunE: validateCreateHtmlFile,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		err := validateCreateHtmlFile()
+		if err != nil {
+			return err
+		}
+
+		return createBookFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", "font-size: 52pt;", true)
 	},
 }
 
 func init() {
-	createCmd.AddCommand(CreateBookCmd)
+	createCmd.AddCommand(createBookCmd)
 
-	createCommonHtmlAndBookFlags(CreateBookCmd)
-
-	CreateBookCmd.Flags().StringVarP(&location, "location", "l", "", "the specific book to recreate by filtering songs down to just that book location")
-	err := CreateBookCmd.MarkFlagRequired("location")
+	err := commonBookFlags.AddToCmd(createBookCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"location\" as required on create book command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-	// TODO: add a sort type for alphabetical and a sort type for in order for the TOC order...
+
+	err = createBookFlags.AddToCmd(createBookCmd)
+	if err != nil {
+		logger.WriteFatal(err.Error())
+	}
 }
 
 // TODO: this needs to take in option for putting the songs in page order or putting them in alphabetical order...

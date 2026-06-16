@@ -202,8 +202,11 @@ var compareLinesTestCases = map[string]compareLinesTestCase{
 }
 
 func TestCompareLines(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range compareLinesTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := compare.CompareLines(args.pdfLines, args.htmlLines)
 
 			assert.Equal(t, args.differences, actual)

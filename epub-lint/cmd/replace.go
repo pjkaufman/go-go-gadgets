@@ -2,22 +2,25 @@ package cmd
 
 import (
 	"archive/zip"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
 var (
-	extraReplacesFilePath         string
-	ErrExtraStringReplaceArgNonMd = errors.New("replacements must be a Markdown file")
-	ErrExtraStringReplaceArgEmpty = errors.New("replacements must have a non-whitespace value")
+	extraReplacesFilePath string
+	replaceFlags          = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewFileFlag(true, false, &extraReplacesFilePath, "replacements", "e", "", "the path to the file with extra strings to replace", []string{"md"}, true),
+			flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to replace strings in in", []string{"epub"}, true),
+		},
+	}
 )
 
 // replaceCmd represents the replace string command
@@ -39,22 +42,7 @@ var replaceCmd = &cobra.Command{
 		| I am another issue to correct | the correction |
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateReplaceFlags(epubFile, extraReplacesFilePath)
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(epubFile, "file")
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(extraReplacesFilePath, "replacements")
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return replaceFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.WriteInfo("Starting epub string replacement...\n")
@@ -62,12 +50,12 @@ var replaceCmd = &cobra.Command{
 		var numHits = make(map[string]int)
 		extraReplaceContents, err := filehandler.ReadInFileContents(extraReplacesFilePath)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		extraTextReplacements, err := linter.ParseTextReplacements(extraReplaceContents)
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 
 		err = epubhandler.UpdateEpub(epubFile, func(zipFiles map[string]*zip.File, w *zip.Writer, epubInfo epubhandler.EpubInfo, opfFolder string) ([]string, error) {
@@ -130,7 +118,7 @@ var replaceCmd = &cobra.Command{
 			return handledFiles, nil
 		})
 		if err != nil {
-			logger.WriteErrorf("failed to replace strings in %q: %s", epubFile, err)
+			logger.WriteFatalf("failed to replace strings in %q: %s", epubFile, err)
 		}
 
 		logger.WriteInfo("\nFinished epub string replacement...")
@@ -140,42 +128,8 @@ var replaceCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(replaceCmd)
 
-	replaceCmd.Flags().StringVarP(&extraReplacesFilePath, "replacements", "e", "", "the path to the file with extra strings to replace")
-	err := replaceCmd.MarkFlagRequired("replacements")
+	err := replaceFlags.AddToCmd(replaceCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"replacements\" as required on replace strings command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-
-	err = replaceCmd.MarkFlagFilename("replacements", "md")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"replacements\" as looking for specific file types on replace strings command: %v\n", err)
-	}
-
-	replaceCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to replace strings in in")
-	err = replaceCmd.MarkFlagRequired("file")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as required on replace strings command: %v\n", err)
-	}
-
-	err = replaceCmd.MarkFlagFilename("file", "epub")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"file\" as looking for specific file types on replace strings command: %v\n", err)
-	}
-}
-
-func ValidateReplaceFlags(epubPath, extraReplaceStringsPath string) error {
-	err := validateCommonEpubFlags(epubPath)
-	if err != nil {
-		return err
-	}
-
-	if strings.TrimSpace(extraReplaceStringsPath) == "" {
-		return ErrExtraStringReplaceArgEmpty
-	}
-
-	if !strings.HasSuffix(extraReplaceStringsPath, ".md") {
-		return ErrExtraStringReplaceArgNonMd
-	}
-
-	return nil
 }

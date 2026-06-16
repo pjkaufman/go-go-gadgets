@@ -10,12 +10,12 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-func WriteError(msg string) {
+func WriteFatal(msg string) {
 	fmt.Fprintln(os.Stderr, errorStyle.Render(msg))
 	os.Exit(-1)
 }
 
-func WriteErrorf(format string, a ...any) {
+func WriteFatalf(format string, a ...any) {
 	fmt.Fprintf(os.Stderr, errorStyle.Render(format), a...)
 	os.Exit(-1)
 }
@@ -46,7 +46,7 @@ func GetInputString(prompt string) string {
 	reader := bufio.NewReader(os.Stdin)
 	response, err := reader.ReadString('\n')
 	if err != nil {
-		WriteErrorf("failed to read in the string provided: %s\n", err)
+		WriteFatalf("failed to read in the string provided: %s\n", err)
 	}
 
 	response = strings.TrimRight(response, "\n")
@@ -59,7 +59,7 @@ func GetInputInt(prompt string) int {
 	var response int
 	_, err := fmt.Scanf("%d", &response)
 	if err != nil {
-		WriteErrorf("failed to read in the integer from the user: %s\n", err)
+		WriteFatalf("failed to read in the integer from the user: %s\n", err)
 	}
 
 	return response

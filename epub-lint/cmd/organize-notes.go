@@ -7,10 +7,17 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
+
+var organizeNotesFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to move translator's notes to their own file in", []string{"epub"}, true),
+	},
+}
 
 // organizeNotesCmd represents the move translator's notes command
 var organizeNotesCmd = &cobra.Command{
@@ -24,38 +31,23 @@ var organizeNotesCmd = &cobra.Command{
 	It also adds an entry to the TOC and spine of the epub so the "tl_notes.xhtml" file is at the end of the file's contents.
 `),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := validateCommonEpubFlags(epubFile)
-		if err != nil {
-			return err
-		}
-
-		err = filehandler.FileArgExists(epubFile, "file")
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return organizeNotesFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		err := moveTranslatorsNotes(epubFile)
 
 		if err != nil {
-			logger.WriteError(err.Error())
+			logger.WriteFatal(err.Error())
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(organizeNotesCmd)
-	organizeNotesCmd.Flags().StringVarP(&epubFile, "file", "f", "", "the epub file to move translator's notes to their own file in")
-	err := organizeNotesCmd.MarkFlagRequired("file")
-	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as required on tl_notes command: %v\n`, err)
-	}
 
-	err = organizeNotesCmd.MarkFlagFilename("file", "epub")
+	err := organizeNotesFlags.AddToCmd(organizeNotesCmd)
 	if err != nil {
-		logger.WriteErrorf(`failed to mark flag "file" as looking for specific file types on tl_notes command: %v\n`, err)
+		logger.WriteFatal(err.Error())
 	}
 }
 

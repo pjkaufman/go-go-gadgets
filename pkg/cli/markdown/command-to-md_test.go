@@ -1,12 +1,12 @@
 //go:build unit
 
-package cmdtomd_test
+package markdown_test
 
 import (
 	"strings"
 	"testing"
 
-	cmdtomd "github.com/pjkaufman/go-go-gadgets/pkg/cmd-to-md"
+	markdown "github.com/pjkaufman/go-go-gadgets/pkg/cli/markdown"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
@@ -49,9 +49,12 @@ cmd to md test --flag`,
 }
 
 func TestCommandToMd(t *testing.T) {
+	t.Parallel()
+
 	parent := cobra.Command{}
 	for name, args := range CommandToMdTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if args.Command != nil {
 				parent.AddCommand(args.Command) // makes sure the command is not registered as a root command
 
@@ -59,7 +62,7 @@ func TestCommandToMd(t *testing.T) {
 			}
 
 			var actual strings.Builder
-			cmdtomd.CommandToMd(args.Command, &actual, 3)
+			markdown.CommandToMd(args.Command, &actual, 3)
 
 			assert.Equal(t, args.ExpectedOutput, actual.String())
 		})

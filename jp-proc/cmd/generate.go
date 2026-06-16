@@ -2,9 +2,7 @@
 
 package cmd
 
-import (
-	cmdhandler "github.com/pjkaufman/go-go-gadgets/pkg/cmd-handler"
-)
+import "github.com/pjkaufman/go-go-gadgets/pkg/cli"
 
 const (
 	title       = "Jpeg and Png Processor"
@@ -19,5 +17,5 @@ Given how this works, I find it easier to just go ahead and do a simple program 
 )
 
 func init() {
-	cmdhandler.AddGenerateCmd(rootCmd, title, description, nil, nil)
+	cli.AddGenerateCmd(rootCmd, title, description, nil, nil)
 }

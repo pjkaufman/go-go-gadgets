@@ -94,8 +94,11 @@ var htmlToTextTestCases = map[string]htmlToTextTestCase{
 }
 
 func TestHtmlToText(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range htmlToTextTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := converter.HtmlToText(args.inputText)
 
 			assert.Equal(t, args.expectedLines, actual)

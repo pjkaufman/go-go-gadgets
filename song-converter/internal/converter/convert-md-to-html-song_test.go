@@ -40,8 +40,11 @@ var convertMdToHtmlSongTestCases = map[string]convertMdToHtmlSongTestCase{
 }
 
 func TestConvertMdToHtmlSong(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range convertMdToHtmlSongTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := converter.ConvertMdToHtmlSong(args.inputFilePath, args.inputContent, converter.Digital, false)
 			require.NoError(t, err, "there should be no errors when parsing the song contents for the UTs")
 

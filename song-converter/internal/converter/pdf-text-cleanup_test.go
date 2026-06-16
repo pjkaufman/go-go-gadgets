@@ -56,8 +56,11 @@ Here is some more text`,
 }
 
 func TestPdfTextCleanup(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range pdfTextCleanupTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual := converter.PdfTextCleanup(args.inputText, args.combineNLines, args.stripTocLineNums)
 
 			assert.Equal(t, args.expectedLines, actual)

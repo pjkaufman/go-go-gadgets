@@ -46,8 +46,11 @@ var CharacterDiffTestCases = map[string]CharacterDiffTestCase{
 }
 
 func TestCharacterDiff(t *testing.T) {
+	t.Parallel()
+
 	for name, args := range CharacterDiffTestCases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			actual, err := stringdiff.GetPrettyDiffString(args.InputOriginal, args.InputNew)
 			require.NoError(t, err)
 			assert.Equal(t, args.ExpectedOutput, ansi.Strip(actual))

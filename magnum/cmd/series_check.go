@@ -12,13 +12,13 @@ import (
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/vizmedia"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/wikipedia"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/yenpress"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
-var promptForSeries bool
-
 var (
+	promptForSeries               bool
 	handlersInitialized           = false
 	includeCompleted              bool
 	jNovelClubHandler             sitehandler.SiteHandler
@@ -26,6 +26,14 @@ var (
 	wikipediaHandler              sitehandler.SiteHandler
 	yenPressHandler               sitehandler.SiteHandler
 	vizMediaHandler               sitehandler.SiteHandler
+	seriesCheckFlags              = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewBoolFlag(false, false, &verbose, "verbose", "v", false, "show more info about what is going on"),
+			flags.NewBoolFlag(false, false, &includeCompleted, "include-completed", "c", false, "get info for completed series"),
+			flags.NewStringFlag(false, false, &seriesName, "name", "n", "", "get info for just the specified series name"),
+			flags.NewBoolFlag(false, false, &promptForSeries, "interactive", "i", false, "get info for a series that you will select from a prompt"),
+		},
+	}
 )
 
 // CheckCmd represents the check book info command
@@ -44,6 +52,9 @@ var CheckCmd = &cobra.Command{
 	To interactively select a series from a prompt:
 	magnum series check -i
 	`),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return seriesCheckFlags.Validate()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
 
@@ -83,10 +94,10 @@ var CheckCmd = &cobra.Command{
 func init() {
 	seriesCmd.AddCommand(CheckCmd)
 
-	CheckCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show more info about what is going on")
-	CheckCmd.Flags().BoolVarP(&includeCompleted, "include-completed", "c", false, "get info for completed series")
-	CheckCmd.Flags().StringVarP(&seriesName, "name", "n", "", "get info for just the specified series name")
-	CheckCmd.Flags().BoolVarP(&promptForSeries, "interactive", "i", false, "get info for a series that you will select from a prompt")
+	err := seriesCheckFlags.AddToCmd(CheckCmd)
+	if err != nil {
+		logger.WriteFatal(err.Error())
+	}
 }
 
 func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
@@ -164,11 +175,11 @@ func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler siteha
 		TablesToParseOverride: seriesInfo.WikipediaTablesToParseOverride,
 	})
 	if err != nil {
-		logger.WriteError(err.Error())
+		logger.WriteFatal(err.Error())
 	}
 
 	if len(volumes) == -1 {
-		logger.WriteErrorf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+		logger.WriteFatalf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
 	}
 
 	if numVolumes == 0 {

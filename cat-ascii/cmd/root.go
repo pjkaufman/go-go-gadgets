@@ -52,7 +52,7 @@ func fitsInTerminal(art string, termWidth, termHeight int) bool {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		logger.WriteErrorf("Error: %v\n", err)
+		logger.WriteFatalf("Error: %v\n", err)
 	}
 }
 

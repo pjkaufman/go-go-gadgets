@@ -1,4 +1,4 @@
-package cmdtomd
+package markdown
 
 import (
 	"strings"
@@ -13,7 +13,11 @@ func RootToMd(rootCmd *cobra.Command) string {
 
 	var level = baseLevel
 	if rootCmd.Runnable() {
-		commandToc.WriteString("- [" + rootCmd.Name() + "](#" + rootCmd.Name() + "-base-command)\n")
+		commandToc.WriteString("- [")
+		commandToc.WriteString(rootCmd.Name())
+		commandToc.WriteString("](#")
+		commandToc.WriteString(rootCmd.Name())
+		commandToc.WriteString("-base-command)\n")
 		CommandToMd(rootCmd, &commandMd, level)
 
 		level++
@@ -30,7 +34,12 @@ func handleSubCommands(cmd *cobra.Command, commandMd, commandToc *strings.Builde
 			continue
 		}
 
-		commandToc.WriteString(strings.Repeat(" ", (level-baseLevel)*2) + "- [" + subCmd.Name() + "](#" + subCmd.Name() + ")\n")
+		commandToc.WriteString(strings.Repeat(" ", (level-baseLevel)*2))
+		commandToc.WriteString("- [")
+		commandToc.WriteString(subCmd.Name())
+		commandToc.WriteString("](#")
+		commandToc.WriteString(subCmd.Name())
+		commandToc.WriteString(")\n")
 
 		CommandToMd(subCmd, commandMd, level)
 

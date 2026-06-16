@@ -157,7 +157,7 @@ Some of the things that the linting includes:
 | Short Name | Long Name | Description | Value Type | Default Value | Is Required | Other Notes |
 | ---------- | --------- | ----------- | ---------- | ------------- | ----------- | ----------- |
 | c | compress | whether or not to also compress images |  | false | false |  |
-| d | directory | the location to run the epub linter logic | string | . | false |  |
+| d | directory | the location to run the epub linter logic | string | . | false | Should be a directory |
 | l | lang | the language to add to the xhtml, htm, or html files if the lang is not already specified | string | en | false |  |
 |  | remove-types | A comma separated list of file extensions of files to remove if they are not in the manifest (i.e. '.jpeg,.jpg') | string | .jpg,.jpeg,.png,.gif,.bmp,.js,.html,.htm,.xhtml,.txt,.css,.xml | false |  |
 | v | verbose | whether or not to show extra logs like what files were removed from the epub |  | false | false |  |

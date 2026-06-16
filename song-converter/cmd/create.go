@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -11,17 +12,17 @@ var createCmd = &cobra.Command{
 	Short: "Deals with creating files from the song Markdown files",
 }
 
+var createFlags = flags.Flags{
+	Flags: []flags.Flag{
+		flags.NewDirectoryFlag(true, true, &stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located"),
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	createCmd.PersistentFlags().StringVarP(&stagingDir, "working-dir", "d", "", "the directory where the Markdown files are located")
-	err := createCmd.MarkPersistentFlagRequired("working-dir")
+	err := createFlags.AddToCmd(createCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as required on create command: %v\n", err)
-	}
-
-	err = createCmd.MarkPersistentFlagDirname("working-dir")
-	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"working-dir\" as a directory on create command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
 }

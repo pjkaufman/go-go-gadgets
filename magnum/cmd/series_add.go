@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +17,16 @@ var (
 	slugOverride                   string
 	seriesStatus                   string
 	wikipediaTablesToParseOverride int
-	errNameArgEmpty                = errors.New("name must have a non-whitespace value")
+	seriesAddFlags                 = flags.Flags{
+		Flags: []flags.Flag{
+			flags.NewStringFlag(true, false, &seriesName, "name", "n", "", "the name of the series"),
+			flags.NewEnumFlag(false, false, &seriesPublisher, "publisher", "p", "", "the publisher of the series", config.AllPublisherTypes()),
+			flags.NewEnumFlag(false, false, &seriesType, "type", "t", "", "the series type", config.AllSeriesTypes()),
+			flags.NewStringFlag(false, false, &slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name"),
+			flags.NewEnumFlag(false, false, &seriesStatus, "status", "s", string(config.Ongoing), "the status of the series (defaults to Ongoing)", config.AllStatuses()),
+			flags.NewIntFlag(false, false, &wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them"),
+		},
+	}
 )
 
 // AddCmd represents the add book info command
@@ -35,15 +44,9 @@ var AddCmd = &cobra.Command{
 	magnum series add -n "Demon Slayer" -r "C"
 	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		err := ValidateAddSeriesFlags(seriesName)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return seriesAddFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
 		seriesInfo := config.GetConfig()
 		if seriesInfo.HasSeries(seriesName) {
 			logger.WriteInfo("The series already exists in the list.")
@@ -91,23 +94,8 @@ var AddCmd = &cobra.Command{
 func init() {
 	seriesCmd.AddCommand(AddCmd)
 
-	AddCmd.Flags().StringVarP(&seriesName, "name", "n", "", "the name of the series")
-	err := AddCmd.MarkFlagRequired("name")
+	err := seriesAddFlags.AddToCmd(AddCmd)
 	if err != nil {
-		logger.WriteErrorf("failed to mark flag \"name\" as required on add command: %v\n", err)
+		logger.WriteFatal(err.Error())
 	}
-
-	AddCmd.Flags().StringVarP(&seriesPublisher, "publisher", "p", "", "the publisher of the series")
-	AddCmd.Flags().StringVarP(&seriesType, "type", "t", "", "the series type")
-	AddCmd.Flags().StringVarP(&slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name")
-	AddCmd.Flags().StringVarP(&seriesStatus, "status", "s", string(config.Ongoing), "the status of the series (defaults to Ongoing)")
-	AddCmd.Flags().IntVarP(&wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them")
-}
-
-func ValidateAddSeriesFlags(seriesName string) error {
-	if strings.TrimSpace(seriesName) == "" {
-		return errNameArgEmpty
-	}
-
-	return nil
 }
