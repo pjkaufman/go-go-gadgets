@@ -211,7 +211,7 @@ func runValidationTest(t *testing.T, args validationFlagTestCase) {
 	if args.expectedErrorStringSubset == nil {
 		require.NoError(t, err)
 	} else {
-		assert.NotNil(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), *args.expectedErrorStringSubset)
 	}
 }
