@@ -12,6 +12,7 @@ type helpKeys struct {
 	edit               helpKey
 	copy               helpKey
 	accept             helpKey
+	acceptEdit         helpKey
 	quit               helpKey
 	exitWithoutSaving  helpKey
 	reset              helpKey
@@ -57,6 +58,11 @@ var (
 			long:  "Accept",
 			short: "Accept",
 		},
+		acceptEdit: helpKey{
+			keys:  "Ctrl+S",
+			long:  "Accept",
+			short: "Accept",
+		},
 		quit: helpKey{
 			keys:  "Esc",
 			long:  "Quit",
@@ -96,7 +102,8 @@ func (m FixableIssuesModel) footerView() string {
 		line       strings.Builder
 		help, desc string
 	)
-	s.WriteString(fillLine(controlsStyle.Render("Controls:"), maxWidth) + "\n")
+	s.WriteString(fillLine(controlsStyle.Render("Controls:"), maxWidth))
+	s.WriteString("\n")
 	for _, key := range m.currentFooterBindings(masterKeyList) {
 		desc = key.long
 		if useShort {
@@ -139,7 +146,7 @@ func (m FixableIssuesModel) currentFooterBindings(keys helpKeys) []helpKey {
 				keys.reset,
 				keys.original,
 				keys.cancelEdit,
-				keys.accept,
+				keys.acceptEdit,
 				keys.quit,
 				keys.exitWithoutSaving,
 			}

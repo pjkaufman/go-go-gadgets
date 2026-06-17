@@ -240,6 +240,7 @@ func (m *FixableIssuesModel) recalculateElementSizes(resetSuggestionYOffset bool
 	m.body.SetWidth(m.width)
 	m.body.SetHeight(max(0, m.height-(m.headerHeight()+m.footerHeight())))
 
+	m.sectionBreakInfo.input.SetWidth(m.width)
 	m.setSuggestionDisplay(resetSuggestionYOffset)
 }
 
