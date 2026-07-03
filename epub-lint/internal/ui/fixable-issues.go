@@ -296,6 +296,8 @@ func (m *FixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
 		if len(m.CssSelectionInfo.cssFiles) != 0 {
 			m.CssSelectionInfo.SelectedCssFile = m.CssSelectionInfo.cssFiles[m.CssSelectionInfo.currentCssIndex]
 		}
+
+		m.recalculateElementSizes(false)
 	} else {
 		m.currentStage = finalStage
 		return tea.Quit
