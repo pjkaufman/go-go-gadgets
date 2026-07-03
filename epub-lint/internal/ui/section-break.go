@@ -51,6 +51,8 @@ func (m *FixableIssuesModel) handleSectionBreakMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
+				m.recalculateElementSizes(true)
+
 				cmds = append(cmds, cmd)
 			}
 		case "ctrl+v":

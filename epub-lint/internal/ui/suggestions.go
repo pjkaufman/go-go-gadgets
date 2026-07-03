@@ -208,9 +208,12 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
+				m.recalculateElementSizes(false)
+
 				cmds = append(cmds, cmd)
 			case "left":
 				m.moveToPreviousSuggestion()
+				m.recalculateElementSizes(false)
 			case "c":
 				// TODO: make sure values are utf-8 compliant
 				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
@@ -245,6 +248,8 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 						return tea.Quit
 					}
 
+					m.recalculateElementSizes(false)
+
 					cmds = append(cmds, cmd)
 				}
 			case "e":
@@ -268,9 +273,12 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
+				m.recalculateElementSizes(false)
+
 				cmds = append(cmds, cmd)
 			case "ctrl+u":
 				m.moveToPreviousIssue()
+				m.recalculateElementSizes(false)
 			case "pgdown":
 				cmd, err := m.moveToNextFile()
 				if err != nil {
@@ -279,9 +287,12 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					return tea.Quit
 				}
 
+				m.recalculateElementSizes(false)
+
 				cmds = append(cmds, cmd)
 			case "pgup":
 				m.moveToPreviousFile()
+				m.recalculateElementSizes(false)
 			}
 		}
 	}
@@ -560,7 +571,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 	)
 
 	if m.logFile != nil {
-		fmt.Fprintf(m.logFile, "Status width %d, body width %d, and a height of %d\n", 0, remainingWidth, height)
+		fmt.Fprintf(m.logFile, "Body width %d, and a height of %d\n", remainingWidth, height)
 	}
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetHeight(height)

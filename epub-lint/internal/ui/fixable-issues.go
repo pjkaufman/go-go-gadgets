@@ -156,6 +156,9 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if !m.ready && m.currentStage == suggestionsProcessing {
 		cmd, m.Err = m.setupForNextSuggestions()
+		if m.Err == nil {
+			m.recalculateElementSizes(true)
+		}
 
 		cmds = append(cmds, cmd)
 	}
@@ -302,9 +305,9 @@ func (m *FixableIssuesModel) exitOrMoveToCssSelection() tea.Cmd {
 }
 
 func (m FixableIssuesModel) headerHeight() int {
-	return lipgloss.Height(m.headerView()) + headerBorderStyle.GetBorderBottomSize()
+	return lipgloss.Height(m.headerView())
 }
 
 func (m FixableIssuesModel) footerHeight() int {
-	return lipgloss.Height(m.footerView()) + footerBorderStyle.GetBorderTopSize()
+	return lipgloss.Height(m.footerView())
 }
