@@ -70,7 +70,7 @@ func NewSuggestionManager(
 		Suggestions:            suggestions,
 		FileSuggestionData:     fileSuggestionData,
 		CurrentFileIndex:       0,
-		CurrentIssueIndex:      0,
+		CurrentIssueIndex:      -1, // when setup is called the first time this will get set to 0
 		CurrentSuggestionIndex: 0,
 		runAll:                 runAll,
 		skipCss:                skipCss,
@@ -87,27 +87,6 @@ func (sm *SuggestionManager) GetCurrentSuggestion() *SuggestionState {
 	}
 
 	return &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
-}
-
-// GetCurrentSuggestionCount returns the count of suggestions for the current issue type in the current file.
-func (sm *SuggestionManager) GetCurrentSuggestionCount() int {
-	if sm.CurrentFileIndex >= len(sm.FileSuggestionData) ||
-		sm.CurrentIssueIndex >= len(sm.Suggestions) {
-		return 0
-	}
-
-	return len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
-}
-
-// UpdateFileContent updates the content of a file at the specified index.
-func (sm *SuggestionManager) UpdateFileContent(fileIndex int, newContent string) error {
-	if fileIndex < 0 || fileIndex >= len(sm.FileSuggestionData) {
-		return fmt.Errorf("invalid file index: %d", fileIndex)
-	}
-
-	sm.FileSuggestionData[fileIndex].Text = newContent
-
-	return nil
 }
 
 // AcceptSuggestion marks the current suggestion as accepted and applies it to the file content.
@@ -319,7 +298,7 @@ func (sm *SuggestionManager) SetupForNextSuggestions() (bool, error) {
 			var potentialFixableIssue = sm.Suggestions[sm.CurrentIssueIndex]
 			sm.logf("Possible fixable issue %q is %d of %d issues.", potentialFixableIssue.Name, sm.CurrentIssueIndex+1, len(sm.Suggestions))
 
-			if !sm.runAll && (potentialFixableIssue.IsEnabled == nil || *potentialFixableIssue.IsEnabled) {
+			if !sm.runAll && (potentialFixableIssue.IsEnabled == nil || !*potentialFixableIssue.IsEnabled) {
 				sm.logf("Skipping possible fixable issue %q with isEnabled set to %v", potentialFixableIssue.Name, potentialFixableIssue.IsEnabled)
 
 				sm.CurrentIssueIndex++

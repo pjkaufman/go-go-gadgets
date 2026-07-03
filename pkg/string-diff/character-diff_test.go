@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type CharacterDiffTestCase struct {
+type characterDiffTestCase struct {
 	InputOriginal  string
 	InputNew       string
 	ExpectedOutput string
 }
 
-var CharacterDiffTestCases = map[string]CharacterDiffTestCase{
+var characterDiffTestCases = map[string]characterDiffTestCase{
 	"simple character replace should have the expected output": {
 		InputOriginal:  `<p class="calibre1">In addition to Tatsuya's group, Erika and Shizuku also came to visit Honoka. </p>`,
 		InputNew:       `<p class="calibre1">In addition to Tatsuya's group, Erika, and Shizuku also came to visit Honoka. </p>`,
@@ -48,7 +48,7 @@ var CharacterDiffTestCases = map[string]CharacterDiffTestCase{
 func TestCharacterDiff(t *testing.T) {
 	t.Parallel()
 
-	for name, args := range CharacterDiffTestCases {
+	for name, args := range characterDiffTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			actual, err := stringdiff.GetPrettyDiffString(args.InputOriginal, args.InputNew)

@@ -152,7 +152,7 @@ func (m FixableIssuesModel) currentFooterBindings(keys helpKeys) []helpKey {
 			}
 		}
 
-		var currentSuggestion = m.PotentiallyFixableIssuesInfo.SuggestionManager.GetCurrentSuggestion()
+		var currentSuggestion = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState
 		if currentSuggestion != nil && currentSuggestion.IsAccepted {
 			return []helpKey{
 				keys.prevNextSuggestion,

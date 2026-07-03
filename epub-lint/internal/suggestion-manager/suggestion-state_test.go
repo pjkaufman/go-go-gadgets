@@ -75,8 +75,6 @@ func TestSuggestionState(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range getStringDiffAsDisplayTestCases {
-			tc := tc
-
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
