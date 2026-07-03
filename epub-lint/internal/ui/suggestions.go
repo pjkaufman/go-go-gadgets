@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -23,10 +22,10 @@ func (m FixableIssuesModel) getSuggestionWidth() int {
 func (m *FixableIssuesModel) suggestionHeaderView() string {
 	var (
 		maxTextWidth           = m.getSuggestionWidth()
-		fileName               = m.PotentiallyFixableIssuesInfo.currentFile
+		fileName               = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentFileName
 		fileStatus             string
-		fileNumberInfo         = fmt.Sprintf("(%d/%d)", m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData))
-		remainingFileNameWidth = maxTextWidth - (lipgloss.Width(documentIcon) + 2 + lipgloss.Width(fileNumberInfo) + lipgloss.Width(m.PotentiallyFixableIssuesInfo.currentFile))
+		fileNumberInfo         = fmt.Sprintf("(%d/%d)", m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.SuggestionManager.FileSuggestionData))
+		remainingFileNameWidth = maxTextWidth - (lipgloss.Width(documentIcon) + 2 + lipgloss.Width(fileNumberInfo) + lipgloss.Width(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentFileName))
 	)
 
 	// truncate file name
@@ -37,7 +36,7 @@ func (m *FixableIssuesModel) suggestionHeaderView() string {
 		fileStatus = fillLine(documentIcon+" "+fileNameStyle.Render(fileName+" "+fileNumberInfo), maxTextWidth)
 	}
 
-	var suggestionStatus = wordwrap.String(sectionIcon+" "+m.PotentiallyFixableIssuesInfo.currentSuggestionName+fmt.Sprintf(" (%d/%d)", m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions)), maxTextWidth)
+	var suggestionStatus = wordwrap.String(sectionIcon+" "+m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionName+fmt.Sprintf(" (%d/%d)", m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.SuggestionManager.Suggestions)), maxTextWidth)
 	var lines = strings.Split(suggestionStatus, "\n")
 
 	var afterIcon = strings.Index(lines[0], " ") + 1
@@ -49,7 +48,7 @@ func (m *FixableIssuesModel) suggestionHeaderView() string {
 	suggestionStatus = strings.Join(lines, "\n")
 
 	var warningStatus = ""
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
+	if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState != nil && m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.OriginallyHadHalfwidthCircleKatakana {
 		warningStatus = wordwrap.String(warningIcon+" "+warningStyle.Render(` At least one instance of "°" in the displayed text may be the Japanese handakuten.`), maxTextWidth)
 		lines = strings.Split(warningStatus, "\n")
 
@@ -66,7 +65,7 @@ func (m *FixableIssuesModel) suggestionHeaderView() string {
 }
 
 func (m *FixableIssuesModel) suggestionView() string {
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
+	if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState == nil {
 		return "\nNo current file is selected. Something may have gone wrong...\n\n"
 	}
 
@@ -131,20 +130,15 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 		if m.PotentiallyFixableIssuesInfo.isEditing {
 			switch msg.String() {
 			case "ctrl+s":
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = alignWhitespace(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.suggestionEdit.Value())
-				if m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana {
-					m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion = undoReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
-					m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = false
+				m.Err = m.PotentiallyFixableIssuesInfo.SuggestionManager.UpdateCurrentSuggestionValue(alignWhitespace(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.Original, m.PotentiallyFixableIssuesInfo.suggestionEdit.Value()))
+				if m.Err != nil {
+					return tea.Quit
 				}
 
 				m.PotentiallyFixableIssuesInfo.isEditing = false
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.Blur()
-
-				var err error
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
-				if err != nil {
-					m.Err = err
-
+				m.Err = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.GetStringDiffAsDisplay()
+				if m.Err != nil {
 					return tea.Quit
 				}
 
@@ -155,24 +149,17 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				m.PotentiallyFixableIssuesInfo.isEditing = false
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.Blur()
 
-				var err error
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, err = getStringDiff(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion)
-				if err != nil {
-					m.Err = err
-
+				m.Err = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.GetStringDiffAsDisplay()
+				if m.Err != nil {
 					return tea.Quit
 				}
 
 				m.recalculateElementSizes(false)
 			case "ctrl+r":
-				var originalSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.originalSuggestion
-				originalSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(originalSuggestion)
-
+				var originalSuggestion = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.ReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.OriginalSuggestion)
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(originalSuggestion)
 			case "ctrl+o":
-				var original = m.PotentiallyFixableIssuesInfo.currentSuggestionState.original
-				original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(original)
-
+				var original = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.ReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.Original)
 				m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(original)
 			}
 		} else {
@@ -216,27 +203,23 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 				m.recalculateElementSizes(false)
 			case "c":
 				// TODO: make sure values are utf-8 compliant
-				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.currentSuggestionState.original)
+				err := clipboard.WriteAll(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.Original)
 				if err != nil {
 					m.Err = err
 
 					return tea.Quit
 				}
 			case "enter":
-				if !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted && m.PotentiallyFixableIssuesInfo.currentSuggestion != nil {
-					var replaceCount = 1
-					if m.PotentiallyFixableIssuesInfo.currentSuggestion.UpdateAllInstances {
-						replaceCount = -1
+				if !m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.IsAccepted && m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestion != nil {
+					m.Err = m.PotentiallyFixableIssuesInfo.SuggestionManager.AcceptSuggestion()
+					if m.Err != nil {
+						return tea.Quit
 					}
 
-					m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Text = strings.Replace(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Text, m.PotentiallyFixableIssuesInfo.currentSuggestionState.original, m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion, replaceCount)
-
-					m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted = true
-
-					if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssSectionBreakIfMissing {
+					if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestion.AddCssSectionBreakIfMissing {
 						m.PotentiallyFixableIssuesInfo.AddCssSectionBreakIfMissing = true
 						m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
-					} else if m.PotentiallyFixableIssuesInfo.currentSuggestion.AddCssPageBreakIfMissing {
+					} else if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestion.AddCssPageBreakIfMissing {
 						m.PotentiallyFixableIssuesInfo.AddCssPageBreakIfMissing = true
 						m.PotentiallyFixableIssuesInfo.CssUpdateRequired = true
 					}
@@ -253,10 +236,9 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					cmds = append(cmds, cmd)
 				}
 			case "e":
-				if m.PotentiallyFixableIssuesInfo.currentSuggestionState != nil && !m.PotentiallyFixableIssuesInfo.currentSuggestionState.isAccepted {
+				if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState != nil && !m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.IsAccepted {
 					m.PotentiallyFixableIssuesInfo.isEditing = true
-					var currentSuggestion = m.PotentiallyFixableIssuesInfo.currentSuggestionState.currentSuggestion
-					currentSuggestion, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(currentSuggestion)
+					var currentSuggestion = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.ReplaceBrokenDisplayCharacters(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.CurrentSuggestion)
 
 					m.PotentiallyFixableIssuesInfo.suggestionEdit.SetValue(currentSuggestion)
 
@@ -266,33 +248,31 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 					m.recalculateElementSizes(false)
 				}
 			case "ctrl+d":
-				cmd, err := m.moveToNextIssue()
+				cmd, err := m.handleForwardSuggestionUpdate(m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToNextIssue)
 				if err != nil {
 					m.Err = err
 
 					return tea.Quit
 				}
-
-				m.recalculateElementSizes(false)
 
 				cmds = append(cmds, cmd)
 			case "ctrl+u":
-				m.moveToPreviousIssue()
-				m.recalculateElementSizes(false)
+				if m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToPreviousIssue() {
+					m.recalculateElementSizes(true)
+				}
 			case "pgdown":
-				cmd, err := m.moveToNextFile()
+				cmd, err := m.handleForwardSuggestionUpdate(m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToNextFile)
 				if err != nil {
 					m.Err = err
 
 					return tea.Quit
 				}
 
-				m.recalculateElementSizes(false)
-
 				cmds = append(cmds, cmd)
 			case "pgup":
-				m.moveToPreviousFile()
-				m.recalculateElementSizes(false)
+				if m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToPreviousFile() {
+					m.recalculateElementSizes(true)
+				}
 			}
 		}
 	}
@@ -300,253 +280,44 @@ func (m *FixableIssuesModel) handleSuggestionMsgs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *FixableIssuesModel) setupForNextSuggestions() (tea.Cmd, error) {
-	if m.logFile != nil {
-		fmt.Fprintln(m.logFile, "Getting next suggestions")
+func (m *FixableIssuesModel) handleForwardSuggestionUpdate(moveFunc func() (foundSuggestion bool, err error)) (tea.Cmd, error) {
+	foundSuggestion, err := moveFunc()
+	if err != nil {
+		return nil, err
 	}
 
-	m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
-
-	for m.PotentiallyFixableIssuesInfo.currentFileIndex < len(m.PotentiallyFixableIssuesInfo.FileSuggestionData) {
-		m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
-		if m.logFile != nil {
-			fmt.Fprintf(m.logFile, "Current file is %q is %d of %d\n", m.PotentiallyFixableIssuesInfo.currentFile, m.PotentiallyFixableIssuesInfo.currentFileIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData))
-		}
-
-		for m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex < len(m.PotentiallyFixableIssuesInfo.suggestions) {
-			var potentialFixableIssue = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]
-			if m.logFile != nil {
-				fmt.Fprintf(m.logFile, "Possible fixable issue %q is %d of %d issues.\n", potentialFixableIssue.Name, m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex+1, len(m.PotentiallyFixableIssuesInfo.suggestions))
-			}
-
-			if !m.runAll && (potentialFixableIssue.IsEnabled == nil || *potentialFixableIssue.IsEnabled) {
-				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q with isEnabled set to %v\n", potentialFixableIssue.Name, potentialFixableIssue.IsEnabled)
-				}
-
-				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
-				continue
-			} else if m.skipCss && (potentialFixableIssue.AddCssPageBreakIfMissing || potentialFixableIssue.AddCssSectionBreakIfMissing) {
-				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "Skipping possible fixable issue %q because css related rules are to be skipped\n", potentialFixableIssue.Name)
-				}
-
-				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
-				continue
-			}
-
-			if len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]) != 0 {
-				if m.logFile != nil {
-					fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) already\n", potentialFixableIssue.Name, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]))
-				}
-
-				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][0]
-				m.PotentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
-				m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
-				m.setSuggestionDisplay(true)
-
-				return nil, nil
-			}
-
-			suggestions, err := potentialFixableIssue.GetSuggestions(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Text)
-			if err != nil {
-				return nil, err
-			}
-
-			if m.logFile != nil {
-				fmt.Fprintf(m.logFile, "Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.Name, len(suggestions))
-			}
-
-			if len(suggestions) != 0 {
-				m.PotentiallyFixableIssuesInfo.currentSuggestion = &potentialFixableIssue
-				m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex] = make([]SuggestionState, len(suggestions))
-
-				var i = 0
-				for original, suggestion := range suggestions {
-					var display, err = getStringDiff(original, suggestion)
-					if err != nil {
-						return nil, err
-					}
-
-					m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][i] = SuggestionState{
-						original:           original,
-						originalSuggestion: suggestion,
-						currentSuggestion:  suggestion,
-						display:            display,
-					}
-
-					i++
-				}
-
-				sort.Slice(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex], func(i, j int) bool {
-					return m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][i].original < m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][j].original
-				})
-
-				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][0]
-				m.PotentiallyFixableIssuesInfo.currentSuggestionName = potentialFixableIssue.Name
-				m.setSuggestionDisplay(true)
-
-				return nil, nil
-			}
-
-			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex++
-		}
-
-		m.PotentiallyFixableIssuesInfo.currentFileIndex++
-		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
-	}
-
-	return m.exitOrMoveToCssSelection(), nil
-}
-
-func (m *FixableIssuesModel) moveToNextIssue() (tea.Cmd, error) {
-	m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex])
-
-	return m.setupForNextSuggestions()
-}
-
-func (m *FixableIssuesModel) moveToPreviousIssue() {
-	var (
-		currentFileIndex           = m.PotentiallyFixableIssuesInfo.currentFileIndex
-		potentialFixableIssueIndex = m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex
-	)
-	for currentFileIndex != 0 || potentialFixableIssueIndex != 0 {
-		if potentialFixableIssueIndex == 0 {
-			currentFileIndex--
-
-			potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions) - 1
-		} else {
-			potentialFixableIssueIndex--
-		}
-
-		for potentialFixableIssueIndex > 0 && len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex]) == 0 {
-			potentialFixableIssueIndex--
-		}
-
-		var numSuggestions = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex])
-		if numSuggestions != 0 {
-			m.PotentiallyFixableIssuesInfo.currentFileIndex = currentFileIndex
-			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = potentialFixableIssueIndex
-			m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
-			m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[potentialFixableIssueIndex].Name
-			m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Name
-			m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
-			m.setSuggestionDisplay(true)
-
-			return
-		}
-	}
-}
-
-func (m *FixableIssuesModel) moveToNextFile() (tea.Cmd, error) {
-	if m.PotentiallyFixableIssuesInfo.currentFileIndex+1 < len(m.PotentiallyFixableIssuesInfo.FileSuggestionData) {
-		m.PotentiallyFixableIssuesInfo.currentFileIndex++
-		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = 0
-		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
-		m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
-		m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex].Name
+	var cmd tea.Cmd
+	if !foundSuggestion {
+		cmd = m.exitOrMoveToCssSelection()
 	} else {
-		m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions) - 1
-		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex])
+		m.recalculateElementSizes(true)
 	}
 
-	return m.setupForNextSuggestions()
-}
-
-func (m *FixableIssuesModel) moveToPreviousFile() {
-	if m.PotentiallyFixableIssuesInfo.currentFileIndex == 0 {
-		return
-	}
-
-	var (
-		currentFileIndex           = m.PotentiallyFixableIssuesInfo.currentFileIndex
-		potentialFixableIssueIndex int
-	)
-	for currentFileIndex != 0 {
-		currentFileIndex--
-		potentialFixableIssueIndex = 0
-		// skipping files forwards can cause a gap to happen in the potentially fixable issue data, but for now, we will ignore it
-		// since if the previous file had any suggestions the first one that has data should be present
-		// thus this should work fine, but if it does not we can tweak this
-		for potentialFixableIssueIndex < len(m.PotentiallyFixableIssuesInfo.suggestions) {
-			if len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex]) != 0 {
-				m.PotentiallyFixableIssuesInfo.currentFileIndex = currentFileIndex
-				m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = potentialFixableIssueIndex
-				m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = 0
-				m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[potentialFixableIssueIndex].Name
-				m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[currentFileIndex].Name
-				m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
-				m.setSuggestionDisplay(true)
-
-				return
-			}
-
-			potentialFixableIssueIndex++
-		}
-	}
+	return cmd, nil
 }
 
 func (m *FixableIssuesModel) moveToNextSuggestion() (tea.Cmd, error) {
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetYOffset(0)
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1 < len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]) {
-		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex++
-		m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+	var hasNextSuggestion = m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToNextSuggestion()
+	if hasNextSuggestion {
 		m.setSuggestionDisplay(true)
 
 		return nil, nil
 	}
 
-	return m.setupForNextSuggestions()
+	return m.handleForwardSuggestionUpdate(m.PotentiallyFixableIssuesInfo.SuggestionManager.SetupForNextSuggestions)
 }
 
 func (m *FixableIssuesModel) moveToPreviousSuggestion() {
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionIndex > 0 {
-		m.PotentiallyFixableIssuesInfo.currentSuggestionIndex--
-		m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
+	if m.PotentiallyFixableIssuesInfo.SuggestionManager.MoveToPreviousSuggestion() {
 		m.setSuggestionDisplay(true)
-
-		return
 	}
-
-	var (
-		originalCurrentFileIndex           = m.PotentiallyFixableIssuesInfo.currentFileIndex
-		originalPotentialFixableIssueIndex = m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex
-	)
-	for m.PotentiallyFixableIssuesInfo.currentFileIndex != 0 || m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex != 0 {
-		if m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex == 0 {
-			m.PotentiallyFixableIssuesInfo.currentFileIndex--
-
-			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = len(m.PotentiallyFixableIssuesInfo.suggestions) - 1
-		} else {
-			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex--
-		}
-
-		for m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex > 0 && len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]) == 0 {
-			m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex--
-		}
-
-		var numSuggestions = len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex])
-		if numSuggestions != 0 {
-			m.PotentiallyFixableIssuesInfo.currentSuggestionIndex = numSuggestions - 1
-			m.PotentiallyFixableIssuesInfo.currentSuggestionState = &m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex][m.PotentiallyFixableIssuesInfo.currentSuggestionIndex]
-			m.PotentiallyFixableIssuesInfo.currentFile = m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Name
-			m.PotentiallyFixableIssuesInfo.currentSuggestionName = m.PotentiallyFixableIssuesInfo.suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex].Name
-			m.setSuggestionDisplay(true)
-
-			return
-		}
-	}
-
-	m.PotentiallyFixableIssuesInfo.currentFileIndex = originalCurrentFileIndex
-	m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex = originalPotentialFixableIssueIndex
 }
 
 func (m FixableIssuesModel) createCustomBorder(modeIcon, modeName string, extraWidthPadding int) lipgloss.Style {
 	borderConfig := NewBorderConfig(m.PotentiallyFixableIssuesInfo.suggestionDisplay.Height()+borderWidth, m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()+borderWidth+extraWidthPadding) // +2 for border width/height
 	modeInfo := fmt.Sprintf("%s %s", modeIcon, modeName)
-	statusInfo := fmt.Sprintf("%d/%d", m.PotentiallyFixableIssuesInfo.currentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.FileSuggestionData[m.PotentiallyFixableIssuesInfo.currentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.potentialFixableIssueIndex]))
+	statusInfo := fmt.Sprintf("%d/%d", m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionIndex+1, len(m.PotentiallyFixableIssuesInfo.SuggestionManager.FileSuggestionData[m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentFileIndex].Suggestions[m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentIssueIndex]))
 	borderConfig.SetInfoItems(modeInfo, statusInfo)
 
 	baseBorder := lipgloss.RoundedBorder()
@@ -557,7 +328,7 @@ func (m FixableIssuesModel) createCustomBorder(modeIcon, modeName string, extraW
 }
 
 func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
-	if m.PotentiallyFixableIssuesInfo.currentSuggestionState == nil {
+	if m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState == nil {
 		return
 	}
 
@@ -581,7 +352,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 
 	var (
 		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()
-		suggestion              = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, expectedSuggestionWidth)
+		suggestion              = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.Display, expectedSuggestionWidth)
 	)
 
 	m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
@@ -591,7 +362,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetWidth(remainingWidth - scrollbarPadding)
 
 		expectedSuggestionWidth = m.PotentiallyFixableIssuesInfo.suggestionDisplay.Width()
-		suggestion = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.currentSuggestionState.display, expectedSuggestionWidth)
+		suggestion = m.buildSuggestion(m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.Display, expectedSuggestionWidth)
 
 		m.PotentiallyFixableIssuesInfo.suggestionDisplay.SetContent(suggestion)
 	}
@@ -615,7 +386,7 @@ func (m *FixableIssuesModel) setSuggestionDisplay(resetYOffset bool) {
 func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggestionWidth int) string {
 	//nolint:gocritic // can include ansi escape codes so we should ignore this issue here
 	text := fmt.Sprintf(`"%s"`, displayText) // includes ANSI
-	text, m.PotentiallyFixableIssuesInfo.currentSuggestionState.originallyHadHalfwidthCircleKatakana = replaceBrokenDisplayCharacters(text)
+	text = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.ReplaceBrokenDisplayCharacters(text)
 	return displayStyle.Width(expectedSuggestionWidth).Render(text)
 }
 
@@ -627,10 +398,4 @@ func replaceBrokenDisplayCharacters(text string) (string, bool) {
 	}
 
 	return text, false
-}
-
-func undoReplaceBrokenDisplayCharacters(text string) string {
-	// replacing in reverse is not guaranteed to work correctly, but for now this works.
-	// This can be changed if necessary down the road.
-	return strings.ReplaceAll(text, "°", "ﾟ")
 }

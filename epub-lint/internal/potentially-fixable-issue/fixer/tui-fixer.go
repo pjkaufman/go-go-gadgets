@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -66,12 +65,7 @@ func (t *TuiFixer) Setup() error {
 		}
 	}
 
-	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, t.file, t.contextBreak)
-	var i = 0
-
-	t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData = make([]ui.FileSuggestionInfo, len(t.epubInfo.HtmlFiles))
-
-	var numFixableIssues = len(t.potentiallyFixableIssues)
+	var filePathToText = make(map[string]string, len(t.epubInfo.HtmlFiles))
 	// Collect file contents
 	for file := range t.epubInfo.HtmlFiles {
 		var filePath = getFilePath(t.opfFolder, file)
@@ -80,18 +74,10 @@ func (t *TuiFixer) Setup() error {
 			return err
 		}
 
-		t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i] = ui.FileSuggestionInfo{
-			Name:        filePath,
-			Text:        linter.CleanupHtmlSpacing(fileText),
-			Suggestions: make([][]ui.SuggestionState, numFixableIssues),
-		}
-
-		i++
+		filePathToText[filePath] = linter.CleanupHtmlSpacing(fileText)
 	}
 
-	sort.Slice(t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData, func(i, j int) bool {
-		return t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[i].Name < t.initialModel.PotentiallyFixableIssuesInfo.FileSuggestionData[j].Name
-	})
+	t.initialModel = ui.NewFixableIssuesModel(t.runAll, t.skipCss, t.runSectionBreak, t.potentiallyFixableIssues, t.cssFiles, t.file, t.contextBreak, filePathToText)
 
 	return nil
 }
@@ -113,8 +99,8 @@ func (t *TuiFixer) Run() error {
 		return model.Err
 	}
 
-	t.handledFiles = make([]string, len(model.PotentiallyFixableIssuesInfo.FileSuggestionData))
-	for _, fileData := range model.PotentiallyFixableIssuesInfo.FileSuggestionData {
+	t.handledFiles = make([]string, len(model.PotentiallyFixableIssuesInfo.SuggestionManager.FileSuggestionData))
+	for _, fileData := range model.PotentiallyFixableIssuesInfo.SuggestionManager.FileSuggestionData {
 		err = t.writeFile(fileData.Name, fileData.Text)
 		if err != nil {
 			return err

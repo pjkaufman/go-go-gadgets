@@ -9,19 +9,25 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	sm "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/suggestion-manager"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
+	sm "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/suggestion-manager"
 )
+
+/*
+* Test scenarios
+- Initialization:
+
+*/
 
 // Test case structures
 type testCase struct {
-	name                string
-	suggestions         []potentiallyfixableissue.PotentiallyFixableIssue
-	files               []sm.FileSuggestionInfo
-	runAll              bool
-	skipCss             bool
-	setupFunc           func(*sm.SuggestionManager)
-	assertions          func(*testing.T, *sm.SuggestionManager)
+	name        string
+	suggestions []potentiallyfixableissue.PotentiallyFixableIssue
+	files       []sm.FileSuggestionInfo
+	runAll      bool
+	skipCss     bool
+	setupFunc   func(*sm.SuggestionManager)
+	assertions  func(*testing.T, *sm.SuggestionManager)
 }
 
 var suggestionManagerTestCases = map[string]testCase{

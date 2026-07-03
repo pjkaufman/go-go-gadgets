@@ -130,15 +130,22 @@ func getInnerContent(decoder *xml.Decoder) (string, string, bool) {
 
 			depth++
 			// Write the tag back
-			content.WriteString("<" + t.Name.Local)
+			content.WriteString("<")
+			content.WriteString(t.Name.Local)
 			for _, attr := range t.Attr {
-				content.WriteString(" " + attr.Name.Local + "=\"" + attr.Value + "\"")
+				content.WriteString(" ")
+				content.WriteString(attr.Name.Local)
+				content.WriteString("=\"")
+				content.WriteString(attr.Value)
+				content.WriteString("\"")
 			}
 			content.WriteString(">")
 		case xml.EndElement:
 			depth--
 			if depth > 0 {
-				content.WriteString("</" + t.Name.Local + ">")
+				content.WriteString("</")
+				content.WriteString(t.Name.Local)
+				content.WriteString(">")
 			}
 		case xml.CharData:
 			content.Write(t)

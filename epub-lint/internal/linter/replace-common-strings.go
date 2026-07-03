@@ -92,7 +92,8 @@ func replaceDoubleDashesWithEmDashes(text string) string {
 		} else if index+2 < len(text) && text[index+2] == '>' {
 			newText.WriteString(text[0 : index+2])
 		} else {
-			newText.WriteString(text[0:index] + "—")
+			newText.WriteString(text[0:index])
+			newText.WriteString("—")
 		}
 
 		text = text[index+2:]
@@ -128,7 +129,8 @@ func replaceTwoPlusSpacesBetweenWords(text string) string {
 		} else if endingWhitespace+1 < len(text) && (text[endingWhitespace+1] == '<' || text[endingWhitespace+1] == '\n') {
 			newText.WriteString(text[0 : index+2])
 		} else {
-			newText.WriteString(text[0:startWhitespace] + " ")
+			newText.WriteString(text[0:startWhitespace])
+			newText.WriteString(" ")
 		}
 
 		text = text[endingWhitespace+1:]

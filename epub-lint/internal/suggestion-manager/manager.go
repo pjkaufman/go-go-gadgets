@@ -1,6 +1,7 @@
 package suggestionmanager
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -9,14 +10,21 @@ import (
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
 )
 
+var (
+	ErrNoCurrentSuggestion = errors.New("no current suggestion available")
+)
+
 // SuggestionManager manages the state and navigation of suggestions across files and issue types.
 type SuggestionManager struct {
-	suggestions            []potentiallyfixableissue.PotentiallyFixableIssue
-	fileSuggestionData     []FileSuggestionInfo
-	currentFileIndex       int
-	currentIssueIndex      int
-	currentSuggestionIndex int
-	currentSuggestionName  string
+	Suggestions            []potentiallyfixableissue.PotentiallyFixableIssue
+	FileSuggestionData     []FileSuggestionInfo
+	CurrentFileIndex       int
+	CurrentIssueIndex      int
+	CurrentSuggestionIndex int
+	CurrentSuggestionName  string
+	CurrentFileName        string
+	CurrentSuggestionState *SuggestionState
+	CurrentSuggestion      *potentiallyfixableissue.PotentiallyFixableIssue
 	runAll                 bool
 	skipCss                bool
 	logFile                io.Writer
@@ -27,16 +35,6 @@ type FileSuggestionInfo struct {
 	Name        string
 	Text        string
 	Suggestions [][]SuggestionState
-}
-
-// SuggestionState represents the state of a single suggestion.
-type SuggestionState struct {
-	IsAccepted                           bool
-	OriginallyHadHalfwidthCircleKatakana bool
-	Original                             string
-	OriginalSuggestion                   string
-	CurrentSuggestion                    string
-	Display                              string
 }
 
 // NewSuggestionManager creates a new SuggestionManager instance.
@@ -67,214 +65,187 @@ func NewSuggestionManager(
 	})
 
 	return &SuggestionManager{
-		suggestions:            suggestions,
-		fileSuggestionData:     fileSuggestionData,
-		currentFileIndex:       0,
-		currentIssueIndex:      0,
-		currentSuggestionIndex: 0,
+		Suggestions:            suggestions,
+		FileSuggestionData:     fileSuggestionData,
+		CurrentFileIndex:       0,
+		CurrentIssueIndex:      0,
+		CurrentSuggestionIndex: 0,
 		runAll:                 runAll,
 		skipCss:                skipCss,
 		logFile:                logFile,
 	}
 }
 
-// GetCurrentFile returns the name of the current file.
-func (sm *SuggestionManager) GetCurrentFile() string {
-	if sm.currentFileIndex < len(sm.fileSuggestionData) {
-		return sm.fileSuggestionData[sm.currentFileIndex].Name
-	}
-	return ""
-}
-
-// GetCurrentFileIndex returns the current file index.
-func (sm *SuggestionManager) GetCurrentFileIndex() int {
-	return sm.currentFileIndex
-}
-
-// GetFileCount returns the total number of files.
-func (sm *SuggestionManager) GetFileCount() int {
-	return len(sm.fileSuggestionData)
-}
-
-// GetCurrentIssue returns the current issue type.
-func (sm *SuggestionManager) GetCurrentIssue() *potentiallyfixableissue.PotentiallyFixableIssue {
-	if sm.currentIssueIndex < len(sm.suggestions) {
-		return &sm.suggestions[sm.currentIssueIndex]
-	}
-	return nil
-}
-
-// GetCurrentIssueName returns the name of the current issue type.
-func (sm *SuggestionManager) GetCurrentIssueName() string {
-	return sm.currentSuggestionName
-}
-
 // GetCurrentSuggestion returns the current suggestion state.
 func (sm *SuggestionManager) GetCurrentSuggestion() *SuggestionState {
-	if sm.currentFileIndex >= len(sm.fileSuggestionData) ||
-		sm.currentIssueIndex >= len(sm.suggestions) ||
-		sm.currentSuggestionIndex >= len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex]) {
+	if sm.CurrentFileIndex >= len(sm.FileSuggestionData) ||
+		sm.CurrentIssueIndex >= len(sm.Suggestions) ||
+		sm.CurrentSuggestionIndex >= len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]) {
 		return nil
 	}
-	return &sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex][sm.currentSuggestionIndex]
-}
 
-// GetCurrentSuggestionIndex returns the current suggestion index.
-func (sm *SuggestionManager) GetCurrentSuggestionIndex() int {
-	return sm.currentSuggestionIndex
+	return &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
 }
 
 // GetCurrentSuggestionCount returns the count of suggestions for the current issue type in the current file.
 func (sm *SuggestionManager) GetCurrentSuggestionCount() int {
-	if sm.currentFileIndex >= len(sm.fileSuggestionData) ||
-		sm.currentIssueIndex >= len(sm.suggestions) {
+	if sm.CurrentFileIndex >= len(sm.FileSuggestionData) ||
+		sm.CurrentIssueIndex >= len(sm.Suggestions) {
 		return 0
 	}
-	return len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex])
+
+	return len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
 }
 
 // UpdateFileContent updates the content of a file at the specified index.
 func (sm *SuggestionManager) UpdateFileContent(fileIndex int, newContent string) error {
-	if fileIndex < 0 || fileIndex >= len(sm.fileSuggestionData) {
+	if fileIndex < 0 || fileIndex >= len(sm.FileSuggestionData) {
 		return fmt.Errorf("invalid file index: %d", fileIndex)
 	}
-	sm.fileSuggestionData[fileIndex].Text = newContent
+
+	sm.FileSuggestionData[fileIndex].Text = newContent
+
 	return nil
 }
 
 // AcceptSuggestion marks the current suggestion as accepted and applies it to the file content.
 // If the suggestion has UpdateAllInstances set to true, all instances will be replaced.
 func (sm *SuggestionManager) AcceptSuggestion() error {
-	currentSuggestion := sm.GetCurrentSuggestion()
-	if currentSuggestion == nil {
-		return fmt.Errorf("no current suggestion available")
+	if sm.CurrentSuggestionState == nil {
+		return ErrNoCurrentSuggestion
 	}
 
-	if currentSuggestion.IsAccepted {
+	if sm.CurrentSuggestionState.IsAccepted {
 		return fmt.Errorf("suggestion already accepted")
 	}
 
-	currentIssue := sm.GetCurrentIssue()
-	if currentIssue == nil {
+	if sm.CurrentSuggestion == nil {
 		return fmt.Errorf("no current issue available")
 	}
 
 	replaceCount := 1
-	if currentIssue.UpdateAllInstances {
+	if sm.CurrentSuggestion.UpdateAllInstances {
 		replaceCount = -1
 	}
 
-	sm.fileSuggestionData[sm.currentFileIndex].Text = strings.Replace(
-		sm.fileSuggestionData[sm.currentFileIndex].Text,
-		currentSuggestion.Original,
-		currentSuggestion.CurrentSuggestion,
+	sm.FileSuggestionData[sm.CurrentFileIndex].Text = strings.Replace(
+		sm.FileSuggestionData[sm.CurrentFileIndex].Text,
+		sm.CurrentSuggestionState.Original,
+		sm.CurrentSuggestionState.CurrentSuggestion,
 		replaceCount,
 	)
 
-	currentSuggestion.IsAccepted = true
-	sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex][sm.currentSuggestionIndex] = *currentSuggestion
+	sm.CurrentSuggestionState.IsAccepted = true
 
 	return nil
 }
 
 // UpdateCurrentSuggestionValue updates the current suggestion's value.
 func (sm *SuggestionManager) UpdateCurrentSuggestionValue(newValue string) error {
-	currentSuggestion := sm.GetCurrentSuggestion()
-	if currentSuggestion == nil {
-		return fmt.Errorf("no current suggestion available")
+	if sm.CurrentSuggestionState == nil {
+		return ErrNoCurrentSuggestion
 	}
 
-	currentSuggestion.CurrentSuggestion = newValue
-	sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex][sm.currentSuggestionIndex] = *currentSuggestion
+	sm.CurrentSuggestionState.CurrentSuggestion = newValue
+	sm.CurrentSuggestionState.undoReplaceBrokenDisplayCharacters()
 
 	return nil
 }
 
 // MoveToNextSuggestion advances to the next suggestion within the current issue type.
-// Returns true if a next suggestion exists, false if we need to move to the next issue.
+// Returns true if a next suggestion exists, false if we need to search for the next set of issues.
 func (sm *SuggestionManager) MoveToNextSuggestion() bool {
-	if sm.currentSuggestionIndex+1 < len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex]) {
-		sm.currentSuggestionIndex++
+	if sm.CurrentSuggestionIndex+1 < len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]) {
+		sm.CurrentSuggestionIndex++
+		sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
+
 		return true
 	}
-	sm.currentSuggestionIndex = 0
+
 	return false
 }
 
-// MoveToPreviousSuggestion moves to the previous suggestion within the current issue type.
-// Returns true if a previous suggestion exists, false if we need to move to the previous issue.
+// MoveToPreviousSuggestion moves to the previous suggestion.
+// Returns true if a previous suggestion exists, false if no prior suggestion exists.
 func (sm *SuggestionManager) MoveToPreviousSuggestion() bool {
-	if sm.currentSuggestionIndex > 0 {
-		sm.currentSuggestionIndex--
+	if sm.CurrentSuggestionIndex > 0 {
+		sm.CurrentSuggestionIndex--
+		sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
+
 		return true
 	}
+
+	var (
+		originalCurrentFileIndex           = sm.CurrentFileIndex
+		originalPotentialFixableIssueIndex = sm.CurrentIssueIndex
+	)
+	for sm.CurrentFileIndex != 0 || sm.CurrentIssueIndex != 0 {
+		if sm.CurrentIssueIndex == 0 {
+			sm.CurrentFileIndex--
+
+			sm.CurrentSuggestionIndex = len(sm.Suggestions) - 1
+		} else {
+			sm.CurrentIssueIndex--
+		}
+
+		for sm.CurrentIssueIndex > 0 && len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]) == 0 {
+			sm.CurrentIssueIndex--
+		}
+
+		var numSuggestions = len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
+		if numSuggestions != 0 {
+			sm.CurrentSuggestionIndex = numSuggestions - 1
+			sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
+			sm.CurrentFileName = sm.FileSuggestionData[sm.CurrentFileIndex].Name
+			sm.CurrentSuggestionName = sm.Suggestions[sm.CurrentIssueIndex].Name
+
+			return true
+		}
+	}
+
+	sm.CurrentFileIndex = originalCurrentFileIndex
+	sm.CurrentIssueIndex = originalPotentialFixableIssueIndex
+
 	return false
 }
 
 // MoveToNextIssue advances to the next issue type that has suggestions.
-// Returns true if a next issue with suggestions exists, false otherwise.
-func (sm *SuggestionManager) MoveToNextIssue() bool {
-	sm.currentSuggestionIndex = 0
+// Returns true if there is another suggestion left otherwise it returns false.
+func (sm *SuggestionManager) MoveToNextIssue() (bool, error) {
+	sm.CurrentSuggestionIndex = len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
 
-	for sm.currentIssueIndex < len(sm.suggestions) {
-		issue := &sm.suggestions[sm.currentIssueIndex]
-		sm.logf("Checking issue %q (index %d)", issue.Name, sm.currentIssueIndex)
-
-		// Skip disabled issues if not running all
-		if !sm.runAll && (issue.IsEnabled == nil || *issue.IsEnabled) {
-			sm.logf("Skipping issue %q because it is disabled", issue.Name)
-			sm.currentIssueIndex++
-			continue
-		}
-
-		// Skip CSS-related issues if skipCss is set
-		if sm.skipCss && (issue.AddCssPageBreakIfMissing || issue.AddCssSectionBreakIfMissing) {
-			sm.logf("Skipping issue %q because CSS-related rules are to be skipped", issue.Name)
-			sm.currentIssueIndex++
-			continue
-		}
-
-		// Check if we already have suggestions for this issue
-		if len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex]) > 0 {
-			sm.logf("Found existing suggestions for issue %q", issue.Name)
-			sm.currentSuggestionName = issue.Name
-			return true
-		}
-
-		// Generate new suggestions
-		suggestions, err := issue.GetSuggestions(sm.fileSuggestionData[sm.currentFileIndex].Text)
-		if err != nil {
-			sm.logf("Error generating suggestions for issue %q: %v", issue.Name, err)
-			sm.currentIssueIndex++
-			continue
-		}
-
-		if len(suggestions) > 0 {
-			sm.logf("Generated %d suggestions for issue %q", len(suggestions), issue.Name)
-			sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex] = sm.createSuggestionStates(suggestions)
-			sm.currentSuggestionName = issue.Name
-			sort.Slice(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex], func(i, j int) bool {
-				return sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex][i].Original <
-					sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex][j].Original
-			})
-			return true
-		}
-
-		sm.currentIssueIndex++
-	}
-
-	return false
+	return sm.SetupForNextSuggestions()
 }
 
 // MoveToPreviousIssue moves to the previous issue type that has suggestions.
 // Returns true if a previous issue with suggestions exists, false otherwise.
 func (sm *SuggestionManager) MoveToPreviousIssue() bool {
-	for sm.currentIssueIndex > 0 {
-		sm.currentIssueIndex--
+	var (
+		currentFileIndex           = sm.CurrentFileIndex
+		potentialFixableIssueIndex = sm.CurrentIssueIndex
+	)
+	for currentFileIndex != 0 || potentialFixableIssueIndex != 0 {
+		if potentialFixableIssueIndex == 0 {
+			currentFileIndex--
 
-		if len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[sm.currentIssueIndex]) > 0 {
-			sm.currentSuggestionIndex = 0
-			sm.currentSuggestionName = sm.suggestions[sm.currentIssueIndex].Name
+			potentialFixableIssueIndex = len(sm.Suggestions) - 1
+		} else {
+			potentialFixableIssueIndex--
+		}
+
+		for potentialFixableIssueIndex > 0 && len(sm.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex]) == 0 {
+			potentialFixableIssueIndex--
+		}
+
+		var numSuggestions = len(sm.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex])
+		if numSuggestions != 0 {
+			sm.CurrentFileIndex = currentFileIndex
+			sm.CurrentIssueIndex = potentialFixableIssueIndex
+			sm.CurrentSuggestionIndex = 0
+			sm.CurrentSuggestionName = sm.Suggestions[potentialFixableIssueIndex].Name
+			sm.CurrentFileName = sm.FileSuggestionData[currentFileIndex].Name
+			sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
+
 			return true
 		}
 	}
@@ -282,98 +253,143 @@ func (sm *SuggestionManager) MoveToPreviousIssue() bool {
 	return false
 }
 
-// MoveToNextFile advances to the next file and resets issue/suggestion indices.
-// Returns true if a next file exists, false otherwise.
-func (sm *SuggestionManager) MoveToNextFile() bool {
-	if sm.currentFileIndex+1 < len(sm.fileSuggestionData) {
-		sm.currentFileIndex++
-		sm.currentIssueIndex = 0
-		sm.currentSuggestionIndex = 0
-		return true
+// MoveToNextFile advances to the next file that has suggestions if possible.
+func (sm *SuggestionManager) MoveToNextFile() (bool, error) {
+	if sm.CurrentFileIndex+1 < len(sm.FileSuggestionData) {
+		sm.CurrentFileIndex++
+		sm.CurrentIssueIndex = 0
+		sm.CurrentSuggestionIndex = 0
+		sm.CurrentFileName = sm.FileSuggestionData[sm.CurrentFileIndex].Name
+		sm.CurrentSuggestionName = sm.Suggestions[sm.CurrentIssueIndex].Name
+	} else {
+		sm.CurrentIssueIndex = len(sm.Suggestions) - 1
+		sm.CurrentSuggestionIndex = len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
 	}
-	return false
+
+	return sm.SetupForNextSuggestions()
 }
 
 // MoveToPreviousFile moves to the previous file.
-// Returns true if a previous file exists, false otherwise.
+// Returns true if a previous file with a suggestion exists, false otherwise.
 func (sm *SuggestionManager) MoveToPreviousFile() bool {
-	if sm.currentFileIndex == 0 {
+	if sm.CurrentFileIndex == 0 {
 		return false
 	}
 
-	sm.currentFileIndex--
-	sm.currentIssueIndex = 0
-	sm.currentSuggestionIndex = 0
+	var (
+		currentFileIndex           = sm.CurrentFileIndex
+		potentialFixableIssueIndex int
+	)
+	for currentFileIndex != 0 {
+		currentFileIndex--
+		potentialFixableIssueIndex = 0
+		// skipping files forwards can cause a gap to happen in the potentially fixable issue data, but for now, we will ignore it
+		// since if the previous file had any suggestions the first one that has data should be present
+		// thus this should work fine, but if it does not we can tweak this
+		for potentialFixableIssueIndex < len(sm.Suggestions) {
+			if len(sm.FileSuggestionData[currentFileIndex].Suggestions[potentialFixableIssueIndex]) != 0 {
+				sm.CurrentFileIndex = currentFileIndex
+				sm.CurrentIssueIndex = potentialFixableIssueIndex
+				sm.CurrentSuggestionIndex = 0
+				sm.CurrentSuggestionName = sm.Suggestions[potentialFixableIssueIndex].Name
+				sm.CurrentFileName = sm.FileSuggestionData[currentFileIndex].Name
+				sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
 
-	// Find the first issue in the previous file that has suggestions
-	for i := 0; i < len(sm.suggestions); i++ {
-		if len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[i]) > 0 {
-			sm.currentIssueIndex = i
-			sm.currentSuggestionName = sm.suggestions[i].Name
-			return true
+				return true
+			}
+
+			potentialFixableIssueIndex++
 		}
 	}
 
 	return false
 }
 
-// InitializeFirstSuggestion initializes the manager to show the first available suggestion.
-// Returns an error if no suggestions are available.
-func (sm *SuggestionManager) InitializeFirstSuggestion() error {
-	sm.currentFileIndex = 0
-	sm.currentIssueIndex = 0
-	sm.currentSuggestionIndex = 0
+func (sm *SuggestionManager) SetupForNextSuggestions() (bool, error) {
+	sm.logf("Getting next suggestions")
+	sm.CurrentIssueIndex++
 
-	if !sm.MoveToNextIssue() {
-		return fmt.Errorf("no suggestions available")
-	}
+	for sm.CurrentFileIndex < len(sm.FileSuggestionData) {
+		sm.CurrentFileName = sm.FileSuggestionData[sm.CurrentFileIndex].Name
+		sm.logf("Current file is %q is %d of %d\n", sm.CurrentFileName, sm.CurrentFileIndex+1, len(sm.FileSuggestionData))
 
-	return nil
-}
+		for sm.CurrentIssueIndex < len(sm.Suggestions) {
+			var potentialFixableIssue = sm.Suggestions[sm.CurrentIssueIndex]
+			sm.logf("Possible fixable issue %q is %d of %d issues.", potentialFixableIssue.Name, sm.CurrentIssueIndex+1, len(sm.Suggestions))
 
-// HasNextIssueOrFile checks if there are more issues to process or files to move to.
-// This is useful for determining if we've reached the end of all suggestions.
-func (sm *SuggestionManager) HasNextIssueOrFile() bool {
-	// Check if there are more issues in the current file
-	for i := sm.currentIssueIndex + 1; i < len(sm.suggestions); i++ {
-		if len(sm.fileSuggestionData[sm.currentFileIndex].Suggestions[i]) > 0 {
-			return true
+			if !sm.runAll && (potentialFixableIssue.IsEnabled == nil || *potentialFixableIssue.IsEnabled) {
+				sm.logf("Skipping possible fixable issue %q with isEnabled set to %v", potentialFixableIssue.Name, potentialFixableIssue.IsEnabled)
+
+				sm.CurrentIssueIndex++
+				continue
+			} else if sm.skipCss && (potentialFixableIssue.AddCssPageBreakIfMissing || potentialFixableIssue.AddCssSectionBreakIfMissing) {
+				sm.logf("Skipping possible fixable issue %q because css related rules are to be skipped", potentialFixableIssue.Name)
+				sm.CurrentIssueIndex++
+
+				continue
+			}
+
+			if len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]) != 0 {
+				sm.logf("Possible fixable issue %q has %d suggestion(s) already\n", potentialFixableIssue.Name, len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]))
+
+				sm.CurrentSuggestionIndex = 0
+				sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][0]
+				sm.CurrentSuggestionName = potentialFixableIssue.Name
+				sm.CurrentFileName = sm.FileSuggestionData[sm.CurrentFileIndex].Name
+
+				return true, nil
+			}
+
+			suggestions, err := potentialFixableIssue.GetSuggestions(sm.FileSuggestionData[sm.CurrentFileIndex].Text)
+			if err != nil {
+				return false, err
+			}
+
+			sm.logf("Possible fixable issue %q has %d suggestion(s) found\n", potentialFixableIssue.Name, len(suggestions))
+
+			if len(suggestions) != 0 {
+				sm.CurrentSuggestion = &potentialFixableIssue
+				sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex] = make([]SuggestionState, len(suggestions))
+
+				var (
+					i             = 0
+					newSuggestion SuggestionState
+				)
+				for original, suggestion := range suggestions {
+					newSuggestion = SuggestionState{
+						Original:           original,
+						OriginalSuggestion: suggestion,
+						CurrentSuggestion:  suggestion,
+					}
+
+					err = newSuggestion.GetStringDiffAsDisplay()
+					if err != nil {
+						return false, err
+					}
+
+					sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][i] = newSuggestion
+					i++
+				}
+
+				sort.Slice(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex], func(i, j int) bool {
+					return sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][i].Original < sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][j].Original
+				})
+
+				sm.CurrentSuggestionIndex = 0
+				sm.CurrentSuggestionState = &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][0]
+				sm.CurrentSuggestionName = potentialFixableIssue.Name
+
+				return true, nil
+			}
+
+			sm.CurrentIssueIndex++
 		}
+
+		sm.CurrentFileIndex++
+		sm.CurrentIssueIndex = 0
 	}
 
-	// Check if there are more files
-	if sm.currentFileIndex+1 < len(sm.fileSuggestionData) {
-		return true
-	}
-
-	return false
-}
-
-// GetFileContent returns the current content of the specified file.
-func (sm *SuggestionManager) GetFileContent(fileIndex int) (string, error) {
-	if fileIndex < 0 || fileIndex >= len(sm.fileSuggestionData) {
-		return "", fmt.Errorf("invalid file index: %d", fileIndex)
-	}
-	return sm.fileSuggestionData[fileIndex].Text, nil
-}
-
-// GetAllFiles returns all file suggestion data.
-func (sm *SuggestionManager) GetAllFiles() []FileSuggestionInfo {
-	return sm.fileSuggestionData
-}
-
-// createSuggestionStates converts a map of suggestions into SuggestionState objects.
-func (sm *SuggestionManager) createSuggestionStates(suggestions map[string]string) []SuggestionState {
-	states := make([]SuggestionState, 0, len(suggestions))
-	for original, suggestion := range suggestions {
-		states = append(states, SuggestionState{
-			Original:           original,
-			OriginalSuggestion: suggestion,
-			CurrentSuggestion:  suggestion,
-			Display:            "", // Display will be set by the caller
-		})
-	}
-	return states
+	return false, nil
 }
 
 // logf logs a message to the configured logf file if one exists.
