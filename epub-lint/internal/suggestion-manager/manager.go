@@ -11,7 +11,9 @@ import (
 )
 
 var (
-	ErrNoCurrentSuggestion = errors.New("no current suggestion available")
+	ErrNoCurrentSuggestion       = errors.New("no current suggestion available")
+	ErrSuggestionAlreadyAccepted = errors.New("suggestion already accepted")
+	ErrNoCurrentIssueAvailable   = errors.New("no current issue available")
 )
 
 // SuggestionManager manages the state and navigation of suggestions across files and issue types.
@@ -116,11 +118,11 @@ func (sm *SuggestionManager) AcceptSuggestion() error {
 	}
 
 	if sm.CurrentSuggestionState.IsAccepted {
-		return fmt.Errorf("suggestion already accepted")
+		return ErrSuggestionAlreadyAccepted
 	}
 
 	if sm.CurrentSuggestion == nil {
-		return fmt.Errorf("no current issue available")
+		return ErrNoCurrentIssueAvailable
 	}
 
 	replaceCount := 1
