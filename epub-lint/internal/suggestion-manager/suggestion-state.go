@@ -36,7 +36,7 @@ func (s *SuggestionState) undoReplaceBrokenDisplayCharacters() {
 
 // replaces the provided text's broken display characters and returns a string that should display fine in the terminal.
 // This should note be used with text that is not directly related to the suggestion in question as it also sets
-// the flag for whether or not there was halfwidth circle katakana present.
+// the flag for whether or not there was halwidth circle katakana present.
 func (s *SuggestionState) ReplaceBrokenDisplayCharacters(text string) string {
 	// text with handakuten in them are not having their width calculated correctly, so I will just remove them
 	// and we can display a warning if need bee
