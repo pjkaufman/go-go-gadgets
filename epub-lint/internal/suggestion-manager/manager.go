@@ -49,7 +49,6 @@ func NewSuggestionManager(
 	skipCss bool,
 	logFile io.Writer,
 ) *SuggestionManager {
-	// Convert map to sorted FileSuggestionInfo slice
 	fileSuggestionData := make([]FileSuggestionInfo, 0, len(filePathToText))
 	numFixableIssues := len(suggestions)
 
@@ -61,7 +60,6 @@ func NewSuggestionManager(
 		})
 	}
 
-	// Sort by file path to ensure consistent ordering
 	sort.Slice(fileSuggestionData, func(i, j int) bool {
 		return fileSuggestionData[i].Name < fileSuggestionData[j].Name
 	})
@@ -76,17 +74,6 @@ func NewSuggestionManager(
 		skipCss:                skipCss,
 		logFile:                logFile,
 	}
-}
-
-// GetCurrentSuggestion returns the current suggestion state.
-func (sm *SuggestionManager) GetCurrentSuggestion() *SuggestionState {
-	if sm.CurrentFileIndex >= len(sm.FileSuggestionData) ||
-		sm.CurrentIssueIndex >= len(sm.Suggestions) ||
-		sm.CurrentSuggestionIndex >= len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex]) {
-		return nil
-	}
-
-	return &sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex][sm.CurrentSuggestionIndex]
 }
 
 // AcceptSuggestion marks the current suggestion as accepted and applies it to the file content.
