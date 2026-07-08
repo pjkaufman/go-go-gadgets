@@ -146,12 +146,13 @@ func (sm *SuggestionManager) MoveToPreviousSuggestion() bool {
 	var (
 		originalCurrentFileIndex           = sm.CurrentFileIndex
 		originalPotentialFixableIssueIndex = sm.CurrentIssueIndex
+		originalSuggestionIndex            = sm.CurrentSuggestionIndex
 	)
 	for sm.CurrentFileIndex != 0 || sm.CurrentIssueIndex != 0 {
 		if sm.CurrentIssueIndex == 0 {
 			sm.CurrentFileIndex--
 
-			sm.CurrentSuggestionIndex = len(sm.Suggestions) - 1
+			sm.CurrentIssueIndex = len(sm.Suggestions) - 1
 		} else {
 			sm.CurrentIssueIndex--
 		}
@@ -173,6 +174,7 @@ func (sm *SuggestionManager) MoveToPreviousSuggestion() bool {
 
 	sm.CurrentFileIndex = originalCurrentFileIndex
 	sm.CurrentIssueIndex = originalPotentialFixableIssueIndex
+	sm.CurrentSuggestionIndex = originalSuggestionIndex
 
 	return false
 }
