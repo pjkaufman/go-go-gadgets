@@ -72,11 +72,6 @@ type CssSelectionStageInfo struct {
 	currentCssIndex int
 }
 
-// type SuggestionState struct {
-// 	isAccepted, originallyHadHalfwidthCircleKatakana         bool
-// 	original, originalSuggestion, currentSuggestion, display string
-// }
-
 func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string, filePathToText map[string]string) FixableIssuesModel {
 	ti := textinput.New()
 	ti.SetWidth(20)
