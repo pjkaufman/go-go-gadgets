@@ -41,7 +41,7 @@ type FileSuggestionInfo struct {
 
 // NewSuggestionManager creates a new SuggestionManager instance.
 // filePathToText maps file paths to their cleaned/processed text content.
-// This allows the caller to handle file I/O, cleanup, and sorting before initialization.
+// This allows the caller to handle file I/O, and cleanup.
 func NewSuggestionManager(
 	suggestions []potentiallyfixableissue.PotentiallyFixableIssue,
 	filePathToText map[string]string,

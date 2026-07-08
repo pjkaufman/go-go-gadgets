@@ -495,6 +495,82 @@ var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
 	},
 }
 
+type acceptSuggestionTestCase struct {
+	setup func(*SuggestionManager)
+
+	expectedError error
+
+	expectedText     string
+	expectedAccepted bool
+}
+
+var acceptSuggestionTestCases = map[string]acceptSuggestionTestCase{
+	"When there is no current suggestion, ErrNoCurrentSuggestion is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState = nil
+		},
+		expectedError: ErrNoCurrentSuggestion,
+	},
+	"When the current suggestion has already been accepted, ErrSuggestionAlreadyAccepted is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+			manager.CurrentSuggestionState.IsAccepted = true
+		},
+		expectedError: ErrSuggestionAlreadyAccepted,
+	},
+	"When there is no current issue, ErrNoCurrentIssueAvailable is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+			manager.CurrentSuggestion = nil
+		},
+		expectedError: ErrNoCurrentIssueAvailable,
+	},
+	"When UpdateAllInstances is false, only the first instance is replaced": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Text = "old old"
+
+			manager.Suggestions[0].UpdateAllInstances = false
+
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original:          "old",
+					CurrentSuggestion: "new",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+			manager.CurrentSuggestion = &manager.Suggestions[0]
+		},
+		expectedText:     "new old",
+		expectedAccepted: true,
+	},
+	"When UpdateAllInstances is true, all instances are replaced": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Text = "old old"
+
+			manager.Suggestions[0].UpdateAllInstances = true
+
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original:          "old",
+					CurrentSuggestion: "new",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+			manager.CurrentSuggestion = &manager.Suggestions[0]
+		},
+		expectedText:     "new new",
+		expectedAccepted: true,
+	},
+}
+
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -653,9 +729,58 @@ func TestSuggestionManager(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("AcceptSuggestion", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range acceptSuggestionTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := newManagerForAcceptSuggestionTests()
+
+				tc.setup(manager)
+
+				err := manager.AcceptSuggestion()
+
+				if tc.expectedError != nil {
+					require.ErrorIs(t, err, tc.expectedError)
+					return
+				}
+
+				require.NoError(t, err)
+				assert.Equal(t, tc.expectedText, manager.FileSuggestionData[0].Text)
+				assert.Equal(t, tc.expectedAccepted, manager.CurrentSuggestionState.IsAccepted)
+			})
+		}
+	})
 }
 
 // Helpers
+
+func newManagerForAcceptSuggestionTests() *SuggestionManager {
+	return &SuggestionManager{
+		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{
+				Name: "Issue 1",
+			},
+		},
+		FileSuggestionData: []FileSuggestionInfo{
+			{
+				Name: "file1.html",
+				Text: "",
+				Suggestions: [][]SuggestionState{
+					{
+						{
+							Original:          "old",
+							CurrentSuggestion: "new",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 func createPotentiallyFixableIssues(t *testing.T, contextBreak string) []potentiallyfixableissue.PotentiallyFixableIssue {
 	t.Helper()
