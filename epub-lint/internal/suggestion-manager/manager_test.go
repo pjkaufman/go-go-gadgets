@@ -1580,7 +1580,7 @@ func newManagerForPreviousFileTests() *SuggestionManager {
 // and 3 files (file1.html, file2.html, file3.html)
 func createStandardTestManager(numIssues int) *SuggestionManager {
 	suggestions := make([]potentiallyfixableissue.PotentiallyFixableIssue, numIssues)
-	for i := 0; i < numIssues; i++ {
+	for i := range numIssues {
 		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + string(rune(i+1))}
 	}
 
