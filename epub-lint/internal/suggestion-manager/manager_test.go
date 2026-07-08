@@ -422,6 +422,60 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 	},
 }
 
+type moveToNextSuggestionTestCase struct {
+	setup func(*sm.SuggestionManager)
+
+	expectedFound             bool
+	expectedCurrentFileIndex  int
+	expectedCurrentIssueIndex int
+	expectedSuggestionIndex   int
+	expectedSuggestionState   *sm.SuggestionState
+}
+
+var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
+	"When on the last suggestion for the issue, moving forward returns false": {
+		setup: func(manager *sm.SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+				{Original: "one"},
+				{Original: "two"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 1
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][1]
+		},
+		expectedFound:             false,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   1,
+		expectedSuggestionState: &sm.SuggestionState{
+			Original: "two",
+		},
+	},
+	"When on the first suggestion and there are multiple next suggestions, moving forward only moves forward a single suggestion": {
+		setup: func(manager *sm.SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+				{Original: "one"},
+				{Original: "two"},
+				{Original: "three"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   1,
+		expectedSuggestionState: &sm.SuggestionState{
+			Original: "two",
+		},
+	},
+}
+
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -504,6 +558,50 @@ func TestSuggestionManager(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("MoveToNextSuggestion", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range moveToNextSuggestionTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := newManagerForNextSuggestionTests()
+
+				tc.setup(manager)
+
+				found := manager.MoveToNextSuggestion()
+
+				assert.Equal(t, tc.expectedFound, found)
+				assert.Equal(t, tc.expectedCurrentFileIndex, manager.CurrentFileIndex)
+				assert.Equal(t, tc.expectedCurrentIssueIndex, manager.CurrentIssueIndex)
+				assert.Equal(t, tc.expectedSuggestionIndex, manager.CurrentSuggestionIndex)
+
+				if tc.expectedSuggestionState == nil {
+					assert.Nil(t, manager.CurrentSuggestionState)
+				} else {
+					require.NotNil(t, manager.CurrentSuggestionState)
+					assert.Equal(t, *tc.expectedSuggestionState, *manager.CurrentSuggestionState)
+				}
+			})
+		}
+	})
+}
+
+func newManagerForNextSuggestionTests() *sm.SuggestionManager {
+	return &sm.SuggestionManager{
+		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+		},
+		FileSuggestionData: []sm.FileSuggestionInfo{
+			{
+				Name: "file1.html",
+				Suggestions: [][]sm.SuggestionState{
+					nil,
+				},
+			},
+		},
+	}
 }
 
 func newManagerForPreviousSuggestionTests() *sm.SuggestionManager {
