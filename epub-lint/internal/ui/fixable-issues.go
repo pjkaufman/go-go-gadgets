@@ -59,24 +59,12 @@ type sectionBreakStageInfo struct {
 }
 
 type PotentiallyFixableStageInfo struct {
-	// FileSuggestionData                                                                  []FileSuggestionInfo
-	SuggestionManager *suggestionmanager.SuggestionManager
-	// currentFile, currentSuggestionName                                                  string
-	// currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
-	// suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
-	// currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
+	SuggestionManager                                                                   *suggestionmanager.SuggestionManager
 	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
-	// currentSuggestionState                                                              *SuggestionState
-	suggestionEdit    textarea.Model
-	suggestionDisplay viewport.Model
-	scrollbar         tea.Model
+	suggestionEdit                                                                      textarea.Model
+	suggestionDisplay                                                                   viewport.Model
+	scrollbar                                                                           tea.Model
 }
-
-// type FileSuggestionInfo struct {
-// 	Name        string
-// 	Text        string
-// 	Suggestions [][]SuggestionState
-// }
 
 type CssSelectionStageInfo struct {
 	cssFiles        []string
