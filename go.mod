@@ -3,9 +3,9 @@ module github.com/pjkaufman/go-go-gadgets
 go 1.25.0
 
 require (
-	charm.land/bubbles/v2 v2.1.0
-	charm.land/bubbletea/v2 v2.0.5
-	charm.land/lipgloss/v2 v2.0.3
+	charm.land/bubbles/v2 v2.1.1
+	charm.land/bubbletea/v2 v2.0.8
+	charm.land/lipgloss/v2 v2.0.5
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/adrg/frontmatter v0.2.0
@@ -16,26 +16,26 @@ require (
 	github.com/dsoprea/go-exif/v2 v2.0.0-20230826092837-6579e82b732d
 	github.com/dsoprea/go-jpeg-image-structure v0.0.0-20221012074422-4f3f7e934102
 	github.com/dsoprea/go-png-image-structure v0.0.0-20210512210324-29b889a6093d
-	github.com/gomarkdown/markdown v0.0.0-20260412113850-134a5b2cce7f
+	github.com/gomarkdown/markdown v0.0.0-20260614204949-e08cff860f76
 	github.com/liut/jpegquality v0.0.0-20240710065817-3f50304d6fdd
 	github.com/manifoldco/promptui v0.9.0
 	github.com/muesli/reflow v0.3.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20260406063853-3bac975de715
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/image v0.39.0
-	golang.org/x/net v0.53.0
+	golang.org/x/image v0.43.0
+	golang.org/x/net v0.56.0
 )
 
 require (
 	github.com/PuerkitoBio/goquery v1.12.0 // indirect
-	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/andybalholm/cascadia v1.3.4 // indirect
 	github.com/antchfx/htmlquery v1.3.6 // indirect
 	github.com/antchfx/xmlquery v1.5.1 // indirect
 	github.com/antchfx/xpath v1.3.6 // indirect
-	github.com/bits-and-blooms/bitset v1.24.4 // indirect
+	github.com/bits-and-blooms/bitset v1.24.5 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
-	github.com/charmbracelet/ultraviolet v0.0.0-20260413225345-5027f0c48455 // indirect
+	github.com/charmbracelet/ultraviolet v0.0.0-20260703014108-f5a850f9c2b7 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
@@ -50,13 +50,13 @@ require (
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-xmlfmt/xmlfmt v1.1.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/golang/geo v0.0.0-20260410151323-873865b76ae2 // indirect
+	github.com/golang/geo v0.0.0-20260706204034-7a8d33c78269 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/nlnwa/whatwg-url v0.6.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -66,8 +66,8 @@ require (
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
@@ -79,6 +79,6 @@ require (
 	github.com/gocolly/colly/v2 v2.3.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.10
-	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
