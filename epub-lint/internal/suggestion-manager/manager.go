@@ -227,10 +227,10 @@ func (sm *SuggestionManager) MoveToPreviousIssue() bool {
 func (sm *SuggestionManager) MoveToNextFile() (bool, error) {
 	if sm.CurrentFileIndex+1 < len(sm.FileSuggestionData) {
 		sm.CurrentFileIndex++
-		sm.CurrentIssueIndex = 0
+		sm.CurrentIssueIndex = -1 // needs to be set to -1 so it checks the first issue when moving to the next file...
 		sm.CurrentSuggestionIndex = 0
 		sm.CurrentFileName = sm.FileSuggestionData[sm.CurrentFileIndex].Name
-		sm.CurrentSuggestionName = sm.Suggestions[sm.CurrentIssueIndex].Name
+		sm.CurrentSuggestionName = sm.Suggestions[sm.CurrentIssueIndex+1].Name
 	} else {
 		sm.CurrentIssueIndex = len(sm.Suggestions) - 1
 		sm.CurrentSuggestionIndex = len(sm.FileSuggestionData[sm.CurrentFileIndex].Suggestions[sm.CurrentIssueIndex])
