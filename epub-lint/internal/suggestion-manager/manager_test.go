@@ -1,25 +1,18 @@
 //go:build unit
 
-package suggestionmanager_test
+package suggestionmanager
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
 	_ "embed"
 
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
-	sm "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/suggestion-manager"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-/**
-I am working on creating a suggestion manager. The latest should be on the branch for the issue. It has a file in there called epub-lint/internal/suggestion-manager/manager.go on the suggestion-manager branch. I would like you to go ahead and create the following test cases:
-- Initialization:
-  - Files are properly sorted
-  - Files already sorted stay in sorted order
-  - Passed in properties are as passed in on the model
-*/
 
 var (
 	//go:embed testdata/APotentialConversationInstance.html
@@ -31,72 +24,98 @@ var (
 )
 
 // Test case structures
-type suggestionManagerTestCase struct {
-	suggestions []potentiallyfixableissue.PotentiallyFixableIssue
-	files       []sm.FileSuggestionInfo
-	runAll      bool
-	skipCss     bool
-	setupFunc   func(*sm.SuggestionManager)
-	assertions  func(*testing.T, *sm.SuggestionManager)
+type newSuggestionManagerTestCase struct {
+	filePathsToText map[string]string
+	suggestions     []potentiallyfixableissue.PotentiallyFixableIssue
+	runAll          bool
+	skipCss         bool
+	logFile         io.Writer
+
+	expectedFileNames        []string
+	expectedFileTexts        []string
+	expectedSuggestionLength int
+
+	expectedCurrentFileIndex       int
+	expectedCurrentIssueIndex      int
+	expectedCurrentSuggestionIndex int
+
+	expectedRunAll  bool
+	expectedSkipCss bool
+	expectedLogFile io.Writer
 }
 
-func createPotentiallyFixableIssues(t *testing.T, contextBreak string) []potentiallyfixableissue.PotentiallyFixableIssue {
-	t.Helper()
+var newSuggestionManagerTestCases = map[string]newSuggestionManagerTestCase{
+	"Files are properly sorted": {
+		filePathsToText: map[string]string{
+			"c.html": "c",
+			"a.html": "a",
+			"b.html": "b",
+		},
+		suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+			{Name: "Issue 2"},
+		},
+		expectedFileNames:         []string{"a.html", "b.html", "c.html"},
+		expectedFileTexts:         []string{"a", "b", "c"},
+		expectedSuggestionLength:  2,
+		expectedCurrentIssueIndex: -1,
+	},
+	"Files already sorted stay in sorted order": {
+		filePathsToText: map[string]string{
+			"a.html": "a",
+			"b.html": "b",
+			"c.html": "c",
+		},
+		suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+			{Name: "Issue 2"},
+		},
+		expectedFileNames:         []string{"a.html", "b.html", "c.html"},
+		expectedFileTexts:         []string{"a", "b", "c"},
+		expectedSuggestionLength:  2,
+		expectedCurrentIssueIndex: -1,
+	},
+	"Empty initialization": {
+		filePathsToText:           map[string]string{},
+		suggestions:               nil,
+		expectedFileNames:         []string{},
+		expectedFileTexts:         []string{},
+		expectedSuggestionLength:  0,
+		expectedCurrentIssueIndex: -1,
+	},
+	"State is initialized correctly": {
+		filePathsToText: map[string]string{
+			"test.html": "test",
+		},
+		suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+		},
+		expectedFileNames:              []string{"test.html"},
+		expectedFileTexts:              []string{"test"},
+		expectedSuggestionLength:       1,
+		expectedCurrentFileIndex:       0,
+		expectedCurrentIssueIndex:      -1,
+		expectedCurrentSuggestionIndex: 0,
+	},
+	"Constructor parameters are preserved": {
+		filePathsToText: map[string]string{
+			"test.html": "text",
+		},
+		suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+			{Name: "Issue 2"},
+		},
+		runAll:  true,
+		skipCss: true,
+		logFile: &bytes.Buffer{},
 
-	return []potentiallyfixableissue.PotentiallyFixableIssue{
-		{
-			Name:           "Potential Conversation Instances",
-			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketConversationInstances,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name:           "Potential Necessary Word Omission Instances",
-			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketNecessaryWords,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name:           "Potential Broken Lines",
-			GetSuggestions: potentiallyfixableissue.GetPotentiallyBrokenLines,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name:           "Potential Incorrect Single Quotes",
-			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectSingleQuotes,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name: "Potential Section Breaks",
-			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
-			GetSuggestions: func(text string) (map[string]string, error) {
-				return potentiallyfixableissue.GetPotentialSectionBreaks(text, contextBreak)
-			},
-			IsEnabled:                   pointerToBool(false),
-			UpdateAllInstances:          true,
-			AddCssSectionBreakIfMissing: true,
-		},
-		{
-			Name:                     "Potential Page Breaks",
-			GetSuggestions:           potentiallyfixableissue.GetPotentialPageBreaks,
-			IsEnabled:                pointerToBool(false),
-			UpdateAllInstances:       true,
-			AddCssPageBreakIfMissing: true,
-		},
-		{
-			Name:           "Potential Missing Oxford Commas",
-			GetSuggestions: potentiallyfixableissue.GetPotentialMissingOxfordCommas,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name:           "Potentially Lacking Subordinate Clause Instances",
-			GetSuggestions: potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances,
-			IsEnabled:      pointerToBool(false),
-		},
-		{
-			Name:           "Potential Thought Instances",
-			GetSuggestions: potentiallyfixableissue.GetPotentialThoughtInstances,
-			IsEnabled:      pointerToBool(false),
-		},
-	}
+		expectedFileNames:         []string{"test.html"},
+		expectedFileTexts:         []string{"text"},
+		expectedSuggestionLength:  2,
+		expectedCurrentIssueIndex: -1,
+		expectedRunAll:            true,
+		expectedSkipCss:           true,
+	},
 }
 
 type suggestionManagerSetupForNextSuggestionsTestCase struct {
@@ -165,7 +184,7 @@ var suggestionManagerSetupForNextSuggestionsTestCases = map[string]suggestionMan
 }
 
 type moveToPreviousFileTestCase struct {
-	setup func(*sm.SuggestionManager)
+	setup func(*SuggestionManager)
 
 	expectedFound             bool
 	expectedCurrentFileIndex  int
@@ -173,12 +192,12 @@ type moveToPreviousFileTestCase struct {
 	expectedSuggestionIndex   int
 	expectedFileName          string
 	expectedSuggestionName    string
-	expectedSuggestionState   *sm.SuggestionState
+	expectedSuggestionState   *SuggestionState
 }
 
 var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 	"When on first file, false is returned": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 0
 		},
 		expectedFound:             false,
@@ -187,7 +206,7 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 	},
 	"When no prior file has suggestions, false is returned (2 prior files exist)": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 2
 			manager.CurrentIssueIndex = 1
 			manager.CurrentSuggestionIndex = 0
@@ -198,7 +217,7 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 	},
 	"When no prior file has suggestions, false is returned (1 prior file exists)": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 1
 			manager.CurrentIssueIndex = 1
 		},
@@ -208,8 +227,8 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 	},
 	"When the previous file has a suggestion, the current file index is updated, and the suggestion is updated to be the first suggestion, and the issue is the corresponding issue for that suggestion": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[1].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[1].Suggestions[0] = []SuggestionState{
 				{
 					Original:          "old",
 					CurrentSuggestion: "new",
@@ -226,14 +245,14 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 		expectedFileName:          "file2.html",
 		expectedSuggestionName:    "Issue 1",
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original:          "old",
 			CurrentSuggestion: "new",
 		},
 	},
 	"When two files prior there is a suggestion, but on the prior file there is not a suggestion, then moving to the previous file will go to the file two files back and the suggestion will be the first and the issue will correspond to that one": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[1] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
 				{
 					Original:          "first",
 					CurrentSuggestion: "replacement",
@@ -250,21 +269,21 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 		expectedFileName:          "file1.html",
 		expectedSuggestionName:    "Issue 2",
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original:          "first",
 			CurrentSuggestion: "replacement",
 		},
 	},
 	"When on the third file and the prior two files both have suggestions, moving to the previous file only goes back a single file and suggestion and issue data matches that first suggestion even when there are suggestions for multiple issues": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			// File 1 has suggestions for both issues.
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{
 					Original:          "file1-issue1",
 					CurrentSuggestion: "replacement1",
 				},
 			}
-			manager.FileSuggestionData[0].Suggestions[1] = []sm.SuggestionState{
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
 				{
 					Original:          "file1-issue2",
 					CurrentSuggestion: "replacement2",
@@ -272,13 +291,13 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 			}
 
 			// File 2 also has suggestions for both issues.
-			manager.FileSuggestionData[1].Suggestions[0] = []sm.SuggestionState{
+			manager.FileSuggestionData[1].Suggestions[0] = []SuggestionState{
 				{
 					Original:          "file2-issue1",
 					CurrentSuggestion: "replacement3",
 				},
 			}
-			manager.FileSuggestionData[1].Suggestions[1] = []sm.SuggestionState{
+			manager.FileSuggestionData[1].Suggestions[1] = []SuggestionState{
 				{
 					Original:          "file2-issue2",
 					CurrentSuggestion: "replacement4",
@@ -296,7 +315,7 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 		expectedSuggestionIndex:   0,
 		expectedFileName:          "file2.html",
 		expectedSuggestionName:    "Issue 1",
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original:          "file2-issue1",
 			CurrentSuggestion: "replacement3",
 		},
@@ -304,7 +323,7 @@ var moveToPreviousFileTestCases = map[string]moveToPreviousFileTestCase{
 }
 
 type moveToPreviousSuggestionTestCase struct {
-	setup func(*sm.SuggestionManager)
+	setup func(*SuggestionManager)
 
 	expectedFound             bool
 	expectedCurrentFileIndex  int
@@ -312,12 +331,12 @@ type moveToPreviousSuggestionTestCase struct {
 	expectedSuggestionIndex   int
 	expectedFileName          string
 	expectedSuggestionName    string
-	expectedSuggestionState   *sm.SuggestionState
+	expectedSuggestionState   *SuggestionState
 }
 
 var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestCase{
 	"When on first file and no prior suggestion exists, false is returned": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 0
 			manager.CurrentIssueIndex = 0
 			manager.CurrentSuggestionIndex = 0
@@ -328,7 +347,7 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedSuggestionIndex:   0,
 	},
 	"When on second file, on the first suggestion, and no prior suggestion exists, false is returned": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 1
 			manager.CurrentIssueIndex = 0
 			manager.CurrentSuggestionIndex = 0
@@ -339,7 +358,7 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedSuggestionIndex:   0,
 	},
 	"When on the third file, on the first suggestion, and no prior suggestion exists, false is returned": {
-		setup: func(manager *sm.SuggestionManager) {
+		setup: func(manager *SuggestionManager) {
 			manager.CurrentFileIndex = 2
 			manager.CurrentIssueIndex = 0
 			manager.CurrentSuggestionIndex = 0
@@ -350,8 +369,8 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedSuggestionIndex:   0,
 	},
 	"When on the first file and there are multiple suggestions prior to the current one, moving to the prior suggestion only moves back one suggestion": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{Original: "one"},
 				{Original: "two"},
 				{Original: "three"},
@@ -366,18 +385,18 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedCurrentFileIndex:  0,
 		expectedCurrentIssueIndex: 0,
 		expectedSuggestionIndex:   1,
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original: "two",
 		},
 	},
 	"When on the second file, and the first file has multiple suggestions for multiple issues, moving to the previous suggestion moves to the prior suggestion and its corresponding suggestion and not any prior suggestions": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{Original: "one"},
 				{Original: "two"},
 			}
 
-			manager.FileSuggestionData[0].Suggestions[1] = []sm.SuggestionState{
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
 				{Original: "three"},
 			}
 
@@ -391,18 +410,18 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedSuggestionIndex:   0,
 		expectedFileName:          "file1.html",
 		expectedSuggestionName:    "Issue 2",
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original: "three",
 		},
 	},
 	"When on third file, on the first suggestion and the second file has no suggestions, but the first does, moving to the prior suggestion moves to the last suggestion in first file": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{Original: "one"},
 				{Original: "two"},
 			}
 
-			manager.FileSuggestionData[0].Suggestions[1] = []sm.SuggestionState{
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
 				{Original: "three"},
 			}
 
@@ -416,26 +435,26 @@ var moveToPreviousSuggestionTestCases = map[string]moveToPreviousSuggestionTestC
 		expectedSuggestionIndex:   0,
 		expectedFileName:          "file1.html",
 		expectedSuggestionName:    "Issue 2",
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original: "three",
 		},
 	},
 }
 
 type moveToNextSuggestionTestCase struct {
-	setup func(*sm.SuggestionManager)
+	setup func(*SuggestionManager)
 
 	expectedFound             bool
 	expectedCurrentFileIndex  int
 	expectedCurrentIssueIndex int
 	expectedSuggestionIndex   int
-	expectedSuggestionState   *sm.SuggestionState
+	expectedSuggestionState   *SuggestionState
 }
 
 var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
 	"When on the last suggestion for the issue, moving forward returns false": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{Original: "one"},
 				{Original: "two"},
 			}
@@ -449,13 +468,13 @@ var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
 		expectedCurrentFileIndex:  0,
 		expectedCurrentIssueIndex: 0,
 		expectedSuggestionIndex:   1,
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original: "two",
 		},
 	},
 	"When on the first suggestion and there are multiple next suggestions, moving forward only moves forward a single suggestion": {
-		setup: func(manager *sm.SuggestionManager) {
-			manager.FileSuggestionData[0].Suggestions[0] = []sm.SuggestionState{
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
 				{Original: "one"},
 				{Original: "two"},
 				{Original: "three"},
@@ -470,7 +489,7 @@ var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
 		expectedCurrentFileIndex:  0,
 		expectedCurrentIssueIndex: 0,
 		expectedSuggestionIndex:   1,
-		expectedSuggestionState: &sm.SuggestionState{
+		expectedSuggestionState: &SuggestionState{
 			Original: "two",
 		},
 	},
@@ -479,6 +498,54 @@ var moveToNextSuggestionTestCases = map[string]moveToNextSuggestionTestCase{
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
+	t.Run("NewSuggestionManager", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range newSuggestionManagerTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := NewSuggestionManager(
+					tc.suggestions,
+					tc.filePathsToText,
+					tc.runAll,
+					tc.skipCss,
+					tc.logFile,
+				)
+
+				// File initialization
+				require.Len(t, manager.FileSuggestionData, len(tc.expectedFileNames))
+
+				for i := range tc.expectedFileNames {
+					assert.Equal(t, tc.expectedFileNames[i], manager.FileSuggestionData[i].Name)
+					assert.Equal(t, tc.expectedFileTexts[i], manager.FileSuggestionData[i].Text)
+
+					require.Len(t, manager.FileSuggestionData[i].Suggestions, tc.expectedSuggestionLength)
+
+					for _, suggestions := range manager.FileSuggestionData[i].Suggestions {
+						assert.Empty(t, suggestions)
+					}
+				}
+
+				// Initial state
+				assert.Equal(t, tc.expectedCurrentFileIndex, manager.CurrentFileIndex)
+				assert.Equal(t, tc.expectedCurrentIssueIndex, manager.CurrentIssueIndex)
+				assert.Equal(t, tc.expectedCurrentSuggestionIndex, manager.CurrentSuggestionIndex)
+
+				assert.Nil(t, manager.CurrentSuggestion)
+				assert.Nil(t, manager.CurrentSuggestionState)
+				assert.Empty(t, manager.CurrentFileName)
+				assert.Empty(t, manager.CurrentSuggestionName)
+
+				// Constructor parameters
+				assert.Equal(t, tc.suggestions, manager.Suggestions)
+				assert.Equal(t, tc.expectedRunAll, manager.runAll)
+				assert.Equal(t, tc.expectedSkipCss, manager.skipCss)
+				assert.Equal(t, tc.logFile, manager.logFile)
+			})
+		}
+	})
+
 	t.Run("SetupForNextSuggestions", func(t *testing.T) {
 		t.Parallel()
 
@@ -486,7 +553,7 @@ func TestSuggestionManager(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
-				manager := sm.NewSuggestionManager(createPotentiallyFixableIssues(t, "----"), tc.filePathsToText, tc.runAll, tc.skipCss, nil)
+				manager := NewSuggestionManager(createPotentiallyFixableIssues(t, "----"), tc.filePathsToText, tc.runAll, tc.skipCss, nil)
 
 				foundSuggestion, err := manager.SetupForNextSuggestions()
 
@@ -588,15 +655,76 @@ func TestSuggestionManager(t *testing.T) {
 	})
 }
 
-func newManagerForNextSuggestionTests() *sm.SuggestionManager {
-	return &sm.SuggestionManager{
+// Helpers
+
+func createPotentiallyFixableIssues(t *testing.T, contextBreak string) []potentiallyfixableissue.PotentiallyFixableIssue {
+	t.Helper()
+
+	return []potentiallyfixableissue.PotentiallyFixableIssue{
+		{
+			Name:           "Potential Conversation Instances",
+			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketConversationInstances,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name:           "Potential Necessary Word Omission Instances",
+			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketNecessaryWords,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name:           "Potential Broken Lines",
+			GetSuggestions: potentiallyfixableissue.GetPotentiallyBrokenLines,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name:           "Potential Incorrect Single Quotes",
+			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectSingleQuotes,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name: "Potential Section Breaks",
+			// wrapper here allows calling the get potential section breaks logic without needing to change the function definition
+			GetSuggestions: func(text string) (map[string]string, error) {
+				return potentiallyfixableissue.GetPotentialSectionBreaks(text, contextBreak)
+			},
+			IsEnabled:                   pointerToBool(false),
+			UpdateAllInstances:          true,
+			AddCssSectionBreakIfMissing: true,
+		},
+		{
+			Name:                     "Potential Page Breaks",
+			GetSuggestions:           potentiallyfixableissue.GetPotentialPageBreaks,
+			IsEnabled:                pointerToBool(false),
+			UpdateAllInstances:       true,
+			AddCssPageBreakIfMissing: true,
+		},
+		{
+			Name:           "Potential Missing Oxford Commas",
+			GetSuggestions: potentiallyfixableissue.GetPotentialMissingOxfordCommas,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name:           "Potentially Lacking Subordinate Clause Instances",
+			GetSuggestions: potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances,
+			IsEnabled:      pointerToBool(false),
+		},
+		{
+			Name:           "Potential Thought Instances",
+			GetSuggestions: potentiallyfixableissue.GetPotentialThoughtInstances,
+			IsEnabled:      pointerToBool(false),
+		},
+	}
+}
+
+func newManagerForNextSuggestionTests() *SuggestionManager {
+	return &SuggestionManager{
 		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
 			{Name: "Issue 1"},
 		},
-		FileSuggestionData: []sm.FileSuggestionInfo{
+		FileSuggestionData: []FileSuggestionInfo{
 			{
 				Name: "file1.html",
-				Suggestions: [][]sm.SuggestionState{
+				Suggestions: [][]SuggestionState{
 					nil,
 				},
 			},
@@ -604,47 +732,47 @@ func newManagerForNextSuggestionTests() *sm.SuggestionManager {
 	}
 }
 
-func newManagerForPreviousSuggestionTests() *sm.SuggestionManager {
-	return &sm.SuggestionManager{
+func newManagerForPreviousSuggestionTests() *SuggestionManager {
+	return &SuggestionManager{
 		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
 			{Name: "Issue 1"},
 			{Name: "Issue 2"},
 		},
-		FileSuggestionData: []sm.FileSuggestionInfo{
+		FileSuggestionData: []FileSuggestionInfo{
 			{
 				Name:        "file1.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 			{
 				Name:        "file2.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 			{
 				Name:        "file3.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 		},
 	}
 }
 
-func newManagerForPreviousFileTests() *sm.SuggestionManager {
-	return &sm.SuggestionManager{
+func newManagerForPreviousFileTests() *SuggestionManager {
+	return &SuggestionManager{
 		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
 			{Name: "Issue 1"},
 			{Name: "Issue 2"},
 		},
-		FileSuggestionData: []sm.FileSuggestionInfo{
+		FileSuggestionData: []FileSuggestionInfo{
 			{
 				Name:        "file1.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 			{
 				Name:        "file2.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 			{
 				Name:        "file3.html",
-				Suggestions: make([][]sm.SuggestionState, 2),
+				Suggestions: make([][]SuggestionState, 2),
 			},
 		},
 	}
