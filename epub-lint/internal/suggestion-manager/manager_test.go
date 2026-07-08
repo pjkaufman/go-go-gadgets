@@ -1500,49 +1500,19 @@ func newManagerForAcceptSuggestionTests() *SuggestionManager {
 }
 
 func newManagerForPreviousSuggestionTests() *SuggestionManager {
-	return createStandardTestManager(2)
+	return createStandardTestManager(2, 3)
 }
 
 func newManagerForPreviousIssueTests() *SuggestionManager {
-	return createStandardTestManager(3)
+	return createStandardTestManager(3, 3)
 }
 
 func newManagerForNextSuggestionTests() *SuggestionManager {
-	return &SuggestionManager{
-		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
-			{Name: "Issue 1"},
-		},
-		FileSuggestionData: []FileSuggestionInfo{
-			{
-				Name: "file1.html",
-				Suggestions: [][]SuggestionState{
-					nil,
-				},
-			},
-		},
-	}
+	return createStandardTestManager(1, 3)
 }
 
 func newManagerForNextIssueTests() *SuggestionManager {
-	manager := createStandardTestManager(3)
-	manager.FileSuggestionData = []FileSuggestionInfo{
-		{
-			Name: "file1.html",
-			Suggestions: [][]SuggestionState{
-				{},
-				{},
-				{},
-			},
-		},
-		{
-			Name: "file2.html",
-			Suggestions: [][]SuggestionState{
-				{},
-				{},
-				{},
-			},
-		},
-	}
+	manager := createStandardTestManager(3, 2)
 	manager.runAll = true
 	return manager
 }
@@ -1573,36 +1543,29 @@ func newManagerForUpdateCurrentSuggestionValueTests() *SuggestionManager {
 }
 
 func newManagerForNextFileTests() *SuggestionManager {
-	manager := createStandardTestManager(3)
+	manager := createStandardTestManager(3, 3)
 	manager.runAll = true
 	return manager
 }
 
 func newManagerForPreviousFileTests() *SuggestionManager {
-	return createStandardTestManager(2)
+	return createStandardTestManager(2, 3)
 }
 
-// createStandardTestManager creates a manager with the given number of issues
+// createStandardTestManager creates a manager with the given number of issues and given number of files
 // and 3 files (file1.html, file2.html, file3.html)
-func createStandardTestManager(numIssues int) *SuggestionManager {
+func createStandardTestManager(numIssues, numFiles int) *SuggestionManager {
 	suggestions := make([]potentiallyfixableissue.PotentiallyFixableIssue, numIssues)
 	for i := range numIssues {
 		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + fmt.Sprint(i+1), GetSuggestions: func(s string) (map[string]string, error) { return map[string]string{}, nil }}
 	}
 
-	files := []FileSuggestionInfo{
-		{
-			Name:        "file1.html",
+	files := make([]FileSuggestionInfo, numFiles)
+	for i := range numFiles {
+		files[i] = FileSuggestionInfo{
+			Name:        fmt.Sprintf("file%d.html", i+1),
 			Suggestions: make([][]SuggestionState, numIssues),
-		},
-		{
-			Name:        "file2.html",
-			Suggestions: make([][]SuggestionState, numIssues),
-		},
-		{
-			Name:        "file3.html",
-			Suggestions: make([][]SuggestionState, numIssues),
-		},
+		}
 	}
 
 	return &SuggestionManager{
