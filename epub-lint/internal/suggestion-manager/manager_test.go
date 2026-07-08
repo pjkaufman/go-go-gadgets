@@ -1171,6 +1171,54 @@ var moveToNextFileTestCases = map[string]moveToNextFileTestCase{
 	},
 }
 
+type updateCurrentSuggestionValueTestCase struct {
+	setup func(*SuggestionManager)
+
+	newValue string
+
+	expectedError error
+
+	expectedCurrentSuggestion string
+	expectedOtherSuggestion   string
+}
+
+var updateCurrentSuggestionValueTestCases = map[string]updateCurrentSuggestionValueTestCase{
+	"When there is no current suggestion, ErrNoCurrentSuggestion is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState = nil
+		},
+		newValue:      "new value",
+		expectedError: ErrNoCurrentSuggestion,
+	},
+	"When there is a current suggestion, the suggestion value is updated": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState =
+				&manager.FileSuggestionData[0].Suggestions[0][0]
+		},
+		newValue:                  "updated value",
+		expectedCurrentSuggestion: "updated value",
+		expectedOtherSuggestion:   "other-current",
+	},
+	"When updating one suggestion, other suggestions are unchanged": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState =
+				&manager.FileSuggestionData[0].Suggestions[0][0]
+		},
+		newValue:                  "new first suggestion",
+		expectedCurrentSuggestion: "new first suggestion",
+		expectedOtherSuggestion:   "other-current",
+	},
+	"When the current suggestion value is updated multiple times, the latest value is used": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentSuggestionState =
+				&manager.FileSuggestionData[0].Suggestions[0][0]
+		},
+		newValue:                  "final value",
+		expectedCurrentSuggestion: "final value",
+		expectedOtherSuggestion:   "other-current",
+	},
+}
+
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -1458,6 +1506,32 @@ func TestSuggestionManager(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("UpdateCurrentSuggestionValue", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range updateCurrentSuggestionValueTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := newManagerForUpdateCurrentSuggestionValueTests()
+
+				tc.setup(manager)
+
+				err := manager.UpdateCurrentSuggestionValue(tc.newValue)
+
+				if tc.expectedError != nil {
+					require.ErrorIs(t, err, tc.expectedError)
+					return
+				}
+
+				require.NoError(t, err)
+				assert.Equal(t, tc.expectedCurrentSuggestion, manager.CurrentSuggestionState.CurrentSuggestion)
+
+				assert.Equal(t, tc.expectedOtherSuggestion, manager.FileSuggestionData[0].Suggestions[0][1].CurrentSuggestion)
+			})
+		}
+	})
 }
 
 // Helpers
@@ -1587,6 +1661,31 @@ func newManagerForNextIssueTests() *SuggestionManager {
 			},
 		},
 		runAll: true,
+	}
+}
+
+func newManagerForUpdateCurrentSuggestionValueTests() *SuggestionManager {
+	return &SuggestionManager{
+		FileSuggestionData: []FileSuggestionInfo{
+			{
+				Name: "file1.html",
+				Suggestions: [][]SuggestionState{
+					{
+						{
+							Original:          "original",
+							CurrentSuggestion: "current",
+						},
+						{
+							Original:          "other-original",
+							CurrentSuggestion: "other-current",
+						},
+					},
+				},
+			},
+		},
+		CurrentFileIndex:       0,
+		CurrentIssueIndex:      0,
+		CurrentSuggestionIndex: 0,
 	}
 }
 
