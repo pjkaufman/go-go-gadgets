@@ -571,6 +571,293 @@ var acceptSuggestionTestCases = map[string]acceptSuggestionTestCase{
 	},
 }
 
+type moveToPreviousIssueTestCase struct {
+	setup func(*SuggestionManager)
+
+	expectedFound             bool
+	expectedCurrentFileIndex  int
+	expectedCurrentIssueIndex int
+	expectedSuggestionIndex   int
+	expectedFileName          string
+	expectedSuggestionName    string
+	expectedSuggestionState   *SuggestionState
+}
+
+func newManagerForPreviousIssueTests() *SuggestionManager {
+	return &SuggestionManager{
+		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1"},
+			{Name: "Issue 2"},
+			{Name: "Issue 3"},
+		},
+		FileSuggestionData: []FileSuggestionInfo{
+			{
+				Name: "file1.html",
+				Suggestions: [][]SuggestionState{
+					nil,
+					nil,
+					nil,
+				},
+			},
+			{
+				Name: "file2.html",
+				Suggestions: [][]SuggestionState{
+					nil,
+					nil,
+					nil,
+				},
+			},
+			{
+				Name: "file3.html",
+				Suggestions: [][]SuggestionState{
+					nil,
+					nil,
+					nil,
+				},
+			},
+		},
+	}
+}
+
+var moveToPreviousIssueTestCases = map[string]moveToPreviousIssueTestCase{
+	"When on the first file and first issue, no previous issue exists, false is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             false,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+	},
+	"When on the first file and second issue, moving back goes to the previous issue": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "issue1",
+				},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
+				{
+					Original: "issue2",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 1
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue1",
+		},
+	},
+	"When the immediate previous issue has no suggestions, moving back skips to the previous issue with suggestions": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "issue1",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 2
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue1",
+		},
+	},
+	"When multiple previous issues have suggestions, only the closest previous issue is selected": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "issue1",
+				},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
+				{
+					Original: "issue2",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 2
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 1,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 2",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue2",
+		},
+	},
+	"When on the first issue of a file, moving back goes to the previous file's issue with suggestions": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{
+					Original: "previous-file",
+				},
+			}
+
+			manager.CurrentFileIndex = 1
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 2,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 3",
+		expectedSuggestionState: &SuggestionState{
+			Original: "previous-file",
+		},
+	},
+	"When previous file has empty issues after its last suggestion issue, empty issues are skipped": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "issue1",
+				},
+			}
+
+			manager.CurrentFileIndex = 1
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue1",
+		},
+	},
+	"When previous file has no suggestions, searching continues to earlier files": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "file1",
+				},
+			}
+
+			manager.CurrentFileIndex = 2
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "file1",
+		},
+	},
+	"When multiple previous files have suggestions, only the closest previous file is selected": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "file1",
+				},
+			}
+
+			manager.FileSuggestionData[1].Suggestions[0] = []SuggestionState{
+				{
+					Original: "file2",
+				},
+			}
+
+			manager.CurrentFileIndex = 2
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  1,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file2.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "file2",
+		},
+	},
+	"When the previous file has multiple issues, the last issue with suggestions is selected": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "issue1",
+				},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{
+					Original: "issue3",
+				},
+			}
+
+			manager.CurrentFileIndex = 1
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 2,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 3",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue3",
+		},
+	},
+	"When the selected issue has multiple suggestions, the first suggestion is selected": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "first",
+				},
+				{
+					Original: "second",
+				},
+			}
+
+			manager.CurrentFileIndex = 1
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "first",
+		},
+	},
+}
+
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -654,6 +941,36 @@ func TestSuggestionManager(t *testing.T) {
 				tc.setup(manager)
 
 				found := manager.MoveToPreviousSuggestion()
+
+				assert.Equal(t, tc.expectedFound, found)
+				assert.Equal(t, tc.expectedCurrentFileIndex, manager.CurrentFileIndex)
+				assert.Equal(t, tc.expectedCurrentIssueIndex, manager.CurrentIssueIndex)
+				assert.Equal(t, tc.expectedSuggestionIndex, manager.CurrentSuggestionIndex)
+				assert.Equal(t, tc.expectedFileName, manager.CurrentFileName)
+				assert.Equal(t, tc.expectedSuggestionName, manager.CurrentSuggestionName)
+
+				if tc.expectedSuggestionState == nil {
+					assert.Nil(t, manager.CurrentSuggestionState)
+				} else {
+					require.NotNil(t, manager.CurrentSuggestionState)
+					assert.Equal(t, *tc.expectedSuggestionState, *manager.CurrentSuggestionState)
+				}
+			})
+		}
+	})
+
+	t.Run("MoveToPreviousIssue", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range moveToPreviousIssueTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := newManagerForPreviousIssueTests()
+
+				tc.setup(manager)
+
+				found := manager.MoveToPreviousIssue()
 
 				assert.Equal(t, tc.expectedFound, found)
 				assert.Equal(t, tc.expectedCurrentFileIndex, manager.CurrentFileIndex)
