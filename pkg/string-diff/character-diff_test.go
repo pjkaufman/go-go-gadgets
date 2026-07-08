@@ -11,49 +11,49 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type CharacterDiffTestCase struct {
-	InputOriginal  string
-	InputNew       string
-	ExpectedOutput string
+type characterDiffTestCase struct {
+	inputOriginal  string
+	inputNew       string
+	expectedOutput string
 }
 
-var CharacterDiffTestCases = map[string]CharacterDiffTestCase{
+var characterDiffTestCases = map[string]characterDiffTestCase{
 	"simple character replace should have the expected output": {
-		InputOriginal:  `<p class="calibre1">In addition to Tatsuya's group, Erika and Shizuku also came to visit Honoka. </p>`,
-		InputNew:       `<p class="calibre1">In addition to Tatsuya's group, Erika, and Shizuku also came to visit Honoka. </p>`,
-		ExpectedOutput: `<p class="calibre1">In addition to Tatsuya's group, Erika, and Shizuku also came to visit Honoka. </p>`,
+		inputOriginal:  `<p class="calibre1">In addition to Tatsuya's group, Erika and Shizuku also came to visit Honoka. </p>`,
+		inputNew:       `<p class="calibre1">In addition to Tatsuya's group, Erika, and Shizuku also came to visit Honoka. </p>`,
+		expectedOutput: `<p class="calibre1">In addition to Tatsuya's group, Erika, and Shizuku also came to visit Honoka. </p>`,
 	},
 	"a simple removal should result in the expected output": {
-		InputOriginal:  `<p class="calibre1">Having put the cup in the dishwasher (there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached), Tatsuya went to his room while walking past the living room. </p>`,
-		InputNew:       `<p class="calibre1">Having put the cup in the dishwasher <i>there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached</i>, Tatsuya went to his room while walking past the living room. </p>`,
-		ExpectedOutput: `<p class="calibre1">Having put the cup in the dishwasher (<i>there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached)</i>, Tatsuya went to his room while walking past the living room. </p>`,
+		inputOriginal:  `<p class="calibre1">Having put the cup in the dishwasher (there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached), Tatsuya went to his room while walking past the living room. </p>`,
+		inputNew:       `<p class="calibre1">Having put the cup in the dishwasher <i>there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached</i>, Tatsuya went to his room while walking past the living room. </p>`,
+		expectedOutput: `<p class="calibre1">Having put the cup in the dishwasher (<i>there was no need to press a button, since the <a id="p8"></a>sink started automatically when a sufficient amount of dirty dishes was reached)</i>, Tatsuya went to his room while walking past the living room. </p>`,
 	},
 	"… being in the string should get displayed correctly": {
-		InputOriginal:  `<p class="calibre1">Original… was here </p>`,
-		InputNew:       `<p class="calibre1">Original… was here. </p>`,
-		ExpectedOutput: `<p class="calibre1">Original… was here. </p>`,
+		inputOriginal:  `<p class="calibre1">Original… was here </p>`,
+		inputNew:       `<p class="calibre1">Original… was here. </p>`,
+		expectedOutput: `<p class="calibre1">Original… was here. </p>`,
 	},
 	"– being in the string should get displayed correctly": {
-		InputOriginal:  `<p class="calibre1">Original– was here </p>`,
-		InputNew:       `<p class="calibre1">Original– was here. </p>`,
-		ExpectedOutput: `<p class="calibre1">Original– was here. </p>`,
+		inputOriginal:  `<p class="calibre1">Original– was here </p>`,
+		inputNew:       `<p class="calibre1">Original– was here. </p>`,
+		expectedOutput: `<p class="calibre1">Original– was here. </p>`,
 	},
 	"◇ being in the string should get displayed correctly": {
-		InputOriginal:  `<p class="calibre1">◇◇◇</p>`,
-		InputNew:       `<p class="calibre1">◇◇◇ </p>`,
-		ExpectedOutput: `<p class="calibre1">◇◇◇ </p>`,
+		inputOriginal:  `<p class="calibre1">◇◇◇</p>`,
+		inputNew:       `<p class="calibre1">◇◇◇ </p>`,
+		expectedOutput: `<p class="calibre1">◇◇◇ </p>`,
 	},
 }
 
 func TestCharacterDiff(t *testing.T) {
 	t.Parallel()
 
-	for name, args := range CharacterDiffTestCases {
+	for name, args := range characterDiffTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			actual, err := stringdiff.GetPrettyDiffString(args.InputOriginal, args.InputNew)
+			actual, err := stringdiff.GetPrettyDiffString(args.inputOriginal, args.inputNew)
 			require.NoError(t, err)
-			assert.Equal(t, args.ExpectedOutput, ansi.Strip(actual))
+			assert.Equal(t, args.expectedOutput, ansi.Strip(actual))
 		})
 	}
 }

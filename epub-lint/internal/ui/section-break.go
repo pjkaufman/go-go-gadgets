@@ -44,14 +44,16 @@ func (m *FixableIssuesModel) handleSectionBreakMsgs(msg tea.Msg) tea.Cmd {
 			if *m.sectionBreakInfo.contextBreak != "" {
 				m.currentStage = suggestionsProcessing
 
-				cmd, err := m.setupForNextSuggestions()
+				cmd, err := m.handleForwardSuggestionUpdate(m.PotentiallyFixableIssuesInfo.SuggestionManager.SetupForNextSuggestions)
 				if err != nil {
 					m.Err = err
 
 					return tea.Quit
 				}
 
-				m.recalculateElementSizes(true)
+				if m.Err == nil {
+					m.recalculateElementSizes(true)
+				}
 
 				cmds = append(cmds, cmd)
 			}

@@ -5,7 +5,6 @@ import (
 	"unicode"
 
 	"charm.land/lipgloss/v2"
-	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
 // icons
@@ -24,10 +23,6 @@ func fillLine(currentValue string, width int) string {
 	}
 
 	return currentValue + strings.Repeat(" ", amountToFill)
-}
-
-func getStringDiff(original, updated string) (string, error) {
-	return stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(updated, "\n"))
 }
 
 // textarea gets rid of tabs when creating changes, so in order to preserve tabs in the starting whitespace of a line

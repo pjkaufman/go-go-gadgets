@@ -8,9 +8,9 @@ import (
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
+	suggestionmanager "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/suggestion-manager"
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
-	stringdiff "github.com/pjkaufman/go-go-gadgets/pkg/string-diff"
 )
 
 const cliLineSeparator = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -25,6 +25,7 @@ type CliFixer struct {
 	contextBreak                                *string
 	runAll, skipCss, runSectionBreak            bool
 	addCssSectionIfMissing, addCssPageIfMissing bool
+	suggestionManager                           *suggestionmanager.SuggestionManager
 }
 
 func (c *CliFixer) InitialLog() string {
@@ -75,62 +76,61 @@ func (c *CliFixer) Setup() error {
 		**/
 	}
 
-	return nil
-}
-
-func (c *CliFixer) Run() error {
-	var saveAndQuit = false
+	var filePathToText = make(map[string]string, len(c.epubInfo.HtmlFiles))
+	// Collect file contents
 	for file := range c.epubInfo.HtmlFiles {
-		if saveAndQuit {
-			break
-		}
-
 		var filePath = getFilePath(c.opfFolder, file)
 		fileText, err := c.getFile(filePath)
 		if err != nil {
 			return err
 		}
 
-		var newText = linter.CleanupHtmlSpacing(fileText)
+		filePathToText[filePath] = linter.CleanupHtmlSpacing(fileText)
+	}
 
-		for _, potentiallyFixableIssue := range c.potentiallyFixableIssues {
-			if saveAndQuit {
-				break
-			}
+	c.suggestionManager = suggestionmanager.NewSuggestionManager(c.potentiallyFixableIssues, filePathToText, c.runAll, c.skipCss, nil)
 
-			if c.skipCss && (potentiallyFixableIssue.AddCssPageBreakIfMissing || potentiallyFixableIssue.AddCssSectionBreakIfMissing) {
-				continue
-			}
+	return nil
+}
 
-			if potentiallyFixableIssue.IsEnabled == nil {
-				return fmt.Errorf("%q is not properly setup to run as a potentially fixable rule since it has no boolean for isEnabled", potentiallyFixableIssue.Name)
-			}
+func (c *CliFixer) Run() error {
+	var saveAndQuit = false
 
-			if c.runAll || *potentiallyFixableIssue.IsEnabled {
-				suggestions, err := potentiallyFixableIssue.GetSuggestions(newText)
-				if err != nil {
-					return err
-				}
+	foundSuggestion, err := c.suggestionManager.SetupForNextSuggestions()
+	if err != nil {
+		return err
+	}
 
-				var updateMade bool
-				newText, updateMade, saveAndQuit = promptAboutSuggestions(potentiallyFixableIssue.Name, suggestions, newText, potentiallyFixableIssue.UpdateAllInstances)
-
-				if potentiallyFixableIssue.AddCssSectionBreakIfMissing && updateMade {
-					c.addCssSectionIfMissing = c.addCssSectionIfMissing || updateMade
-				}
-
-				if potentiallyFixableIssue.AddCssPageBreakIfMissing && updateMade {
-					c.addCssPageIfMissing = c.addCssPageIfMissing || updateMade
-				}
-			}
+	for foundSuggestion {
+		if saveAndQuit {
+			break
 		}
 
-		err = c.writeFile(filePath, newText)
+		var updateMade bool
+		updateMade, saveAndQuit = promptAboutSuggestions(c.suggestionManager)
+
+		if c.suggestionManager.CurrentSuggestion.AddCssSectionBreakIfMissing && updateMade {
+			c.addCssSectionIfMissing = c.addCssSectionIfMissing || updateMade
+		}
+
+		if c.suggestionManager.CurrentSuggestion.AddCssPageBreakIfMissing && updateMade {
+			c.addCssPageIfMissing = c.addCssPageIfMissing || updateMade
+		}
+
+		foundSuggestion, err = c.suggestionManager.SetupForNextSuggestions()
+		if err != nil {
+			return err
+		}
+	}
+
+	c.handledFiles = make([]string, len(c.suggestionManager.FileSuggestionData))
+	for _, fileData := range c.suggestionManager.FileSuggestionData {
+		err = c.writeFile(fileData.Name, fileData.Text)
 		if err != nil {
 			return err
 		}
 
-		c.handledFiles = append(c.handledFiles, filePath)
+		c.handledFiles = append(c.handledFiles, fileData.Name)
 	}
 
 	return nil
@@ -156,46 +156,44 @@ func (c *CliFixer) HandleCss() ([]string, error) {
 	return updateCssFile(c.addCssSectionIfMissing, c.addCssPageIfMissing, filehandler.JoinPath(c.opfFolder, c.cssFiles[selectedCssFileIndex]), *c.contextBreak, c.handledFiles, c.getFile, c.writeFile)
 }
 
-func promptAboutSuggestions(suggestionsTitle string, suggestions map[string]string, fileText string, replaceAllInstances bool) (string, bool, bool) {
+func promptAboutSuggestions(suggestionManager *suggestionmanager.SuggestionManager) (bool, bool) {
 	var valueReplaced = false
-	var newText = fileText
 
-	if len(suggestions) == 0 {
-		return newText, valueReplaced, false
-	}
-
-	// replace count was added to make sure that if we have a case where the original and suggested value
-	// may exist more than once in a file we want to go ahead and replace all instances of the original
-	// with the suggested
-	var replaceCount = 1
-	if replaceAllInstances {
-		replaceCount = -1
+	if suggestionManager.CurrentSuggestionState == nil {
+		return valueReplaced, false
 	}
 
 	logger.WriteInfo(cliLineSeparator)
-	logger.WriteInfo(suggestionsTitle + ":")
+	logger.WriteInfo(suggestionManager.CurrentSuggestionName + ":")
 	logger.WriteInfo(cliLineSeparator + "\n")
 
-	for original, suggestion := range suggestions {
-		diffString, err := stringdiff.GetPrettyDiffString(strings.TrimLeft(original, "\n"), strings.TrimLeft(suggestion, "\n"))
+	var hasSuggestion = true
+	for hasSuggestion {
+		err := suggestionManager.CurrentSuggestionState.GetStringDiffAsDisplay()
 		if err != nil {
 			logger.WriteFatal(err.Error())
 		}
 
 		//nolint:gocritic // Warning: do not use %q on the following line as it will get rid of the color coding of changes in the terminal
-		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", diffString))
+		resp := logger.GetInputString(fmt.Sprintf("Would you like to make the following update \"%s\"? (Y/N/Q): ", suggestionManager.CurrentSuggestionState.Display))
 		switch strings.ToLower(resp) {
 		case "y":
-			newText = strings.Replace(newText, original, suggestion, replaceCount)
+			err = suggestionManager.AcceptSuggestion()
+			if err != nil {
+				logger.WriteFatal(err.Error())
+			}
+
 			valueReplaced = true
 		case "q":
-			return newText, valueReplaced, true
+			return valueReplaced, true
 		}
 
 		logger.WriteInfo("")
+
+		hasSuggestion = suggestionManager.MoveToNextSuggestion()
 	}
 
-	return newText, valueReplaced, false
+	return valueReplaced, false
 }
 
 // Cleanup is empty for now as there is not really anything to cleanup here

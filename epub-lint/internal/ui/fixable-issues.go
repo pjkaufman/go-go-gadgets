@@ -12,6 +12,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	potentiallyfixableissue "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/potentially-fixable-issue"
+	suggestionmanager "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/suggestion-manager"
 )
 
 var (
@@ -58,22 +59,11 @@ type sectionBreakStageInfo struct {
 }
 
 type PotentiallyFixableStageInfo struct {
-	FileSuggestionData                                                                  []FileSuggestionInfo
-	currentFile, currentSuggestionName                                                  string
-	currentSuggestionIndex, potentialFixableIssueIndex, currentFileIndex                int
-	suggestions                                                                         []potentiallyfixableissue.PotentiallyFixableIssue
-	currentSuggestion                                                                   *potentiallyfixableissue.PotentiallyFixableIssue
+	SuggestionManager                                                                   *suggestionmanager.SuggestionManager
 	CssUpdateRequired, AddCssSectionBreakIfMissing, AddCssPageBreakIfMissing, isEditing bool
-	currentSuggestionState                                                              *SuggestionState
 	suggestionEdit                                                                      textarea.Model
 	suggestionDisplay                                                                   viewport.Model
 	scrollbar                                                                           tea.Model
-}
-
-type FileSuggestionInfo struct {
-	Name        string
-	Text        string
-	Suggestions [][]SuggestionState
 }
 
 type CssSelectionStageInfo struct {
@@ -82,12 +72,7 @@ type CssSelectionStageInfo struct {
 	currentCssIndex int
 }
 
-type SuggestionState struct {
-	isAccepted, originallyHadHalfwidthCircleKatakana         bool
-	original, originalSuggestion, currentSuggestion, display string
-}
-
-func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string) FixableIssuesModel {
+func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFixableIssues []potentiallyfixableissue.PotentiallyFixableIssue, cssFiles []string, logFile io.Writer, contextBreak *string, filePathToText map[string]string) FixableIssuesModel {
 	ti := textinput.New()
 	ti.SetWidth(20)
 	ti.CharLimit = 200
@@ -118,7 +103,7 @@ func NewFixableIssuesModel(runAll, skipCss, runSectionBreak bool, potentiallyFix
 			contextBreak: contextBreak,
 		},
 		PotentiallyFixableIssuesInfo: PotentiallyFixableStageInfo{
-			suggestions:       potentiallyFixableIssues,
+			SuggestionManager: suggestionmanager.NewSuggestionManager(potentiallyFixableIssues, filePathToText, runAll, skipCss, logFile),
 			suggestionEdit:    ta,
 			suggestionDisplay: v,
 			scrollbar:         sb,
@@ -155,7 +140,7 @@ func (m FixableIssuesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	if !m.ready && m.currentStage == suggestionsProcessing {
-		cmd, m.Err = m.setupForNextSuggestions()
+		cmd, m.Err = m.handleForwardSuggestionUpdate(m.PotentiallyFixableIssuesInfo.SuggestionManager.SetupForNextSuggestions)
 		if m.Err == nil {
 			m.recalculateElementSizes(true)
 		}
