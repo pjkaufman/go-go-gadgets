@@ -389,13 +389,3 @@ func (m *FixableIssuesModel) buildSuggestion(displayText string, expectedSuggest
 	text = m.PotentiallyFixableIssuesInfo.SuggestionManager.CurrentSuggestionState.ReplaceBrokenDisplayCharacters(text)
 	return displayStyle.Width(expectedSuggestionWidth).Render(text)
 }
-
-func replaceBrokenDisplayCharacters(text string) (string, bool) {
-	// text with handakuten in them are not having their width calculated correctly, so I will just remove them
-	// and we can display a warning if need bee
-	if strings.Contains(text, "ﾟ") {
-		return strings.ReplaceAll(text, "ﾟ", "°"), true
-	}
-
-	return text, false
-}

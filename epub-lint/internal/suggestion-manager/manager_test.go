@@ -1,11 +1,13 @@
 //go:build unit
 
+//nolint:testpackage // We check unexported properties here, so we need to be in the same package as the regular one
 package suggestionmanager
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 	"testing"
 
 	_ "embed"
@@ -42,7 +44,6 @@ type newSuggestionManagerTestCase struct {
 
 	expectedRunAll  bool
 	expectedSkipCss bool
-	expectedLogFile io.Writer
 }
 
 var newSuggestionManagerTestCases = map[string]newSuggestionManagerTestCase{
@@ -1557,7 +1558,7 @@ func newManagerForPreviousFileTests() *SuggestionManager {
 func createStandardTestManager(numIssues, numFiles int) *SuggestionManager {
 	suggestions := make([]potentiallyfixableissue.PotentiallyFixableIssue, numIssues)
 	for i := range numIssues {
-		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + fmt.Sprint(i+1), GetSuggestions: func(s string) (map[string]string, error) { return map[string]string{}, nil }}
+		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + strconv.Itoa(i+1), GetSuggestions: func(s string) (map[string]string, error) { return map[string]string{}, nil }}
 	}
 
 	files := make([]FileSuggestionInfo, numFiles)

@@ -1,5 +1,6 @@
 //go:build unit
 
+//nolint:testpackage // We check unexported properties here, so we need to be in the same package as the regular one
 package suggestionmanager
 
 import (
@@ -95,8 +96,6 @@ func TestSuggestionState(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range replaceBrokenDisplayCharactersTestCases {
-			tc := tc
-
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
@@ -114,8 +113,6 @@ func TestSuggestionState(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range undoReplaceBrokenDisplayCharactersTestCases {
-			tc := tc
-
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 
