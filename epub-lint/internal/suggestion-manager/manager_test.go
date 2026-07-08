@@ -4,6 +4,7 @@ package suggestionmanager
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -124,6 +125,7 @@ type suggestionManagerSetupForNextSuggestionsTestCase struct {
 	skipCss                   bool
 	expectedCurrentFileName   string
 	expectedCurrentIssueIndex int
+	expectedFileIndex         int
 	expectedFoundSuggestion   bool
 }
 
@@ -151,6 +153,7 @@ var suggestionManagerSetupForNextSuggestionsTestCases = map[string]suggestionMan
 		},
 		runAll:                  false,
 		expectedFoundSuggestion: false,
+		expectedFileIndex:       1,
 		expectedCurrentFileName: "simple.html",
 	},
 	"When the first file has no issue but the second does, then the suggestion from the second file is found": {
@@ -160,6 +163,7 @@ var suggestionManagerSetupForNextSuggestionsTestCases = map[string]suggestionMan
 		},
 		runAll:                    true,
 		expectedCurrentIssueIndex: 1,
+		expectedFileIndex:         1,
 		expectedFoundSuggestion:   true,
 		expectedCurrentFileName:   "simple.html",
 	},
@@ -169,6 +173,7 @@ var suggestionManagerSetupForNextSuggestionsTestCases = map[string]suggestionMan
 		},
 		runAll:                  true,
 		expectedFoundSuggestion: false,
+		expectedFileIndex:       1,
 		expectedCurrentFileName: "empty.html",
 	},
 	"When there are multiple files with no issues, then no suggestions are found": {
@@ -179,6 +184,7 @@ var suggestionManagerSetupForNextSuggestionsTestCases = map[string]suggestionMan
 		},
 		runAll:                  true,
 		expectedFoundSuggestion: false,
+		expectedFileIndex:       3,
 		expectedCurrentFileName: "full.html",
 	},
 }
@@ -1183,32 +1189,6 @@ var updateCurrentSuggestionValueTestCases = map[string]updateCurrentSuggestionVa
 	},
 }
 
-// Assertion helpers
-
-// assertManagerIndices checks the current file, issue, and suggestion indices
-func assertManagerIndices(t *testing.T, manager *SuggestionManager, expectedFileIndex, expectedIssueIndex, expectedSuggestionIndex int) {
-	t.Helper()
-
-	assert.Equal(t, expectedFileIndex, manager.CurrentFileIndex, "current file index mismatch")
-	assert.Equal(t, expectedIssueIndex, manager.CurrentIssueIndex, "current issue index mismatch")
-	assert.Equal(t, expectedSuggestionIndex, manager.CurrentSuggestionIndex, "current suggestion index mismatch")
-}
-
-// assertCurrentSuggestion checks the current file name, suggestion name, and suggestion state
-func assertCurrentSuggestion(t *testing.T, manager *SuggestionManager, expectedFileName, expectedSuggestionName string, expectedState *SuggestionState) {
-	t.Helper()
-
-	assert.Equal(t, expectedFileName, manager.CurrentFileName, "current file name mismatch")
-	assert.Equal(t, expectedSuggestionName, manager.CurrentSuggestionName, "current suggestion name mismatch")
-
-	if expectedState == nil {
-		assert.Nil(t, manager.CurrentSuggestionState, "expected nil suggestion state")
-	} else {
-		require.NotNil(t, manager.CurrentSuggestionState, "expected non-nil suggestion state")
-		assert.Equal(t, *expectedState, *manager.CurrentSuggestionState, "suggestion state mismatch")
-	}
-}
-
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -1271,7 +1251,7 @@ func TestSuggestionManager(t *testing.T) {
 
 				require.NoError(t, err)
 				assert.Equal(t, tc.expectedFoundSuggestion, foundSuggestion)
-				assertManagerIndices(t, manager, 0, tc.expectedCurrentIssueIndex, 0)
+				assertManagerIndices(t, manager, tc.expectedFileIndex, tc.expectedCurrentIssueIndex, 0)
 				assert.Equal(t, tc.expectedCurrentFileName, manager.CurrentFileName)
 			})
 		}
@@ -1470,6 +1450,32 @@ func TestSuggestionManager(t *testing.T) {
 
 // Helpers
 
+// Assertion helpers
+
+// assertManagerIndices checks the current file, issue, and suggestion indices
+func assertManagerIndices(t *testing.T, manager *SuggestionManager, expectedFileIndex, expectedIssueIndex, expectedSuggestionIndex int) {
+	t.Helper()
+
+	assert.Equal(t, expectedFileIndex, manager.CurrentFileIndex, "current file index mismatch")
+	assert.Equal(t, expectedIssueIndex, manager.CurrentIssueIndex, "current issue index mismatch")
+	assert.Equal(t, expectedSuggestionIndex, manager.CurrentSuggestionIndex, "current suggestion index mismatch")
+}
+
+// assertCurrentSuggestion checks the current file name, suggestion name, and suggestion state
+func assertCurrentSuggestion(t *testing.T, manager *SuggestionManager, expectedFileName, expectedSuggestionName string, expectedState *SuggestionState) {
+	t.Helper()
+
+	assert.Equal(t, expectedFileName, manager.CurrentFileName, "current file name mismatch")
+	assert.Equal(t, expectedSuggestionName, manager.CurrentSuggestionName, "current suggestion name mismatch")
+
+	if expectedState == nil {
+		assert.Nil(t, manager.CurrentSuggestionState, "expected nil suggestion state")
+	} else {
+		require.NotNil(t, manager.CurrentSuggestionState, "expected non-nil suggestion state")
+		assert.Equal(t, *expectedState, *manager.CurrentSuggestionState, "suggestion state mismatch")
+	}
+}
+
 // Common test manager factory functions
 func newManagerForAcceptSuggestionTests() *SuggestionManager {
 	return &SuggestionManager{
@@ -1581,7 +1587,7 @@ func newManagerForPreviousFileTests() *SuggestionManager {
 func createStandardTestManager(numIssues int) *SuggestionManager {
 	suggestions := make([]potentiallyfixableissue.PotentiallyFixableIssue, numIssues)
 	for i := range numIssues {
-		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + string(rune(i+1))}
+		suggestions[i] = potentiallyfixableissue.PotentiallyFixableIssue{Name: "Issue " + fmt.Sprint(i+1), GetSuggestions: func(s string) (map[string]string, error) { return map[string]string{}, nil }}
 	}
 
 	files := []FileSuggestionInfo{
