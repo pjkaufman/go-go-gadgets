@@ -858,6 +858,148 @@ var moveToPreviousIssueTestCases = map[string]moveToPreviousIssueTestCase{
 	},
 }
 
+type moveToNextIssueTestCase struct {
+	setup func(*SuggestionManager)
+
+	expectedFound             bool
+	expectedError             error
+	expectedCurrentFileIndex  int
+	expectedCurrentIssueIndex int
+	expectedSuggestionIndex   int
+	expectedFileName          string
+	expectedSuggestionName    string
+	expectedSuggestionState   *SuggestionState
+}
+
+var moveToNextIssueTestCases = map[string]moveToNextIssueTestCase{
+	"When on the last issue and no next issue exists, false is returned": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{Original: "current"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 2
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             false,
+		expectedCurrentFileIndex:  2,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   1, // gets incremented by 1 when move to next index is called
+		expectedFileName:          "file2.html",
+	},
+	"When another issue exists in the same file, moving forward selects the next issue": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{Original: "current"},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
+				{Original: "next"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 1,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 2",
+		expectedSuggestionState: &SuggestionState{
+			Original: "next",
+		},
+	},
+	"When the next issue has no suggestions, moving forward skips it": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{Original: "current"},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{Original: "next"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 2,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 3",
+		expectedSuggestionState: &SuggestionState{
+			Original: "next",
+		},
+	},
+	"When the current file has no more issues, moving forward goes to the next file": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{Original: "current"},
+			}
+
+			manager.FileSuggestionData[1].Suggestions[0] = []SuggestionState{
+				{Original: "next-file"},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 2
+			manager.CurrentSuggestionIndex = 0
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  1,
+		expectedCurrentIssueIndex: 0,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file2.html",
+		expectedSuggestionName:    "Issue 1",
+		expectedSuggestionState: &SuggestionState{
+			Original: "next-file",
+		},
+	},
+	"When multiple future issues have suggestions, moving forward only moves to the first issue with suggestions": {
+		setup: func(manager *SuggestionManager) {
+			manager.FileSuggestionData[0].Suggestions[0] = []SuggestionState{
+				{
+					Original: "current",
+				},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[1] = []SuggestionState{
+				{
+					Original: "issue2-first",
+				},
+				{
+					Original: "issue2-second",
+				},
+			}
+
+			manager.FileSuggestionData[0].Suggestions[2] = []SuggestionState{
+				{
+					Original: "issue3",
+				},
+			}
+
+			manager.CurrentFileIndex = 0
+			manager.CurrentIssueIndex = 0
+			manager.CurrentSuggestionIndex = 0
+			manager.CurrentSuggestionState = &manager.FileSuggestionData[0].Suggestions[0][0]
+		},
+		expectedFound:             true,
+		expectedCurrentFileIndex:  0,
+		expectedCurrentIssueIndex: 1,
+		expectedSuggestionIndex:   0,
+		expectedFileName:          "file1.html",
+		expectedSuggestionName:    "Issue 2",
+		expectedSuggestionState: &SuggestionState{
+			Original: "issue2-first",
+		},
+	},
+}
+
 func TestSuggestionManager(t *testing.T) {
 	t.Parallel()
 
@@ -1047,6 +1189,43 @@ func TestSuggestionManager(t *testing.T) {
 		}
 	})
 
+	t.Run("MoveToNextIssue", func(t *testing.T) {
+		t.Parallel()
+
+		for name, tc := range moveToNextIssueTestCases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+
+				manager := newManagerForNextIssueTests()
+
+				tc.setup(manager)
+
+				found, err := manager.MoveToNextIssue()
+
+				if tc.expectedError != nil {
+					require.ErrorIs(t, err, tc.expectedError)
+					return
+				}
+
+				require.NoError(t, err)
+
+				assert.Equal(t, tc.expectedFound, found)
+				assert.Equal(t, tc.expectedCurrentFileIndex, manager.CurrentFileIndex)
+				assert.Equal(t, tc.expectedCurrentIssueIndex, manager.CurrentIssueIndex)
+				assert.Equal(t, tc.expectedSuggestionIndex, manager.CurrentSuggestionIndex)
+				assert.Equal(t, tc.expectedFileName, manager.CurrentFileName)
+				assert.Equal(t, tc.expectedSuggestionName, manager.CurrentSuggestionName)
+
+				if tc.expectedSuggestionState == nil {
+					assert.Nil(t, manager.CurrentSuggestionState)
+				} else {
+					require.NotNil(t, manager.CurrentSuggestionState)
+					assert.Equal(t, *tc.expectedSuggestionState, *manager.CurrentSuggestionState)
+				}
+			})
+		}
+	})
+
 	t.Run("AcceptSuggestion", func(t *testing.T) {
 		t.Parallel()
 
@@ -1171,6 +1350,35 @@ func newManagerForNextSuggestionTests() *SuggestionManager {
 				},
 			},
 		},
+	}
+}
+
+func newManagerForNextIssueTests() *SuggestionManager {
+	return &SuggestionManager{
+		Suggestions: []potentiallyfixableissue.PotentiallyFixableIssue{
+			{Name: "Issue 1", GetSuggestions: func(s string) (map[string]string, error) { return make(map[string]string), nil }},
+			{Name: "Issue 2", GetSuggestions: func(s string) (map[string]string, error) { return make(map[string]string), nil }},
+			{Name: "Issue 3", GetSuggestions: func(s string) (map[string]string, error) { return make(map[string]string), nil }},
+		},
+		FileSuggestionData: []FileSuggestionInfo{
+			{
+				Name: "file1.html",
+				Suggestions: [][]SuggestionState{
+					{},
+					{},
+					{},
+				},
+			},
+			{
+				Name: "file2.html",
+				Suggestions: [][]SuggestionState{
+					{},
+					{},
+					{},
+				},
+			},
+		},
+		runAll: true,
 	}
 }
 
