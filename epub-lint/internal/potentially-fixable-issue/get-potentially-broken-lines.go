@@ -47,7 +47,9 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 			endOfLineIndex                  = groups[1]
 		)
 		originalString.WriteString(currentLine)
-		suggestedString.WriteString(fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + " ")
+		suggestedString.WriteString(fileContent[groups[2]:groups[3]])
+		suggestedString.WriteString(fileContent[groups[6]:groups[7]])
+		suggestedString.WriteString(" ")
 		for lineIsPotentiallyBroken := true; lineIsPotentiallyBroken; {
 			nextLine = getNextLine(fileContent, endOfLineIndex)
 
@@ -57,7 +59,8 @@ func parseUnendedParagraphs(fileContent string, parsedLines map[string]struct{},
 			var nextLineGroups = unendedParagraphRegex.FindAllStringSubmatchIndex(nextLine, 1)
 			lineIsPotentiallyBroken = len(nextLineGroups) > 0
 			if lineIsPotentiallyBroken {
-				suggestedString.WriteString(nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]] + " ")
+				suggestedString.WriteString(nextLine[nextLineGroups[0][6]:nextLineGroups[0][7]])
+				suggestedString.WriteString(" ")
 				endOfLineIndex += len(nextLine)
 			} else {
 				var _, after, ok = strings.Cut(nextLine, ">")
@@ -106,7 +109,10 @@ func parseUnendedDoubleQuotes(fileContent string, parsedLines map[string]struct{
 
 		var originalString, suggestedString strings.Builder
 		originalString.WriteString(currentLine)
-		suggestedString.WriteString(fileContent[groups[2]:groups[3]] + fileContent[groups[6]:groups[7]] + fileContent[groups[8]:groups[9]] + fileContent[groups[10]:groups[11]])
+		suggestedString.WriteString(fileContent[groups[2]:groups[3]])
+		suggestedString.WriteString(fileContent[groups[6]:groups[7]])
+		suggestedString.WriteString(fileContent[groups[8]:groups[9]])
+		suggestedString.WriteString(fileContent[groups[10]:groups[11]])
 		if !strings.HasSuffix(suggestedString.String(), " ") {
 			suggestedString.WriteRune(' ')
 		}
