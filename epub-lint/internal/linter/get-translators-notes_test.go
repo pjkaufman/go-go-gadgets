@@ -104,7 +104,7 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		},
 		expectedNext: 1,
 	},
-	`a translator's note that is in a regular paragraph and is not enclosed in parentheses or square brackets is considered to span until the end of the next closing element`: {
+	`a translator's note that is in a regular paragraph and is not enclosed in parentheses or square brackets is considered to span until the next tag`: {
 		inputText:      `<p>　Audrey is the legitimate wife of the Prince, in other words, the Princess. TN: it says queen (王妃 'ohi'), but I didn't feel like using it, so changed it to Princess, suggestions are welcomed though. </p>`,
 		fileName:       "main.xhtml",
 		noteFileName:   "notes.xhtml",
