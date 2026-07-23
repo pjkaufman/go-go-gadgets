@@ -15,6 +15,17 @@ import (
 // to lowercase them
 var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tln:", "tl:", "author's note:", "note:", "ed:"}
 
+type trackingReader struct {
+	r   io.Reader
+	pos int
+}
+
+func (r *trackingReader) Read(p []byte) (int, error) {
+	n, err := r.r.Read(p)
+	r.pos += n
+	return n, err
+}
+
 func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int, error) {
 	matches, err := findNotesWithXML(text)
 	if err != nil {
@@ -55,7 +66,12 @@ type noteMatch struct {
 
 func findNotesWithXML(text string) ([]noteMatch, error) {
 	var matches []noteMatch
-	decoder := xml.NewDecoder(strings.NewReader(text))
+
+	reader := &trackingReader{
+		r: strings.NewReader(text),
+	}
+
+	decoder := xml.NewDecoder(reader)
 	decoder.Strict = false
 
 	for {
@@ -69,16 +85,25 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 
 		switch start := token.(type) {
 		case xml.StartElement:
-			// Only care about p, div, span
-			if start.Name.Local != "p" && start.Name.Local != "div" && start.Name.Local != "span" {
+			if start.Name.Local != "p" &&
+				start.Name.Local != "div" &&
+				start.Name.Local != "span" {
 				continue
 			}
 
-			// Get inner content
-			innerContent, textOnlyContent, encounteredPTag := getInnerContent(decoder)
-			// to avoid odd nesting scenarios, only handle the direct parent when possible
-			if encounteredPTag { // may want to revise this as there could be text in the div prior to the p tag, but this may handle things
-				innerContent, textOnlyContent, _ = getInnerContent(decoder)
+			// The opening tag has already been consumed by the XML decoder.
+			// InputOffset points after the token, so use the decoder offset
+			// to determine the element boundary.
+			elementStart := findElementStart(text, int(decoder.InputOffset()))
+			startPos := findElementContentStart(
+				text,
+				elementStart,
+			)
+
+			innerContent, textOnlyContent, endPos, encounteredPTag := getInnerContent(decoder, text)
+
+			if encounteredPTag {
+				innerContent, textOnlyContent, endPos, _ = getInnerContent(decoder, text)
 			}
 
 			indicator, tlNotePos := translatorNoteIndicatorPosInfo(innerContent)
@@ -86,36 +111,36 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 				continue
 			}
 
-			// Find positions in original text
-			var (
-				startPos = strings.Index(text, innerContent)
-				endPos   = startPos + len(innerContent)
-			)
-			if startPos == -1 {
-				return nil, fmt.Errorf("attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.", innerContent)
-			}
-
-			// check to make sure that the character prior to the tl note is not a letter to help filter out false positives for things like ed
 			if tlNotePos != 0 {
 				r, _ := utf8.DecodeLastRuneInString(innerContent[:tlNotePos])
-				if unicode.IsLetter(r) || r == '-' {
+
+				if unicode.IsLetter(r) {
 					continue
 				}
 			}
 
-			matches = append(matches, extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos, startPos, endPos))
+			matches = append(matches, extractNoteContent(
+				indicator,
+				innerContent,
+				strings.TrimSpace(textOnlyContent),
+				tlNotePos,
+				startPos,
+				endPos,
+			))
 		}
 	}
 
 	return matches, nil
 }
 
-func getInnerContent(decoder *xml.Decoder) (string, string, bool) {
+func getInnerContent(decoder *xml.Decoder, text string) (string, string, int, bool) {
 	var (
-		content  strings.Builder
 		textOnly strings.Builder
 		depth    = 1
 	)
+
+	// The decoder is positioned immediately after the opening element.
+	contentStart := int(decoder.InputOffset())
 
 	for depth > 0 {
 		token, err := decoder.Token()
@@ -129,35 +154,28 @@ func getInnerContent(decoder *xml.Decoder) (string, string, bool) {
 		switch t := token.(type) {
 		case xml.StartElement:
 			if t.Name.Local == "p" {
-				return "", "", true
+				return "", "", 0, true
 			}
 
 			depth++
-			// Write the tag back
-			content.WriteString("<")
-			content.WriteString(t.Name.Local)
-			for _, attr := range t.Attr {
-				content.WriteString(" ")
-				content.WriteString(attr.Name.Local)
-				content.WriteString("=\"")
-				content.WriteString(attr.Value)
-				content.WriteString("\"")
-			}
-			content.WriteString(">")
+
 		case xml.EndElement:
 			depth--
-			if depth > 0 {
-				content.WriteString("</")
-				content.WriteString(t.Name.Local)
-				content.WriteString(">")
+
+			if depth == 0 {
+				contentEnd := findElementEnd(text, int(decoder.InputOffset()))
+
+				rawContent := text[contentStart:contentEnd]
+
+				return rawContent, textOnly.String(), contentEnd, false
 			}
+
 		case xml.CharData:
-			content.Write(t)
 			textOnly.Write(t)
 		}
 	}
 
-	return content.String(), textOnly.String(), false
+	return "", textOnly.String(), int(decoder.InputOffset()), false
 }
 
 func translatorNoteIndicatorPosInfo(text string) (string, int) {
@@ -282,4 +300,36 @@ func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator s
 	}
 
 	return match, false
+}
+
+func findElementStart(text string, offset int) int {
+	if offset > len(text) {
+		offset = len(text)
+	}
+
+	for i := offset - 1; i >= 0; i-- {
+		if text[i] == '<' {
+			return i
+		}
+	}
+
+	return offset
+}
+
+func findElementContentStart(text string, elementStart int) int {
+	end := strings.IndexByte(text[elementStart:], '>')
+
+	if end == -1 {
+		return elementStart
+	}
+
+	return elementStart + end + 1
+}
+
+func findElementEnd(text string, offset int) int {
+	if offset > len(text) {
+		offset = len(text)
+	}
+
+	return strings.LastIndex(text[:offset], "</")
 }

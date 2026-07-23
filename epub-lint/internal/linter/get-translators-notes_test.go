@@ -3,7 +3,6 @@
 package linter_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/pjkaufman/go-go-gadgets/epub-lint/internal/linter"
@@ -116,15 +115,27 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		},
 		expectedNext: 1,
 	},
+	// `a translator's note with an html entity in it causes an error`: {
+	// 	inputText:      `<p class="block_16"><span class="text_4">TL Note: This is a pun that I unfortunately couldn&#8216;t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span></p>`,
+	// 	fileName:       "main.xhtml",
+	// 	noteFileName:   "notes.xhtml",
+	// 	startingNumber: 0,
+	// 	expectedText:   "",
+	// 	expectedNotes:  []string{},
+	// 	expectedNext:   0,
+	// 	expectedError:  fmt.Errorf(`file %q had issues determining translator's notes: attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.`, "main.xhtml", `<span class="text_4">TL Note: This is a pun that I unfortunately couldn‘t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span>`),
+	// },
 	`a translator's note with an html entity in it causes an error`: {
 		inputText:      `<p class="block_16"><span class="text_4">TL Note: This is a pun that I unfortunately couldn&#8216;t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span></p>`,
 		fileName:       "main.xhtml",
 		noteFileName:   "notes.xhtml",
 		startingNumber: 0,
-		expectedText:   "",
-		expectedNotes:  []string{},
-		expectedNext:   0,
-		expectedError:  fmt.Errorf(`file %q had issues determining translator's notes: attempting to find translator's note text %q failed. This likely means that the source text has html entities. Please convert them to the corresponding character and then try again.`, "main.xhtml", `<span class="text_4">TL Note: This is a pun that I unfortunately couldn‘t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span>`),
+		expectedText:   `<p class="block_16"><a id="note_ref_1" href="notes.xhtml#tl_note_1"><sup>1</sup></a></p>`,
+		expectedNotes: []string{
+			`<li id="tl_note_1"><span class="text_4">This is a pun that I unfortunately couldn&#8216;t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span><br/><a href="main.xhtml#note_ref_1">Back to Reference</a></li>
+`,
+		},
+		expectedNext: 1,
 	},
 	// TODO: should remove the element and not affect ordering...
 	// `a translator's note with no content should not result in a panic`: {
