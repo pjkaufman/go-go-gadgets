@@ -15,6 +15,13 @@ import (
 // to lowercase them
 var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tln:", "tl:", "author's note:", "note:", "ed:"}
 
+type noteMatch struct {
+	start   int
+	end     int
+	content string
+	isEmpty bool
+}
+
 func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int, error) {
 	matches, err := findNotesWithXML(text)
 	if err != nil {
@@ -25,8 +32,26 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 		return text, []string{}, startingNoteNumber, nil
 	}
 
-	var tlNotes = make([]string, len(matches))
 	slices.Reverse(matches)
+
+	realMatches := matches[:0]
+
+	for _, match := range matches {
+		if match.isEmpty {
+			text = text[:match.start] + text[match.end:]
+			continue
+		}
+
+		realMatches = append(realMatches, match)
+	}
+
+	matches = realMatches
+
+	if len(matches) == 0 {
+		return text, []string{}, startingNoteNumber, nil
+	}
+
+	var tlNotes = make([]string, len(matches))
 
 	startingNoteNumber += len(matches)
 	noteNum := startingNoteNumber
@@ -37,20 +62,14 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 		noteAnchor := fmt.Sprintf(`<a id=%q href="%s#%s"><sup>%d</sup></a>`, refId, noteFileName, noteId, noteNum)
 
 		tlNotes[i] = fmt.Sprintf(`<li id=%q>%s<br/><a href="%s#%s">Back to Reference</a></li>`+"\n",
-			noteId, match.Content, fileName, refId)
+			noteId, match.content, fileName, refId)
 
-		text = text[:match.Start] + noteAnchor + text[match.End:]
+		text = text[:match.start] + noteAnchor + text[match.end:]
 		noteNum--
 	}
 
 	slices.Reverse(tlNotes)
 	return text, tlNotes, startingNoteNumber, nil
-}
-
-type noteMatch struct {
-	Start   int
-	End     int
-	Content string
 }
 
 func findNotesWithXML(text string) ([]noteMatch, error) {
@@ -104,14 +123,20 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 				}
 			}
 
-			matches = append(matches, extractNoteContent(
-				indicator,
-				innerContent,
-				strings.TrimSpace(textOnlyContent),
-				tlNotePos,
-				startPos,
-				endPos,
-			))
+			var (
+				elementEnd = findFullElementEnd(text, endPos)
+				match      = extractNoteContent(
+					indicator,
+					innerContent,
+					strings.TrimSpace(textOnlyContent),
+					tlNotePos,
+					startPos,
+					endPos,
+					elementStart,
+					elementEnd,
+				)
+			)
+			matches = append(matches, match)
 		}
 	}
 
@@ -178,18 +203,23 @@ func translatorNoteIndicatorPosInfo(text string) (string, int) {
 	return "", -1
 }
 
-func extractNoteContent(indicator, innerElContent, textOnlyContent string, indicatorPos, startPos, endPos int) (match noteMatch) {
+func extractNoteContent(indicator, innerElContent, textOnlyContent string, indicatorPos, startPos, endPos, openingElPos, closingElPos int) (match noteMatch) {
 	var (
 		startOfNote     = indicatorPos + len(indicator)
 		startOfTextNote = strings.Index(strings.ToLower(textOnlyContent), indicator)
 	)
 
-	match.Start = startPos
-	match.End = endPos
+	match.start = startPos
+	match.end = endPos
 
 	// If indicator at start, return all
 	if startOfTextNote == 0 {
-		if len(innerElContent) <= startOfNote { // no actual content is present
+		if len(innerElContent) <= startOfNote ||
+			strings.TrimSpace(innerElContent[startOfNote:]) == "" {
+
+			match.start = openingElPos
+			match.end = closingElPos
+			match.isEmpty = true
 			return
 		}
 
@@ -197,7 +227,7 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 			startOfNote++
 		}
 
-		match.Content = strings.TrimSpace(innerElContent[:indicatorPos] + innerElContent[startOfNote:])
+		match.content = strings.TrimSpace(innerElContent[:indicatorPos] + innerElContent[startOfNote:])
 
 		return
 	}
@@ -209,26 +239,32 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	var updated bool
 	match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '(', ')', startPos, startOfNote)
 	if updated {
+		match = normalizeEmptyNote(match, innerElContent, startPos, openingElPos, closingElPos)
+
 		return
 	}
 
 	// Has opening square bracket?
 	match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '[', ']', startPos, startOfNote)
 	if updated {
+		match = normalizeEmptyNote(match, innerElContent, startPos, openingElPos, closingElPos)
+
 		return
 	}
 
-	match.Start += indicatorPos
+	match.start += indicatorPos
 
 	// No paren - until next tag
 	before, _, ok := strings.Cut(afterIndicator, "<")
 	if !ok {
-		match.Content = strings.TrimSpace(afterIndicator)
-
-		return
+		match.content = strings.TrimSpace(afterIndicator)
+	} else {
+		match.content = strings.TrimSpace(before)
 	}
 
-	match.Content = strings.TrimSpace(before)
+	if match.content == "" {
+		match.isEmpty = true
+	}
 
 	return
 }
@@ -249,7 +285,7 @@ func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator s
 
 		if char == openingChar {
 			isInOpeningChar = true
-			match.Start += i
+			match.start += i
 			break
 		}
 
@@ -269,8 +305,8 @@ func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator s
 				closeCount++
 
 				if closeCount >= openCount {
-					match.End = startPos + startOfNote + i + 1
-					match.Content = strings.TrimSpace(afterIndicator[:i])
+					match.end = startPos + startOfNote + i + 1
+					match.content = strings.TrimSpace(afterIndicator[:i])
 
 					return match, true
 				}
@@ -279,12 +315,37 @@ func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator s
 			}
 		}
 
-		match.Content = strings.TrimSpace(afterIndicator)
+		match.content = strings.TrimSpace(afterIndicator)
 
 		return match, true
 	}
 
 	return match, false
+}
+
+// when the content of a note is empty we need to determine if we are removing the whole element because removing
+// the empty translator's note will leave an empty element if it is the entirety of the actual element
+func normalizeEmptyNote(match noteMatch, innerElContent string, startPos, openingElPos, closingElPos int) noteMatch {
+	if strings.TrimSpace(match.content) != "" {
+		return match
+	}
+
+	outside := strings.TrimSpace(
+		stripTags(
+			innerElContent[:match.start-startPos] +
+				innerElContent[match.end-startPos:],
+		),
+	)
+
+	if outside == "" {
+		match.start = openingElPos
+		match.end = closingElPos
+	}
+
+	match.isEmpty = true
+	match.content = ""
+
+	return match
 }
 
 func findElementStart(text string, offset int) int {
@@ -317,4 +378,37 @@ func findElementEnd(text string, offset int) int {
 	}
 
 	return strings.LastIndex(text[:offset], "</")
+}
+
+func findFullElementEnd(text string, offset int) int {
+	if offset > len(text) {
+		offset = len(text)
+	}
+
+	end := strings.Index(text[offset:], ">")
+	if end == -1 {
+		return offset
+	}
+
+	return offset + end + 1
+}
+
+func stripTags(s string) string {
+	var b strings.Builder
+	inTag := false
+
+	for _, r := range s {
+		switch r {
+		case '<':
+			inTag = true
+		case '>':
+			inTag = false
+		default:
+			if !inTag {
+				b.WriteRune(r)
+			}
+		}
+	}
+
+	return b.String()
 }
