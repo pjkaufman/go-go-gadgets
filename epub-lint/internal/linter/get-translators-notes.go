@@ -197,111 +197,16 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	afterIndicator := innerElContent[startOfNote:]
 
 	// Has opening paren?
-	// var updated bool
-	// match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '(', ')', startPos, startOfNote)
-	// if updated {
-	// 	return
-	// }
-
-	// match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '{', '}', startPos, startOfNote)
-	// if updated {
-	// 	return
-	// }
-	if strings.Contains(beforeIndicator, "(") {
-		var (
-			isInOpeningParen bool
-			char             rune
-			size             int
-		)
-		for i := len(beforeIndicator); i > 0; {
-			char, size = utf8.DecodeLastRuneInString(beforeIndicator[:i])
-			i -= size
-
-			if char == '(' {
-				isInOpeningParen = true
-				match.Start += i
-				break
-			}
-
-			if !unicode.IsSpace(char) {
-				break
-			}
-		}
-
-		if isInOpeningParen {
-			var (
-				openCount  = 1
-				closeCount = 0
-			)
-			for i, ch := range afterIndicator {
-				switch ch {
-				case ')':
-					closeCount++
-
-					if closeCount >= openCount {
-						match.End = startPos + startOfNote + i + 1
-						match.Content = strings.TrimSpace(afterIndicator[:i])
-
-						return
-					}
-				case '(':
-					openCount++
-				}
-			}
-
-			match.Content = strings.TrimSpace(afterIndicator)
-
-			return
-		}
+	var updated bool
+	match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '(', ')', startPos, startOfNote)
+	if updated {
+		return
 	}
 
 	// Has opening square bracket?
-	if strings.Contains(beforeIndicator, "[") {
-		var (
-			isInOpeningParen bool
-			char             rune
-			size             int
-		)
-		for i := len(beforeIndicator); i > 0; {
-			char, size = utf8.DecodeLastRuneInString(beforeIndicator[:i])
-			i -= size
-
-			if char == '[' {
-				isInOpeningParen = true
-				match.Start += i
-				break
-			}
-
-			if !unicode.IsSpace(char) {
-				break
-			}
-		}
-
-		if isInOpeningParen {
-			var (
-				openCount  = 1
-				closeCount = 0
-			)
-			for i, ch := range afterIndicator {
-				switch ch {
-				case ']':
-					closeCount++
-
-					if closeCount >= openCount {
-						match.End = startPos + startOfNote + i + 1
-						match.Content = strings.TrimSpace(afterIndicator[:i])
-
-						return
-					}
-				case '[':
-					openCount++
-				}
-			}
-
-			match.Content = strings.TrimSpace(afterIndicator)
-
-			return
-		}
+	match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '[', ']', startPos, startOfNote)
+	if updated {
+		return
 	}
 
 	match.Start += indicatorPos
@@ -321,7 +226,7 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 }
 
 func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator string, openingChar, closingChar rune, startPos, startOfNote int) (noteMatch, bool) {
-	if strings.Contains(beforeIndicator, string(openingChar)) {
+	if !strings.Contains(beforeIndicator, string(openingChar)) {
 		return match, false
 	}
 
