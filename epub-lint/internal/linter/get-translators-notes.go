@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // these values are lowercased because that makes the checks later on more performant since we don't need
@@ -38,6 +39,7 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 		tlNotes[i] = fmt.Sprintf(`<li id=%q>%s<br/><a href="%s#%s">Back to Reference</a></li>`+"\n",
 			noteId, match.Content, fileName, refId)
 
+		// fmt.Println(strings.Index(text, "["))
 		text = text[:match.Start] + noteAnchor + text[match.End:]
 		noteNum--
 	}
@@ -195,14 +197,26 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	afterIndicator := innerElContent[startOfNote:]
 
 	// Has opening paren?
+	// var updated bool
+	// match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '(', ')', startPos, startOfNote)
+	// if updated {
+	// 	return
+	// }
+
+	// match, updated = updateNoteForOpeningChar(match, beforeIndicator, afterIndicator, '{', '}', startPos, startOfNote)
+	// if updated {
+	// 	return
+	// }
 	if strings.Contains(beforeIndicator, "(") {
 		var (
 			isInOpeningParen bool
 			char             rune
-			priorChars       = []rune(beforeIndicator)
+			size             int
 		)
-		for i := len(priorChars) - 1; i >= 0; i-- {
-			char = priorChars[i]
+		for i := len(beforeIndicator); i > 0; {
+			char, size = utf8.DecodeLastRuneInString(beforeIndicator[:i])
+			i -= size
+
 			if char == '(' {
 				isInOpeningParen = true
 				match.Start += i
@@ -241,6 +255,55 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 		}
 	}
 
+	// Has opening square bracket?
+	if strings.Contains(beforeIndicator, "[") {
+		var (
+			isInOpeningParen bool
+			char             rune
+			size             int
+		)
+		for i := len(beforeIndicator); i > 0; {
+			char, size = utf8.DecodeLastRuneInString(beforeIndicator[:i])
+			i -= size
+
+			if char == '[' {
+				isInOpeningParen = true
+				match.Start += i
+				break
+			}
+
+			if !unicode.IsSpace(char) {
+				break
+			}
+		}
+
+		if isInOpeningParen {
+			var (
+				openCount  = 1
+				closeCount = 0
+			)
+			for i, ch := range afterIndicator {
+				switch ch {
+				case ']':
+					closeCount++
+
+					if closeCount >= openCount {
+						match.End = startPos + startOfNote + i + 1
+						match.Content = strings.TrimSpace(afterIndicator[:i])
+
+						return
+					}
+				case '[':
+					openCount++
+				}
+			}
+
+			match.Content = strings.TrimSpace(afterIndicator)
+
+			return
+		}
+	}
+
 	match.Start += indicatorPos
 
 	// No paren - until next tag
@@ -255,4 +318,58 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	match.Content = strings.TrimSpace(afterIndicator[:endIdx])
 
 	return
+}
+
+func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator string, openingChar, closingChar rune, startPos, startOfNote int) (noteMatch, bool) {
+	if strings.Contains(beforeIndicator, string(openingChar)) {
+		return match, false
+	}
+
+	var (
+		isInOpeningChar bool
+		char            rune
+		size            int
+	)
+	for i := len(beforeIndicator); i > 0; {
+		char, size = utf8.DecodeLastRuneInString(beforeIndicator[:i])
+		i -= size
+
+		if char == openingChar {
+			isInOpeningChar = true
+			match.Start += i
+			break
+		}
+
+		if !unicode.IsSpace(char) {
+			break
+		}
+	}
+
+	if isInOpeningChar {
+		var (
+			openCount  = 1
+			closeCount = 0
+		)
+		for i, ch := range afterIndicator {
+			switch ch {
+			case closingChar:
+				closeCount++
+
+				if closeCount >= openCount {
+					match.End = startPos + startOfNote + i + 1
+					match.Content = strings.TrimSpace(afterIndicator[:i])
+
+					return match, true
+				}
+			case openingChar:
+				openCount++
+			}
+		}
+
+		match.Content = strings.TrimSpace(afterIndicator)
+
+		return match, true
+	}
+
+	return match, false
 }
