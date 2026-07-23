@@ -15,17 +15,6 @@ import (
 // to lowercase them
 var noteIndicators = []string{"tl note:", "translator's note:", "t/n:", "tn:", "tln:", "tl:", "author's note:", "note:", "ed:"}
 
-type trackingReader struct {
-	r   io.Reader
-	pos int
-}
-
-func (r *trackingReader) Read(p []byte) (int, error) {
-	n, err := r.r.Read(p)
-	r.pos += n
-	return n, err
-}
-
 func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber int) (string, []string, int, error) {
 	matches, err := findNotesWithXML(text)
 	if err != nil {
@@ -67,11 +56,7 @@ type noteMatch struct {
 func findNotesWithXML(text string) ([]noteMatch, error) {
 	var matches []noteMatch
 
-	reader := &trackingReader{
-		r: strings.NewReader(text),
-	}
-
-	decoder := xml.NewDecoder(reader)
+	decoder := xml.NewDecoder(strings.NewReader(text))
 	decoder.Strict = false
 
 	for {
