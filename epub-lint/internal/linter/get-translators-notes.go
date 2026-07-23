@@ -39,7 +39,6 @@ func GetTranslatorsNotes(text, fileName, noteFileName string, startingNoteNumber
 		tlNotes[i] = fmt.Sprintf(`<li id=%q>%s<br/><a href="%s#%s">Back to Reference</a></li>`+"\n",
 			noteId, match.Content, fileName, refId)
 
-		// fmt.Println(strings.Index(text, "["))
 		text = text[:match.Start] + noteAnchor + text[match.End:]
 		noteNum--
 	}
