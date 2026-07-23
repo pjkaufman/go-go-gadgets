@@ -104,6 +104,18 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		},
 		expectedNext: 1,
 	},
+	`a translator's note that is in a regular paragraph and is not enclosed in parentheses or square brackets is considered to span until the end of the next closing element`: {
+		inputText:      `<p>　Audrey is the legitimate wife of the Prince, in other words, the Princess. TN: it says queen (王妃 'ohi'), but I didn't feel like using it, so changed it to Princess, suggestions are welcomed though. </p>`,
+		fileName:       "main.xhtml",
+		noteFileName:   "notes.xhtml",
+		startingNumber: 0,
+		expectedText:   `<p>　Audrey is the legitimate wife of the Prince, in other words, the Princess. <a id="note_ref_1" href="notes.xhtml#tl_note_1"><sup>1</sup></a></p>`,
+		expectedNotes: []string{
+			`<li id="tl_note_1">it says queen (王妃 'ohi'), but I didn't feel like using it, so changed it to Princess, suggestions are welcomed though.<br/><a href="main.xhtml#note_ref_1">Back to Reference</a></li>
+`,
+		},
+		expectedNext: 1,
+	},
 	`a translator's note with an html entity in it causes an error`: {
 		inputText:      `<p class="block_16"><span class="text_4">TL Note: This is a pun that I unfortunately couldn&#8216;t properly translate to English. The word that was used for break was "</span><span class="text_5">水入り</span><span class="text_4">". The pun is, she said 'literally'. So it translates as "let's get some water in there".</span></p>`,
 		fileName:       "main.xhtml",

@@ -211,15 +211,14 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	match.Start += indicatorPos
 
 	// No paren - until next tag
-	endIdx := strings.Index(afterIndicator, "<")
-	if endIdx == -1 {
-		match.End = startPos + startOfNote + endIdx
+	before, _, ok := strings.Cut(afterIndicator, "<")
+	if !ok {
 		match.Content = strings.TrimSpace(afterIndicator)
 
 		return
 	}
 
-	match.Content = strings.TrimSpace(afterIndicator[:endIdx])
+	match.Content = strings.TrimSpace(before)
 
 	return
 }
