@@ -96,8 +96,11 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 			}
 
 			// check to make sure that the character prior to the tl note is not a letter to help filter out false positives for things like ed
-			if tlNotePos != 0 && unicode.IsLetter(rune(innerContent[tlNotePos-1])) {
-				continue
+			if tlNotePos != 0 {
+				r, _ := utf8.DecodeLastRuneInString(innerContent[:tlNotePos])
+				if unicode.IsLetter(r) || r == '-' {
+					continue
+				}
 			}
 
 			matches = append(matches, extractNoteContent(indicator, innerContent, strings.TrimSpace(textOnlyContent), tlNotePos, startPos, endPos))
@@ -183,6 +186,10 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 
 	// If indicator at start, return all
 	if startOfTextNote == 0 {
+		if len(innerElContent) <= startOfNote { // no actual content is present
+			return
+		}
+
 		if innerElContent[startOfNote] == ' ' {
 			startOfNote++
 		}
