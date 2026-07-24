@@ -232,8 +232,10 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 		return
 	}
 
-	beforeIndicator := innerElContent[:indicatorPos]
-	afterIndicator := innerElContent[startOfNote:]
+	var (
+		beforeIndicator = innerElContent[:indicatorPos]
+		afterIndicator  = innerElContent[startOfNote:]
+	)
 
 	// Has opening paren?
 	var updated bool
@@ -295,23 +297,20 @@ func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator s
 	}
 
 	if isInOpeningChar {
-		var (
-			openCount  = 1
-			closeCount = 0
-		)
+		var depth = 1
 		for i, ch := range afterIndicator {
 			switch ch {
 			case closingChar:
-				closeCount++
+				depth--
 
-				if closeCount >= openCount {
+				if depth <= 0 {
 					match.end = startPos + startOfNote + i + 1
 					match.content = strings.TrimSpace(afterIndicator[:i])
 
 					return match, true
 				}
 			case openingChar:
-				openCount++
+				depth++
 			}
 		}
 
