@@ -84,7 +84,7 @@ func findNotesWithXML(text string) ([]noteMatch, error) {
 			break
 		}
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("failed to decode xml content: %w", err)
 		}
 
 		switch start := token.(type) {
@@ -216,10 +216,10 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	if startOfTextNote == 0 {
 		if len(innerElContent) <= startOfNote ||
 			strings.TrimSpace(innerElContent[startOfNote:]) == "" {
-
 			match.start = openingElPos
 			match.end = closingElPos
 			match.isEmpty = true
+
 			return
 		}
 
