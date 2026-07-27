@@ -1,0 +1,296 @@
+{
+  "data": {
+    "id": "ef99ee7e-4e09-4603-b8b9-3e49b3d69c41",
+    "at": "gate-thus-the-jsdf-fought-there",
+    "title": "GATE",
+    "subtitle": "Thus the JSDF Fought There!",
+    "description": "In the year 20XX, a mysterious gate to another world suddenly opens in Tokyo’s Ginza district. From beyond it pour invading armies and monstrous creatures from a fantasy realm. Japan’s Self-Defense Forces repel the attack—and push forward through the gate into the unknown territory on the other side.\r\n\r\nAmong the soldiers sent to investigate is Yoji Itami, a 33-year-old otaku officer who is anything but a typical soldier. Leading his unit into the newly discovered world, he sets out to scout nearby villages and assess the situation beyond the gate.\r\n\r\nWhat awaits them is not only danger… but the sight of fantastical races and beautiful girls straight out of a dream.\r\n\r\nThus begins the unprecedented encounter between modern military force and a medieval fantasy world, where guns meet dragons and diplomacy clashes with magic.",
+    "animeAdapted": true,
+    "aiTags": null,
+    "completed": false,
+    "staffPick": false,
+    "entries": [
+      {
+        "id": "896d665d-23f8-4370-b74e-d2f784510f7a",
+        "date": "2026-07-02T03:59:14.720Z",
+        "order": 1,
+        "seriesId": "ef99ee7e-4e09-4603-b8b9-3e49b3d69c41",
+        "ebookId": "c0030132-a743-4aa0-8403-ed0073f7802f",
+        "ebook": {
+          "id": "c0030132-a743-4aa0-8403-ed0073f7802f",
+          "at": "gate-vol-1-part-i",
+          "title": "GATE: Vol. 1 - Part I",
+          "subtitle": "Thus the JSDF Fought There!",
+          "description": "In the year 20XX, a mysterious gate to another world suddenly opens in Tokyo’s Ginza district. From beyond it pour invading armies and monstrous creatures from a fantasy realm. Japan’s Self-Defense Forces repel the attack—and push forward through the gate into the unknown territory on the other side.\r\n\r\nAmong the soldiers sent to investigate is Yoji Itami, a 33-year-old otaku officer who is anything but a typical soldier. Leading his unit into the newly discovered world, he sets out to scout nearby villages and assess the situation beyond the gate.\r\n\r\nWhat awaits them is not only danger… but the sight of fantastical races and beautiful girls straight out of a dream.\r\n\r\nThus begins the unprecedented encounter between modern military force and a medieval fantasy world, where guns meet dragons and diplomacy clashes with magic.",
+          "visible": true,
+          "categories": [
+            "action",
+            "adventure",
+            "isekai"
+          ],
+          "release": "2026-04-06T20:53:00.000Z",
+          "authors": [
+            "Takumi Yanai"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "35b1d2e9-c1d9-4be2-84b5-c18d50a7fdb2",
+              "from": "2026-04-06T08:53:00.000Z",
+              "until": null,
+              "dollarCents": 899,
+              "deleted": false,
+              "ebookId": "c0030132-a743-4aa0-8403-ed0073f7802f",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 40,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "dc8b0d70-bae0-40c1-b80c-807f319e4c0d",
+        "date": "2026-07-02T03:59:14.720Z",
+        "order": 2,
+        "seriesId": "ef99ee7e-4e09-4603-b8b9-3e49b3d69c41",
+        "ebookId": "f99a8b1c-97f2-417b-b210-0ae8df1df5d3",
+        "ebook": {
+          "id": "f99a8b1c-97f2-417b-b210-0ae8df1df5d3",
+          "at": "gate-vol-1-part-ii",
+          "title": "GATE: Vol. 1 - Part II",
+          "subtitle": "Thus the JSDF Fought There!",
+          "description": "The Japan Ground Self-Defense Force has won a sweeping victory in the battle to defend Italica, a city in the Special Region. Yet while the situation beyond the Gate begins to shift, back in Japan, opposition lawmakers are sharpening their attacks over the JSDF’s actions.\r\nBefore long, First Lieutenant Itami—and even several residents of the Special Region—are summoned to the National Diet as witnesses. For the otherworldly beauties crossing the Gate for the first time, Japan’s modern civilization is a dazzling wonderland of discovery.\r\nBut unknown figures are already closing in on them from the shadows...",
+          "visible": true,
+          "categories": [
+            "action",
+            "adventure",
+            "isekai"
+          ],
+          "release": "2026-06-30T17:00:00.000Z",
+          "authors": [
+            "Takumi Yanai"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "7461d866-52d9-468e-95bc-5c72becd7ab5",
+              "from": "2026-04-06T08:56:00.000Z",
+              "until": null,
+              "dollarCents": 899,
+              "deleted": false,
+              "ebookId": "f99a8b1c-97f2-417b-b210-0ae8df1df5d3",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 25,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "61ed0213-6cfc-46ca-a4c4-e2c5ad4388a6",
+        "date": "2026-07-02T03:59:14.720Z",
+        "order": 3,
+        "seriesId": "ef99ee7e-4e09-4603-b8b9-3e49b3d69c41",
+        "ebookId": "31a75d7a-e396-4482-90f0-e6d941c885bf",
+        "ebook": {
+          "id": "31a75d7a-e396-4482-90f0-e6d941c885bf",
+          "at": "gate-vol-2-part-i-thus-the-jsdf-fought-there",
+          "title": "GATE: Vol. 2 - Part I",
+          "subtitle": "Thus the JSDF Fought There!",
+          "description": "Coming soon.",
+          "visible": true,
+          "categories": [
+            "action",
+            "adventure",
+            "isekai"
+          ],
+          "release": "2026-09-30T03:00:00.000Z",
+          "authors": [
+            "Takumi Yanai"
+          ],
+          "nsfw": false,
+          "animeAdapted": false,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "421f15b3-3ddc-482e-818f-5637f16d16aa",
+              "from": "2026-07-02T00:00:00.000Z",
+              "until": null,
+              "dollarCents": 899,
+              "deleted": false,
+              "ebookId": "31a75d7a-e396-4482-90f0-e6d941c885bf",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 2,
+        "firstBuyerAvailable": false
+      }
+    ],
+    "prices": [],
+    "seriesStatus": "unset",
+    "avgRating": 0,
+    "reviewsCount": 0,
+    "reviews": [],
+    "avgGlobalRating": 5,
+    "globalRatingsCount": 1,
+    "userGlobalRating": null,
+    "owned": false,
+    "purchaseInfo": null,
+    "deletedPrices": [],
+    "totalReaders": 40,
+    "readersCount": 40,
+    "ownedVolumes": [],
+    "volumeProgress": {},
+    "relatedSeries": [
+      {
+        "id": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "at": "tsukimichi",
+        "title": "Tsukimichi",
+        "subtitle": "Moonlit Fantasy",
+        "completed": false,
+        "avgGlobalRating": 5,
+        "entries": [
+          {
+            "id": "d8b02e6e-7453-41b3-baa2-486002893c51",
+            "date": "2026-07-02T04:14:19.701Z",
+            "order": 1,
+            "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+            "ebookId": "fddd4ed7-7b88-4673-ad87-c59ac9dcbfb0",
+            "ebook": {
+              "id": "fddd4ed7-7b88-4673-ad87-c59ac9dcbfb0",
+              "at": "tsukimichi-vol-1",
+              "title": "Tsukimichi - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "0a237225-02a6-45a4-8e2e-18c7a401d65f",
+        "at": "the-abandoned-reincarnation-sage",
+        "title": "The Abandoned Reincarnation Sage",
+        "subtitle": "Building a Mighty Empire of Monsters Within the Monsters' Forest",
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "bf6b0708-650f-4574-8fc2-1058bbc15b6c",
+            "date": "2026-06-29T01:38:08.587Z",
+            "order": 1,
+            "seriesId": "0a237225-02a6-45a4-8e2e-18c7a401d65f",
+            "ebookId": "08d085c3-57e5-4551-8827-4a5fd60f641b",
+            "ebook": {
+              "id": "08d085c3-57e5-4551-8827-4a5fd60f641b",
+              "at": "the-abandoned-reincarnation-sage-vol-1",
+              "title": "The Abandoned Reincarnation Sage - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "187740d8-d755-4ebe-8822-7d51542b9ef6",
+        "at": "reincarnated-as-a-poor-farmer-in-another-world",
+        "title": "Reincarnated as a Poor Farmer in Another World",
+        "subtitle": "I'll Use My Modern Knowledge to Build My Own Kingdom",
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "bf3dc483-69ea-44e9-b3a9-ee6367852b7c",
+            "date": "2026-07-02T03:55:08.190Z",
+            "order": 1,
+            "seriesId": "187740d8-d755-4ebe-8822-7d51542b9ef6",
+            "ebookId": "acd185a1-25fc-4225-a33e-eeee7abc9ae0",
+            "ebook": {
+              "id": "acd185a1-25fc-4225-a33e-eeee7abc9ae0",
+              "at": "reincarnated-as-a-poor-farmer-in-another-world-vol-1",
+              "title": "Reincarnated as a Poor Farmer in Another World - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1a13fc70-71ec-417a-9c3f-0a93ba5f0505",
+        "at": "another-world-survival",
+        "title": "Another World Survival",
+        "subtitle": "Min-maxing my Support and Summoning Magic",
+        "completed": false,
+        "avgGlobalRating": 5,
+        "entries": [
+          {
+            "id": "c1792e83-2f09-4958-bde8-aef056fe10d0",
+            "date": "2026-05-30T04:17:34.763Z",
+            "order": 1,
+            "seriesId": "1a13fc70-71ec-417a-9c3f-0a93ba5f0505",
+            "ebookId": "330bde23-8b47-4049-97ac-8f6963bd4cf8",
+            "ebook": {
+              "id": "330bde23-8b47-4049-97ac-8f6963bd4cf8",
+              "at": "another-world-survival-vol-1",
+              "title": "Another World Survival - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1e95fb82-88cd-4e36-897c-12d97a0fe3d4",
+        "at": "the-dark-guildmasters-smile-would-fit-best",
+        "title": "The Dark Guildmaster's Smile Would Fit Best",
+        "subtitle": null,
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "4fa90627-cdc2-4b3f-aa49-df6b934c62f5",
+            "date": "2026-05-30T03:43:13.370Z",
+            "order": 1,
+            "seriesId": "1e95fb82-88cd-4e36-897c-12d97a0fe3d4",
+            "ebookId": "48fbaf38-09f0-425e-940b-8d7b1fc6ec4a",
+            "ebook": {
+              "id": "48fbaf38-09f0-425e-940b-8d7b1fc6ec4a",
+              "at": "the-dark-guildmasters-smile-would-fit-best-vol-1",
+              "title": "The Dark Guildmaster's Smile Would Fit Best - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "35cb5139-cdba-47a5-9142-1b6b4e36167d",
+        "at": "remonster",
+        "title": "Re:Monster",
+        "subtitle": null,
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "71ed8530-33ad-450d-aaa0-32da02b5d893",
+            "date": "2026-06-29T02:51:52.046Z",
+            "order": 1,
+            "seriesId": "35cb5139-cdba-47a5-9142-1b6b4e36167d",
+            "ebookId": "76496ec6-311d-48d8-b4cd-565005063dba",
+            "ebook": {
+              "id": "76496ec6-311d-48d8-b4cd-565005063dba",
+              "at": "remonster-vol-1",
+              "title": "Re:Monster - Vol. 1"
+            }
+          }
+        ]
+      }
+    ],
+    "inBundles": [],
+    "shelfStatus": null,
+    "latestVolumeDate": "2026-09-30T03:00:00.000Z",
+    "nextVolumeEta": null,
+    "followCount": 4,
+    "isFollowing": false
+  }
+}

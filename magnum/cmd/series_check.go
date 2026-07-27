@@ -6,6 +6,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
+	"github.com/pjkaufman/go-go-gadgets/magnum/internal/hanashimedia"
 	jnovelclub "github.com/pjkaufman/go-go-gadgets/magnum/internal/jnovel-club"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/sevenseasentertainment"
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
@@ -26,6 +27,7 @@ var (
 	wikipediaHandler              sitehandler.SiteHandler
 	yenPressHandler               sitehandler.SiteHandler
 	vizMediaHandler               sitehandler.SiteHandler
+	hanahsiMediaHandler           sitehandler.SiteHandler
 	seriesCheckFlags              = flags.Flags{
 		Flags: []flags.Flag{
 			flags.NewBoolFlag(false, false, &verbose, "verbose", "v", false, "show more info about what is going on"),
@@ -107,15 +109,16 @@ func getSeriesVolumeInfo(seriesInfo config.SeriesInfo) config.SeriesInfo {
 	switch seriesInfo.Publisher {
 	case config.YenPress:
 		handler = yenPressHandler
-
 	case config.JNovelClub:
 		handler = jNovelClubHandler
 	case config.SevenSeasEntertainment:
 		handler = sevenSeasEntertainmentHandler
-	case config.OnePeaceBooks, config.HanashiMedia:
+	case config.OnePeaceBooks:
 		handler = wikipediaHandler
 	case config.VizMedia:
 		handler = vizMediaHandler
+	case config.HanashiMedia:
+		handler = hanahsiMediaHandler
 	}
 
 	if handler == nil {
@@ -164,6 +167,12 @@ func setupHandlers() {
 		UserAgent:      userAgent,
 		ApiPath:        wikipedia.ApiPath,
 		AllowedDomains: wikipedia.AllowedDomains,
+	})
+
+	hanahsiMediaHandler = hanashimedia.NewHanashiMediaHandler(sitehandler.SiteHandlerOptions{
+		BaseURL:   hanashimedia.BaseURL,
+		Verbose:   verbose,
+		UserAgent: userAgent,
 	})
 
 	handlersInitialized = true

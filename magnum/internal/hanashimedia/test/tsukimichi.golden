@@ -1,0 +1,1050 @@
+{
+  "data": {
+    "id": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+    "at": "tsukimichi",
+    "title": "Tsukimichi",
+    "subtitle": "Moonlit Fantasy",
+    "description": "Makoto Misumi was an average, everyday high schooler, who found himself shipped off to another world at his parents’ whims. Upon arrival, however, he’s insulted by the Goddess for being too ugly and thrown into a desolate wasteland. He frantically searches for human warmth and connection, but can find nothing but monsters and inhuman settlers. When he finally meets companions he can trust, they turn out to be a pair of powerful perverts in a former dragon and a former giant spider! His high-octane, incredibly misfortunate trek through this foreign world has only just begun!",
+    "animeAdapted": true,
+    "aiTags": null,
+    "completed": false,
+    "staffPick": false,
+    "entries": [
+      {
+        "id": "d8b02e6e-7453-41b3-baa2-486002893c51",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 1,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "fddd4ed7-7b88-4673-ad87-c59ac9dcbfb0",
+        "ebook": {
+          "id": "fddd4ed7-7b88-4673-ad87-c59ac9dcbfb0",
+          "at": "tsukimichi-vol-1",
+          "title": "Tsukimichi - Vol. 1",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Makoto Misumi was an average, everyday high schooler, who found himself shipped off to another world at his parents’ whims. Upon arrival, however, he’s insulted by the Goddess for being too ugly and thrown into a desolate wasteland. He frantically searches for human warmth and connection, but can find nothing but monsters and inhuman settlers. When he finally meets companions he can trust, they turn out to be a pair of powerful perverts in a former dragon and a former giant spider! His high-octane, incredibly misfortunate trek through this foreign world has only just begun!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T09:56:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "fb07a5fb-2620-488f-8e3b-191b79844fa9",
+              "from": "2026-05-31T23:00:43.021Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "fddd4ed7-7b88-4673-ad87-c59ac9dcbfb0",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 151,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "2bdccbcb-4ab6-4b2c-87a7-123f8554b4a6",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 2,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "32b73448-6a99-4c98-b202-e35d8d1d3686",
+        "ebook": {
+          "id": "32b73448-6a99-4c98-b202-e35d8d1d3686",
+          "at": "tsukimichi-vol-2",
+          "title": "Tsukimichi - Vol. 2",
+          "subtitle": "Moonlit Fantasy",
+          "description": "The long-awaited second volume of the fantasy saga follows the journey of Makoto Misumi, an unfortunate young man carving his path in another world. After braving the perilous \"End of the World,\" teeming with monsters, Makoto seeks to establish himself as a merchant. His first step? Making contact with Rembrandt, a leading merchant who holds sway over the town. Yet, Makoto discovers a dark shadow looming over Rembrandt's family—a severe curse. The trials facing the compelling, yet unfortunate, Makoto Misumi are far from concluded. Rise, residents! Additionally, this volume features an exciting special section: a martial arts tournament to crown the number one fighter in the subspace!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "fantasy",
+            "adventure",
+            "action",
+            "magic"
+          ],
+          "release": "2026-03-28T07:58:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "5a1661d3-c7fe-47fe-b94f-125b2fc18b17",
+              "from": "2026-05-31T23:03:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "32b73448-6a99-4c98-b202-e35d8d1d3686",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 128,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "ba295a92-2fa2-4b70-bed0-fafdd5fa0433",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 3,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "f25ae782-812e-45a3-aad4-80ace71272ca",
+        "ebook": {
+          "id": "f25ae782-812e-45a3-aad4-80ace71272ca",
+          "at": "tsukimichi-vol-3",
+          "title": "Tsukimichi - Vol. 3",
+          "subtitle": "Moonlit Fantasy",
+          "description": "The Second Season of the TV Anime Begins January 2024 with a 2-Cour Broadcast!\r\n\r\nIn a world where he was suddenly summoned, ordinary high school student Makoto continues his journey with his non-human companions, a former dragon and a former spider. The beginning of his trials started when he encountered a \"Forest Ogre\"—a demi-human species with an elf-like appearance that dwells in forests—near the city of Tsige, where they were staying during their travels. The unfortunate hero who attracts trouble, Makoto Misumi's hardships reach their peak here!\r\n\r\nIncluded is a special newly written story depicting the struggles of Rembrandt, the greatest merchant in Tsige, as he works hard for Makoto, who has established a trading company!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "fantasy",
+            "adventure",
+            "action",
+            "magic"
+          ],
+          "release": "2026-03-28T08:03:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "2887a82e-7341-4715-abc3-3fc8507fa08c",
+              "from": "2026-05-31T23:06:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "f25ae782-812e-45a3-aad4-80ace71272ca",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 121,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "7f14fc92-3de6-4ca9-ac57-92742516ed4e",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 4,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "71b6699d-e650-4c0c-a1a0-a9ebd7fb65a7",
+        "ebook": {
+          "id": "71b6699d-e650-4c0c-a1a0-a9ebd7fb65a7",
+          "at": "tsukimichi-vol-4",
+          "title": "Tsukimichi - Vol. 4",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Early 140,000 Copies Sold! The Highly Anticipated Fourth Volume of the Misfortunate Boy's Isekai Rise to Power Fantasy!\r\n\r\nMakoto Misumi, an ordinary high school student, finds himself suddenly transported to another world. Having resolved a series of conflicts in Tsige, he now sets his sights on the Academy City of Rotsgard. However, his journey takes an unexpected turn when he loses consciousness and is kidnapped by unknown forces.\r\n\r\nHe awakens in the midst of a battlefield, where a mysterious woman with a fierce smile stands before him, poised to strike with her massive sword. Surrounded by chaos, Makoto must navigate this perilous situation and overcome the greatest danger he has faced yet. Will Makoto, the unlucky hero who seems to attract trouble, manage to survive this dire predicament?",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T08:04:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "e3878c00-e7cd-48bc-98b9-2a541030299d",
+              "from": "2026-05-31T23:08:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "71b6699d-e650-4c0c-a1a0-a9ebd7fb65a7",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 108,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "9e7f7cff-3396-4613-b79f-29e64a6e2340",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 5,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "e38a6b0d-81b7-4f87-af12-ac48cee053d5",
+        "ebook": {
+          "id": "e38a6b0d-81b7-4f87-af12-ac48cee053d5",
+          "at": "tsukimichi-vol-5",
+          "title": "Tsukimichi - Vol. 5",
+          "subtitle": "Moonlit Fantasy",
+          "description": "With over 170,000 copies sold, the tale of an unlucky young man’s rise to success in another world continues—Volume 5 is finally here!\r\n\r\nAfter countless struggles, Makoto, an ordinary high school student, reaches his long-sought destination: the academy city of Rotsgard.\r\n\r\nHis goal is simple—to learn more about this strange new world by enrolling in its famous academy. But things don’t go as planned. Instead of an entrance exam, Makoto finds himself taking a test meant for teacher candidates!\r\n\r\nAnd so begins the unpredictable and often chaotic school life of Misumi Makoto, a young man whose knack for attracting trouble shows no signs of slowing down.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T08:05:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "b92e7016-da9e-4911-a463-77d22e4d3224",
+              "from": "2026-05-31T23:11:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "e38a6b0d-81b7-4f87-af12-ac48cee053d5",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 108,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "9532ba61-f742-4231-a87b-4ea08139467c",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 6,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "79971799-cc5e-42a0-995b-70cfa75e1667",
+        "ebook": {
+          "id": "79971799-cc5e-42a0-995b-70cfa75e1667",
+          "at": "tsukimichi-vol-6",
+          "title": "Tsukimichi - Vol. 6",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Season 3 of the TV anime is officially in production!\r\n\r\nIn the academy city of Rotsgard, Makoto Misumi planned to enroll as a student—but somehow ended up working as a instructor instead! His hands-on, combat-heavy classes were a shock to students used to a more relaxed curriculum.\r\n\r\nHowever, as results began to show, his reputation skyrocketed despite his intentions. Before long, his overly enthusiastic students even roped him into running special summer training sessions to prepare for the upcoming academy festival.\r\n\r\n\"Uh… you know I’m technically a merchant, right?\"\r\n\r\nThus continues the chaotic academy life of Makoto Misumi, the ever-unlucky storm magnet, who just can’t seem to dodge trouble. Turbulence looms on the horizon!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T13:05:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "f1abaaa9-ca63-467f-bfe2-b860e8e37bc4",
+              "from": "2026-05-31T23:14:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "79971799-cc5e-42a0-995b-70cfa75e1667",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 106,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "f00adee9-6bff-4b63-9dc3-00ef4e603b1a",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 7,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "b45cf6ac-1876-424d-8dfa-a1a47867e863",
+        "ebook": {
+          "id": "b45cf6ac-1876-424d-8dfa-a1a47867e863",
+          "at": "tsukimichi-vol-7",
+          "title": "Tsukimichi - Vol. 7",
+          "subtitle": "Moonlit Fantasy",
+          "description": "While managing his merchant duties, Makoto is also thoroughly enjoying his role as a teacher in Rotsgard. With the long-awaited school festival finally underway and the grand tournament just around the corner, the excitement among his students is reaching a fever pitch.\r\n\r\nHowever, just as the festivities reach their peak, a series of unforeseen calamities descends upon Makoto and his class, jeopardizing the enjoyment.\r\n\r\nThe perpetually unlucky storm magnet, Makoto Misumi, stands prepared to confront the chaos head-on!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T23:12:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "fbf41852-a06f-4351-ae94-5426785088b0",
+              "from": "2026-05-30T18:09:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "b45cf6ac-1876-424d-8dfa-a1a47867e863",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 97,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "ab5d7fa8-62a9-4217-bab5-1b71421d42d6",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 8,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "e9a6ce91-a5c0-460e-806f-d7f61559ff84",
+        "ebook": {
+          "id": "e9a6ce91-a5c0-460e-806f-d7f61559ff84",
+          "at": "tsukimichi-vol-8",
+          "title": "Tsukimichi - Vol. 8",
+          "subtitle": "Moonlit Fantasy",
+          "description": "The third season of the TV anime is officially in production!\r\n\r\nJust after the fierce final match of the grand tournament that lit up the school festival in the Academy City of Rotsgard, a nightmarish twist shattered the triumphant atmosphere. Before Makoto's victorious students could catch their breath, Ilumgand-who had been soundly defeated-rose again. But this time, he was no longer human. Twisted into a grotesque monster, he stood in their path once more.\r\n\r\nHis horrific transformation marked only the beginning.\r\n\r\nWithin moments, the entire city descended into chaos. The Academy City of Rotsgard was overrun by a horde of monstrous abominations, plunging the once-vibrant stronghold of learning into the brink of annihilation. With lives in peril and the city teetering on collapse, Makoto Misumi-an instructor at the academy-took it upon himself to uncover the cause and quell the disaster.\r\n\r\nWith his loyal followers at his side, he sets out into the heart of the turmoil.\r\n\r\nThe \"Unfortunate Prodigy\" Makoto Misumi charges headfirst into the tangled crisis threatening the Academy City of Rotsgard, determined to protect the city of learning from total ruin!!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "magic",
+            "fantasy"
+          ],
+          "release": "2026-03-28T11:13:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "6cb5830c-c864-4135-ab95-3c569876a3ad",
+              "from": "2026-05-31T23:20:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "e9a6ce91-a5c0-460e-806f-d7f61559ff84",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 91,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "71fc0da0-e1a6-4342-9e7e-851bfcb95315",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 9,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "43425544-5a8f-4e7e-81e3-a428b1c03a25",
+        "ebook": {
+          "id": "43425544-5a8f-4e7e-81e3-a428b1c03a25",
+          "at": "tsukimichi-vol-8-5",
+          "title": "Tsukimichi - Vol. 8.5",
+          "subtitle": "Moonlit Fantasy",
+          "description": "A fully original side story from the hit underdog fantasy!\r\n\r\nWith Rotsgard entering summer break, Makoto seizes the opportunity to focus on improving his magical output. While training, he comes across a paper on “mana materialization” that sparks a breakthrough—leading him to develop a brand-new power to protect the Demiplane.\r\n\r\nHarnessing his overwhelming mana and razor-sharp focus, he gives form to a shifting, fluid force: the Mana Body!\r\n\r\nEven the strongest of the Demiplane are left stunned by this fearsome new ability—what exactly is Makoto’s latest trump card!?",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "magic",
+            "fantasy"
+          ],
+          "release": "2026-03-28T14:47:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "221ac4cf-58f2-4852-a488-4a68b0f23072",
+              "from": "2026-05-31T23:22:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "43425544-5a8f-4e7e-81e3-a428b1c03a25",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 78,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "b15fcabd-7609-4ab4-84e3-594daec3dec1",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 10,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "f9fa53f6-6751-46df-885d-b4895668caf4",
+        "ebook": {
+          "id": "f9fa53f6-6751-46df-885d-b4895668caf4",
+          "at": "tsukimichi-vol-9",
+          "title": "Tsukimichi - Vol. 9",
+          "subtitle": "Moonlit Fantasy",
+          "description": "As chaos erupts in the hyuman world, a reluctant trump card is forced into play...\r\n\r\nUsing the commotion caused by Rotsgard’s mutant outbreak, the demon army makes its move—marching on the capitals of the Kingdom of Limia and Gritonia Empire.\r\n\r\nFaced with the four-armed demon general Io, the kingdom’s hero finds themselves cornered, without hope.\r\n\r\nMeanwhile, Makoto is abducted yet again by the Goddess and coerced into assisting the hero in crisis.\r\n\r\nPushed around by both gods and demons alike, Makoto turns the tables with an unexpected counterstrategy!\r\n\r\nAs the battlefield descends into chaos, demons, hyumans, and the Demiplane each pursue their own agenda in a deadly clash of ambitions!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:48:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "e595776f-5217-4989-a0f5-b02363f93eeb",
+              "from": "2026-05-31T23:25:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "f9fa53f6-6751-46df-885d-b4895668caf4",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 83,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "bc530467-170d-4ed9-b6a3-29d02d9f6431",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 11,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "8ebe1bc6-6dad-4441-99a9-b865138e9a69",
+        "ebook": {
+          "id": "8ebe1bc6-6dad-4441-99a9-b865138e9a69",
+          "at": "tsukimichi-vol-10",
+          "title": "Tsukimichi - Vol. 10",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Two monsters. One city. And no more room to hold back.\r\n\r\nTo rescue the hero from the demon assault, Makoto and Shiki are sent to Limia’s capital, where they repel the towering demon general—all while keeping their true identities under wraps.\r\n\r\nBut just as things seem to settle, a new threat crashes onto the stage: the deadliest human swordswoman—Sofia, the Dragon Slayer—and her partner, the blade-dragon Lancer.\r\n\r\nTheir devastating rain of swords leaves the capital in ruins.\r\n\r\nNow, a berserker empowered by the fallen greater dragons’ might launches a relentless assault on Makoto… and he’ll have to face a whole new level of madness.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:50:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "41f5bad5-86f0-489f-a7c9-30816fd467a2",
+              "from": "2026-05-31T23:28:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "8ebe1bc6-6dad-4441-99a9-b865138e9a69",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 88,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "21f1186f-7052-4245-8cba-02dc3b4ab759",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 12,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "54954596-7ac7-4495-9d29-72d0da312102",
+        "ebook": {
+          "id": "54954596-7ac7-4495-9d29-72d0da312102",
+          "at": "tsukimichi-vol-11",
+          "title": "Tsukimichi - Vol. 11",
+          "subtitle": "Moonlit Fantasy",
+          "description": "As every country slowly began to recover from the chaos sparked by the mutant incident, Makoto found himself constantly summoned by the Empire's nobles and the Kingdom's lords, running himself ragged through endless rounds of formal greetings.\r\n\r\nAmid this whirlwind of obligations, he finally gave his answer to a long-standing proposal: a face-to-face meeting with none other than the Demon King. Invited to the demon capital-a land no hyuman had ever set foot in-Makoto was received with the personal hospitality of the Demon King himself.\r\n\r\nFor a mere merchant, such treatment was nothing short of extraordinary¿ leaving Makoto utterly at a loss for how to handle it!?",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T14:51:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "bb1a81f8-3094-4fd1-b192-646726253c31",
+              "from": "2026-05-31T23:31:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "54954596-7ac7-4495-9d29-72d0da312102",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 86,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "d529e8ae-7b82-482d-8143-3df02629e27a",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 13,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "0987697a-4040-41fb-ba64-61834f6fd102",
+        "ebook": {
+          "id": "0987697a-4040-41fb-ba64-61834f6fd102",
+          "at": "tsukimichi-vol-12",
+          "title": "Tsukimichi - Vol. 12",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Production of Season 3 Confirmed!\r\n\r\nAfter arriving in the demon realm, Makoto and his companions are met with a surprisingly warm welcome—even by the Demon King himself. But the peace is short-lived.\r\n\r\nDuring a goodwill match between Makoto and the Demon Generals, chaos erupts: assassins aligned with the anti-Demon King faction launch a sudden attack, plunging the arena into turmoil. Though the assailants are quickly subdued, the true threat has only just begun.\r\n\r\nThe divine artifact they unleashed summons a fearsome Greater Dragon. As the creature's devastating roar threatens to reduce the town to ash, the members of the Kuzunoha Company rise to the challenge, determined to protect what they can.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:52:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "b3c47bee-4f79-4bf9-bd58-e444230edd92",
+              "from": "2026-05-31T23:34:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "0987697a-4040-41fb-ba64-61834f6fd102",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 90,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "6f67f7b6-d030-4144-9f41-f4f7b4c588c4",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 14,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "bd6c6b44-9fa3-4886-ad9b-bf2fc63af746",
+        "ebook": {
+          "id": "bd6c6b44-9fa3-4886-ad9b-bf2fc63af746",
+          "at": "tsukimichi-vol-13",
+          "title": "Tsukimichi - Vol. 13",
+          "subtitle": "Moonlit Fantasy",
+          "description": "After wrapping up his visit to the demon territories, Makoto finally returns to the academy—only to be greeted by a mountain of paperwork filling his entire office.\r\n\r\nDuring his absence, inquiries about his lectures had flooded in nonstop, pushing the academy’s administrative office to the brink of collapse. The moment Makoto announces that he’ll be expanding his class, chaos erupts as students nearly come to blows over the few available seats!\r\n\r\nMeanwhile, in the demiplane, the selection process begins for those hoping to migrate to the newly formed “sea”…\r\nMakoto’s hectic days are far from over.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:53:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "6f430531-9716-4980-b79e-8f1523889999",
+              "from": "2026-05-31T23:36:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "bd6c6b44-9fa3-4886-ad9b-bf2fc63af746",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 2,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "2dc45005-d2c3-41a9-a087-d9697e0a3f85",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 15,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "12f82919-8740-4450-8d73-3502ed23059b",
+        "ebook": {
+          "id": "12f82919-8740-4450-8d73-3502ed23059b",
+          "at": "tsukimichi-vol-14",
+          "title": "Tsukimichi - Vol. 14",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Kuzunoha Company arrives in the Limia Kingdom to visit the hero Hibiki—expecting a warm welcome, they get anything but.\r\n\r\nThe moment the shrine maiden lays eyes on their true forms, she collapses on the spot, and the palace erupts into chaos. They say she possesses the power to see through a person’s very essence… so what exactly did she see within Makoto and the others?\r\n\r\nEven stranger, Mio—normally ruthless toward anyone who disrespects her master—doesn’t reprimand the shrine maiden at all. She only offers an unsettling, enigmatic smile.\r\n\r\nAnd of course, this “simple greeting” was never going to end there. Beneath the surface, hidden agendas collide, schemes begin to move, and the visit to Limia becomes the spark for something far bigger.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:54:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "6b5bad87-d98f-4272-9c62-c766f80cd416",
+              "from": "2026-05-31T23:40:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "12f82919-8740-4450-8d73-3502ed23059b",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 77,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "e3fe5024-ec60-41dc-9d1e-b69464217033",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 16,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "11b039ec-3f88-4af3-89c1-8ac37ec1e9bd",
+        "ebook": {
+          "id": "11b039ec-3f88-4af3-89c1-8ac37ec1e9bd",
+          "at": "tsukimichi-vol-15",
+          "title": "Tsukimichi - Vol. 15",
+          "subtitle": "Moonlit Fantasy",
+          "description": "With over 1.4 million copies in circulation, the smash-hit fantasy returns with Volume 15!\r\n\r\nWhile visiting the Kingdom of Limia, the Kuzunoha Company makes a stop in a small nation within demon territory—Keryuneon—to take care of some business. But what they find is a country struggling to survive: brutal winter cold, relentless heavy snowfall, and a chronic labor shortage have left it in dire condition.\r\n\r\nAfter seeing the devastation firsthand, Makoto has an idea—could hot springs be the key to combating the snow and revitalizing the region?\r\n\r\nMeanwhile, when Tomoe hears that Makoto has started digging for hot springs, she explodes with excitement. A self-proclaimed Japan enthusiast, she immediately launches into plans far beyond his expectations—setting her sights on developing a full-scale hot spring resort unlike anything this world has ever seen!",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-03-28T11:55:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "bad26b2c-5ec0-451f-8ea8-7daf4eb69008",
+              "from": "2026-05-31T23:44:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "11b039ec-3f88-4af3-89c1-8ac37ec1e9bd",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 82,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "fbb92ca7-bbd5-4e67-b616-3c88dba35172",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 17,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "6b073257-8690-43f7-9cd2-fba53bf55bc9",
+        "ebook": {
+          "id": "6b073257-8690-43f7-9cd2-fba53bf55bc9",
+          "at": "tsukimichi-vol-16",
+          "title": "Tsukimichi - Vol. 16",
+          "subtitle": "Moonlit Fantasy",
+          "description": "The Kuzunoha Company accepts a request from one of Limia Kingdom's great noble houses to investigate Night Frontal, a barren marshland where the spirits have mysteriously vanished.\r\n\r\nNo sooner do they begin their survey than they are caught in a series of inexplicable phenomena. Before they can react, their entire base camp is transported deep into the heart of the swamp.\r\n\r\nAs panic spreads among the investigators, Makoto remains calm. Summoning powerful earth and fire spirits, he secures their cooperation and sets out to uncover the truth behind the cursed land.\r\n\r\nTheir destination is a colossal tree believed to be responsible for devouring the spirits and bringing ruin to the marsh.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-05-30T06:00:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "9ee18566-ae31-4c1f-a1ed-f39cca346fe6",
+              "from": "2026-05-31T23:50:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "6b073257-8690-43f7-9cd2-fba53bf55bc9",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 72,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "3a7f360d-dc55-4f20-8b26-787ceb28cb5d",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 18,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "403d440b-5fbf-4055-9b88-e03ded447dce",
+        "ebook": {
+          "id": "403d440b-5fbf-4055-9b88-e03ded447dce",
+          "at": "tsukimichi-vol-17",
+          "title": "Tsukimichi - Vol. 17",
+          "subtitle": "Moonlit Fantasy",
+          "description": "After completing his diplomatic tour of the world's nations as the representative of the Kuzunoha Company, Makoto returns to the Demiplane with an unsettling realization:\r\n\r\nAs a merchant, he has been far too naive.\r\n\r\nDetermined to face the realities of human greed and malice head-on, he seeks out Rembrandt, one of Tsige's most influential merchants and a man who understands both the public face of business and the shadows that lurk behind it.\r\n\r\nYet instead of receiving guidance, Makoto finds himself drawn into a far more complicated matter.\r\n\r\nA revolution is quietly taking shape within the rapidly developing city of Tsige, and Rembrandt wants his opinion on the plans unfolding behind the scenes.\r\n\r\nAs political ambitions, economic interests, and hidden agendas collide, the Kuzunoha Company stands on the verge of another major leap forward.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "magic",
+            "fantasy"
+          ],
+          "release": "2026-06-30T06:00:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "b8af152d-6c66-4012-89a9-98f9244d8297",
+              "from": "2026-06-01T00:16:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "403d440b-5fbf-4055-9b88-e03ded447dce",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 69,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "425e916f-27b5-4601-b8d9-3f01ab63a012",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 19,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "4f655b9d-8641-4e87-a959-5f20cea3a37d",
+        "ebook": {
+          "id": "4f655b9d-8641-4e87-a959-5f20cea3a37d",
+          "at": "tsukimichi-vol-18",
+          "title": "Tsukimichi - Vol. 18",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Coming soon.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-07-30T03:00:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": true,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "25697a2f-745a-4ee3-8fb7-35648ab27921",
+              "from": "2026-06-01T00:21:00.000Z",
+              "until": null,
+              "dollarCents": 799,
+              "deleted": false,
+              "ebookId": "4f655b9d-8641-4e87-a959-5f20cea3a37d",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 10,
+        "firstBuyerAvailable": false
+      },
+      {
+        "id": "a043288f-01aa-4bc6-a532-7778a1aa4ffc",
+        "date": "2026-07-02T04:14:19.701Z",
+        "order": 20,
+        "seriesId": "0908d142-9b5c-4aee-9701-57660ed4c60f",
+        "ebookId": "bdab36e1-5a64-4fdc-917a-4b83b4961550",
+        "ebook": {
+          "id": "bdab36e1-5a64-4fdc-917a-4b83b4961550",
+          "at": "tsukimichi-vol-19-moonlit-fantasy",
+          "title": "Tsukimichi - Vol. 19",
+          "subtitle": "Moonlit Fantasy",
+          "description": "Coming soon.",
+          "visible": true,
+          "categories": [
+            "isekai",
+            "adventure",
+            "action",
+            "fantasy",
+            "magic"
+          ],
+          "release": "2026-08-30T03:00:00.000Z",
+          "authors": [
+            "Kei Azumi"
+          ],
+          "nsfw": false,
+          "animeAdapted": false,
+          "status": "unset",
+          "prices": [
+            {
+              "id": "bc8365a3-3608-4f4f-8e3a-2a2d30adca08",
+              "from": "2026-07-02T00:00:00.000Z",
+              "until": null,
+              "dollarCents": 899,
+              "deleted": false,
+              "ebookId": "bdab36e1-5a64-4fdc-917a-4b83b4961550",
+              "seriesId": null,
+              "bundleId": null
+            }
+          ],
+          "owned": false
+        },
+        "purchaseCount": 6,
+        "firstBuyerAvailable": false
+      }
+    ],
+    "prices": [],
+    "seriesStatus": "unset",
+    "avgRating": 0,
+    "reviewsCount": 0,
+    "reviews": [],
+    "avgGlobalRating": 5,
+    "globalRatingsCount": 2,
+    "userGlobalRating": null,
+    "owned": false,
+    "purchaseInfo": null,
+    "deletedPrices": [],
+    "totalReaders": 245,
+    "readersCount": 245,
+    "ownedVolumes": [],
+    "volumeProgress": {},
+    "relatedSeries": [
+      {
+        "id": "0a237225-02a6-45a4-8e2e-18c7a401d65f",
+        "at": "the-abandoned-reincarnation-sage",
+        "title": "The Abandoned Reincarnation Sage",
+        "subtitle": "Building a Mighty Empire of Monsters Within the Monsters' Forest",
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "bf6b0708-650f-4574-8fc2-1058bbc15b6c",
+            "date": "2026-06-29T01:38:08.587Z",
+            "order": 1,
+            "seriesId": "0a237225-02a6-45a4-8e2e-18c7a401d65f",
+            "ebookId": "08d085c3-57e5-4551-8827-4a5fd60f641b",
+            "ebook": {
+              "id": "08d085c3-57e5-4551-8827-4a5fd60f641b",
+              "at": "the-abandoned-reincarnation-sage-vol-1",
+              "title": "The Abandoned Reincarnation Sage - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "187740d8-d755-4ebe-8822-7d51542b9ef6",
+        "at": "reincarnated-as-a-poor-farmer-in-another-world",
+        "title": "Reincarnated as a Poor Farmer in Another World",
+        "subtitle": "I'll Use My Modern Knowledge to Build My Own Kingdom",
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "bf3dc483-69ea-44e9-b3a9-ee6367852b7c",
+            "date": "2026-07-02T03:55:08.190Z",
+            "order": 1,
+            "seriesId": "187740d8-d755-4ebe-8822-7d51542b9ef6",
+            "ebookId": "acd185a1-25fc-4225-a33e-eeee7abc9ae0",
+            "ebook": {
+              "id": "acd185a1-25fc-4225-a33e-eeee7abc9ae0",
+              "at": "reincarnated-as-a-poor-farmer-in-another-world-vol-1",
+              "title": "Reincarnated as a Poor Farmer in Another World - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1a13fc70-71ec-417a-9c3f-0a93ba5f0505",
+        "at": "another-world-survival",
+        "title": "Another World Survival",
+        "subtitle": "Min-maxing my Support and Summoning Magic",
+        "completed": false,
+        "avgGlobalRating": 5,
+        "entries": [
+          {
+            "id": "c1792e83-2f09-4958-bde8-aef056fe10d0",
+            "date": "2026-05-30T04:17:34.763Z",
+            "order": 1,
+            "seriesId": "1a13fc70-71ec-417a-9c3f-0a93ba5f0505",
+            "ebookId": "330bde23-8b47-4049-97ac-8f6963bd4cf8",
+            "ebook": {
+              "id": "330bde23-8b47-4049-97ac-8f6963bd4cf8",
+              "at": "another-world-survival-vol-1",
+              "title": "Another World Survival - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1e95fb82-88cd-4e36-897c-12d97a0fe3d4",
+        "at": "the-dark-guildmasters-smile-would-fit-best",
+        "title": "The Dark Guildmaster's Smile Would Fit Best",
+        "subtitle": null,
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "4fa90627-cdc2-4b3f-aa49-df6b934c62f5",
+            "date": "2026-05-30T03:43:13.370Z",
+            "order": 1,
+            "seriesId": "1e95fb82-88cd-4e36-897c-12d97a0fe3d4",
+            "ebookId": "48fbaf38-09f0-425e-940b-8d7b1fc6ec4a",
+            "ebook": {
+              "id": "48fbaf38-09f0-425e-940b-8d7b1fc6ec4a",
+              "at": "the-dark-guildmasters-smile-would-fit-best-vol-1",
+              "title": "The Dark Guildmaster's Smile Would Fit Best - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "35cb5139-cdba-47a5-9142-1b6b4e36167d",
+        "at": "remonster",
+        "title": "Re:Monster",
+        "subtitle": null,
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "71ed8530-33ad-450d-aaa0-32da02b5d893",
+            "date": "2026-06-29T02:51:52.046Z",
+            "order": 1,
+            "seriesId": "35cb5139-cdba-47a5-9142-1b6b4e36167d",
+            "ebookId": "76496ec6-311d-48d8-b4cd-565005063dba",
+            "ebook": {
+              "id": "76496ec6-311d-48d8-b4cd-565005063dba",
+              "at": "remonster-vol-1",
+              "title": "Re:Monster - Vol. 1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "35e3ce30-6bc1-4d71-b056-355a8420e805",
+        "at": "i-saved-myself-with-a-potion",
+        "title": "I Saved Myself with a Potion!",
+        "subtitle": "Life in Another World",
+        "completed": false,
+        "avgGlobalRating": 0,
+        "entries": [
+          {
+            "id": "6a91cd0c-8838-409f-8ca0-9e0cc3462081",
+            "date": "2026-06-29T01:31:29.141Z",
+            "order": 1,
+            "seriesId": "35e3ce30-6bc1-4d71-b056-355a8420e805",
+            "ebookId": "a767db21-ad5d-48a8-991d-7bab40819107",
+            "ebook": {
+              "id": "a767db21-ad5d-48a8-991d-7bab40819107",
+              "at": "i-saved-myself-with-a-potion-vol-1",
+              "title": "I Saved Myself with a Potion! - Vol. 1"
+            }
+          }
+        ]
+      }
+    ],
+    "inBundles": [],
+    "shelfStatus": null,
+    "latestVolumeDate": "2026-08-30T03:00:00.000Z",
+    "nextVolumeEta": null,
+    "followCount": 7,
+    "isFollowing": false
+  }
+}
