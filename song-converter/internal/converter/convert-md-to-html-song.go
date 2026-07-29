@@ -18,7 +18,10 @@ type SongMetadata struct {
 	VerseReference string `yaml:"verse"`
 	BookLocation   string `yaml:"location"`
 	Copyright      string `yaml:"copyright"`
-	NoBreak        bool   `yaml:"no-break"`
+	// Book specific metadata
+	BookTitle string `yaml:"book-title"`
+	NoBreak   bool   `yaml:"no-break"`
+	SkipBook  bool   `yaml:"skip-book"`
 }
 
 type SongGenerationType int

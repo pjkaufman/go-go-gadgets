@@ -16,21 +16,17 @@ func AddPageNumbersAndHeader(mdInfo []MdFileInfo, bodyLocation string, otherTocL
 			return err
 		}
 
-		pageNumbers := getPageNumbers(bodyLocation, metadata.BookLocation)
-		if len(pageNumbers) != 0 {
-			mdData.PrimaryPageNumbers = pageNumbers
-		} else {
-			pageNumbers = getPageNumbers(otherTocLocation, metadata.BookLocation)
-			if len(pageNumbers) != 0 {
-				mdData.SecondaryPageNumbers = pageNumbers
-			}
+		if metadata.SkipBook {
+			continue
 		}
 
-		if len(pageNumbers) == 0 {
-			mdData.PrimaryPageNumbers = pageNumbers
-		}
+		mdData.PrimaryPageNumbers = getPageNumbers(bodyLocation, metadata.BookLocation)
+		mdData.SecondaryPageNumbers = getPageNumbers(otherTocLocation, metadata.BookLocation)
 
-		mdData.Header = getHeaderText(mdData.FileContents)
+		mdData.Header = strings.TrimSpace(metadata.BookTitle)
+		if mdData.Header == "" {
+			mdData.Header = getHeaderText(mdData.FileContents)
+		}
 	}
 
 	return nil

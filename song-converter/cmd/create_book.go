@@ -84,6 +84,10 @@ func init() {
 }
 
 // TODO: this needs to take in option for putting the songs in page order or putting them in alphabetical order...
+// TODO: needs to be able to handle multiple instances of a header and know when an entry refers to a secondary versus a primary page number
+// TODO: figure out how to have a single have two entries in ToC just with different names...
+// TODO: why is Let There Be Love being skipped?
+// TODO: can punctuation be added into lexographical comparison
 // Note: that alphabetical order will not be perfect given the discrepancy between some of the names in the digital vs. book versions
 func buildBookListItems(headerInfo []converter.MdFileInfo) string {
 	if len(headerInfo) == 0 {
