@@ -11,8 +11,9 @@ type MdFileInfo struct {
 	FileName     string
 	FileContents string
 	// book generation properties
-	Header      string
-	PageNumbers []int
+	Header               string
+	PrimaryPageNumbers   []int
+	SecondaryPageNumbers []int
 }
 
 func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, []string, error) {
@@ -30,9 +31,9 @@ func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, [
 	for i, mdData := range mdInfo {
 		if songType == Book {
 			if val, ok := pageNumberIndex[mdData.FileName]; ok {
-				pageNumber = mdData.PageNumbers[val]
+				pageNumber = mdData.PrimaryPageNumbers[val]
 			} else {
-				pageNumber = mdData.PageNumbers[0]
+				pageNumber = mdData.PrimaryPageNumbers[0]
 				pageNumberIndex[mdData.FileName] = 1
 			}
 
@@ -44,9 +45,9 @@ func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, [
 			nextPageNumber := 0
 			if nextMdData != nil {
 				if val, ok := pageNumberIndex[nextMdData.FileName]; ok {
-					nextPageNumber = nextMdData.PageNumbers[val]
+					nextPageNumber = nextMdData.PrimaryPageNumbers[val]
 				} else {
-					nextPageNumber = nextMdData.PageNumbers[0]
+					nextPageNumber = nextMdData.PrimaryPageNumbers[0]
 				}
 			}
 

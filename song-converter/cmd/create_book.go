@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -87,20 +90,40 @@ func buildBookListItems(headerInfo []converter.MdFileInfo) string {
 		return ""
 	}
 
+	c := collate.New(language.English)
+	sort.Slice(headerInfo, func(i, j int) bool {
+		return c.CompareString(headerInfo[i].FileName, headerInfo[j].FileName) < 0
+	})
+
 	var (
 		pageNumberIndex = make(map[string]int)
 		listItems       = strings.Builder{}
 		pageNumber      int
+		pageInfo        []int
+		pageFormat      string
+		startingLetter  = "A"
 	)
 	for _, headerData := range headerInfo {
+		pageInfo = headerData.PrimaryPageNumbers
+		pageFormat = "%d"
+		if len(pageInfo) == 0 {
+			pageInfo = headerData.SecondaryPageNumbers
+			pageFormat = "(%d)"
+		}
+
 		if val, ok := pageNumberIndex[headerData.FileName]; ok {
-			pageNumber = headerData.PageNumbers[val]
+			pageNumber = pageInfo[val]
 		} else {
-			pageNumber = headerData.PageNumbers[0]
+			pageNumber = pageInfo[0]
 			pageNumberIndex[headerData.FileName] = 1
 		}
 
-		fmt.Fprintf(&listItems, `<li><span class="name">%s</span><span class="page">%d</span></li>`+"\n", headerData.Header, pageNumber)
+		if startingLetter != headerData.Header[0:1] {
+			fmt.Fprintln(&listItems, "<br>")
+			startingLetter = headerData.Header[0:1]
+		}
+
+		fmt.Fprintf(&listItems, `<li><span class="name">%s</span><span class="page">%s</span></li>`+"\n", headerData.Header, fmt.Sprintf(pageFormat, pageNumber))
 	}
 
 	return listItems.String()

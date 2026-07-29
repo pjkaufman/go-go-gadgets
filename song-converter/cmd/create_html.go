@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -111,7 +111,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		logger.WriteFatal(err.Error())
 	}
 
-	sort.Strings(files)
+	slices.Sort(files)
 
 	var mdInfo = make([]converter.MdFileInfo, len(files))
 
@@ -129,23 +129,41 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		}
 	}
 
-	var converterType = converter.Digital
+	var (
+		converterType = converter.Digital
+		bodySongs     = mdInfo
+		tocSongs      = mdInfo
+	)
 	if isBook {
-		mdInfo, err = converter.FilterAndSortSongs(mdInfo, location)
+		// TODO: make it so MS is a param and not hardcoded. For now this works...
+		err = converter.AddPageNumbersAndHeader(mdInfo, location, "MS")
 		if err != nil {
 			logger.WriteFatal(err.Error())
 		}
 
+		bodySongs = make([]converter.MdFileInfo, 0, len(mdInfo))
+		tocSongs = make([]converter.MdFileInfo, 0, len(mdInfo))
+		for _, mdData := range mdInfo {
+			if len(mdData.PrimaryPageNumbers) != 0 {
+				bodySongs = append(bodySongs, mdData)
+				tocSongs = append(tocSongs, mdData)
+			} else if len(mdData.SecondaryPageNumbers) != 0 {
+				tocSongs = append(tocSongs, mdData)
+			}
+		}
+
+		bodySongs = converter.SortSongs(mdInfo)
+
 		converterType = converter.Book
 	}
 
-	songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converterType)
+	songsHtml, headerIds, err := converter.BuildHtmlSongs(bodySongs, converterType)
 	if err != nil {
 		logger.WriteFatal(err.Error())
 	}
 
 	if isBook {
-		writeToFileOrStdOut(fmt.Sprintf(bookFormat, coverHtml, buildBookListItems(mdInfo), songsHtml), bodyHtmlOutputFile)
+		writeToFileOrStdOut(fmt.Sprintf(bookFormat, coverHtml, buildBookListItems(tocSongs), songsHtml), bodyHtmlOutputFile)
 	} else {
 		writeToFileOrStdOut(fmt.Sprintf(fileFormat, coverHtml, buildListItems(headerIds), songsHtml), bodyHtmlOutputFile)
 	}
