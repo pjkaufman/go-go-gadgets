@@ -136,7 +136,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 	)
 	if isBook {
 		// TODO: make it so MS is a param and not hardcoded. For now this works...
-		err = converter.AddPageNumbersAndHeader(mdInfo, location, "MS")
+		err = converter.AddPageNumbersAlternateTitleAndHeader(mdInfo, location, "MS")
 		if err != nil {
 			logger.WriteFatal(err.Error())
 		}

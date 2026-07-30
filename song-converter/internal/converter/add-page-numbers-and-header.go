@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func AddPageNumbersAndHeader(mdInfo []MdFileInfo, bodyLocation string, otherTocLocation string) error {
+func AddPageNumbersAlternateTitleAndHeader(mdInfo []MdFileInfo, bodyLocation string, otherTocLocation string) error {
 	var mdData *MdFileInfo
 	for i := range mdInfo {
 		mdData = &(mdInfo[i])
@@ -27,6 +27,8 @@ func AddPageNumbersAndHeader(mdInfo []MdFileInfo, bodyLocation string, otherTocL
 		if mdData.Header == "" {
 			mdData.Header = getHeaderText(mdData.FileContents)
 		}
+
+		mdData.AlternateTitle = strings.TrimSpace(metadata.AlternateTitle)
 	}
 
 	return nil

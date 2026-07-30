@@ -12,6 +12,7 @@ type MdFileInfo struct {
 	FileContents string
 	// book generation properties
 	Header               string
+	AlternateTitle       string
 	PrimaryPageNumbers   []int
 	SecondaryPageNumbers []int
 }
