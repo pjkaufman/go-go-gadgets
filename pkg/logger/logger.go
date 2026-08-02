@@ -16,7 +16,8 @@ func WriteFatal(msg string) {
 }
 
 func WriteFatalf(format string, a ...any) {
-	fmt.Fprintf(os.Stderr, errorStyle.Render(format), a...)
+	msg := fmt.Sprintf(format, a...)
+	fmt.Fprintln(os.Stderr, errorStyle.Render(msg))
 	os.Exit(-1)
 }
 
@@ -25,7 +26,8 @@ func WriteInfo(msg string) {
 }
 
 func WriteInfof(format string, a ...any) {
-	fmt.Fprintf(os.Stdout, format, a...)
+	msg := fmt.Sprintf(format, a...)
+	fmt.Fprintln(os.Stdout, msg)
 }
 
 func WriteWarn(msg string) {
@@ -33,7 +35,8 @@ func WriteWarn(msg string) {
 }
 
 func WriteWarnf(format string, a ...any) {
-	fmt.Fprintf(os.Stdout, warningStyle.Render(format), a...)
+	msg := fmt.Sprintf(format, a...)
+	fmt.Fprintln(os.Stdout, warningStyle.Render(msg))
 }
 
 func WriteInfoWithColor(msg string, displayColor color.Color) {
@@ -46,7 +49,7 @@ func GetInputString(prompt string) string {
 	reader := bufio.NewReader(os.Stdin)
 	response, err := reader.ReadString('\n')
 	if err != nil {
-		WriteFatalf("failed to read in the string provided: %s\n", err)
+		WriteFatalf("failed to read in the string provided: %s", err)
 	}
 
 	response = strings.TrimRight(response, "\n")
@@ -59,7 +62,7 @@ func GetInputInt(prompt string) int {
 	var response int
 	_, err := fmt.Scanf("%d", &response)
 	if err != nil {
-		WriteFatalf("failed to read in the integer from the user: %s\n", err)
+		WriteFatalf("failed to read in the integer from the user: %s", err)
 	}
 
 	return response

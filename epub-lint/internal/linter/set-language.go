@@ -2,108 +2,141 @@ package linter
 
 import (
 	"strings"
+	"unicode"
 )
 
 const (
-	langAttribute    = "lang="
-	xmlLangAttribute = "xml:lang="
-	openingHtmlTag   = "<html"
+	openingHTMLTag = "<html"
 )
 
 func EnsureLanguageIsSet(text, lang string) string {
-	var htmlOpenStart = strings.Index(text, openingHtmlTag)
-	if htmlOpenStart == -1 {
+	htmlStart := strings.Index(text, openingHTMLTag)
+	if htmlStart == -1 {
 		return text
 	}
 
-	var htmlOpenEnd = strings.Index(text[htmlOpenStart:], `>`)
-	if htmlOpenEnd == -1 {
+	tagEnd := strings.IndexByte(text[htmlStart:], '>')
+	if tagEnd == -1 {
 		return text
 	}
+	tagEnd += htmlStart
 
-	var (
-		attributeEnd  = htmlOpenStart + htmlOpenEnd
-		htmlEl        = text[htmlOpenStart:attributeEnd]
-		newHtmlEl     strings.Builder
-		langAttrIndex = strings.Index(htmlEl, langAttribute)
-	)
-	if langAttrIndex == -1 {
-		return text[:attributeEnd] + " " + langAttribute + "\"" + lang + "\" " + xmlLangAttribute + "\"" + lang + "\"" + text[attributeEnd:]
-	}
+	tag := text[htmlStart:tagEnd]
 
-	var (
-		regularLangAttrIsHandled, xmlLangAttributeIsHandled bool
-		startOfAttr, endOfAttr                              int
-		endingIndicator, char                               string
-		langVal                                             strings.Builder
-	)
+	var out strings.Builder
+	out.Grow(len(tag) + 32)
 
-	handleLangAttribute := func() {
-		startOfAttr = langAttrIndex + len(langAttribute)
-		endOfAttr = startOfAttr + 1
-		endingIndicator = htmlEl[startOfAttr:endOfAttr]
-		langVal.Reset()
-		for endOfAttr < len(htmlEl) {
-			char = htmlEl[endOfAttr : endOfAttr+1]
-			if char == endingIndicator {
-				break
+	out.WriteString("<html")
+
+	i := len("<html")
+
+	foundLang := false
+	foundXMLLang := false
+
+	for i < len(tag) {
+		// Copy whitespace.
+		start := i
+		for i < len(tag) && unicode.IsSpace(rune(tag[i])) {
+			i++
+		}
+		out.WriteString(tag[start:i])
+
+		if i >= len(tag) {
+			break
+		}
+
+		// Parse attribute name.
+		nameStart := i
+		for i < len(tag) &&
+			tag[i] != '=' &&
+			!unicode.IsSpace(rune(tag[i])) {
+			i++
+		}
+
+		name := tag[nameStart:i]
+
+		// Copy spaces before '='.
+		wsStart := i
+		for i < len(tag) && unicode.IsSpace(rune(tag[i])) {
+			i++
+		}
+		out.WriteString(tag[nameStart:wsStart])
+
+		// Boolean attribute.
+		if i >= len(tag) || tag[i] != '=' {
+			continue
+		}
+
+		out.WriteByte('=')
+		i++
+
+		// Spaces after '='.
+		wsStart = i
+		for i < len(tag) && unicode.IsSpace(rune(tag[i])) {
+			i++
+		}
+		out.WriteString(tag[wsStart:i])
+
+		if i >= len(tag) {
+			break
+		}
+
+		quote := tag[i]
+		if quote != '"' && quote != '\'' {
+			// Invalid HTML; just copy remainder.
+			out.WriteString(tag[i:])
+			break
+		}
+
+		valueStart := i + 1
+		valueEnd := strings.IndexByte(tag[valueStart:], quote)
+		if valueEnd == -1 {
+			out.WriteString(tag[i:])
+			break
+		}
+		valueEnd += valueStart
+
+		switch name {
+		case "lang":
+			foundLang = true
+			out.WriteByte(quote)
+			if strings.TrimSpace(tag[valueStart:valueEnd]) == "" {
+				out.WriteString(lang)
+			} else {
+				out.WriteString(tag[valueStart:valueEnd])
 			}
+			out.WriteByte(quote)
 
-			langVal.WriteString(char)
-			endOfAttr++
+		case "xml:lang":
+			foundXMLLang = true
+			out.WriteByte(quote)
+			if strings.TrimSpace(tag[valueStart:valueEnd]) == "" {
+				out.WriteString(lang)
+			} else {
+				out.WriteString(tag[valueStart:valueEnd])
+			}
+			out.WriteByte(quote)
+
+		default:
+			out.WriteByte(quote)
+			out.WriteString(tag[valueStart:valueEnd])
+			out.WriteByte(quote)
 		}
 
-		if strings.TrimSpace(langVal.String()) == "" {
-			newHtmlEl.WriteString(htmlEl[langAttrIndex : startOfAttr+1])
-			newHtmlEl.WriteString(lang)
-			newHtmlEl.WriteString(endingIndicator)
-		} else {
-			newHtmlEl.WriteString(htmlEl[langAttrIndex : endOfAttr+1])
-		}
+		i = valueEnd + 1
 	}
 
-	newHtmlEl.WriteString(htmlEl[:langAttrIndex])
-	if htmlEl[langAttrIndex-1:langAttrIndex] == ":" {
-		xmlLangAttributeIsHandled = true
-	} else {
-		regularLangAttrIsHandled = true
+	if !foundLang {
+		out.WriteString(` lang="`)
+		out.WriteString(lang)
+		out.WriteByte('"')
 	}
 
-	handleLangAttribute()
-
-	langAttrIndex = strings.Index(htmlEl[endOfAttr:], langAttribute)
-	if langAttrIndex != -1 {
-		langAttrIndex += endOfAttr
-
-		newHtmlEl.WriteString(htmlEl[endOfAttr+1 : langAttrIndex])
-		if htmlEl[langAttrIndex-1:langAttrIndex] == ":" {
-			xmlLangAttributeIsHandled = true
-		} else {
-			regularLangAttrIsHandled = true
-		}
-
-		handleLangAttribute()
+	if !foundXMLLang {
+		out.WriteString(` xml:lang="`)
+		out.WriteString(lang)
+		out.WriteByte('"')
 	}
 
-	if !regularLangAttrIsHandled {
-		newHtmlEl.WriteString(" ")
-		newHtmlEl.WriteString(langAttribute)
-		newHtmlEl.WriteString("\"")
-		newHtmlEl.WriteString(lang)
-		newHtmlEl.WriteString("\"")
-	}
-
-	if !xmlLangAttributeIsHandled {
-		newHtmlEl.WriteString(" ")
-		newHtmlEl.WriteString(xmlLangAttribute)
-		newHtmlEl.WriteString("\"")
-		newHtmlEl.WriteString(lang)
-		newHtmlEl.WriteString("\"")
-	}
-
-	if endOfAttr < len(htmlEl)-1 {
-		newHtmlEl.WriteString(htmlEl[endOfAttr+1:])
-	}
-
-	return text[0:htmlOpenStart] + newHtmlEl.String() + text[attributeEnd:]
+	return text[:htmlStart] + out.String() + text[tagEnd:]
 }

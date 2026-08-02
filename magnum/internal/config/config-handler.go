@@ -26,7 +26,7 @@ func WriteConfig(config *Config) {
 
 	jsonConfig, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
-		logger.WriteFatalf("failed to json marshal config: %s\n", err)
+		logger.WriteFatalf("failed to json marshal config: %s", err)
 	}
 
 	configFile := filehandler.JoinPath(configDir, configFileName)
@@ -67,7 +67,7 @@ func GetConfig() *Config {
 
 	err = json.Unmarshal([]byte(jsonConfig), config)
 	if err != nil {
-		logger.WriteFatalf("failed to json unmarshal config from %q: %s\n", configFile, err)
+		logger.WriteFatalf("failed to json unmarshal config from %q: %s", configFile, err)
 	}
 
 	return config

@@ -81,7 +81,7 @@ var EditCmd = &cobra.Command{
 		}
 
 		if !foundSeriesToUpdate {
-			logger.WriteFatalf("No series with the name %q is in the series list.\n", name)
+			logger.WriteFatalf("No series with the name %q is in the series list.", name)
 		}
 
 		var changeMade bool

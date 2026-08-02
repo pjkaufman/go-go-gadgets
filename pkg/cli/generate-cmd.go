@@ -83,7 +83,7 @@ func AddGenerateCmd(rootCmd *cobra.Command, title, description string, todos []s
 	generateCmd.Flags().StringVarP(&generationDir, "generation-dir", "g", "", "the path to the base folder of the "+rootCmd.Use+" program source code")
 	err := generateCmd.MarkFlagRequired("generation-dir")
 	if err != nil {
-		logger.WriteFatalf("failed to mark flag \"generation-dir\" as required on generate command: %v\n", err)
+		logger.WriteFatalf("failed to mark flag \"generation-dir\" as required on generate command: %v", err)
 	}
 
 	// keep from showing up in the output of the command generation

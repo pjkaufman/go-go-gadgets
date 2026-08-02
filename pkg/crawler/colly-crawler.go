@@ -32,7 +32,7 @@ func CreateNewCollyCrawler(userAgent string, verbose bool, allowedDomains []stri
 	}
 
 	c.OnError(func(_ *colly.Response, err error) {
-		logger.WriteFatalf("Something went wrong making an http call: %s\n", err)
+		logger.WriteFatalf("Something went wrong making an http call: %s", err)
 	})
 
 	return c

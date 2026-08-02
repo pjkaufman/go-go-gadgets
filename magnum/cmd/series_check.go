@@ -188,11 +188,11 @@ func sitehandlerGetSeriesVolumeInfo(seriesInfo config.SeriesInfo, handler siteha
 	}
 
 	if len(volumes) == -1 {
-		logger.WriteFatalf("The %s light novels were not found for %q. The HTML for the site or page may have changed.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+		logger.WriteFatalf("The %s light novels were not found for %q. The HTML for the site or page may have changed.", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
 	}
 
 	if numVolumes == 0 {
-		logger.WriteInfof("The %s light novels do not exist for series %q.\n", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
+		logger.WriteInfof("The %s light novels do not exist for series %q.", config.PublisherToDisplayString(seriesInfo.Publisher), seriesInfo.Name)
 
 		return seriesInfo
 	}
