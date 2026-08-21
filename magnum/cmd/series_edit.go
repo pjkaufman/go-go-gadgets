@@ -18,7 +18,7 @@ var (
 			flags.NewStringFlag(false, false, &seriesName, "name", "n", "", "the name of the series to edit"),
 			flags.NewEnumFlag(false, false, &seriesPublisher, "publisher", "p", "", "the publisher of the series", config.AllPublisherTypes()),
 			flags.NewEnumFlag(false, false, &seriesType, "type", "t", "", "the series type", config.AllSeriesTypes()),
-			flags.NewEnumFlag(false, false, &seriesStatus, "status", "s", "", "status to set for the selected book (O/H/C)", config.AllStatuses()),
+			flags.NewEnumFlag(false, false, &bookStatus, "status", "s", "", "status to set for the selected book (O/H/C)", config.AllStatuses()),
 			flags.NewStringFlag(false, false, &slugOverride, "slug", "r", "", "the slug for the series to use instead of the one based on the series name"),
 			flags.NewIntFlag(false, false, &wikipediaTablesToParseOverride, "wikipedia-table-parse-override", "o", 0, "the amount of tables that should parsed in the light novels section of the wikipedia page if it should not be all of them"),
 			flags.NewBoolFlag(false, false, &interactiveMode, "interactive", "i", false, "gets the name, publisher, series type, and series status interactively when not provided"),
