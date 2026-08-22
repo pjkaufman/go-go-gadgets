@@ -15,6 +15,10 @@ type MdFileInfo struct {
 	AlternateTitle       string
 	PrimaryPageNumbers   []int
 	SecondaryPageNumbers []int
+	// in order to account for a couple of secondary only scenarios
+	// this allows the program to know when it should iterate over all secondary page numbers
+	// or just the one since another will be the other entry
+	HasBeenDuplicatedForSecondaryOnly bool
 }
 
 func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, []string, error) {

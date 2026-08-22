@@ -64,7 +64,7 @@ func ConvertMdToHtmlSong(filePath, fileContents string, songType SongGenerationT
 			extraClass = " end-page"
 		}
 
-		if metadata.NoBreak {
+		if metadata.NoBreak || isLastOnPage {
 			endingContent = ""
 		}
 	}

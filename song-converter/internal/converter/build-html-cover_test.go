@@ -47,7 +47,7 @@ func TestBuildHtmlCover(t *testing.T) {
 	for name, args := range buildHtmlCoverTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			actual := converter.BuildHtmlCover(args.inputCoverMd, args.coverType, args.extraStyleCss, args.dateCreated)
+			actual := converter.BuildHtmlCover(args.inputCoverMd, args.coverType, "center", args.extraStyleCss, args.dateCreated)
 
 			assert.Equal(t, args.expectedHtml, actual)
 		})
