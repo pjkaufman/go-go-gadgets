@@ -92,9 +92,9 @@ func TestBuildMultipleBookAlphabeticalListItems(t *testing.T) {
 			actual, err := tableofcontents.BuildMultipleBookAlphabeticalListItems(nil, args.headerInfo)
 
 			if args.expectError {
-				require.NoError(t, err)
-			} else {
 				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 
 			assert.Equal(t, args.expected, actual)
