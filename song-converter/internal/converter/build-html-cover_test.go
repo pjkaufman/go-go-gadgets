@@ -12,11 +12,10 @@ import (
 )
 
 type buildHtmlCoverTestCase struct {
-	inputCoverMd  string
-	expectedHtml  string
-	coverType     string
-	extraStyleCss string
-	dateCreated   time.Time
+	inputCoverMd string
+	expectedHtml string
+	coverType    string
+	dateCreated  time.Time
 }
 
 var buildHtmlCoverTestCases = map[string]buildHtmlCoverTestCase{

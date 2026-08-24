@@ -10,6 +10,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+// BuildMultipleBookAlphabeticalListItems
 // Note: that alphabetical order will not be perfect given the discrepancy between some of the names in the digital vs. book versions
 func BuildMultipleBookAlphabeticalListItems(_ []string, headerInfo []converter.MdFileInfo) (string, error) {
 	if len(headerInfo) == 0 {

@@ -11,6 +11,7 @@ import (
 
 	sitehandler "github.com/pjkaufman/go-go-gadgets/magnum/internal/site-handler"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/slug"
+	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 )
 
@@ -84,11 +85,12 @@ func getSeriesData(baseUrl, series, userAgent string, verbose bool) (*JSONVolume
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", userAgent)
 
+	//nolint:bodyclose // this body is being closed by try close, but the linter does not catch that
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make http request to Hanashi Media: %w", err)
 	}
-	defer resp.Body.Close()
+	defer filehandler.TryClose(fmt.Sprintf("%q response body", url), resp.Body)
 
 	var (
 		body, _    = io.ReadAll(resp.Body)

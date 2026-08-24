@@ -152,7 +152,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 			}
 		}
 
-		bodySongs = converter.SortSongs(mdInfo)
+		bodySongs = converter.SortSongs(bodySongs)
 
 		converterType = converter.Book
 	}

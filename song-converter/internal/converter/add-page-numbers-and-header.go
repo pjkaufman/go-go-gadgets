@@ -59,7 +59,6 @@ func getPageNumbers(location, locations string) []int {
 func getHeaderText(content string) string {
 	var m = h1Regex.FindStringSubmatch(content)
 	if len(m) != 0 {
-
 		return m[1]
 	}
 
