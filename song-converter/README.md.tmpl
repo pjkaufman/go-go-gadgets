@@ -4,6 +4,22 @@
 
 {{ .Description }}
 
+## YAML Song Metadata
+
+| Property | Usage | Used in Digital PDF (Y/N) | Used in Digital Book PDF (Y/N) |
+| -------- | ----- | ------------------------- | ------------------------------ |
+| `melody` | The melody that the song is to be sung or played to. | Y | Y |
+| `key` | The key or keys the song can be played in.  | Y | Y |
+| `authors` | The author or authors of the song. | Y | Y |
+| `in-church` | Whether or not the author is a part of GMI. If they are, their name is bolded in the file. | Y | Y |
+| `verse` | The Bible verse or verses referenced or used as inspiration for the song. | Y | Y |
+| `location` | All the places where the song is found in the source books which can be multiple times in a single book. | Y | N |
+| `copyright` | Who owns the copyright to the song if it is not something from someone in GMI. | N | N |
+| `book-title` | The title of the song to use for the song instead of the song's title in the markdown. _Note: if there is an alternate title it may only be used for the first entry of the song in the Table of Contents._ | N | Y |
+| `alternate-title` | The other name by which the song is known which should be used in the Table of Contents. This is typically used when you have two names for a song that shows up one time, one time in a primary and secondary location, or multiple times in the same location where you want the title to differ for entries or just be shown under both names if it only has one location. | N | Y |
+| `no-break` | Whether or not the book version of the song should skip the line break after the song if it doesn't end a page. This is meant to help with keeping a set of songs on the same page. | N | Y |
+| `skip-book` | Whether or not to skip the song when dealing with book PDF generation. This is meant for situations where a song exists and is the equivalent of something in the book, but should not actually be used. | N | Y |
+
 {{- if .Todos }}
 
 ## TODOs

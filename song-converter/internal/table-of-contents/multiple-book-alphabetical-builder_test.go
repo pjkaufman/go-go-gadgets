@@ -11,12 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/**
-Test cases:
-- Song only present in the secondary book with no alternate title and present multiple times gets its entries printed back to back
-- TODO: case for present in both primary and secondary books...
-*/
-
 type buildMultipleBookAlphabeticalListItemsTestCase struct {
 	expected    string
 	expectError bool
