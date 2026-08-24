@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -11,6 +11,7 @@ import (
 	filehandler "github.com/pjkaufman/go-go-gadgets/pkg/file-handler"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
+	tableofcontents "github.com/pjkaufman/go-go-gadgets/song-converter/internal/table-of-contents"
 	"github.com/spf13/cobra"
 )
 
@@ -82,11 +83,11 @@ var createHtmlCmd = &cobra.Command{
 		return createHtmlFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, versionDescriptor, "", false)
+		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, versionDescriptor, "center", "", false, tableofcontents.BuildDigitalListItems)
 	},
 }
 
-func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, extraCss string, isBook bool) {
+func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, titleAlignment, secondaryLocation string, isBook bool, tocBuilder tableofcontents.TocBuilder) {
 	var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 	if isWritingToFile {
 		logger.WriteInfo("Converting file to html cover")
@@ -96,7 +97,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		logger.WriteFatal(err.Error())
 	}
 
-	coverHtml := converter.BuildHtmlCover(coverMd, bookType, extraCss, time.Now())
+	coverHtml := converter.BuildHtmlCover(coverMd, bookType, titleAlignment, time.Now())
 
 	if isWritingToFile {
 		logger.WriteInfo("Finished creating html cover file")
@@ -111,7 +112,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		logger.WriteFatal(err.Error())
 	}
 
-	sort.Strings(files)
+	slices.Sort(files)
 
 	var mdInfo = make([]converter.MdFileInfo, len(files))
 
@@ -129,26 +130,49 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		}
 	}
 
-	var converterType = converter.Digital
+	var (
+		converterType = converter.Digital
+		bodySongs     = mdInfo
+		tocSongs      = mdInfo
+	)
 	if isBook {
-		mdInfo, err = converter.FilterAndSortSongs(mdInfo, location)
+		err = converter.AddPageNumbersAlternateTitleAndHeader(mdInfo, location, secondaryLocation)
 		if err != nil {
 			logger.WriteFatal(err.Error())
 		}
 
+		bodySongs = make([]converter.MdFileInfo, 0, len(mdInfo))
+		tocSongs = make([]converter.MdFileInfo, 0, len(mdInfo))
+		for _, mdData := range mdInfo {
+			if len(mdData.PrimaryPageNumbers) != 0 {
+				bodySongs = append(bodySongs, mdData)
+				tocSongs = append(tocSongs, mdData)
+			} else if len(mdData.SecondaryPageNumbers) != 0 {
+				tocSongs = append(tocSongs, mdData)
+			}
+		}
+
+		bodySongs = converter.SortSongs(bodySongs)
+
 		converterType = converter.Book
 	}
 
-	songsHtml, headerIds, err := converter.BuildHtmlSongs(mdInfo, converterType)
+	songsHtml, headerIds, err := converter.BuildHtmlSongs(bodySongs, converterType)
 	if err != nil {
 		logger.WriteFatal(err.Error())
 	}
 
+	var format = fileFormat
 	if isBook {
-		writeToFileOrStdOut(fmt.Sprintf(bookFormat, coverHtml, buildBookListItems(mdInfo), songsHtml), bodyHtmlOutputFile)
-	} else {
-		writeToFileOrStdOut(fmt.Sprintf(fileFormat, coverHtml, buildListItems(headerIds), songsHtml), bodyHtmlOutputFile)
+		format = bookFormat
 	}
+
+	tocContent, err := tocBuilder(headerIds, tocSongs)
+	if err != nil {
+		logger.WriteFatal(err.Error())
+	}
+
+	writeToFileOrStdOut(fmt.Sprintf(format, coverHtml, tocContent, songsHtml), bodyHtmlOutputFile)
 
 	if isWritingToFile {
 		logger.WriteInfo("Finished converting Markdown files to html")
@@ -181,17 +205,4 @@ func init() {
 	if err != nil {
 		logger.WriteFatal(err.Error())
 	}
-}
-
-func buildListItems(headerIds []string) string {
-	if len(headerIds) == 0 {
-		return ""
-	}
-
-	var listItems = strings.Builder{}
-	for _, headerId := range headerIds {
-		fmt.Fprintf(&listItems, `<li><a href="#%s"></a></li>`+"\n", headerId)
-	}
-
-	return listItems.String()
 }

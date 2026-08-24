@@ -18,7 +18,11 @@ type SongMetadata struct {
 	VerseReference string `yaml:"verse"`
 	BookLocation   string `yaml:"location"`
 	Copyright      string `yaml:"copyright"`
+	// Book specific metadata
+	BookTitle      string `yaml:"book-title"`
+	AlternateTitle string `yaml:"alternate-title"`
 	NoBreak        bool   `yaml:"no-break"`
+	SkipBook       bool   `yaml:"skip-book"`
 }
 
 type SongGenerationType int
@@ -60,7 +64,7 @@ func ConvertMdToHtmlSong(filePath, fileContents string, songType SongGenerationT
 			extraClass = " end-page"
 		}
 
-		if metadata.NoBreak {
+		if metadata.NoBreak || isLastOnPage {
 			endingContent = ""
 		}
 	}

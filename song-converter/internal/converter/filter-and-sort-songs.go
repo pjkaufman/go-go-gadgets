@@ -3,8 +3,9 @@ package converter
 import (
 	"regexp"
 	"sort"
-	"strconv"
-	"strings"
+
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 type filterData struct {
@@ -14,24 +15,14 @@ type filterData struct {
 
 var h1Regex = regexp.MustCompile("\n#\\s+(.+)\n")
 
-func FilterAndSortSongs(mdInfo []MdFileInfo, location string) ([]MdFileInfo, error) {
+func SortSongs(mdInfo []MdFileInfo) []MdFileInfo {
 	var pageInfo = make([]filterData, 0, len(mdInfo))
 	for _, mdData := range mdInfo {
-		var metadata SongMetadata
-		_, err := parseFrontmatter(mdData.FilePath, mdData.FileContents, &metadata)
-		if err != nil {
-			return nil, err
-		}
-
-		pageNumbers := getPageNumbers(location, metadata.BookLocation)
-		if len(pageNumbers) == 0 {
+		if len(mdData.PrimaryPageNumbers) == 0 {
 			continue
 		}
 
-		mdData.PageNumbers = pageNumbers
-		mdData.Header = getHeaderText(mdData.FileContents)
-
-		for _, pageNumber := range pageNumbers {
+		for _, pageNumber := range mdData.PrimaryPageNumbers {
 			pageInfo = append(pageInfo, filterData{
 				mdInfo:     &mdData,
 				pageNumber: pageNumber,
@@ -39,12 +30,13 @@ func FilterAndSortSongs(mdInfo []MdFileInfo, location string) ([]MdFileInfo, err
 		}
 	}
 
+	c := collate.New(language.English)
 	sort.Slice(pageInfo, func(i, j int) bool {
 		if pageInfo[i].pageNumber != pageInfo[j].pageNumber {
 			return pageInfo[i].pageNumber < pageInfo[j].pageNumber
 		}
 
-		return pageInfo[i].mdInfo.FileName < pageInfo[j].mdInfo.FileName
+		return c.CompareString(pageInfo[i].mdInfo.FileName, pageInfo[j].mdInfo.FileName) < 0
 	})
 
 	var newMdInfo = make([]MdFileInfo, len(pageInfo))
@@ -52,32 +44,5 @@ func FilterAndSortSongs(mdInfo []MdFileInfo, location string) ([]MdFileInfo, err
 		newMdInfo[i] = *pageData.mdInfo
 	}
 
-	return newMdInfo, nil
-}
-
-func getPageNumbers(location, locations string) []int {
-	var possibleLocations = strings.Split(strings.ReplaceAll(strings.ReplaceAll(locations, "(", ""), ")", ""), " ")
-
-	var pageNumbers []int
-	for _, possibleLocation := range possibleLocations {
-		if pageNumberString, hasPrefix := strings.CutPrefix(possibleLocation, location); hasPrefix {
-			pageNumber, err := strconv.ParseFloat(pageNumberString, 64)
-			if err != nil {
-				continue
-			}
-
-			pageNumbers = append(pageNumbers, int(pageNumber))
-		}
-	}
-
-	return pageNumbers
-}
-
-func getHeaderText(content string) string {
-	var m = h1Regex.FindStringSubmatch(content)
-	if len(m) != 0 {
-		return m[1]
-	}
-
-	return ""
+	return newMdInfo
 }

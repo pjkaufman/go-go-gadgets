@@ -52,7 +52,8 @@ func HtmlToText(source string) []string {
 			txt = strings.ReplaceAll(txt, "\u00A0", " ") // Convert &nbsp; (U+00A0) to space
 			if inMetadataDiv {
 				// adding the space makes sure that when we add the different metadata, it will have spaces between content even if there are no empty pieces of metadata between them
-				metadataBuf.WriteString(" " + txt)
+				metadataBuf.WriteString(" ")
+				metadataBuf.WriteString(txt)
 			} else {
 				lineBuf.WriteString(txt)
 			}

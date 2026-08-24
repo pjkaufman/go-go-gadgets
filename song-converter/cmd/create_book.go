@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
-	"github.com/pjkaufman/go-go-gadgets/song-converter/internal/converter"
+	tableofcontents "github.com/pjkaufman/go-go-gadgets/song-converter/internal/table-of-contents"
 	"github.com/spf13/cobra"
 )
 
@@ -29,10 +28,11 @@ const (
 </html>`
 )
 
+var secondaryLocation string
 var createBookFlags = flags.Flags{
 	Flags: []flags.Flag{
 		flags.NewStringFlag(true, false, &location, "location", "l", "", "the specific book to recreate by filtering songs down to just that book location"),
-		// TODO: add a sort type for alphabetical and a sort type for in order for the TOC order...
+		flags.NewStringFlag(false, false, &secondaryLocation, "secondary-location", "", "", "a second book to include in the table of contents for the book to create"),
 	},
 }
 
@@ -62,7 +62,16 @@ var createBookCmd = &cobra.Command{
 		return createBookFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", "font-size: 52pt;", true)
+		var (
+			tocBuilder     = tableofcontents.BuildBookPageOrderListItems
+			titleAlignment = "center"
+		)
+		if strings.TrimSpace(secondaryLocation) != "" {
+			tocBuilder = tableofcontents.BuildMultipleBookAlphabeticalListItems
+			titleAlignment = "left"
+		}
+
+		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", titleAlignment, secondaryLocation, true, tocBuilder)
 	},
 }
 
@@ -78,30 +87,4 @@ func init() {
 	if err != nil {
 		logger.WriteFatal(err.Error())
 	}
-}
-
-// TODO: this needs to take in option for putting the songs in page order or putting them in alphabetical order...
-// Note: that alphabetical order will not be perfect given the discrepancy between some of the names in the digital vs. book versions
-func buildBookListItems(headerInfo []converter.MdFileInfo) string {
-	if len(headerInfo) == 0 {
-		return ""
-	}
-
-	var (
-		pageNumberIndex = make(map[string]int)
-		listItems       = strings.Builder{}
-		pageNumber      int
-	)
-	for _, headerData := range headerInfo {
-		if val, ok := pageNumberIndex[headerData.FileName]; ok {
-			pageNumber = headerData.PageNumbers[val]
-		} else {
-			pageNumber = headerData.PageNumbers[0]
-			pageNumberIndex[headerData.FileName] = 1
-		}
-
-		fmt.Fprintf(&listItems, `<li><span class="name">%s</span><span class="page">%d</span></li>`+"\n", headerData.Header, pageNumber)
-	}
-
-	return listItems.String()
 }
