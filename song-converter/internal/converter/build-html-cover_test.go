@@ -32,13 +32,6 @@ var buildHtmlCoverTestCases = map[string]buildHtmlCoverTestCase{
 		coverType:    "Unabridged",
 		dateCreated:  time.Date(2021, time.January, 1, 0, 0, 0, 0, time.Local),
 	},
-	"a valid file with extra css provided should properly get turned into html and respect the type and created date info": {
-		inputCoverMd:  coverFileMd,
-		expectedHtml:  fmt.Sprintf(coverFileHtmlFormat, "; font-size: 52pt;", "unabridged", "Unabridged", "Jan 2021"),
-		coverType:     "Unabridged",
-		extraStyleCss: "font-size: 52pt;",
-		dateCreated:   time.Date(2021, time.January, 1, 0, 0, 0, 0, time.Local),
-	},
 }
 
 func TestBuildHtmlCover(t *testing.T) {
@@ -47,7 +40,7 @@ func TestBuildHtmlCover(t *testing.T) {
 	for name, args := range buildHtmlCoverTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			actual := converter.BuildHtmlCover(args.inputCoverMd, args.coverType, "center", args.extraStyleCss, args.dateCreated)
+			actual := converter.BuildHtmlCover(args.inputCoverMd, args.coverType, "center", args.dateCreated)
 
 			assert.Equal(t, args.expectedHtml, actual)
 		})

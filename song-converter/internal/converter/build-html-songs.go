@@ -56,8 +56,7 @@ func BuildHtmlSongs(mdInfo []MdFileInfo, songType SongGenerationType) (string, [
 				}
 			}
 
-			// this is not needed for the last page, so we will use this for all pages except that one
-			isLastOnPage = nextMdData != nil && pageNumber != nextPageNumber
+			isLastOnPage = nextMdData == nil || pageNumber != nextPageNumber
 		}
 
 		fileContentInHtml, err := ConvertMdToHtmlSong(mdData.FilePath, mdData.FileContents, songType, isLastOnPage)

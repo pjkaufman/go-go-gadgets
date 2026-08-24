@@ -35,6 +35,10 @@ func AddPageNumbersAlternateTitleAndHeader(mdInfo []MdFileInfo, bodyLocation str
 }
 
 func getPageNumbers(location, locations string) []int {
+	if strings.TrimSpace(location) == "" {
+		return nil
+	}
+
 	var possibleLocations = strings.Split(strings.ReplaceAll(strings.ReplaceAll(locations, "(", ""), ")", ""), " ")
 
 	var pageNumbers []int

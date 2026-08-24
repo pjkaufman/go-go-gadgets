@@ -10,9 +10,8 @@ import (
 	"golang.org/x/text/language"
 )
 
-// TODO: this needs to take in option for putting the songs in page order or putting them in alphabetical order... (make it another function...)
 // Note: that alphabetical order will not be perfect given the discrepancy between some of the names in the digital vs. book versions
-func BuildMultipleFileAlphabeticalListItems(_ []string, headerInfo []converter.MdFileInfo) (string, error) {
+func BuildMultipleBookAlphabeticalListItems(_ []string, headerInfo []converter.MdFileInfo) (string, error) {
 	if len(headerInfo) == 0 {
 		return "", nil
 	}
@@ -58,9 +57,9 @@ func BuildMultipleFileAlphabeticalListItems(_ []string, headerInfo []converter.M
 				continue
 			case 1:
 				headerData.HasBeenDuplicatedForSecondaryOnly = true
+				headerData.SecondaryPageNumbers = append(headerData.SecondaryPageNumbers, headerData.SecondaryPageNumbers...)
 				headerInfo[i] = headerData
 
-				headerData.SecondaryPageNumbers = append(headerData.SecondaryPageNumbers, headerData.SecondaryPageNumbers...)
 				headerData.Header = headerData.AlternateTitle
 				headerData.AlternateTitle = ""
 				headerInfo = append(headerInfo, headerData)
@@ -98,11 +97,13 @@ func BuildMultipleFileAlphabeticalListItems(_ []string, headerInfo []converter.M
 		primaryPageNumberIndex   = make(map[string]int)
 		secondaryPageNumberIndex = make(map[string]int)
 		listItems                = strings.Builder{}
-		startingLetter           = "A"
+		startingLetter           = ""
 	)
 	fmt.Fprintln(&listItems, `<div class="divider">&#9836;</div>`)
 	for _, headerData := range headerInfo {
-		if startingLetter != headerData.Header[0:1] {
+		if startingLetter == "" {
+			startingLetter = headerData.Header[0:1]
+		} else if startingLetter != headerData.Header[0:1] {
 			fmt.Fprintln(&listItems, `<div class="divider">&#9836;</div>`)
 			startingLetter = headerData.Header[0:1]
 		}

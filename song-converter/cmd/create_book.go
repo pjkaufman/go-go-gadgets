@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	tableofcontents "github.com/pjkaufman/go-go-gadgets/song-converter/internal/table-of-contents"
@@ -26,10 +28,11 @@ const (
 </html>`
 )
 
+var secondaryLocation string
 var createBookFlags = flags.Flags{
 	Flags: []flags.Flag{
 		flags.NewStringFlag(true, false, &location, "location", "l", "", "the specific book to recreate by filtering songs down to just that book location"),
-		// TODO: add a sort type for alphabetical and a sort type for in order for the TOC order...
+		flags.NewStringFlag(false, false, &secondaryLocation, "secondary-location", "", "", "a second book to include in the table of contents for the book to create"),
 	},
 }
 
@@ -59,7 +62,16 @@ var createBookCmd = &cobra.Command{
 		return createBookFlags.Validate()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", "left", "", true, tableofcontents.BuildMultipleFileAlphabeticalListItems)
+		var (
+			tocBuilder     = tableofcontents.BuildBookPageOrderListItems
+			titleAlignment = "center"
+		)
+		if strings.TrimSpace(secondaryLocation) != "" {
+			tocBuilder = tableofcontents.BuildMultipleBookAlphabeticalListItems
+			titleAlignment = "left"
+		}
+
+		createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, "", titleAlignment, secondaryLocation, true, tocBuilder)
 	},
 }
 

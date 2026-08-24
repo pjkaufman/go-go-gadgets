@@ -87,7 +87,7 @@ var createHtmlCmd = &cobra.Command{
 	},
 }
 
-func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, titleAlignment, extraCss string, isBook bool, tocBuilder tableofcontents.TocBuilder) {
+func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOutputFile, bookType, titleAlignment, secondaryLocation string, isBook bool, tocBuilder tableofcontents.TocBuilder) {
 	var isWritingToFile = strings.TrimSpace(coverOutputFile) == ""
 	if isWritingToFile {
 		logger.WriteInfo("Converting file to html cover")
@@ -97,7 +97,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		logger.WriteFatal(err.Error())
 	}
 
-	coverHtml := converter.BuildHtmlCover(coverMd, bookType, titleAlignment, extraCss, time.Now())
+	coverHtml := converter.BuildHtmlCover(coverMd, bookType, titleAlignment, time.Now())
 
 	if isWritingToFile {
 		logger.WriteInfo("Finished creating html cover file")
@@ -136,8 +136,7 @@ func createHtmlFile(stagingDir, coverInputFilePath, coverOutputFile, bodyHtmlOut
 		tocSongs      = mdInfo
 	)
 	if isBook {
-		// TODO: make it so MS is a param and not hardcoded. For now this works...
-		err = converter.AddPageNumbersAlternateTitleAndHeader(mdInfo, location, "MS")
+		err = converter.AddPageNumbersAlternateTitleAndHeader(mdInfo, location, secondaryLocation)
 		if err != nil {
 			logger.WriteFatal(err.Error())
 		}
