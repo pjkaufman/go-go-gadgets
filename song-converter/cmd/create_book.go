@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
 	"github.com/pjkaufman/go-go-gadgets/pkg/logger"
 	tableofcontents "github.com/pjkaufman/go-go-gadgets/song-converter/internal/table-of-contents"
@@ -36,23 +37,29 @@ var createBookFlags = flags.Flags{
 	},
 }
 
-// createBookCmd represents the CreateSongs command
+// createBookCmd represents the CreateBook command
 var createBookCmd = &cobra.Command{
 	Use: "book",
-	// Short: "Converts the cover and all Markdown files in the specified folder into html in alphabetical order generating three sections: the cover, table of contents, and songs",
-	// Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
-	// song-converter create-html -d working-dir -c cover.md -o songs.html
+	Short: "Converts the cover and all Markdown files in the specified folder into html in alphabetical order generating three sections: the cover, table of contents, and songs",
+	Example: heredoc.Doc(`To write the output of converting the files in the specified folder to html to a file:
+	song-converter create book -d working-dir -c cover.md -l "book-location" -o book.html
 
-	// To write the output of converting the files in the specified folder to html to std out:
-	// song-converter create-html -d working-dir -s cover.md
-	// `),
-	// Long: heredoc.Doc(`How it works:
-	// - Reads in all of the files in the specified folder
-	// - Sorts the files alphabetically
-	// - Adds the cover to the start of the content after converting it to html
-	// - Converts each file into html
-	// - Writes the content to the specified source
-	// `),
+	To write the output of converting the files in the specified folder to html to a file with a secondary book location in the table of contents:
+	song-converter create book -d working-dir -c cover.md -l "book-location" --secondary-location "secondary-book-location" -o book.html
+
+	To write the output of converting the files in the specified folder to html to std out:
+	song-converter create book -d working-dir -c cover.md -l "book-location"
+	`),
+	Long: heredoc.Doc(`How it works:
+	- Reads in all of the files in the specified folder
+	- Sorts the files alphabetically
+	- Filters songs based on the specified book location
+	- Adds the cover to the start of the content after converting it to html
+	- Converts each file into html
+	- Generates a table of contents for the primary book location
+	- Optionally includes a secondary book location in the table of contents, allowing one book to have table of contents entries for two locations
+	- Writes the content to the specified source
+	`),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		err := validateCreateHtmlFile()
 		if err != nil {
