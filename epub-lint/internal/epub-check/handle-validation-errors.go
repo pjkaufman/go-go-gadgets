@@ -9,7 +9,7 @@ import (
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 )
 
-func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error), spineOrder []string) error {
+func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error), spineOrder []string) error {
 	var (
 		err                         error
 		fileContent, ncxFileContent string
@@ -356,7 +356,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 					return err
 				}
 
-				update := rulefixes.AddMissingTitle(message.Location.Line, message.Location.Column, fileContent)
+				update := rulefixes.AddMissingTitle(message.Location.Line, message.Location.Column, fileContent, epubTitle)
 				if !update.IsEmpty() {
 					fileUpdated = message.FilePath
 					edits = append(edits, update)

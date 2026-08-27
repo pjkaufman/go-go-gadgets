@@ -10,6 +10,7 @@ import (
 
 type addMissingTitleTestCase struct {
 	input        string
+	fallback     string
 	line, column int
 	expected     string
 }
@@ -95,7 +96,7 @@ var addMissingTitleTestCases = map[string]addMissingTitleTestCase{
   </body>
 </html>`,
 	},
-	"A head element without a title element, no headings, and no paragraphs will not get modified": {
+	"A head element without a title element, no headings, and no paragraphs will not get modified when there is no fallback title": {
 		input: `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
@@ -123,6 +124,30 @@ var addMissingTitleTestCases = map[string]addMissingTitleTestCase{
 		column:   169,
 		expected: `<?xml version="1.0" encoding="utf-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en"><head><title>Table of Contents</title><meta charset="utf-8" /></head><body><h1>Table of Contents</h1><h2>Subtitle</h2></body></html>`,
 	},
+	"A head element without a title element, no headings, and no paragraphs will get modified if there is a non-whitespace fallback title": {
+		input: `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+  </body>
+</html>`,
+		fallback: "Some Title",
+		line:     4,
+		column:   9,
+		expected: `<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">
+  <head>
+    <title>Some Title</title>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+  </body>
+</html>`,
+	},
 }
 
 func TestAddMissingTitle(t *testing.T) {
@@ -131,7 +156,7 @@ func TestAddMissingTitle(t *testing.T) {
 	for name, args := range addMissingTitleTestCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			edit := rulefixes.AddMissingTitle(args.line, args.column, args.input)
+			edit := rulefixes.AddMissingTitle(args.line, args.column, args.input, args.fallback)
 
 			checkFinalOutputMatches(t, args.input, args.expected, edit)
 		})

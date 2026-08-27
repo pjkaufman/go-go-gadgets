@@ -10,7 +10,7 @@ import (
 // AddMissingTitle adds the title element to the header contents
 // with the text being the first header's text or the first paragraph's
 // text if there are no headings
-func AddMissingTitle(line, column int, contents string) (edit positions.TextEdit) {
+func AddMissingTitle(line, column int, contents, fallback string) (edit positions.TextEdit) {
 	offset := positions.GetPositionOffset(contents, line, column)
 	if offset == -1 {
 		return
@@ -18,7 +18,11 @@ func AddMissingTitle(line, column int, contents string) (edit positions.TextEdit
 
 	title := firstHeaderOrParagraphText(contents)
 	if strings.TrimSpace(title) == "" {
-		return
+		if strings.TrimSpace(fallback) == "" {
+			return
+		}
+
+		title = fallback
 	}
 
 	var (

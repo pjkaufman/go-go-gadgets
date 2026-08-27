@@ -1722,7 +1722,7 @@ func TestHandleValidationErrors(t *testing.T) {
 				tc.basenameToFilePaths = map[string][]string{}
 			}
 
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, "", nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 

@@ -19,6 +19,7 @@ type EpubInfo struct {
 	TocFile               string
 	CoverFile             string
 	OpfFile               string
+	Title                 string
 	Version               int
 	FilePathsInSpineOrder []string
 }
@@ -26,9 +27,14 @@ type EpubInfo struct {
 type Package struct {
 	XMLName  xml.Name  `xml:"package"`
 	Version  string    `xml:"version,attr"`
+	Metadata *Metadata `xml:"metadata"`
 	Manifest *Manifest `xml:"manifest"`
 	Spine    *Spine    `xml:"spine"`
 	Guide    *Guide    `xml:"guide"`
+}
+
+type Metadata struct {
+	Title string `xml:"http://purl.org/dc/elements/1.1/ title"`
 }
 
 type Manifest struct {
@@ -87,6 +93,10 @@ func ParseOpfFile(text, opfFilename string) (EpubInfo, error) {
 	err := xml.Unmarshal([]byte(text), &opfInfo)
 	if err != nil {
 		return epubInfo, fmt.Errorf(ErrorParsingXmlMessageStart+"%v", err)
+	}
+
+	if opfInfo.Metadata != nil {
+		epubInfo.Title = strings.TrimSpace(opfInfo.Metadata.Title)
 	}
 
 	epubInfo.Version, err = versionTextToInt(opfInfo.Version)
