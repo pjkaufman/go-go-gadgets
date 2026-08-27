@@ -1,6 +1,7 @@
 package epubcheck
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -36,7 +37,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			}
 
 			var update positions.TextEdit
-			update, err = rulefixes.AddPropertyToManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
+
+			relativePath, err := filepath.Rel(opfFolder, filepath.Dir(message.FilePath))
+			if err != nil {
+				return fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", message.FilePath, opfFilename, err)
+			}
+			update, err = rulefixes.AddPropertyToManifest(fileContent, opfFilename, filepath.Join(relativePath, message.FilePath), property)
 			if err != nil {
 				return err
 			}
