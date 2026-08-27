@@ -156,946 +156,946 @@ func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, cu
 }
 
 var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
-	// "OPF 14: Adding properties to different files should work without issue": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfAddPropertiesExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "svg" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0004.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0005.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0006.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0007.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0008.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "svg" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0004.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0005.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0006.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0007.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-014",
-	// 				FilePath: "OPS/section-0008.html",
-	// 				Message:  `The property "scripted" should be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfAddPropertiesOriginal,
-	// 	},
-	// },
-	// "OPF 15: Removing properties from different files should work without issue": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0001.html",
-	// 				Message:  `The property "svg" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0004.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0005.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0006.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0007.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0008.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0001.html",
-	// 				Message:  `The property "svg" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0003.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0004.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0005.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0006.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0007.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/section-0008.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfRemovePropertiesOriginal,
-	// 	},
-	// },
-	// "OPF 30: When the unique-identifier property does not match any existing identifiers, add the unique identifier to the first identifier without an id": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfMissingUniqueIdentifierExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-030",
-	// 				FilePath: "OOPS/content.opf",
-	// 				Message:  `The unique-identifier "BookId" was not found`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-030",
-	// 				FilePath: "OOPS/content.opf",
-	// 				Message:  `The unique-identifier "BookId" was not found`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
-	// 	},
-	// },
-	// "OPF 96: When there is a nav file that is unreachable in the OPF, it should have `linear=\"no\" removed": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfHiddenNavExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-096",
-	// 				FilePath: "OOPS/content.opf",
-	// 				Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   44,
-	// 					Column: 97,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "OPF-096",
-	// 				FilePath: "OOPS/content.opf",
-	// 				Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   44,
-	// 					Column: 97,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfHiddenNavOriginal,
-	// 	},
-	// },
-	// "NAV 11: When there is a discrepancy between the nav toc order and the OPF spine order, the nav toc should be updated to reflect the spine order": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NAV-011",
-	// 				FilePath: "OPS/Text/nav.xhtml",
-	// 				Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NAV-011",
-	// 				FilePath: "OPS/Text/nav.xhtml",
-	// 				Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavOriginal,
-	// 	},
-	// 	spineOrder: []string{
-	// 		"Text/CoverPage.html",
-	// 		"Text/section-0001.html",
-	// 		"Text/section-0002.html",
-	// 		"Text/section-0003.html",
-	// 		"Text/section-0004.html",
-	// 		"Text/section-0005.html",
-	// 		"Text/section-0006.html",
-	// 		"Text/section-0007.html",
-	// 		"Text/section-0008.html",
-	// 		"Text/section-0009.html",
-	// 		"Text/section-0010.html",
-	// 		"Text/section-0011.html",
-	// 		"Text/section-0012.html",
-	// 		"Text/section-0013.html",
-	// 		"Text/section-0014.html",
-	// 		"Text/section-0015.html",
-	// 		"Text/section-0016.html",
-	// 		"Text/section-0017.html",
-	// 		"Text/section-0018.html",
-	// 		"Text/section-0019.html",
-	// 		"Text/section-0020.html",
-	// 		"Text/section-0021.html",
-	// 		"Text/section-0022.html",
-	// 		"Text/section-0023.html",
-	// 		"Text/section-0024.html",
-	// 		"Text/section-0025.html",
-	// 		"Text/section-0026.html",
-	// 		"Text/section-0027.html",
-	// 		"Text/section-0028.html",
-	// 		"Text/section-0029.html",
-	// 		"Text/nav.xhtml",
-	// 	},
-	// },
-	// "NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfNoIdentifierExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NCX-001",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NCX-001",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfNoIdentifierOriginal,
-	// 		"OPS/toc.ncx":     ncxUuidIdentifier,
-	// 	},
-	// },
-	// "NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfNumberIdentifierExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NCX-001",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "NCX-001",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfNumberIdentifierOriginal,
-	// 		"OPS/toc.ncx":     ncxUuidIdentifier,
-	// 	},
-	// },
-	// "RSC 5: When there is an invalid id in a html/xhtml file it should get fixed": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/chapter1.html": htmlInvalidIdExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/chapter1.html",
-	// 				// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
-	// 				Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 40,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/chapter1.html",
-	// 				Message:  `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 40,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/chapter1.html": htmlInvalidIdOriginal,
-	// 	},
-	// },
-	// "RSC 5: When there is an invalid id in an opf file it should get fixed": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfInvalidIdExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
-	// 				Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   77,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
-	// 				Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 21,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
-	// 				Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   77,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
-	// 				Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 21,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfInvalidIdOriginal,
-	// 	},
-	// },
-	// "RSC 5: When there are duplicate ids in a file, they should be updated accordingly": {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/prologue.html": htmlDuplicateIdsExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/prologue.html",
-	// 				Message:  `Error while parsing file: Duplicate ID "line"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   17,
-	// 					Column: 41,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/prologue.html",
-	// 				Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/prologue.html",
-	// 				Message:  `Error while parsing file: Duplicate ID "line"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   17,
-	// 					Column: 41,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/prologue.html",
-	// 				Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/prologue.html": htmlDuplicateIdsOriginal,
-	// 	},
-	// },
-	// `RSC 5: When an image is missing its "alt" attribute, an empty one should be added`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/frontmatter.html": htmlMissingImageAltExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/frontmatter.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/frontmatter.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 28,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/frontmatter.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/frontmatter.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 28,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/frontmatter.html": htmlMissingImageAltOriginal,
-	// 	},
-	// },
-	// `RSC 5: When a blockquote fails to be parsed, if the blockquote ends in a closing span element, a self-closing tag, or just text, then it should be updated to have a paragraph tag inserted at the start and end`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/content.html": htmlFixableBlockquoteExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 58,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 51,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 60,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 58,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   15,
-	// 					Column: 51,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   14,
-	// 					Column: 60,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/content.html": htmlFixableBlockquoteOriginal,
-	// 	},
-	// },
-	// `RSC 5: When a play order is found to be identical/incorrect, the play order should be updated to be back in order`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/toc.ncx": ncxDuplicatePlayOrderExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
-	// 	},
-	// },
-	// `RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfEmptyElementsExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: character content of element "dc:identifier"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   7,
-	// 					Column: 36,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: character content of element "dc:creator"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   12,
-	// 					Column: 45,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: attribute "opf:role"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   12,
-	// 					Column: 32,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-999",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Some error here..."`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   50,
-	// 					Column: 35,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-999",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Some error here..."`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   50,
-	// 					Column: 35,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfEmptyElementsOriginal,
-	// 	},
-	// },
-	// `RSC 5: When an OPF manifest element has an invalid property, it should be moved over to a meta attribute that refines it`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.opf": opfInvalidManifestAttributeExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: attribute "opf:role"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   12,
-	// 					Column: 31,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: attribute "opf:role"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   11,
-	// 					Column: 31,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: attribute "opf:role"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   12,
-	// 					Column: 31,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/content.opf",
-	// 				Message:  `Error while parsing file: attribute "opf:role"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   11,
-	// 					Column: 31,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.opf": opfInvalidManifestAttributeOriginal,
-	// 	},
-	// },
-	// `RSC 5: When a file has an empty title and there is a header, it should have the title pulled from the first header present`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/nav.xhtml": htmlEmptyTitleElExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/nav.xhtml",
-	// 				Message:  `Error while parsing file: Element "title" must not be empty.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   6,
-	// 					Column: 10,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/nav.xhtml",
-	// 				Message:  `Error while parsing file: Element "title" must not be empty.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   6,
-	// 					Column: 10,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/nav.xhtml": htmlEmptyTitleElOriginal,
-	// 	},
-	// },
-	// `RSC 12: When a link in an xhtml/html file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/content.xhtml": xhtmlNotFoundLinkExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/content.xhtml",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   19,
-	// 					Column: 24,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/content.xhtml",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 27,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/content.xhtml",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   19,
-	// 					Column: 24,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/content.xhtml",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   16,
-	// 					Column: 27,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/content.xhtml": xhtmlNotFoundLinkOriginal,
-	// 	},
-	// },
-	// `RSC 12: When a link in an ncx file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/toc.ncx": ncxNotFoundLinkExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   35,
-	// 					Column: 45,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   23,
-	// 					Column: 49,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   35,
-	// 					Column: 45,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-012",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Error resolving the link`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   23,
-	// 					Column: 49,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/toc.ncx": ncxNotFoundLinkOriginal,
-	// 	},
-	// },
-	// `RSC 17: When a head element is missing the title element and it has a heading element, the title added should be the first heading element's text`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/nav.xhtml": htmlNoTitleExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-017",
-	// 				FilePath: "OPS/nav.xhtml",
-	// 				Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   4,
-	// 					Column: 9,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-017",
-	// 				FilePath: "OPS/nav.xhtml",
-	// 				Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   4,
-	// 					Column: 9,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/nav.xhtml": htmlNotTitleOriginal,
-	// 	},
-	// },
+	"OPF 14: Adding properties to different files should work without issue": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfAddPropertiesExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "svg" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "svg" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-014",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfAddPropertiesOriginal,
+		},
+	},
+	"OPF 15: Removing properties from different files should work without issue": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfRemovePropertiesExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0001.html",
+					Message:  `The property "svg" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0003.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0004.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0005.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0006.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0007.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/section-0008.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfRemovePropertiesOriginal,
+		},
+	},
+	"OPF 30: When the unique-identifier property does not match any existing identifiers, add the unique identifier to the first identifier without an id": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfMissingUniqueIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-030",
+					FilePath: "OOPS/content.opf",
+					Message:  `The unique-identifier "BookId" was not found`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-030",
+					FilePath: "OOPS/content.opf",
+					Message:  `The unique-identifier "BookId" was not found`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfMissingUniqueIdentifierOriginal,
+		},
+	},
+	"OPF 96: When there is a nav file that is unreachable in the OPF, it should have `linear=\"no\" removed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfHiddenNavExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-096",
+					FilePath: "OOPS/content.opf",
+					Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
+					Location: &epubcheck.Position{
+						Line:   44,
+						Column: 97,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "OPF-096",
+					FilePath: "OOPS/content.opf",
+					Message:  `Non-linear content must be reachable, but found no hyperlink to "OEBPS/Text/nav.xhtml"`,
+					Location: &epubcheck.Position{
+						Line:   44,
+						Column: 97,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfHiddenNavOriginal,
+		},
+	},
+	"NAV 11: When there is a discrepancy between the nav toc order and the OPF spine order, the nav toc should be updated to reflect the spine order": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NAV-011",
+					FilePath: "OPS/Text/nav.xhtml",
+					Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NAV-011",
+					FilePath: "OPS/Text/nav.xhtml",
+					Message:  `"toc" nav must be in reading order; link target "OEBPS/Text/section-0002.html" is before the previous link’s target in spine order.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/nav.xhtml": xhtmlOutOfOrderNavOriginal,
+		},
+		spineOrder: []string{
+			"Text/CoverPage.html",
+			"Text/section-0001.html",
+			"Text/section-0002.html",
+			"Text/section-0003.html",
+			"Text/section-0004.html",
+			"Text/section-0005.html",
+			"Text/section-0006.html",
+			"Text/section-0007.html",
+			"Text/section-0008.html",
+			"Text/section-0009.html",
+			"Text/section-0010.html",
+			"Text/section-0011.html",
+			"Text/section-0012.html",
+			"Text/section-0013.html",
+			"Text/section-0014.html",
+			"Text/section-0015.html",
+			"Text/section-0016.html",
+			"Text/section-0017.html",
+			"Text/section-0018.html",
+			"Text/section-0019.html",
+			"Text/section-0020.html",
+			"Text/section-0021.html",
+			"Text/section-0022.html",
+			"Text/section-0023.html",
+			"Text/section-0024.html",
+			"Text/section-0025.html",
+			"Text/section-0026.html",
+			"Text/section-0027.html",
+			"Text/section-0028.html",
+			"Text/section-0029.html",
+			"Text/nav.xhtml",
+		},
+	},
+	"NCX 1: When no identifier is present in the OPF, add the one from the NCX file": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNoIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("").`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfNoIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
+		},
+	},
+	"NCX 1: When an identifier is present in the OPF and differs from the one in the NCX, add the one from the NCX file": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfNumberIdentifierExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "NCX-001",
+					FilePath: "OPS/toc.ncx",
+					Message:  `NCX identifier ("urn:uuid:1da9fa05e-dd8b-4be3-85ab-455656cc14f2") does not match OPF identifier ("1234").`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfNumberIdentifierOriginal,
+			"OPS/toc.ncx":     ncxUuidIdentifier,
+		},
+	},
+	"RSC 5: When there is an invalid id in a html/xhtml file it should get fixed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/chapter1.html": htmlInvalidIdExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/chapter1.html",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 40,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/chapter1.html",
+					Message:  `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 40,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/chapter1.html": htmlInvalidIdOriginal,
+		},
+	},
+	"RSC 5: When there is an invalid id in an opf file it should get fixed": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfInvalidIdExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   77,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 21,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "idref" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   77,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					// The error is the one for epub 3, but it should be fine handling it the same as an epub 2 one since epub 2 is more restrictive
+					Message: `Error while parsing file: value of attribute "id" is invalid; must be a string matching the regular expression "[^\s]+"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 21,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfInvalidIdOriginal,
+		},
+	},
+	"RSC 5: When there are duplicate ids in a file, they should be updated accordingly": {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/prologue.html": htmlDuplicateIdsExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "line"`,
+					Location: &epubcheck.Position{
+						Line:   17,
+						Column: 41,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/prologue.html",
+					Message:  `Error while parsing file: Duplicate ID "auto_bookmark_toc_9"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/prologue.html": htmlDuplicateIdsOriginal,
+		},
+	},
+	`RSC 5: When an image is missing its "alt" attribute, an empty one should be added`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/frontmatter.html": htmlMissingImageAltExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 28,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 29,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/frontmatter.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 28,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/frontmatter.html": htmlMissingImageAltOriginal,
+		},
+	},
+	`RSC 5: When a blockquote fails to be parsed, if the blockquote ends in a closing span element, a self-closing tag, or just text, then it should be updated to have a paragraph tag inserted at the start and end`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/content.html": htmlFixableBlockquoteExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 58,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 51,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 60,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 58,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   15,
+						Column: 51,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   14,
+						Column: 60,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/content.html": htmlFixableBlockquoteOriginal,
+		},
+	},
+	`RSC 5: When a play order is found to be identical/incorrect, the play order should be updated to be back in order`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/toc.ncx": ncxDuplicatePlayOrderExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error while parsing file: identical playOrder values for navPoint/navTarget/pageTarget that do not refer to same target`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/toc.ncx": ncxDuplicatePlayOrderOriginal,
+		},
+	},
+	`RSC 5: When an OPF element is empty it should be removed and all errors on the same line should be removed`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfEmptyElementsExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: character content of element "dc:identifier"`,
+					Location: &epubcheck.Position{
+						Line:   7,
+						Column: 36,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: character content of element "dc:creator"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 32,
+					},
+				},
+				{
+					Code:     "RSC-999",
+					FilePath: "OPS/content.opf",
+					Message:  `Some error here..."`,
+					Location: &epubcheck.Position{
+						Line:   50,
+						Column: 35,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-999",
+					FilePath: "OPS/content.opf",
+					Message:  `Some error here..."`,
+					Location: &epubcheck.Position{
+						Line:   50,
+						Column: 35,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfEmptyElementsOriginal,
+		},
+	},
+	`RSC 5: When an OPF manifest element has an invalid property, it should be moved over to a meta attribute that refines it`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.opf": opfInvalidManifestAttributeExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   11,
+						Column: 31,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   12,
+						Column: 31,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/content.opf",
+					Message:  `Error while parsing file: attribute "opf:role"`,
+					Location: &epubcheck.Position{
+						Line:   11,
+						Column: 31,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.opf": opfInvalidManifestAttributeOriginal,
+		},
+	},
+	`RSC 5: When a file has an empty title and there is a header, it should have the title pulled from the first header present`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/nav.xhtml": htmlEmptyTitleElExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Error while parsing file: Element "title" must not be empty.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 10,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Error while parsing file: Element "title" must not be empty.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 10,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/nav.xhtml": htmlEmptyTitleElOriginal,
+		},
+	},
+	`RSC 12: When a link in an xhtml/html file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/content.xhtml": xhtmlNotFoundLinkExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   19,
+						Column: 24,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 27,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   19,
+						Column: 24,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/content.xhtml",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   16,
+						Column: 27,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/content.xhtml": xhtmlNotFoundLinkOriginal,
+		},
+	},
+	`RSC 12: When a link in an ncx file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/toc.ncx": ncxNotFoundLinkExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   35,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   23,
+						Column: 49,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   35,
+						Column: 45,
+					},
+				},
+				{
+					Code:     "RSC-012",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Error resolving the link`,
+					Location: &epubcheck.Position{
+						Line:   23,
+						Column: 49,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/toc.ncx": ncxNotFoundLinkOriginal,
+		},
+	},
+	`RSC 17: When a head element is missing the title element and it has a heading element, the title added should be the first heading element's text`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/nav.xhtml": htmlNoTitleExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-017",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
+					Location: &epubcheck.Position{
+						Line:   4,
+						Column: 9,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-017",
+					FilePath: "OPS/nav.xhtml",
+					Message:  `Warning while parsing file: The "head" element should have a "title" child element.`,
+					Location: &epubcheck.Position{
+						Line:   4,
+						Column: 9,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/nav.xhtml": htmlNotTitleOriginal,
+		},
+	},
 	`When multiple rules are at play across multiple files, the correct updates are made`: {
 		opfFolder:   "OPS",
 		opfFilename: "OPS/content.opf",
@@ -1374,341 +1374,341 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/Text/file.html": generalHtmlOriginal,
 		},
 	},
-	// `When an image without an alt is inside of an invalid blockquote, both issues should be fixed without breaking the HTML`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": blockquoteImgHtmlExpected,
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   39,
-	// 					Column: 50,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   39,
-	// 					Column: 37,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Error while parsing file: element "blockquote" incomplete;`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   39,
-	// 					Column: 50,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-005",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   39,
-	// 					Column: 37,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/file.html": blockquoteImgHtmlOriginal,
-	// 	},
-	// },
-	// `HTM 4: When a html file is missing part of the DOCTYPE, it gets the value properly updated`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{"OPS/Text/content.html": incompleteDoctypeHtmlExpected},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "HTM-004",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "HTM-004",
-	// 				FilePath: "OPS/Text/content.html",
-	// 				Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/content.html": incompleteDoctypeHtmlOriginal,
-	// 	},
-	// },
-	// `RSC 7: When the NCX file references a file that does not exist, it will be ignored as that could mess up the table of contents`: {
-	// 	opfFolder:         "OPS",
-	// 	opfFilename:       "OPS/content.opf",
-	// 	ncxFilename:       "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   6,
-	// 					Column: 36,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/toc.ncx",
-	// 				Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   6,
-	// 					Column: 36,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{}, // leave blank since it will throw an error if an attempt to access this happens
-	// },
-	// `RSC 7: When an html file references a file that does not exist and there is a matching file basename in the EPUB, update the link to the matching basename`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistReplacedExpected,
-	// 	},
-	// 	basenameToFilePaths: map[string][]string{
-	// 		"files.html": {"OPS/Text/files.html"},
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   10,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   10,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
-	// 	},
-	// },
-	// `RSC 7: When an html file references a file that does not exist and there is no matching file basename in the EPUB, remove the link`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistRemovedExpected,
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   10,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   10,
-	// 					Column: 29,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
-	// 	},
-	// },
-	// `RSC 7: When an html file references a script that does not exist, there is no matching file basename in the EPUB, and it is the only script tag in the file, remove the script and create a message for removing the scripted attribute for the OPF entry`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptExpected,
-	// 		"OPS/content.opf":    opfScriptRemovedExpected,
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   8,
-	// 					Column: 25,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   8,
-	// 					Column: 25,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptOriginal,
-	// 		"OPS/content.opf":    opfScriptRemovedOriginal,
-	// 	},
-	// },
-	// `RSC 7: When an html file references 2 scripts that do not exist, there are no matching file basenames in the EPUB, and they are the only script tags in the file, remove the scripts and create a message for removing the scripted attribute for the OPF entry`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptExpected,
-	// 		"OPS/content.opf":    opfScriptRemovedExpected,
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   9,
-	// 					Column: 26,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   8,
-	// 					Column: 25,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   9,
-	// 					Column: 26,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   8,
-	// 					Column: 25,
-	// 				},
-	// 			},
-	// 			{
-	// 				Code:     "OPF-015",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `The property "scripted" should not be declared in the OPF file.`,
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
-	// 		"OPS/content.opf":    opfScriptRemovedOriginal,
-	// 	},
-	// },
-	// `RSC 7: When an html file references 2 scripts with 1 not existing and there is no matching file basename in the EPUB, remove the script and do not create a message for removing the scripted attribute for the OPF entry`: {
-	// 	opfFolder:   "OPS",
-	// 	opfFilename: "OPS/content.opf",
-	// 	ncxFilename: "OPS/toc.ncx",
-	// 	expectedFileState: map[string]string{
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptSingleUpdateExpected,
-	// 	},
-	// 	validationErrors: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   9,
-	// 					Column: 26,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	expectedErrorState: epubcheck.ValidationErrors{
-	// 		ValidationIssues: []epubcheck.ValidationError{
-	// 			{
-	// 				Code:     "RSC-007",
-	// 				FilePath: "OPS/Text/file.html",
-	// 				Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
-	// 				Location: &epubcheck.Position{
-	// 					Line:   9,
-	// 					Column: 26,
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// 	validFilesToInitialContent: map[string]string{ // this should throw an error if it even tries to update/read in the OPF file
-	// 		"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
-	// 	},
-	// },
+	`When an image without an alt is inside of an invalid blockquote, both issues should be fixed without breaking the HTML`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "blockquote" incomplete;`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 50,
+					},
+				},
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Error while parsing file: element "img" missing required attribute "alt"`,
+					Location: &epubcheck.Position{
+						Line:   39,
+						Column: 37,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": blockquoteImgHtmlOriginal,
+		},
+	},
+	`HTM 4: When a html file is missing part of the DOCTYPE, it gets the value properly updated`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/Text/content.html": incompleteDoctypeHtmlExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "HTM-004",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "HTM-004",
+					FilePath: "OPS/Text/content.html",
+					Message:  `Irregular DOCTYPE: found "", expected "<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">".`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/content.html": incompleteDoctypeHtmlOriginal,
+		},
+	},
+	`RSC 7: When the NCX file references a file that does not exist, it will be ignored as that could mess up the table of contents`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 36,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/toc.ncx",
+					Message:  `Referenced resource "OEBPS/Text/File.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   6,
+						Column: 36,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{}, // leave blank since it will throw an error if an attempt to access this happens
+	},
+	`RSC 7: When an html file references a file that does not exist and there is a matching file basename in the EPUB, update the link to the matching basename`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistReplacedExpected,
+		},
+		basenameToFilePaths: map[string][]string{
+			"files.html": {"OPS/Text/files.html"},
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
+		},
+	},
+	`RSC 7: When an html file references a file that does not exist and there is no matching file basename in the EPUB, remove the link`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/files.html" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   10,
+						Column: 29,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistBaseOriginal,
+		},
+	},
+	`RSC 7: When an html file references a script that does not exist, there is no matching file basename in the EPUB, and it is the only script tag in the file, remove the script and create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptExpected,
+			"OPS/content.opf":    opfScriptRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/Text/file.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistSingleScriptOriginal,
+			"OPS/content.opf":    opfScriptRemovedOriginal,
+		},
+	},
+	`RSC 7: When an html file references 2 scripts that do not exist, there are no matching file basenames in the EPUB, and they are the only script tags in the file, remove the scripts and create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptExpected,
+			"OPS/content.opf":    opfScriptRemovedExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   8,
+						Column: 25,
+					},
+				},
+				{
+					Code:     "OPF-015",
+					FilePath: "OPS/Text/file.html",
+					Message:  `The property "scripted" should not be declared in the OPF file.`,
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
+			"OPS/content.opf":    opfScriptRemovedOriginal,
+		},
+	},
+	`RSC 7: When an html file references 2 scripts with 1 not existing and there is no matching file basename in the EPUB, remove the script and do not create a message for removing the scripted attribute for the OPF entry`: {
+		opfFolder:   "OPS",
+		opfFilename: "OPS/content.opf",
+		ncxFilename: "OPS/toc.ncx",
+		expectedFileState: map[string]string{
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptSingleUpdateExpected,
+		},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-007",
+					FilePath: "OPS/Text/file.html",
+					Message:  `Referenced resource "OPS/Text/script2.js" could not be found in the EPUB.`,
+					Location: &epubcheck.Position{
+						Line:   9,
+						Column: 26,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{ // this should throw an error if it even tries to update/read in the OPF file
+			"OPS/Text/file.html": htmlFileReferencedDoesNotExistDoubleScriptOriginal,
+		},
+	},
 }
 
 func TestHandleValidationErrors(t *testing.T) {

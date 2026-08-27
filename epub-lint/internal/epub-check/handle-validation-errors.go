@@ -38,11 +38,11 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 
 			var update positions.TextEdit
 
-			relativePath, err := filepath.Rel(opfFolder, filepath.Dir(message.FilePath))
+			relativePath, err := filepath.Rel(opfFolder, message.FilePath)
 			if err != nil {
 				return fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", message.FilePath, opfFilename, err)
 			}
-			update, err = rulefixes.AddPropertyToManifest(fileContent, opfFilename, filepath.Join(relativePath, message.FilePath), property)
+			update, err = rulefixes.AddPropertyToManifest(fileContent, relativePath, property)
 			if err != nil {
 				return err
 			}
@@ -70,7 +70,12 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename string, nameToUp
 			}
 
 			var update positions.TextEdit
-			update, err = rulefixes.RemovePropertyFromManifest(fileContent, strings.TrimLeft(message.FilePath, opfFolder+"/"), property)
+
+			relativePath, err := filepath.Rel(opfFolder, message.FilePath)
+			if err != nil {
+				return fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", message.FilePath, opfFilename, err)
+			}
+			update, err = rulefixes.RemovePropertyFromManifest(fileContent, relativePath, property)
 			if err != nil {
 				return err
 			}

@@ -49,6 +49,38 @@ var removeScriptedFromManifestTestCases = map[string]removeScriptedFromManifest{
 </manifest>
 </package>`,
 	},
+	"Remove the specified property from properties attribute if the attribute is already present for item matching path file name and is not the only value and the path includes .. in it": {
+		inputText: `
+<package version="3.0">
+<manifest>
+<item href="../nav.xhtml" media-type="application/xhtml+xml" properties="nav scripted"/>
+</manifest>
+</package>`,
+		inputPath: "../nav.xhtml",
+		property:  "scripted",
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item href="../nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
+</manifest>
+</package>`,
+	},
+	"Remove scripted from item with URL encoded filepath": {
+		inputText: `
+<package version="3.0">
+<manifest>
+<item href="OEBPS/my%20chapter.xhtml" media-type="application/xhtml+xml" properties="scripted"/>
+</manifest>
+</package>`,
+		inputPath: "OEBPS/my chapter.xhtml",
+		property:  "scripted",
+		expectedOutput: `
+<package version="3.0">
+<manifest>
+<item href="OEBPS/my%20chapter.xhtml" media-type="application/xhtml+xml"/>
+</manifest>
+</package>`,
+	},
 }
 
 func TestRemovePropertyFromManifest(t *testing.T) {
