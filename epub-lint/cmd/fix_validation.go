@@ -93,10 +93,14 @@ var autoFixValidationCmd = &cobra.Command{
 				return nil, err
 			}
 
-			var ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
-			ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
-			if err != nil {
-				return nil, err
+			var ncxFilename, ncxFileContents string
+			if epubInfo.NcxFile != "" {
+				ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
+
+				ncxFileContents, err = filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			var basenameToFilePaths = make(map[string][]string)
@@ -111,7 +115,6 @@ var autoFixValidationCmd = &cobra.Command{
 
 			var (
 				nameToUpdatedContents = map[string]string{
-					ncxFilename: ncxFileContents,
 					opfFilename: opfFileContents,
 				}
 				handledFiles          []string
@@ -132,7 +135,11 @@ var autoFixValidationCmd = &cobra.Command{
 					return fileContents, nil
 				}
 			)
-			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubInfo.Title, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName, epubInfo.FilePathsInSpineOrder)
+			if ncxFilename != "" {
+				nameToUpdatedContents[ncxFilename] = ncxFileContents
+			}
+
+			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubInfo.Title, epubInfo.Language, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName, epubInfo.FilePathsInSpineOrder)
 			if err != nil {
 				return nil, err
 			}

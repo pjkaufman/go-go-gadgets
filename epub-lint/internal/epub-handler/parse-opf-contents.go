@@ -20,6 +20,7 @@ type EpubInfo struct {
 	CoverFile             string
 	OpfFile               string
 	Title                 string
+	Language              string
 	Version               int
 	FilePathsInSpineOrder []string
 }
@@ -34,7 +35,8 @@ type Package struct {
 }
 
 type Metadata struct {
-	Title string `xml:"http://purl.org/dc/elements/1.1/ title"`
+	Title    string `xml:"http://purl.org/dc/elements/1.1/ title"`
+	Language string `xml:"http://purl.org/dc/elements/1.1/ language"`
 }
 
 type Manifest struct {
@@ -97,6 +99,7 @@ func ParseOpfFile(text, opfFilename string) (EpubInfo, error) {
 
 	if opfInfo.Metadata != nil {
 		epubInfo.Title = strings.TrimSpace(opfInfo.Metadata.Title)
+		epubInfo.Language = strings.TrimSpace(opfInfo.Metadata.Language)
 	}
 
 	epubInfo.Version, err = versionTextToInt(opfInfo.Version)

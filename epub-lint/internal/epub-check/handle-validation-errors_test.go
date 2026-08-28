@@ -14,12 +14,12 @@ import (
 )
 
 type handleValidationErrorTestCase struct {
-	opfFolder, ncxFilename, opfFilename           string
-	validationErrors                              epubcheck.ValidationErrors
-	expectedErrorState                            epubcheck.ValidationErrors
-	expectedFileState, validFilesToInitialContent map[string]string // filename to content
-	basenameToFilePaths                           map[string][]string
-	spineOrder                                    []string
+	opfFolder, ncxFilename, opfFilename, epubTitle, epubLang string
+	validationErrors                                         epubcheck.ValidationErrors
+	expectedErrorState                                       epubcheck.ValidationErrors
+	expectedFileState, validFilesToInitialContent            map[string]string // filename to content
+	basenameToFilePaths                                      map[string][]string
+	spineOrder                                               []string
 }
 
 var (
@@ -141,6 +141,10 @@ var (
 	xhtmlOutOfOrderNavOriginal string
 	//go:embed testdata/nav-11/out-of-order-nav_updated.xhtml
 	xhtmlOutOfOrderNavExpected string
+	//go:embed testdata/rsc-5/mismatched-lang.xhtml
+	htmlMismatchedLanguagesOriginal string
+	//go:embed testdata/rsc-5/mismatched-lang_updated.xhtml
+	htmlMismatchedLanguagesExpected string
 )
 
 func createTestCaseFileHandlerFunction(validFilesToContent map[string]string, currentContents map[string]string) func(string) (string, error) {
@@ -955,6 +959,78 @@ var handleValidationErrorTestCases = map[string]handleValidationErrorTestCase{
 			"OPS/nav.xhtml": htmlEmptyTitleElOriginal,
 		},
 	},
+	// (2,180): Error while parsing file: The lang and xml:lang attributes must have the same value.
+	`RSC 5: When there is a file with mismatched langs, it gets properly updated when an epub language is present`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{"OPS/file.xhtml": htmlMismatchedLanguagesExpected},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/file.xhtml",
+					Message:  `Error while parsing file: The lang and xml:lang attributes must have the same value.`,
+					Location: &epubcheck.Position{
+						Line:   2,
+						Column: 180,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/file.xhtml",
+					Message:  `Error while parsing file: The lang and xml:lang attributes must have the same value.`,
+					Location: &epubcheck.Position{
+						Line:   2,
+						Column: 180,
+					},
+				},
+			},
+		},
+		epubLang: "en",
+		validFilesToInitialContent: map[string]string{
+			"OPS/file.xhtml": htmlMismatchedLanguagesOriginal,
+		},
+	},
+	`RSC 5: When there is a file with mismatched langs, it doesn't get updated when an epub language is not present`: {
+		opfFolder:         "OPS",
+		opfFilename:       "OPS/content.opf",
+		ncxFilename:       "OPS/toc.ncx",
+		expectedFileState: map[string]string{},
+		validationErrors: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/file.xhtml",
+					Message:  `Error while parsing file: The lang and xml:lang attributes must have the same value.`,
+					Location: &epubcheck.Position{
+						Line:   2,
+						Column: 180,
+					},
+				},
+			},
+		},
+		expectedErrorState: epubcheck.ValidationErrors{
+			ValidationIssues: []epubcheck.ValidationError{
+				{
+					Code:     "RSC-005",
+					FilePath: "OPS/file.xhtml",
+					Message:  `Error while parsing file: The lang and xml:lang attributes must have the same value.`,
+					Location: &epubcheck.Position{
+						Line:   2,
+						Column: 180,
+					},
+				},
+			},
+		},
+		validFilesToInitialContent: map[string]string{
+			"OPS/file.xhtml": htmlMismatchedLanguagesOriginal,
+		},
+	},
 	`RSC 12: When a link in an xhtml/html file does not resolve to an existing location, if it has an id, remove the id from the end of the link`: {
 		opfFolder:         "OPS",
 		opfFilename:       "OPS/content.opf",
@@ -1722,7 +1798,7 @@ func TestHandleValidationErrors(t *testing.T) {
 				tc.basenameToFilePaths = map[string][]string{}
 			}
 
-			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, "", nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
+			err := epubcheck.HandleValidationErrors(tc.opfFolder, tc.ncxFilename, tc.opfFilename, tc.epubTitle, tc.epubLang, nameToUpdatedFileContents, tc.basenameToFilePaths, &tc.validationErrors, createTestCaseFileHandlerFunction(tc.validFilesToInitialContent, nameToUpdatedFileContents), tc.spineOrder)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expectedErrorState, tc.validationErrors)
 

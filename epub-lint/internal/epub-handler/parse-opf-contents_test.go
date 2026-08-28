@@ -417,6 +417,7 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			CoverFile: "titlepage.xhtml",
 			NcxFile:   "toc.ncx",
 			Title:     "MKnR 23 -(g)- Isolation",
+			Language:  "en",
 			Version:   2,
 			FilePathsInSpineOrder: []string{
 				"titlepage.xhtml",
@@ -494,6 +495,7 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			NcxFile:   "toc.ncx",
 			CoverFile: "Text/CoverPage.html",
 			Title:     "Mushoku Tensei: Jobless Reincarnation Vol. 24",
+			Language:  "en",
 			Version:   3,
 			FilePathsInSpineOrder: []string{
 				"Text/CoverPage.html",
@@ -601,6 +603,7 @@ var parseOpfContentsTestCases = map[string]parseOpfContentsTestCase{
 			NcxFile:   "toc.ncx",
 			CoverFile: "Text/titlepage.xhtml",
 			Title:     "Mossad: The Greatest Missions of the Israeli Secret Service",
+			Language:  "en",
 			Version:   2,
 			FilePathsInSpineOrder: []string{
 				"Text/titlepage.xhtml",
