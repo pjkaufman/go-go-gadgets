@@ -9,7 +9,7 @@ import (
 	rulefixes "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-check/rule-fixes"
 )
 
-func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error), spineOrder []string) error {
+func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle, epubLang string, nameToUpdatedContents map[string]string, basenameToFilePaths map[string][]string, validationErrors *ValidationErrors, getContentByFileName func(string) (string, error), spineOrder []string) error {
 	var (
 		err                         error
 		fileContent, ncxFileContent string
@@ -271,6 +271,16 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle strin
 				if !update.IsEmpty() {
 					fileUpdated = message.FilePath
 					edits = append(edits, update)
+				}
+			} else if message.Message == mismatchedLangAttributes {
+				fileContent, err = getContentByFileName(message.FilePath)
+				if err != nil {
+					return err
+				}
+
+				edits = rulefixes.FixMismatchedLangAttributes(message.Location.Line, message.Location.Column, fileContent, epubLang)
+				if len(edits) != 0 {
+					fileUpdated = message.FilePath
 				}
 			}
 		case "OPF-030":

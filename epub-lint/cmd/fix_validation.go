@@ -48,7 +48,8 @@ var autoFixValidationCmd = &cobra.Command{
 		- Add div tags inside of blockquote elements that were not able to be parsed and do not have a blockquote inside of them
 		- Add an empty alt attribute to img elements that are missing them
 		- Move section elements from inside of span and paragraph tags to outside of them if they have no other siblings or other parent tags before the span and paragraph
-		- Update empty title with the text of the first header in the file or the first paragraph if there is no header and there is a paragraph
+		- Update empty title with the text of the first header in the file or the first paragraph if there is no header and there is a paragraph. The last fallback is the title of the book from the OPF.
+		- Update mismatched lang attributes to match the language specified in the OPF file.
 	- RSC-007: try to fix broken file links and remove
 	- RSC-012: try to fix broken links by removing the id link in the href attribute
 	- RSC-017: seems to be a catch all error id, but the following are handled around it
@@ -93,10 +94,14 @@ var autoFixValidationCmd = &cobra.Command{
 				return nil, err
 			}
 
-			var ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
-			ncxFileContents, err := filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
-			if err != nil {
-				return nil, err
+			var ncxFilename, ncxFileContents string
+			if epubInfo.NcxFile != "" {
+				ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
+
+				ncxFileContents, err = filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			var basenameToFilePaths = make(map[string][]string)
@@ -111,7 +116,6 @@ var autoFixValidationCmd = &cobra.Command{
 
 			var (
 				nameToUpdatedContents = map[string]string{
-					ncxFilename: ncxFileContents,
 					opfFilename: opfFileContents,
 				}
 				handledFiles          []string
@@ -132,7 +136,11 @@ var autoFixValidationCmd = &cobra.Command{
 					return fileContents, nil
 				}
 			)
-			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubInfo.Title, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName, epubInfo.FilePathsInSpineOrder)
+			if ncxFilename != "" {
+				nameToUpdatedContents[ncxFilename] = ncxFileContents
+			}
+
+			err = epubcheck.HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubInfo.Title, epubInfo.Language, nameToUpdatedContents, basenameToFilePaths, &validationErrors, getFileContentsByName, epubInfo.FilePathsInSpineOrder)
 			if err != nil {
 				return nil, err
 			}
