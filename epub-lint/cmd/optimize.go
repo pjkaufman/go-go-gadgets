@@ -143,7 +143,10 @@ func LintEpub(lintDir, epub string, runCompressImages, verbose bool, removableFi
 			}
 
 			var newText = linter.EnsureEncodingIsPresent(fileText)
-			newText = linter.CommonStringReplace(newText)
+			newText, err = linter.CommonStringReplace(newText)
+			if err != nil {
+				return nil, err
+			}
 
 			var epubLang = epubInfo.Language
 			if strings.TrimSpace(epubLang) == "" {

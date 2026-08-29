@@ -2,10 +2,11 @@ package linter
 
 import (
 	"bytes"
+	"encoding/xml"
+	"errors"
+	"fmt"
 	"io"
 	"strings"
-
-	"golang.org/x/net/html"
 )
 
 type ReplaceWords struct {
@@ -41,17 +42,12 @@ var commonReplaceWords = []ReplaceWords{
 		Rational: "Replace smart double quotes with straight double quotes",
 	},
 	{
-		Search:   "”",
-		Replace:  "\"",
-		Rational: "Replace smart double quotes with straight double quotes",
-	},
-	{
-		Search:   "`‘`,",
+		Search:   "‘",
 		Replace:  "'",
 		Rational: "Replace smart single quotes with straight single quotes",
 	},
 	{
-		Search:   "`’`,",
+		Search:   "’",
 		Replace:  "'",
 		Rational: "Replace smart single quotes with straight single quotes",
 	},
@@ -65,11 +61,31 @@ var commonReplaceWords = []ReplaceWords{
 		Replace:  "…",
 		Rational: "Proper ellipses should be used instead of 3 periods with spaces between them as it keeps things clean and consistent",
 	},
+	{
+		Search:   "--",
+		Replace:  "—",
+		Rational: "An em dash should be used instead of two consecutive regular dashes",
+	},
 }
 
-func CommonStringReplace(text string) string {
-	// Replace multiple spaces in a row between words with a single space since this can cause issues with replace strings
-	var newText = replaceTwoPlusSpacesBetweenWords(text)
+// CommonStringReplace applies common string replacements to character data
+// in XHTML/XML input.
+//
+// The original source is preserved byte-for-byte except for character data
+// that is intentionally modified by applyStringReplacements.
+//
+// Whitespace-only character data is preserved exactly. Text inside script,
+// style, code, and pre elements is also preserved exactly.
+func CommonStringReplace(text string) (string, error) {
+	input := []byte(text)
+	decoder := xml.NewDecoder(bytes.NewReader(input))
+
+	// EPUB XHTML should generally be valid XML. Keep this false if the
+	// existing linter intentionally needs to tolerate malformed input.
+	decoder.Strict = false
+
+	var out bytes.Buffer
+	out.Grow(len(input))
 
 	var stringsToReplace = make([]string, 2*len(commonReplaceWords))
 	for i, replaceWord := range commonReplaceWords {
@@ -77,36 +93,100 @@ func CommonStringReplace(text string) string {
 		stringsToReplace[2*i+1] = replaceWord.Replace
 	}
 
-	var replacer = strings.NewReplacer(stringsToReplace...)
-	newText = replacer.Replace(newText)
+	replacer := strings.NewReplacer(stringsToReplace...)
 
-	return replaceDoubleDashesWithEmDashes(newText)
-}
-
-func replaceDoubleDashesWithEmDashes(text string) string {
-	var index = strings.Index(text, emIndicator)
-	if index == -1 {
-		return text
+	skipTags := map[string]bool{
+		"script": true,
+		"style":  true,
+		"code":   true,
+		"pre":    true,
 	}
 
-	var newText = strings.Builder{}
-	for index != -1 {
-		if index > 0 && text[index-1] == '!' {
-			newText.WriteString(text[0 : index+2])
-		} else if index+2 < len(text) && text[index+2] == '>' {
-			newText.WriteString(text[0 : index+2])
-		} else {
-			newText.WriteString(text[0:index])
-			newText.WriteString("—")
+	var skipStack []string
+	var tokenStart int
+
+	for {
+		token, err := decoder.Token()
+		if errors.Is(err, io.EOF) {
+			if tokenStart < len(input) {
+				out.Write(input[tokenStart:])
+			}
+
+			return out.String(), nil
 		}
 
-		text = text[index+2:]
-		index = strings.Index(text, emIndicator)
+		if err != nil {
+			return "", fmt.Errorf("failed to decode XML content: %w", err)
+		}
+
+		tokenEnd := int(decoder.InputOffset())
+
+		switch token := token.(type) {
+		case xml.CharData:
+			raw := input[tokenStart:tokenEnd]
+
+			// Preserve whitespace-only character data exactly as it appeared
+			// in the source. This includes indentation and whitespace between
+			// elements, e.g. the two spaces before <p>.
+			if strings.TrimSpace(string(token)) == "" {
+				out.Write(raw)
+				break
+			}
+
+			// Preserve character data inside skip elements.
+			if len(skipStack) > 0 {
+				out.Write(raw)
+				break
+			}
+
+			// Apply replacements to the decoded character data.
+			//
+			// If nothing changed, use the original bytes. This ensures that
+			// entities and other source representation remain untouched when
+			// there is no actual replacement.
+			replaced := applyStringReplacements(string(token), replacer)
+
+			if replaced == string(token) {
+				out.Write(raw)
+			} else {
+				out.WriteString(replaced)
+			}
+
+		case xml.StartElement:
+			// Copy the exact original opening tag.
+			out.Write(input[tokenStart:tokenEnd])
+
+			name := strings.ToLower(token.Name.Local)
+			if skipTags[name] {
+				skipStack = append(skipStack, name)
+			}
+
+		case xml.EndElement:
+			// Copy the exact original closing tag.
+			out.Write(input[tokenStart:tokenEnd])
+
+			name := strings.ToLower(token.Name.Local)
+
+			if len(skipStack) > 0 && skipStack[len(skipStack)-1] == name {
+				skipStack = skipStack[:len(skipStack)-1]
+			}
+
+		default:
+			// Comments, directives, processing instructions, CDATA-related
+			// tokens, etc. are copied exactly as they appeared in the input.
+			out.Write(input[tokenStart:tokenEnd])
+		}
+
+		tokenStart = tokenEnd
 	}
+}
 
-	newText.WriteString(text)
+func applyStringReplacements(text string, replacer *strings.Replacer) string {
+	// Replace multiple spaces in a row between words with a single space
+	// since this can cause issues with replace strings.
+	var newText = replaceTwoPlusSpacesBetweenWords(text)
 
-	return newText.String()
+	return replacer.Replace(newText)
 }
 
 func replaceTwoPlusSpacesBetweenWords(text string) string {
@@ -115,11 +195,13 @@ func replaceTwoPlusSpacesBetweenWords(text string) string {
 		return text
 	}
 
-	var newText = strings.Builder{}
+	var newText strings.Builder
 	var endingWhitespace, startWhitespace int
+
 	for index != -1 {
 		startWhitespace = index
 		endingWhitespace = index + 1
+
 		for startWhitespace > 0 && text[startWhitespace-1] == ' ' {
 			startWhitespace--
 		}
@@ -128,9 +210,13 @@ func replaceTwoPlusSpacesBetweenWords(text string) string {
 			endingWhitespace++
 		}
 
-		if startWhitespace > 0 && (text[startWhitespace-1] == '\n' || text[startWhitespace-1] == '\t') {
+		if startWhitespace > 0 &&
+			(text[startWhitespace-1] == '\n' ||
+				text[startWhitespace-1] == '\t') {
 			newText.WriteString(text[0 : index+2])
-		} else if endingWhitespace+1 < len(text) && (text[endingWhitespace+1] == '<' || text[endingWhitespace+1] == '\n') {
+		} else if endingWhitespace+1 < len(text) &&
+			(text[endingWhitespace+1] == '<' ||
+				text[endingWhitespace+1] == '\n') {
 			newText.WriteString(text[0 : index+2])
 		} else {
 			newText.WriteString(text[0:startWhitespace])
@@ -144,71 +230,4 @@ func replaceTwoPlusSpacesBetweenWords(text string) string {
 	newText.WriteString(text)
 
 	return newText.String()
-}
-
-// ReplaceTextNodesInXHTML applies CommonStringReplace only to text nodes in the input
-// XHTML/HTML bytes. It streams tokens, preserves the raw bytes of all non-text tokens,
-// and writes replaced text directly (no HTML escaping). Replacements are skipped inside
-// tags listed in skipTags.
-func ReplaceTextNodesInXHTML(input []byte) ([]byte, error) {
-	z := html.NewTokenizer(bytes.NewReader(input))
-	var out bytes.Buffer
-
-	skipTags := map[string]bool{
-		"script": true,
-		"style":  true,
-		"code":   true,
-		"pre":    true,
-	}
-
-	var tagStack []string
-	push := func(name string) { tagStack = append(tagStack, name) }
-	pop := func() {
-		if len(tagStack) > 0 {
-			tagStack = tagStack[:len(tagStack)-1]
-		}
-	}
-	inSkip := func() bool {
-		if len(tagStack) == 0 {
-			return false
-		}
-		return skipTags[strings.ToLower(tagStack[len(tagStack)-1])]
-	}
-
-	for {
-		tt := z.Next()
-		switch tt {
-		case html.ErrorToken:
-			if z.Err() == io.EOF {
-				return out.Bytes(), nil
-			}
-			return nil, z.Err()
-
-		case html.TextToken:
-			if inSkip() {
-				// preserve raw token bytes so we keep original entity representation
-				out.Write(z.Raw())
-			} else {
-				// Apply replacements to decoded text and write it directly (no escaping)
-				replaced := CommonStringReplace(string(z.Text()))
-				out.WriteString(replaced)
-			}
-
-		case html.StartTagToken:
-			t := z.Token()
-			out.Write(z.Raw())
-			push(t.Data)
-
-		case html.SelfClosingTagToken:
-			out.Write(z.Raw())
-
-		case html.EndTagToken:
-			out.Write(z.Raw())
-			pop()
-
-		default:
-			// comments, doctype, etc.
-			out.Write(z.Raw())
-		}
-	}
 }

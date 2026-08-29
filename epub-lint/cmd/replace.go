@@ -75,7 +75,12 @@ var replaceCmd = &cobra.Command{
 					return nil, err
 				}
 
-				var newText = linter.CommonStringReplace(fileText)
+				var newText string
+				newText, err = linter.CommonStringReplace(fileText)
+				if err != nil {
+					return nil, err
+				}
+
 				newText = linter.ExtraStringReplace(newText, extraTextReplacements, numHits)
 
 				err = filehandler.WriteZipCompressedString(w, filePath, newText)
