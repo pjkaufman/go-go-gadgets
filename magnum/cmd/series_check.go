@@ -86,6 +86,19 @@ var CheckCmd = &cobra.Command{
 		for i, series := range seriesInfo.Series {
 			if series.Status != config.Completed || includeCompleted {
 				seriesInfo.Series[i] = getSeriesVolumeInfo(series)
+			} else if series.Status != config.Completed {
+				var today = time.Now()
+				today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+				var unreleasedVolumes = []config.ReleaseInfo{}
+				for _, info := range series.UnreleasedVolumes {
+					if unreleasedDateIsBeforeDate(info.ReleaseDate, today) {
+						break
+					} else {
+						unreleasedVolumes = append(unreleasedVolumes, info)
+					}
+				}
+
+				series.UnreleasedVolumes = unreleasedVolumes
 			}
 		}
 

@@ -9,7 +9,7 @@ type JSONVolumeInfo struct {
 		Description string `json:"description"`
 		Completed   bool   `json:"completed"`
 		Entries     []struct {
-			Order int `json:"order"`
+			Order float32 `json:"order"`
 			Ebook struct {
 				At           string    `json:"at"`
 				Title        string    `json:"title"`

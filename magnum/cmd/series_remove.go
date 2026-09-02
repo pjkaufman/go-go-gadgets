@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/pjkaufman/go-go-gadgets/magnum/internal/config"
 	"github.com/pjkaufman/go-go-gadgets/pkg/cli/flags"
@@ -10,7 +12,8 @@ import (
 
 var seriesRemoveFlags = flags.Flags{
 	Flags: []flags.Flag{
-		flags.NewStringFlag(true, false, &seriesName, "name", "n", "", "the name of the series"),
+		flags.NewStringFlag(false, false, &seriesName, "name", "n", "", "the name of the series"),
+		flags.NewBoolFlag(false, false, &interactiveMode, "interactive", "i", false, "gets the series name interactively when not provided"),
 	},
 }
 
@@ -26,6 +29,16 @@ var RemoveCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		seriesInfo := config.GetConfig()
+		if strings.TrimSpace(seriesName) == "" {
+			if !interactiveMode {
+				logger.WriteFatal("No series name was provided and interactive was not specified, so no series change could be made.")
+			}
+
+			seriesName = selectBookName(seriesInfo.Series, includeCompleted)
+
+			logger.WriteInfof("%q selected\n", seriesName)
+		}
+
 		if !seriesInfo.RemoveSeriesIfExists(seriesName) {
 			logger.WriteInfo("The series does not exists in the list.")
 
