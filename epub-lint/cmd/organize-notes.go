@@ -3,7 +3,7 @@ package cmd
 import (
 	"archive/zip"
 	"fmt"
-	"path/filepath"
+	"path"
 
 	"github.com/MakeNowJust/heredoc"
 	epubhandler "github.com/pjkaufman/go-go-gadgets/epub-lint/internal/epub-handler"
@@ -59,7 +59,7 @@ func moveTranslatorsNotes(epubFile string) error {
 		}
 
 		var (
-			ncxFilename           = filepath.Join(opfFolder, epubInfo.NcxFile)
+			ncxFilename           = path.Join(opfFolder, epubInfo.NcxFile)
 			nameToUpdatedContents = map[string]string{}
 			handledFiles          []string
 			getFileContentsByName = func(filename string) (string, error) {
@@ -82,7 +82,7 @@ func moveTranslatorsNotes(epubFile string) error {
 
 		var navFilename = epubInfo.NavFile
 		if opfFolder != "." && opfFolder != "" && navFilename != "" {
-			navFilename = filepath.Join(opfFolder, navFilename)
+			navFilename = path.Join(opfFolder, navFilename)
 		}
 
 		numberOfTranslatorsNotes, err := epubhandler.MoveTranslatorsNotes(epubInfo.FilePathsInSpineOrder, opfFolder, ncxFilename, epubInfo.OpfFile, navFilename, nameToUpdatedContents, getFileContentsByName)

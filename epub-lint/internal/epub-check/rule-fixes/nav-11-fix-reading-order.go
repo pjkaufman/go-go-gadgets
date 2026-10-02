@@ -1,7 +1,7 @@
 package rulefixes
 
 import (
-	"path/filepath"
+	"path"
 	"slices"
 	"sort"
 	"strings"
@@ -30,10 +30,10 @@ func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string
 		sortWeights         = make(map[string]int, len(spineOrder))
 	)
 
-	for i, path := range spineOrder {
-		var fullPath = path
+	for i, spinePath := range spineOrder {
+		var fullPath = spinePath
 		if opfFolder != "" && opfFolder != "." {
-			fullPath = filepath.Join(opfFolder, fullPath)
+			fullPath = path.Join(opfFolder, fullPath)
 		}
 
 		sortWeights[fullPath] = i
@@ -76,7 +76,7 @@ func FixReadingOrder(spineOrder []string, navContents, navPath, opfFolder string
 			filePath = filePath[:referenceIndex]
 		}
 
-		var fullPath = filepath.Join(navPath, filePath)
+		var fullPath = path.Join(navPath, filePath)
 
 		navItemInfo = append(navItemInfo, navItemPosInfo{
 			fullPath:         fullPath,

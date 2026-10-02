@@ -3,6 +3,7 @@ package cmd
 import (
 	"archive/zip"
 	"fmt"
+	"path"
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
@@ -96,7 +97,7 @@ var autoFixValidationCmd = &cobra.Command{
 
 			var ncxFilename, ncxFileContents string
 			if epubInfo.NcxFile != "" {
-				ncxFilename = filepath.Join(opfFolder, epubInfo.NcxFile)
+				ncxFilename = path.Join(opfFolder, epubInfo.NcxFile)
 
 				ncxFileContents, err = filehandler.ReadInZipFileContents(zipFiles[ncxFilename])
 				if err != nil {

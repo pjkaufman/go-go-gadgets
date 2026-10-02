@@ -42,6 +42,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle, epub
 			if err != nil {
 				return fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", message.FilePath, opfFilename, err)
 			}
+			relativePath = filepath.ToSlash(relativePath)
 			update, err = rulefixes.AddPropertyToManifest(fileContent, relativePath, property)
 			if err != nil {
 				return err
@@ -75,6 +76,7 @@ func HandleValidationErrors(opfFolder, ncxFilename, opfFilename, epubTitle, epub
 			if err != nil {
 				return fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", message.FilePath, opfFilename, err)
 			}
+			relativePath = filepath.ToSlash(relativePath)
 			update, err = rulefixes.RemovePropertyFromManifest(fileContent, relativePath, property)
 			if err != nil {
 				return err

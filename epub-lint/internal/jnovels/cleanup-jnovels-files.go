@@ -64,6 +64,8 @@ func cleanupJNovelsXhtml(ctx JNovelsCleanupContext) ([]string, error) {
 			return handledFiles, fmt.Errorf("Failed to determine relative path between ncx file %q and file %q: %w", ctx.NcxFileName, filename, err)
 		}
 
+		relativeFilePath = filepath.ToSlash(relativeFilePath)
+
 		var (
 			priorNcx   = ctx.UpdatedFileContents[ctx.NcxFileName]
 			updatedNcx = epubhandler.RemoveFileFromNcx(ctx.UpdatedFileContents[ctx.NcxFileName], relativeFilePath)
@@ -117,6 +119,8 @@ func cleanupJNovelsImage(ctx JNovelsCleanupContext) ([]string, error) {
 				return handledFiles, fmt.Errorf("Failed to determine relative path between nav file %q and file %q: %w", filePath, filename, err)
 			}
 
+			relativeImagePath = filepath.ToSlash(relativeImagePath)
+
 			var (
 				relativeCoverPath string
 				coverPath         string
@@ -128,6 +132,8 @@ func cleanupJNovelsImage(ctx JNovelsCleanupContext) ([]string, error) {
 				if err != nil {
 					return handledFiles, fmt.Errorf("Failed to determine relative path between nav file %q and file %q: %w", filePath, coverPath, err)
 				}
+
+				relativeCoverPath = filepath.ToSlash(relativeCoverPath)
 			}
 
 			var (
@@ -141,6 +147,8 @@ func cleanupJNovelsImage(ctx JNovelsCleanupContext) ([]string, error) {
 				if err != nil {
 					return handledFiles, fmt.Errorf("Failed to determine relative path between nav file %q and file %q: %w", filePath, tocPath, err)
 				}
+
+				relativeTocPath = filepath.ToSlash(relativeTocPath)
 			}
 
 			updatedNavContents := epubhandler.UpdateLandmarks(contents, relativeImagePath, relativeCoverPath, relativeTocPath)

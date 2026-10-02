@@ -2,6 +2,7 @@ package rulefixes
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -59,9 +60,10 @@ func FixFileNotFound(contents, referencedResource, currentFile string, line, col
 			return edit, fmt.Errorf("failed to determine the relative file path for %q referenced in %q: %w", possibleFiles[0], currentFile, err)
 		}
 
+		relativePath = filepath.ToSlash(relativePath)
 		edit.Range.Start = positions.IndexToPosition(contents, startOfEl+attributeIndex)
 		edit.Range.End = positions.IndexToPosition(contents, startOfEl+attributeIndex+endOfAttributeIndex)
-		edit.NewText = filepath.Join(relativePath, basename)
+		edit.NewText = path.Join(relativePath, basename)
 
 		return edit, nil
 	}

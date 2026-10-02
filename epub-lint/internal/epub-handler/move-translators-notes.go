@@ -2,6 +2,7 @@ package epubhandler
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -31,7 +32,7 @@ func MoveTranslatorsNotes(spineOrder []string, opfFolder, ncxFilename, opfFilena
 		fullFilePath            string
 	)
 	for _, file := range spineOrder {
-		fullFilePath = filepath.Join(opfFolder, file)
+		fullFilePath = path.Join(opfFolder, file)
 
 		contents, err := getContentByFileName(fullFilePath)
 		if err != nil {
@@ -64,12 +65,12 @@ func MoveTranslatorsNotes(spineOrder []string, opfFolder, ncxFilename, opfFilena
 		}
 
 		if len(pathParts) > 2 {
-			relativePath = filepath.Join(strings.Join(pathParts[1:len(pathParts)-1], "/"), tlNoteFileName)
+			relativePath = path.Join(strings.Join(pathParts[1:len(pathParts)-1], "/"), tlNoteFileName)
 		}
 
 		var tlNotesFilePath = tlNoteFileName
 		if htmlFolderPath != "" {
-			tlNotesFilePath = filepath.Join(htmlFolderPath, tlNoteFileName)
+			tlNotesFilePath = path.Join(htmlFolderPath, tlNoteFileName)
 		}
 
 		nameToUpdatedContents[tlNotesFilePath] = fmt.Sprintf(defaultTLNoteContents, strings.Join(translatorNoteListItems, "				"))
@@ -110,6 +111,7 @@ func MoveTranslatorsNotes(spineOrder []string, opfFolder, ncxFilename, opfFilena
 				return 0, fmt.Errorf("Failed to determine relative path between nav file %q and file %q: %w", navFilename, tlNotesFilePath, err)
 			}
 
+			relativeTlNotesPath = filepath.ToSlash(relativeTlNotesPath)
 			nameToUpdatedContents[navFilename] = AddFileToNav(navFileContents, relativeTlNotesPath, "Translator's Notes")
 		}
 	}
