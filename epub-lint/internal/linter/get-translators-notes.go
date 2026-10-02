@@ -189,13 +189,8 @@ func getInnerContent(decoder *xml.Decoder, text string) (string, string, int, bo
 }
 
 func translatorNoteIndicatorPosInfo(text string) (string, int) {
-	var (
-		lowerText = strings.ToLower(text)
-		pos       int
-	)
 	for _, indicator := range noteIndicators {
-		pos = strings.Index(lowerText, indicator)
-		if pos != -1 {
+		if pos := indexFoldASCII(text, indicator); pos != -1 {
 			return indicator, pos
 		}
 	}
@@ -206,7 +201,7 @@ func translatorNoteIndicatorPosInfo(text string) (string, int) {
 func extractNoteContent(indicator, innerElContent, textOnlyContent string, indicatorPos, startPos, endPos, openingElPos, closingElPos int) (match noteMatch) {
 	var (
 		startOfNote     = indicatorPos + len(indicator)
-		startOfTextNote = strings.Index(strings.ToLower(textOnlyContent), indicator)
+		startOfTextNote = indexFoldASCII(textOnlyContent, indicator)
 	)
 
 	match.start = startPos
@@ -269,6 +264,39 @@ func extractNoteContent(indicator, innerElContent, textOnlyContent string, indic
 	}
 
 	return
+}
+
+func indexFoldASCII(s, substr string) int {
+	if len(substr) == 0 {
+		return 0
+	}
+
+	for i := 0; i+len(substr) <= len(s); i++ {
+		match := true
+
+		for j := 0; j < len(substr); j++ {
+			a := s[i+j]
+			b := substr[j]
+
+			if a >= 'A' && a <= 'Z' {
+				a += 'a' - 'A'
+			}
+			if b >= 'A' && b <= 'Z' {
+				b += 'a' - 'A'
+			}
+
+			if a != b {
+				match = false
+				break
+			}
+		}
+
+		if match {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func updateNoteForOpeningChar(match noteMatch, beforeIndicator, afterIndicator string, openingChar, closingChar rune, startPos, startOfNote int) (noteMatch, bool) {

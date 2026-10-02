@@ -181,6 +181,18 @@ var testCases = map[string]getTranslatorsNotesTestCase{
 		expectedNotes:  []string{},
 		expectedNext:   0,
 	},
+	"unicode before translator's note indicator should preserve the correct byte offset": {
+	inputText: `<p>İ note: hello</p>`,
+	fileName: "main.xhtml",
+	noteFileName: "notes.xhtml",
+	startingNumber: 0,
+	expectedText: `<p>İ <a id="note_ref_1" href="notes.xhtml#tl_note_1"><sup>1</sup></a></p>`,
+	expectedNotes: []string{
+		`<li id="tl_note_1">hello<br/><a href="main.xhtml#note_ref_1">Back to Reference</a></li>
+`,
+	},
+	expectedNext: 1,
+},
 }
 
 func TestGetTranslatorsNotes(t *testing.T) {
