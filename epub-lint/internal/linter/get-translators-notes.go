@@ -274,7 +274,7 @@ func indexFoldASCII(s, substr string) int {
 	for i := 0; i+len(substr) <= len(s); i++ {
 		match := true
 
-		for j := 0; j < len(substr); j++ {
+		for j := range len(substr) {
 			a := s[i+j]
 			b := substr[j]
 
