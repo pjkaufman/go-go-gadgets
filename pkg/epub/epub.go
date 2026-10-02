@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// EPUBPath represents an EPUB resource path using forward slashes.
+// EPUBPath represents an EPUB resource path, using forward slashes as the canonical format.
 type EPUBPath string
 
 func NewEPUBPath(value string) EPUBPath {
@@ -21,9 +21,6 @@ func NewEPUBPath(value string) EPUBPath {
 	cleaned := filepath.ToSlash(trimmed)
 	cleaned = path.Clean(cleaned)
 	if cleaned == "." {
-		return EPUBPath("")
-	}
-	if cleaned == "" {
 		return EPUBPath("")
 	}
 	return EPUBPath(cleaned)
@@ -79,7 +76,7 @@ func (r SourceRange) Valid(length int) bool {
 	return r.End <= length
 }
 
-// Edit describes a byte-based edit to apply to a document.
+// Edit describes a byte-based replacement to apply to a document.
 type Edit struct {
 	Start       int
 	End         int
@@ -90,6 +87,7 @@ func ApplyEdits(data []byte, edits []Edit) ([]byte, error) {
 	if len(edits) == 0 {
 		return append([]byte(nil), data...), nil
 	}
+
 	ordered := make([]Edit, len(edits))
 	copy(ordered, edits)
 	sort.Slice(ordered, func(i, j int) bool {
@@ -137,7 +135,7 @@ func sumReplacementSize(edits []Edit) int {
 	return sum
 }
 
-// XMLNode is a lightweight, source-aware XML node.
+// XMLNode is a lightweight source-aware XML node.
 type XMLNode interface {
 	Range() SourceRange
 }
@@ -188,8 +186,8 @@ func (e *XMLElement) FindElementByID(id string) *XMLElement {
 			return e
 		}
 	}
-	for _, child := range e.Children {
-		if childEl, ok := child.(*XMLElement); ok {
+	for _, c := range e.Children {
+		if childEl, ok := c.(*XMLElement); ok {
 			if found := childEl.FindElementByID(id); found != nil {
 				return found
 			}
@@ -202,7 +200,7 @@ func (e *XMLElement) FindElements(name string) []*XMLElement {
 	if e == nil {
 		return nil
 	}
-	var out []*XMLElement
+	out := make([]*XMLElement, 0, 4)
 	if e.Name.Local == name {
 		out = append(out, e)
 	}
@@ -262,91 +260,28 @@ func ParseXML(data []byte) (*XMLDocument, error) {
 		return doc, nil
 	}
 
-	cursor := 0
-	stack := []*XMLElement{}
-
-	for cursor < len(data) {
-		nextTag := bytes.Index(data[cursor:], []byte("<"))
-		if nextTag < 0 {
-			break
-		}
-		absoluteStart := cursor + nextTag
-		if nextTag > 0 {
-			textRange := SourceRange{Start: cursor, End: absoluteStart}
-			if len(stack) > 0 {
-				stack[len(stack)-1].Children = append(stack[len(stack)-1].Children, &XMLText{Range: textRange})
+	decoder := xml.NewDecoder(bytes.NewReader(data))
+	stack := make([]*XMLElement, 0, 8)
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			if err.Error() == "EOF" || strings.Contains(err.Error(), "EOF") {
+				break
 			}
-			cursor = absoluteStart
-		}
-		if cursor >= len(data) {
-			break
+			return nil, err
 		}
 
-		switch {
-		case bytes.HasPrefix(data[cursor:], []byte("<!--")):
-			end := bytes.Index(data[cursor+4:], []byte("-->"))
-			if end < 0 {
-				break
-			}
-			commentEnd := cursor + 4 + end + 3
-			if len(stack) > 0 {
-				stack[len(stack)-1].Children = append(stack[len(stack)-1].Children, &XMLComment{Range: SourceRange{Start: cursor, End: commentEnd}})
-			}
-			cursor = commentEnd
-		case bytes.HasPrefix(data[cursor:], []byte("<?")) || bytes.HasPrefix(data[cursor:], []byte("<!")):
-			end := findTagEnd(data, cursor)
-			if end < 0 {
-				break
-			}
-			cursor = end
-		case bytes.HasPrefix(data[cursor:], []byte("</")):
-			end := findTagEnd(data, cursor)
-			if end < 0 {
-				break
-			}
-			if len(stack) > 0 {
-				current := stack[len(stack)-1]
-				current.ContentRange = SourceRange{Start: current.Range.End, End: cursor}
-				if current.ContentRange.Start > current.ContentRange.End {
-					current.ContentRange = SourceRange{Start: current.Range.End, End: current.Range.End}
-				}
-				stack = stack[:len(stack)-1]
-			}
-			cursor = end
-		default:
-			end := findTagEnd(data, cursor)
-			if end < 0 {
-				break
-			}
-			raw := string(data[cursor:end])
-			dec := xml.NewDecoder(strings.NewReader(raw))
-			tok, err := dec.Token()
-			if err != nil {
-				cursor = end
-				continue
-			}
-			se, ok := tok.(xml.StartElement)
-			if !ok {
-				cursor = end
-				continue
-			}
-
-			attrs := make([]XMLAttribute, 0, len(se.Attr))
-			for _, attr := range se.Attr {
-				attrRange, valueRange := findAttributeRanges(raw, attr.Name.Local, attr.Value)
-				attrs = append(attrs, XMLAttribute{
-					Name:       attr.Name,
-					Value:      attr.Value,
-					Range:      SourceRange{Start: cursor + attrRange.Start, End: cursor + attrRange.End},
-					ValueRange: SourceRange{Start: cursor + valueRange.Start, End: cursor + valueRange.End},
-				})
-			}
-
+		switch t := tok.(type) {
+		case xml.StartElement:
 			el := &XMLElement{
-				Name:       se.Name,
-				Range:      SourceRange{Start: cursor, End: end},
-				Attributes: attrs,
-				Parent:     parentFromStack(stack),
+				Name:   t.Name,
+				Parent: parentFromStack(stack),
+			}
+			el.Range = SourceRange{Start: int(decoder.InputOffset()) - 1, End: int(decoder.InputOffset())}
+			for _, attr := range t.Attr {
+				valueStart := strings.Index(string(data[int(decoder.InputOffset())-1:]), attr.Name.Local)
+				_ = valueStart
+				el.Attributes = append(el.Attributes, XMLAttribute{Name: attr.Name, Value: attr.Value})
 			}
 			if el.Parent != nil {
 				el.Parent.Children = append(el.Parent.Children, el)
@@ -354,10 +289,26 @@ func ParseXML(data []byte) (*XMLDocument, error) {
 				doc.Root = el
 			}
 			stack = append(stack, el)
-			if strings.HasSuffix(raw, "/>") {
+		case xml.EndElement:
+			if len(stack) > 0 {
+				current := stack[len(stack)-1]
+				if current.Range.End == 0 {
+					current.Range.End = int(decoder.InputOffset())
+				}
 				stack = stack[:len(stack)-1]
 			}
-			cursor = end
+		case xml.CharData:
+			if len(stack) > 0 {
+				start := int(decoder.InputOffset()) - len(t)
+				end := int(decoder.InputOffset())
+				stack[len(stack)-1].Children = append(stack[len(stack)-1].Children, &XMLText{Range: SourceRange{Start: start, End: end}})
+			}
+		case xml.Comment:
+			if len(stack) > 0 {
+				start := int(decoder.InputOffset()) - len(t)
+				end := int(decoder.InputOffset())
+				stack[len(stack)-1].Children = append(stack[len(stack)-1].Children, &XMLComment{Range: SourceRange{Start: start, End: end}})
+			}
 		}
 	}
 	return doc, nil
@@ -368,66 +319,6 @@ func parentFromStack(stack []*XMLElement) *XMLElement {
 		return nil
 	}
 	return stack[len(stack)-1]
-}
-
-func findTagEnd(data []byte, start int) int {
-	if start < 0 || start >= len(data) {
-		return -1
-	}
-	inQuote := byte(0)
-	for i := start; i < len(data); i++ {
-		b := data[i]
-		if inQuote != 0 {
-			if b == inQuote {
-				inQuote = 0
-			}
-			continue
-		}
-		if b == '\'' || b == '"' {
-			inQuote = b
-			continue
-		}
-		if b == '>' {
-			return i + 1
-		}
-	}
-	return -1
-}
-
-func findAttributeRanges(raw, name, value string) (SourceRange, SourceRange) {
-	if name == "" {
-		return SourceRange{}, SourceRange{}
-	}
-	start := strings.Index(raw, name)
-	if start < 0 {
-		return SourceRange{}, SourceRange{}
-	}
-	valueIdx := strings.Index(raw[start:], "=")
-	if valueIdx < 0 {
-		return SourceRange{Start: start, End: len(raw)}, SourceRange{Start: start, End: len(raw)}
-	}
-	valuePos := start + valueIdx + 1
-	for valuePos < len(raw) && (raw[valuePos] == ' ' || raw[valuePos] == '\t' || raw[valuePos] == '\n' || raw[valuePos] == '\r') {
-		valuePos++
-	}
-	if valuePos < len(raw) && (raw[valuePos] == '\'' || raw[valuePos] == '"') {
-		quote := raw[valuePos]
-		valueStart := valuePos + 1
-		valueEnd := valueStart
-		for valueEnd < len(raw) && raw[valueEnd] != quote {
-			valueEnd++
-		}
-		endOfAttr := valueEnd + 1
-		if endOfAttr > len(raw) {
-			endOfAttr = len(raw)
-		}
-		return SourceRange{Start: start, End: endOfAttr}, SourceRange{Start: valueStart, End: valueEnd}
-	}
-	valueEnd := valuePos
-	for valueEnd < len(raw) && raw[valueEnd] != '>' && raw[valueEnd] != ' ' && raw[valueEnd] != '\t' && raw[valueEnd] != '\n' && raw[valueEnd] != '\r' {
-		valueEnd++
-	}
-	return SourceRange{Start: start, End: valueEnd}, SourceRange{Start: valuePos, End: valueEnd}
 }
 
 // XHTMLDocument is a source-aware XHTML document.
@@ -458,33 +349,33 @@ func (d *XHTMLDocument) FindElementByID(id string) *XMLElement {
 }
 
 func (d *XHTMLDocument) FindText(query string) []*XMLText {
-	if d == nil || d.Root == nil {
+	if d == nil || d.Root == nil || d.Data == nil {
 		return nil
 	}
-	return findTextNodes(d.Root, query)
+	return findTextNodes(d.Data, d.Root, query)
 }
 
-func findTextNodes(node *XMLElement, query string) []*XMLText {
+func findTextNodes(data []byte, node *XMLElement, query string) []*XMLText {
 	if node == nil {
 		return nil
 	}
 	var matches []*XMLText
 	for _, child := range node.Children {
-		if text, ok := child.(*XMLText); ok {
-			if text != nil && text.Range.Valid(len(node.Raw(nil))) {
-				if strings.Contains(string(text.Raw(nil)), query) {
-					matches = append(matches, text)
+		switch v := child.(type) {
+		case *XMLText:
+			if v != nil && v.Range.Valid(len(data)) {
+				if strings.Contains(string(data[v.Range.Start:v.Range.End]), query) {
+					matches = append(matches, v)
 				}
 			}
-		}
-		if childEl, ok := child.(*XMLElement); ok {
-			matches = append(matches, findTextNodes(childEl, query)...)
+		case *XMLElement:
+			matches = append(matches, findTextNodes(data, v, query)...)
 		}
 	}
 	return matches
 }
 
-// Metadata / OPF placeholder types.
+// Metadata / OPF placeholder data model.
 type Metadata struct {
 	Identifier string
 }
@@ -506,19 +397,6 @@ func (m *Manifest) Add(item *ManifestItem) {
 		return
 	}
 	m.Items = append(m.Items, item)
-}
-
-func (m *Manifest) Remove(item *ManifestItem) {
-	if m == nil || item == nil {
-		return
-	}
-	filtered := make([]*ManifestItem, 0, len(m.Items))
-	for _, existing := range m.Items {
-		if existing != item {
-			filtered = append(filtered, existing)
-		}
-	}
-	m.Items = filtered
 }
 
 func (m *Manifest) FindByID(id string) *ManifestItem {
@@ -543,6 +421,19 @@ func (m *Manifest) FindByHref(href EPUBPath) *ManifestItem {
 		}
 	}
 	return nil
+}
+
+func (m *Manifest) Remove(item *ManifestItem) {
+	if m == nil || item == nil {
+		return
+	}
+	filtered := make([]*ManifestItem, 0, len(m.Items))
+	for _, existing := range m.Items {
+		if existing != item {
+			filtered = append(filtered, existing)
+		}
+	}
+	m.Items = filtered
 }
 
 type SpineItemRef struct {
@@ -700,6 +591,10 @@ func (e *EPUB) ResolveHref(from *Resource, href EPUBPath) (*ResourceRef, error) 
 		return &ResourceRef{Resource: res, Fragment: ""}, nil
 	}
 	return nil, fmt.Errorf("resource %q not found", resolved)
+}
+
+func (e *EPUB) ResolveHrefString(from *Resource, href string) (*ResourceRef, error) {
+	return e.ResolveHref(from, NewEPUBPath(href))
 }
 
 func normalizeEPUBPathForComparison(value string) string {
