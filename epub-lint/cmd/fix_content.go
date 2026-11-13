@@ -28,6 +28,7 @@ var (
 	runConversation          bool
 	runNecessaryWords        bool
 	runSingleQuotes          bool
+	runDoubleQuotes          bool
 	interactive              bool
 	logFile                  string
 	potentiallyFixableIssues = []potentiallyfixableissue.PotentiallyFixableIssue{
@@ -50,6 +51,11 @@ var (
 			Name:           "Potential Incorrect Single Quotes",
 			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectSingleQuotes,
 			IsEnabled:      &runSingleQuotes,
+		},
+		{
+			Name:           "Potential Nested Double Quotes",
+			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectNestedDoubleQuotes,
+			IsEnabled:      &runDoubleQuotes,
 		},
 		{
 			Name: "Potential Section Breaks",
@@ -98,6 +104,7 @@ var (
 			flags.NewBoolFlag(false, false, &runConversation, "conversation", "", false, "whether to run the logic for getting conversation suggestions (paragraphs in square brackets may be instances of a conversation)"),
 			flags.NewBoolFlag(false, false, &runNecessaryWords, "necessary-words", "", false, "whether to run the logic for getting necessary word suggestions (words that are a subset of paragraph content are in square brackets may be instances of necessary words for a sentence)"),
 			flags.NewBoolFlag(false, false, &runSingleQuotes, "single-quotes", "", false, "whether to run the logic for getting incorrect single quote suggestions"),
+			flags.NewBoolFlag(false, false, &runDoubleQuotes, "double-quotes", "", false, "whether to run the logic for getting incorrect nested double quote suggestions"),
 			flags.NewBoolFlag(false, false, &interactive, "interactive", "i", false, "whether to use the terminal UI for suggesting fixes"),
 			flags.NewStringFlag(false, false, &logFile, "log-file", "", "", "the place to write debug logs to when using the TUI"),
 			flags.NewFileFlag(true, false, &epubFile, "file", "f", "", "the epub file to find manually fixable issues in", []string{"epub"}, true),
@@ -155,7 +162,7 @@ var contentCmd = &cobra.Command{
 			return err
 		}
 
-		if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runLackingClause && !runConversation && !runThoughts && !runNecessaryWords && !runSingleQuotes {
+		if !runAll && !runBrokenLines && !runSectionBreak && !runPageBreak && !runOxfordCommas && !runLackingClause && !runConversation && !runThoughts && !runNecessaryWords && !runSingleQuotes && !runDoubleQuotes {
 			return ErrOneRunBoolArgMustBeEnabled
 		}
 
