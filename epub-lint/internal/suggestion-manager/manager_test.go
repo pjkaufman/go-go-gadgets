@@ -1582,22 +1582,22 @@ func createPotentiallyFixableIssues(t *testing.T, contextBreak string) []potenti
 		{
 			Name:           "Potential Conversation Instances",
 			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketConversationInstances,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name:           "Potential Necessary Word Omission Instances",
 			GetSuggestions: potentiallyfixableissue.GetPotentialSquareBracketNecessaryWords,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name:           "Potential Broken Lines",
 			GetSuggestions: potentiallyfixableissue.GetPotentiallyBrokenLines,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name:           "Potential Incorrect Single Quotes",
 			GetSuggestions: potentiallyfixableissue.GetPotentialIncorrectSingleQuotes,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name: "Potential Section Breaks",
@@ -1605,35 +1605,31 @@ func createPotentiallyFixableIssues(t *testing.T, contextBreak string) []potenti
 			GetSuggestions: func(text string) (map[string]string, error) {
 				return potentiallyfixableissue.GetPotentialSectionBreaks(text, contextBreak)
 			},
-			IsEnabled:                   pointerToBool(false),
+			IsEnabled:                   new(false),
 			UpdateAllInstances:          true,
 			AddCssSectionBreakIfMissing: true,
 		},
 		{
 			Name:                     "Potential Page Breaks",
 			GetSuggestions:           potentiallyfixableissue.GetPotentialPageBreaks,
-			IsEnabled:                pointerToBool(false),
+			IsEnabled:                new(false),
 			UpdateAllInstances:       true,
 			AddCssPageBreakIfMissing: true,
 		},
 		{
 			Name:           "Potential Missing Oxford Commas",
 			GetSuggestions: potentiallyfixableissue.GetPotentialMissingOxfordCommas,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name:           "Potentially Lacking Subordinate Clause Instances",
 			GetSuggestions: potentiallyfixableissue.GetPotentiallyLackingSubordinateClauseInstances,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 		{
 			Name:           "Potential Thought Instances",
 			GetSuggestions: potentiallyfixableissue.GetPotentialThoughtInstances,
-			IsEnabled:      pointerToBool(false),
+			IsEnabled:      new(false),
 		},
 	}
-}
-
-func pointerToBool(value bool) *bool {
-	return &value
 }

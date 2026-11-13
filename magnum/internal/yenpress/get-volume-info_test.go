@@ -28,7 +28,7 @@ var (
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
 						Name:        "The Asterisk War, Vol. 17 (light novel): The Grand Finale",
-						ReleaseDate: sitehandler.TimePtr(time.Date(2023, time.September, 12, 0, 0, 0, 0, time.Local)),
+						ReleaseDate: new(time.Date(2023, time.September, 12, 0, 0, 0, 0, time.Local)),
 					},
 				},
 				ExpectedCount: 17,
@@ -38,7 +38,7 @@ var (
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
 						Name:        "A Certain Magical Index SS, Vol. 2 (light novel)",
-						ReleaseDate: sitehandler.TimePtr(time.Date(2021, time.March, 2, 0, 0, 0, 0, time.Local)),
+						ReleaseDate: new(time.Date(2021, time.March, 2, 0, 0, 0, 0, time.Local)),
 					},
 				},
 				ExpectedCount: 1, // there are more novels than this, but the page says it only has 1 novel...

@@ -21,10 +21,10 @@ type validationFlagTestCase struct {
 
 // error indicators
 var (
-	whitespaceOrEmptyIndicator        = createStringPointer("non-whitespace value")
-	requiredExtensionsIndicator       = createStringPointer("following extensions")
-	fileOrDirectoryExistenceIndicator = createStringPointer("must exist")
-	enumOptionIndicator               = createStringPointer("must be one of")
+	whitespaceOrEmptyIndicator        = new("non-whitespace value")
+	requiredExtensionsIndicator       = new("following extensions")
+	fileOrDirectoryExistenceIndicator = new("must exist")
+	enumOptionIndicator               = new("must be one of")
 )
 
 var stringFlagValidationTestCases = map[string]validationFlagTestCase{
@@ -33,20 +33,20 @@ var stringFlagValidationTestCases = map[string]validationFlagTestCase{
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A string flag that is required and is just whitespace should return an error": {
-		flag:                      flags.NewStringFlag(true, false, createStringPointer("    "), "test flag", "f", "", ""),
+		flag:                      flags.NewStringFlag(true, false, new("    "), "test flag", "f", "", ""),
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A string flag that is required and is not just whitespace should not return an error": {
-		flag: flags.NewStringFlag(true, false, createStringPointer(" test value   "), "test flag", "f", "", ""),
+		flag: flags.NewStringFlag(true, false, new(" test value   "), "test flag", "f", "", ""),
 	},
 	"A string flag that is not required and is just whitespace should not return an error": {
-		flag: flags.NewStringFlag(false, false, createStringPointer("    "), "test flag", "f", "", ""),
+		flag: flags.NewStringFlag(false, false, new("    "), "test flag", "f", "", ""),
 	},
 	"A string flag that is not required and is nil should not return an error": {
 		flag: flags.NewStringFlag(false, false, nil, "test flag", "f", "", ""),
 	},
 	"A string flag that is not required and is not nil or whitespace should not return an error": {
-		flag: flags.NewStringFlag(false, false, createStringPointer("test"), "test flag", "f", "", ""),
+		flag: flags.NewStringFlag(false, false, new("test"), "test flag", "f", "", ""),
 	},
 }
 
@@ -56,42 +56,42 @@ var fileFlagValidationTestCases = map[string]validationFlagTestCase{
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A file flag that is required and is just whitespace should return an error": {
-		flag:                      flags.NewFileFlag(true, false, createStringPointer("    "), "test flag", "f", "", "", nil, false),
+		flag:                      flags.NewFileFlag(true, false, new("    "), "test flag", "f", "", "", nil, false),
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A file flag that is required, is not whitespace, has a value, and does not have a required extension should not return an error": {
-		flag: flags.NewFileFlag(true, false, createStringPointer("file.txt"), "test flag", "f", "", "", nil, false),
+		flag: flags.NewFileFlag(true, false, new("file.txt"), "test flag", "f", "", "", nil, false),
 	},
 	"A file flag that is required, is not whitespace, has a value, and does not have a required extension should return an error": {
-		flag:                      flags.NewFileFlag(true, false, createStringPointer("file.json"), "test flag", "f", "", "", []string{"txt"}, false),
+		flag:                      flags.NewFileFlag(true, false, new("file.json"), "test flag", "f", "", "", []string{"txt"}, false),
 		expectedErrorStringSubset: requiredExtensionsIndicator,
 	},
 	"A file flag that is required, is not whitespace, has a value, has a required extension, and does not exist but must should return an error": {
-		flag:                      flags.NewFileFlag(true, false, createStringPointer("file.txt"), "test flag", "f", "", "", []string{"txt"}, true),
+		flag:                      flags.NewFileFlag(true, false, new("file.txt"), "test flag", "f", "", "", []string{"txt"}, true),
 		expectedErrorStringSubset: fileOrDirectoryExistenceIndicator,
 	},
 	"A file flag that is required, is not whitespace, has a value, has a required extension, and exists and it must should not return an error": {
-		flag:  flags.NewFileFlag(true, false, createStringPointer("file.txt"), "test flag", "f", "", "", []string{"txt"}, true),
+		flag:  flags.NewFileFlag(true, false, new("file.txt"), "test flag", "f", "", "", []string{"txt"}, true),
 		setup: setupFiletTest,
 	},
 	"A file flag that is not required and is nil should not return an error": {
 		flag: flags.NewFileFlag(false, false, nil, "test flag", "f", "", "", nil, false),
 	},
 	"A file flag that is not required and is whitespace should not return an error": {
-		flag: flags.NewFileFlag(false, false, createStringPointer("  "), "test flag", "f", "", "", nil, false),
+		flag: flags.NewFileFlag(false, false, new("  "), "test flag", "f", "", "", nil, false),
 	},
 	"A file flag that is not required, is not whitespace, and has a value should not return an error": {
-		flag: flags.NewFileFlag(false, false, createStringPointer("file.txt"), "test flag", "f", "", "", nil, false),
+		flag: flags.NewFileFlag(false, false, new("file.txt"), "test flag", "f", "", "", nil, false),
 	},
 	"A file flag that is not required, is not whitespace, has a value, and has an extension in the required list should not return an error": {
-		flag: flags.NewFileFlag(false, false, createStringPointer("file.txt"), "test flag", "f", "", "", []string{"txt"}, false),
+		flag: flags.NewFileFlag(false, false, new("file.txt"), "test flag", "f", "", "", []string{"txt"}, false),
 	},
 	"A file flag that is not required, is not whitespace, has a value, has an extension in the required list, and exists and it must should not return an error": {
-		flag:  flags.NewFileFlag(false, false, createStringPointer("new.txt"), "test flag", "f", "", "", []string{"txt"}, true),
+		flag:  flags.NewFileFlag(false, false, new("new.txt"), "test flag", "f", "", "", []string{"txt"}, true),
 		setup: setupFiletTest,
 	},
 	"A file flag that is not required, is not whitespace, has a value, has an extension in the required list, and does not exist and it must should return an error": {
-		flag:                      flags.NewFileFlag(false, false, createStringPointer("new.txt"), "test flag", "f", "", "", []string{"txt"}, true),
+		flag:                      flags.NewFileFlag(false, false, new("new.txt"), "test flag", "f", "", "", []string{"txt"}, true),
 		expectedErrorStringSubset: fileOrDirectoryExistenceIndicator,
 	},
 }
@@ -102,29 +102,29 @@ var directoryFlagValidationTestCases = map[string]validationFlagTestCase{
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A directory flag that is required and is just whitespace should return an error": {
-		flag:                      flags.NewDirectoryFlag(true, false, createStringPointer("    "), "test flag", "f", "", ""),
+		flag:                      flags.NewDirectoryFlag(true, false, new("    "), "test flag", "f", "", ""),
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"A directory flag that is required, is not whitespace, has a value, and does not exist should return an error": {
-		flag:                      flags.NewDirectoryFlag(true, false, createStringPointer("directory"), "test flag", "f", "", ""),
+		flag:                      flags.NewDirectoryFlag(true, false, new("directory"), "test flag", "f", "", ""),
 		expectedErrorStringSubset: fileOrDirectoryExistenceIndicator,
 	},
 	"A directory flag that is required, is not whitespace, has a value, and does exist should not return an error": {
-		flag:  flags.NewDirectoryFlag(true, false, createStringPointer("directory"), "test flag", "f", "", ""),
+		flag:  flags.NewDirectoryFlag(true, false, new("directory"), "test flag", "f", "", ""),
 		setup: setupDirectoryTest,
 	},
 	"A directory flag that is not required and is nil should not return an error": {
 		flag: flags.NewDirectoryFlag(false, false, nil, "test flag", "f", "", ""),
 	},
 	"A directory flag that is not required and is whitespace should not return an error": {
-		flag: flags.NewDirectoryFlag(false, false, createStringPointer("  "), "test flag", "f", "", ""),
+		flag: flags.NewDirectoryFlag(false, false, new("  "), "test flag", "f", "", ""),
 	},
 	"A directory flag that is not required, is not whitespace, has a value, and exists should not return an error": {
-		flag:  flags.NewDirectoryFlag(false, false, createStringPointer("directory"), "test flag", "f", "", ""),
+		flag:  flags.NewDirectoryFlag(false, false, new("directory"), "test flag", "f", "", ""),
 		setup: setupDirectoryTest,
 	},
 	"A directory flag that is not required, is not whitespace, has a value, and does not exist should return an error": {
-		flag:                      flags.NewDirectoryFlag(false, false, createStringPointer("directory"), "test flag", "f", "", ""),
+		flag:                      flags.NewDirectoryFlag(false, false, new("directory"), "test flag", "f", "", ""),
 		expectedErrorStringSubset: fileOrDirectoryExistenceIndicator,
 	},
 }
@@ -135,27 +135,27 @@ var enumFlagValidationTestCases = map[string]validationFlagTestCase{
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"An enum flag that is required and is just whitespace should return an error": {
-		flag:                      flags.NewEnumFlag(true, false, createStringPointer("    "), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag:                      flags.NewEnumFlag(true, false, new("    "), "test flag", "f", "", "", []string{"option1", "option2"}),
 		expectedErrorStringSubset: whitespaceOrEmptyIndicator,
 	},
 	"An enum flag that is required, is not just whitespace, and is one of the allowed options should not return an error": {
-		flag: flags.NewEnumFlag(true, false, createStringPointer("option1"), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag: flags.NewEnumFlag(true, false, new("option1"), "test flag", "f", "", "", []string{"option1", "option2"}),
 	},
 	"An enum flag that is required, is not just whitespace, and is not one of the allowed options should return an error": {
-		flag:                      flags.NewEnumFlag(true, false, createStringPointer("option"), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag:                      flags.NewEnumFlag(true, false, new("option"), "test flag", "f", "", "", []string{"option1", "option2"}),
 		expectedErrorStringSubset: enumOptionIndicator,
 	},
 	"An enum flag that is not required and is just whitespace should not return an error": {
-		flag: flags.NewEnumFlag(false, false, createStringPointer("    "), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag: flags.NewEnumFlag(false, false, new("    "), "test flag", "f", "", "", []string{"option1", "option2"}),
 	},
 	"An enum flag that is not required and is nil should not return an error": {
 		flag: flags.NewEnumFlag(false, false, nil, "test flag", "f", "", "", []string{"option1", "option2"}),
 	},
 	"An enum flag that is not required, is not nil or whitespace, and is one of the allowed options should not return an error": {
-		flag: flags.NewEnumFlag(false, false, createStringPointer("option2"), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag: flags.NewEnumFlag(false, false, new("option2"), "test flag", "f", "", "", []string{"option1", "option2"}),
 	},
 	"An enum flag that is not required, is not nil or whitespace, and is not one of the allowed options should return an error": {
-		flag:                      flags.NewEnumFlag(false, false, createStringPointer("option3"), "test flag", "f", "", "", []string{"option1", "option2"}),
+		flag:                      flags.NewEnumFlag(false, false, new("option3"), "test flag", "f", "", "", []string{"option1", "option2"}),
 		expectedErrorStringSubset: enumOptionIndicator,
 	},
 }
@@ -214,10 +214,6 @@ func runValidationTest(t *testing.T, args validationFlagTestCase) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), *args.expectedErrorStringSubset)
 	}
-}
-
-func createStringPointer(value string) *string {
-	return &value
 }
 
 func setupFiletTest(t *testing.T, flag flags.Flag) {

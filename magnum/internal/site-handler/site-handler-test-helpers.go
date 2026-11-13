@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -115,16 +114,4 @@ func RunTests(t *testing.T, cases GetVolumeInfoTestCases) {
 			}
 		})
 	}
-}
-
-func TimePtr(t time.Time) *time.Time {
-	return &t
-}
-
-func StringPtr(s string) *string {
-	return &s
-}
-
-func IntPtr(i int) *int {
-	return &i
 }

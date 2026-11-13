@@ -102,7 +102,7 @@ var replaceCmd = &cobra.Command{
 						timeText += "s"
 					}
 
-					successfulReplaces = append(successfulReplaces, fmt.Sprintf("`%s` was replaced %d %s", searchText, hits, timeText))
+					successfulReplaces = append(successfulReplaces, fmt.Sprintf("%#q was replaced %d %s", searchText, hits, timeText))
 				}
 			}
 

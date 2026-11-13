@@ -22,8 +22,7 @@ func MustGetCommandOutputEvenIfExitError(programName, errorMsg string, args ...s
 	cmd := exec.Command(programName, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
+		if _, ok := errors.AsType[*exec.ExitError](err); ok {
 			return string(output)
 		}
 

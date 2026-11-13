@@ -24,27 +24,27 @@ var (
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
 						Name:        "Arifureta Zero: Volume 6",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1659589200, 0)),
+						ReleaseDate: new(time.Unix(1659589200, 0)),
 					},
 					{
 						Name:        "Arifureta Zero: Volume 5",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1638338400, 0)),
+						ReleaseDate: new(time.Unix(1638338400, 0)),
 					},
 					{
 						Name:        "Arifureta Zero: Volume 4",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1594011600, 0)),
+						ReleaseDate: new(time.Unix(1594011600, 0)),
 					},
 					{
 						Name:        "Arifureta Zero: Volume 3",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1573884000, 0)),
+						ReleaseDate: new(time.Unix(1573884000, 0)),
 					},
 					{
 						Name:        "Arifureta Zero: Volume 2",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1549256400, 0)),
+						ReleaseDate: new(time.Unix(1549256400, 0)),
 					},
 					{
 						Name:        "Arifureta Zero: Volume 1",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1523433600, 0)),
+						ReleaseDate: new(time.Unix(1523433600, 0)),
 					},
 				},
 				ExpectedCount: 6,
@@ -54,87 +54,87 @@ var (
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Short Story Chronicles",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1780549200, 0)),
+						ReleaseDate: new(time.Unix(1780549200, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 20",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1766988000, 0)),
+						ReleaseDate: new(time.Unix(1766988000, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 19",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1742792400, 0)),
+						ReleaseDate: new(time.Unix(1742792400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 18",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1701237600, 0)),
+						ReleaseDate: new(time.Unix(1701237600, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 17",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1667800800, 0)),
+						ReleaseDate: new(time.Unix(1667800800, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 16",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1654578000, 0)),
+						ReleaseDate: new(time.Unix(1654578000, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 15",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1642399200, 0)),
+						ReleaseDate: new(time.Unix(1642399200, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 14",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1635138000, 0)),
+						ReleaseDate: new(time.Unix(1635138000, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 13",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1615010400, 0)),
+						ReleaseDate: new(time.Unix(1615010400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 12",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1598072400, 0)),
+						ReleaseDate: new(time.Unix(1598072400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 11",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1587877200, 0)),
+						ReleaseDate: new(time.Unix(1587877200, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 10",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1571547600, 0)),
+						ReleaseDate: new(time.Unix(1571547600, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 9",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1563598800, 0)),
+						ReleaseDate: new(time.Unix(1563598800, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 8",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1550210400, 0)),
+						ReleaseDate: new(time.Unix(1550210400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 7",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1537610400, 0)),
+						ReleaseDate: new(time.Unix(1537610400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 6",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1527811200, 0)),
+						ReleaseDate: new(time.Unix(1527811200, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 5",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1517464800, 0)),
+						ReleaseDate: new(time.Unix(1517464800, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 4",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1508342400, 0)),
+						ReleaseDate: new(time.Unix(1508342400, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 3",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1501686000, 0)),
+						ReleaseDate: new(time.Unix(1501686000, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 2",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1494687600, 0)),
+						ReleaseDate: new(time.Unix(1494687600, 0)),
 					},
 					{
 						Name:        "How a Realist Hero Rebuilt the Kingdom: Volume 1",
-						ReleaseDate: sitehandler.TimePtr(time.Unix(1487862000, 0)),
+						ReleaseDate: new(time.Unix(1487862000, 0)),
 					},
 				},
 				ExpectedCount: 21,

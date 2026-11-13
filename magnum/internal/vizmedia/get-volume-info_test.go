@@ -22,35 +22,35 @@ var (
 		Tests: map[string]sitehandler.GetVolumeInfoTestCase{
 			"Make sure Nausicaä of the Valley of the Wind volumes are correctly extracted": {
 				SeriesName:   "Nausicaä of the Valley of the Wind",
-				SlugOverride: sitehandler.StringPtr("nausicaa-of-the-valley-of-the-wind"),
+				SlugOverride: new("nausicaa-of-the-valley-of-the-wind"),
 				ExpectedVolumes: []*sitehandler.VolumeInfo{
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 7",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 6",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 5",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 4",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 3",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 2",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 					{
 						Name:        "Nausicaä of the Valley of the Wind, Vol. 1",
-						ReleaseDate: sitehandler.TimePtr(alreadyReleasedDate),
+						ReleaseDate: new(alreadyReleasedDate),
 					},
 				},
 				ExpectedCount: 7,
