@@ -1,6 +1,6 @@
 module github.com/pjkaufman/go-go-gadgets
 
-go 1.27
+go 1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1
