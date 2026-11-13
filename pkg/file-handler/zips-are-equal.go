@@ -55,8 +55,9 @@ func ZipsAreEqual(t *testing.T, filename, originalFileDir, expectedFileDir strin
 }
 
 func zipFilesAreEqual(t *testing.T, actual, expected *zip.File) (bool, string) {
-	if actual.Method != expected.Method || actual.CompressedSize64 != expected.CompressedSize64 || actual.UncompressedSize64 != expected.UncompressedSize64 {
-		return false, fmt.Sprintf("%q has file metadata that does not match what is expected.\nMethod is %d and expected %d\nCompressedSize64 is %d and expected %d\nUncompressedSize64 is %d and expected %d", actual.Name, actual.Method, expected.Method, actual.CompressedSize64, expected.CompressedSize64, actual.UncompressedSize64, expected.UncompressedSize64)
+	// Compressed size is now inconsistent starting in 1.27.x (?) so we cannot compare that anymore
+	if actual.Method != expected.Method || actual.UncompressedSize64 != expected.UncompressedSize64 {
+		return false, fmt.Sprintf("%q has file metadata that does not match what is expected.\nMethod is %d and expected %d\nUncompressedSize64 is %d and expected %d", actual.Name, actual.Method, expected.Method, actual.UncompressedSize64, expected.UncompressedSize64)
 	}
 
 	actualReader, err := actual.Open()
