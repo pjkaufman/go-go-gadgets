@@ -128,6 +128,48 @@ var getPotentialIncorrectSingleQuotesTestCases = map[string]suggesterTestCase{
 			`<p>Haruto, who had been watching Orn and the others with his 'Bird's' while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`: `<p>Haruto, who had been watching Orn and the others with his "Bird's" while Fuuka cut down the pillar supporting the Dungeon Core and secured it, reported the situation to her.</p>`,
 		},
 	},
+	"make sure that a possesive around multi-byte characters is properly handled and classified": {
+		inputText: `<p>'Renée's book'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'Renée's book'</p>`: `<p>"Renée's book"</p>`,
+		},
+	},
+	"make sure that a possessive around José is properly handled": {
+		inputText: `<p>'José's car'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'José's car'</p>`: `<p>"José's car"</p>`,
+		},
+	},
+	"make sure that a possessive around François is properly handled": {
+		inputText: `<p>'François's book'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'François's book'</p>`: `<p>"François's book"</p>`,
+		},
+	},
+	"make sure that a possessive around Müller is properly handled": {
+		inputText: `<p>'Müller's house'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'Müller's house'</p>`: `<p>"Müller's house"</p>`,
+		},
+	},
+	"make sure that a regular possessive around James is properly handled": {
+		inputText: `<p>'James's book'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'James's book'</p>`: `<p>"James's book"</p>`,
+		},
+	},
+	"make sure that a contraction inside single quotes is properly handled": {
+		inputText: `<p>'don't'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'don't'</p>`: `<p>"don't"</p>`,
+		},
+	},
+	"make sure that multi-byte characters before an apostrophe do not cause incorrect quote classification": {
+		inputText: `<p>'Renée's and José's books'</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>'Renée's and José's books'</p>`: `<p>"Renée's and José's books"</p>`,
+		},
+	},
 }
 
 func TestGetPotentialIncorrectSingleQuotes(t *testing.T) {

@@ -207,25 +207,32 @@ func convertQuotes(input string) (string, bool) {
 				}
 
 				// for now, we will do this the less performant way
-				var prev rune
 				for i := start; i <= end; i++ {
-					if runes[i] == '\'' {
-						if !insideDoubleQuotes {
-							runes[i] = '"'
-							updateMade = true
-						} else {
-							isPrevS := prev == 's'
-							isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
-							isPotentialPossesive := isPrevS && !isNextLetter && (singleQuoteCount-potentialPossesiveCount)%2 == 1
-
-							if isPotentialPossesive {
-								potentialPossesiveCount++
-							}
-						}
-
-						singleQuoteCount++
+					if runes[i] != '\'' {
+						continue
 					}
-					prev = runes[i]
+
+					if isPossessiveDigitScenarioOrBetweenLetters(i) {
+						continue
+					}
+
+					if !insideDoubleQuotes {
+						runes[i] = '"'
+						updateMade = true
+					} else {
+						isPrevS := i > 0 && (runes[i-1] == 's' || runes[i-1] == 'S')
+						isNextLetter := i < len(runes)-1 && unicode.IsLetter(runes[i+1])
+
+						isPotentialPossesive := isPrevS &&
+							!isNextLetter &&
+							(singleQuoteCount-potentialPossesiveCount)%2 == 1
+
+						if isPotentialPossesive {
+							potentialPossesiveCount++
+						}
+					}
+
+					singleQuoteCount++
 				}
 			}
 
