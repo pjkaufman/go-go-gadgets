@@ -90,7 +90,7 @@ func GetColumnForLine(line string, index int) int {
 
 func GetPositionOffset(contents string, line, column int) int {
 	lines := strings.Split(contents, "\n")
-	if line > len(lines) {
+	if line > len(lines) || line < 1 {
 		return -1
 	}
 

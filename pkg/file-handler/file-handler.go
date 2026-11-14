@@ -123,7 +123,7 @@ func GetFileFolder(filePath string) string {
 		return ""
 	}
 
-	return path.Join(filePath, "..")
+	return filepath.Dir(filePath)
 }
 
 func JoinPath(elements ...string) string {
@@ -216,6 +216,10 @@ func GetAllFilesWithExtInASpecificFolder(dir, ext string) ([]string, error) {
 
 	var fileList []string
 	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+
 		if strings.HasSuffix(f.Name(), ext) {
 			fileList = append(fileList, f.Name())
 		}
@@ -298,7 +302,7 @@ func CreateTemp(dir, path string) (*os.File, error) {
 func DeleteFile(path string) error {
 	err := os.Remove(path)
 	if err != nil {
-		return fmt.Errorf("failed to delete file %q", path)
+		return fmt.Errorf("failed to delete file %q: %w", path, err)
 	}
 
 	return nil
@@ -307,7 +311,7 @@ func DeleteFile(path string) error {
 func DeleteFolder(path string) error {
 	err := os.RemoveAll(path)
 	if err != nil {
-		return fmt.Errorf("failed to delete folder %q", path)
+		return fmt.Errorf("failed to delete folder %q: %w", path, err)
 	}
 
 	return nil
