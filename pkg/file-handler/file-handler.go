@@ -42,13 +42,17 @@ func FileArgExists(path, name string) error {
 		return fmt.Errorf("%s must have a non-whitespace value", name)
 	}
 
-	_, err := os.Stat(path)
+	fileInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return fmt.Errorf("%s: %q must exist", name, path)
 		}
 
 		return fmt.Errorf(`could not verify that %q exists: %w`, path, err)
+	}
+
+	if fileInfo.IsDir() {
+		return fmt.Errorf("%s: %q must be a file and not a directory", name, path)
 	}
 
 	return nil
