@@ -28,6 +28,12 @@ var getPotentialMissingOxfordCommasTestCases = map[string]suggesterTestCase{
 			`		<p>Here is a situation where I run, skip or jump for a long time.</p>`: `		<p>Here is a situation where I run, skip, or jump for a long time.</p>`,
 		},
 	},
+	"make sure that non-ascii characters are get a suggestion when involved in a missing oxford comman": {
+		inputText: `<p>We bought café, crème and thé.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>We bought café, crème and thé.</p>`: `<p>We bought café, crème, and thé.</p>`,
+		},
+	},
 }
 
 func TestGetPotentialMissingOxfordCommas(t *testing.T) {

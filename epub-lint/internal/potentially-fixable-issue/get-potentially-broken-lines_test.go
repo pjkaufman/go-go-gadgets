@@ -178,6 +178,15 @@ var getPotentiallyBrokenLinesTestCases = map[string]suggesterTestCase{
 		<p>Content is but as content is How envious should I be Content is but as content is How envious should I be</p>`,
 		},
 	},
+	"make sure that a paragraph tag starting with a lowercase unicode character gets a suggestion to fix that line break": {
+		inputText: `<p>The sentence continues</p>
+		<p>éclair is the next word.</p>
+		<p class="calibre1">How envious should I be.</p>`,
+		expectedSuggestions: map[string]string{
+			`<p>The sentence continues</p>
+		<p>éclair is the next word.</p>`: `<p>The sentence continues éclair is the next word.</p>`,
+		},
+	},
 }
 
 func TestGetPotentiallyBrokenLines(t *testing.T) {
